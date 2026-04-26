@@ -17,13 +17,17 @@
 
 ## Commands
 
+This repo holds **multiple videos**. Every CLI command takes a project directory argument — point it at the specific video you're working on (or a template):
+
 ```bash
-npx hyperframes preview          # preview in browser (studio editor)
-npx hyperframes render       # render to MP4
-npx hyperframes lint         # validate compositions (errors + warnings)
-npx hyperframes lint --verbose  # include info-level findings
-npx hyperframes lint --json     # machine-readable output for CI
-npx hyperframes docs <topic> # reference docs in terminal
+npx hyperframes preview videos/<slug>           # preview in browser (studio editor)
+npx hyperframes render  videos/<slug>           # render to MP4
+npx hyperframes lint    videos/<slug>           # validate compositions (errors + warnings)
+npx hyperframes inspect videos/<slug>           # check rendered layout for overflow
+npx hyperframes validate videos/<slug>          # lint + WCAG contrast audit
+npx hyperframes lint --verbose videos/<slug>    # include info-level findings
+npx hyperframes lint --json    videos/<slug>    # machine-readable output for CI
+npx hyperframes docs <topic>                    # reference docs in terminal (no project needed)
 ```
 
 ## Documentation
@@ -44,20 +48,49 @@ https://hyperframes.heygen.com/llms.txt
 
 ## Project Structure
 
-- `index.html` — main composition (root timeline)
-- `compositions/` — sub-compositions referenced via `data-composition-src`
-- `meta.json` — project metadata (id, name)
-- `transcript.json` — whisper word-level transcript (if generated)
+This is a **multi-video repo**. The root holds shared docs and config; each video is a self-contained HyperFrames project under `videos/`:
+
+```
+diy-yt-creator-hyperframes/
+├── CLAUDE.md, AGENTS.md, README.md, .gitignore   ← repo-level only
+├── skills-lock.json
+├── videos/                                       ← one folder per video
+│   └── <slug>/                                   ← e.g. claude-connectors-everyday-life
+│       ├── index.html                            ← root composition (root timeline)
+│       ├── compositions/                         ← sub-compositions via data-composition-src
+│       ├── meta.json                             ← { id, name }
+│       ├── hyperframes.json                      ← schema/registry/paths
+│       ├── DESIGN.md                             ← per-video design system
+│       ├── script.txt                            ← narration script
+│       ├── audio/                                ← narration.wav, sfx
+│       ├── assets/                               ← screenshots, logos
+│       └── out/                                  ← rendered MP4 (gitignored)
+└── templates/                                    ← copyable starter projects
+    ├── shorts/
+    │   └── anthropic/                            ← dark-stage Anthropic Shorts (1080x1920)
+    └── long-form/                                ← horizontal templates (1920x1080) — TBD
+```
+
+## Adding a new video
+
+1. Pick a template (currently `templates/shorts/anthropic/`).
+2. Copy it: `cp -r templates/shorts/<style> videos/<slug>` (PowerShell: `Copy-Item -Recurse templates/shorts/<style> videos/<slug>`).
+3. Update `videos/<slug>/meta.json` with the real `id` and `name`.
+4. Edit `videos/<slug>/index.html` and `DESIGN.md` per the template's README.
+5. Drop narration at `videos/<slug>/audio/narration.wav`, wire up the `<audio>` element.
+6. Lint, preview, render — always pass the directory: `npx hyperframes lint videos/<slug>`.
+
+Each template's `README.md` has the full spawn instructions specific to that format.
 
 ## Linting — ALWAYS RUN AFTER CHANGES
 
-After creating or editing any `.html` composition, **always** run the linter before considering the task complete:
+After creating or editing any `.html` composition, **always** run the linter scoped to that video before considering the task complete:
 
 ```bash
-npx hyperframes lint
+npx hyperframes lint videos/<slug>
 ```
 
-Fix all errors before presenting the result. Warnings are informational and usually safe to ignore.
+Fix all errors before presenting the result. Warnings are informational and usually safe to ignore — but check them: a `duplicate_media_discovery_risk` warning on a template often means a literal `<img …>` syntax was placed inside an HTML comment or a markdown file the linter is scanning.
 
 ## Key Rules
 

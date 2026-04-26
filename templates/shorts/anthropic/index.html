@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic Shorts Template — Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Full design system
+     in DESIGN.md. Edit values per video; keep families.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ──────────────────────────────────────────────────
+     ROOT TOKENS — colors, spacing, type scale.
+     Override per video by changing these CSS vars.
+     ────────────────────────────────────────────────── */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Ambient orange wash — slow breath under all phases */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — persistent banner across all phases.
+     Swap the inner div for an image tag pointing at
+     your logo asset (see README "Customizing per video").
+     ────────────────────────────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  }
+  #top-banner-text {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+
+  /* Slim progress bar — bottom edge, accent orange */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — full-bleed, layered. Phase 1 visible by
+     default; phases 2-4 start at opacity 0. Crossfades
+     between phases handle scene change (no exits on
+     individual elements — see DESIGN.md motion rules).
+     ────────────────────────────────────────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Mono overline — every phase opens with one of these */
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — HERO SLAM
+     Pattern: overline → secondary line → slam word + caption pill.
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 240px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+  #p1-caption {
+    margin-top: 32px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — STAT PILL ROW
+     Pattern: overline → 2 huge stat pills, color-rotated.
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+  }
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 440px;
+    padding: 32px 24px;
+    border-radius: 24px;
+  }
+  .stat-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 180px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .stat-pill.orange .stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.40); }
+  .stat-pill.purple .stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .stat-label {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — TIMELINE CARDS
+     Pattern: overline → 3 dated cards, accent rotation.
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p3-overline { color: var(--text); }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 940px;
+  }
+  .tl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 22px 28px;
+    border-radius: 20px;
+  }
+  .tl-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .tl-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .tl-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .tl-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 38px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+  }
+  .tl-card.orange .tl-date { background: var(--orange); }
+  .tl-card.purple .tl-date { background: var(--purple); }
+  .tl-card.blue   .tl-date { background: var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .tl-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .tl-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 1px;
+  }
+  .tl-card.orange .tl-sub { color: var(--orange); }
+  .tl-card.purple .tl-sub { color: var(--purple); }
+  .tl-card.blue   .tl-sub { color: var(--blue); }
+  .tl-index {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 34px;
+    line-height: 1;
+  }
+  .tl-card.orange .tl-index { background: rgba(233,116,88,0.20); border: 1.5px solid rgba(233,116,88,0.40); color: var(--orange); }
+  .tl-card.purple .tl-index { background: rgba(167,139,250,0.20); border: 1.5px solid rgba(167,139,250,0.40); color: var(--purple); }
+  .tl-card.blue   .tl-index { background: rgba(107,154,239,0.20); border: 1.5px solid rgba(107,154,239,0.40); color: var(--blue); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — CTA / URL SLAM
+     Pattern: overline → URL slam → subscribe pill.
+     ────────────────────────────────────────────────── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 88px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1.0;
+    padding: 22px 36px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.25);
+    max-width: 920px;
+  }
+  #p4-subscribe {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p4-subscribe .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 0.7;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="24"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient warm wash -->
+  <div id="ambient"></div>
+
+  <!-- Persistent top banner. Swap the text div for a logo image when ready. -->
+  <div id="top-banner">
+    <div id="top-banner-text">CLAUDE</div>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO SLAM (0-6s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Anthropic Postmortem</div>
+      <div id="p1-pre">Claude Code got…</div>
+      <div id="p1-hero">DUMBER?</div>
+      <div id="p1-caption">Official postmortem, April 23, 2026</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — STAT PILL ROW (6-12s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">The receipts</div>
+      <div id="p2-headline">Three bugs. Six weeks.</div>
+      <div id="p2-pills">
+        <div class="stat-pill orange" id="p2-pill-1">
+          <div class="stat-num">3</div>
+          <div class="stat-label">separate bugs</div>
+        </div>
+        <div class="stat-pill purple" id="p2-pill-2">
+          <div class="stat-num">6</div>
+          <div class="stat-label">weeks stacked</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — TIMELINE CARDS (12-18s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">The timeline</div>
+      <div class="timeline-list">
+        <div class="tl-card orange" id="p3-card-1">
+          <div class="tl-date">Mar 4</div>
+          <div class="tl-body">
+            <div class="tl-title">Reasoning dropped</div>
+            <div class="tl-sub">HIGH → MEDIUM</div>
+          </div>
+          <div class="tl-index">01</div>
+        </div>
+        <div class="tl-card purple" id="p3-card-2">
+          <div class="tl-date">Mar 26</div>
+          <div class="tl-body">
+            <div class="tl-title">Caching optimization</div>
+            <div class="tl-sub">Hidden thinking-clear bug</div>
+          </div>
+          <div class="tl-index">02</div>
+        </div>
+        <div class="tl-card blue" id="p3-card-3">
+          <div class="tl-date">Apr 16</div>
+          <div class="tl-body">
+            <div class="tl-title">Verbosity prompt</div>
+            <div class="tl-sub">Keep responses short</div>
+          </div>
+          <div class="tl-index">03</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — CTA / URL SLAM (18-24s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Read the full story</div>
+      <div id="p4-url">anthropic.com/postmortem</div>
+      <div id="p4-subscribe">Subscribe<span class="arrow">→</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX go here.
+       See README.md "Adding narration" / "Adding SFX" for the
+       <audio> element template. Wire them in once you have
+       files at audio/narration.wav and assets/sfx/*.
+       ═══════════════════════════════════════════════════════ -->
+</div>
+
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─────────────────────────────────────────────────────
+  // Ambient: slow warm breath across full duration
+  // ─────────────────────────────────────────────────────
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 12, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar fills linearly across the composition (24s total)
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: 24, ease: "none" },
+    0);
+
+  // Top banner fade-in (one-shot, then static)
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero slam (0-6s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.8);
+  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 1.4);
+  // Inline shake on the slam frame — 4 short ticks ±5px, then settle
+  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.55);
+  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.60);
+  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.65);
+  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.70);
+  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.2);
+
+  // ─── Transition phase1 → phase2 at 5.6s : blur + crossfade ───
+  const T1 = 5.6;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Stat pill row (6-12s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  const P2 = 6.4;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 0.9);
+  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 1.4);
+
+  // ─── Transition phase2 → phase3 at 11.6s ───
+  const T2 = 11.6;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Timeline cards (12-18s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  const P3 = 12.4;
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 0.5);
+  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 0.95);
+  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 1.4);
+
+  // ─── Transition phase3 → phase4 at 17.6s ───
+  const T3 = 17.6;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — CTA URL slam (18-24s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  const P4 = 18.4;
+  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, P4 + 0.5);
+  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 1.6);
+
+  // Phase 4 stays fully visible to the end — composition naturally ends at 24s
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>
