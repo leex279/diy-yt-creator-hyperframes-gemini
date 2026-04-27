@@ -1,0 +1,57 @@
+<!--
+  shared/lib/components/progress-bar/component.html
+  Slim 6px progress bar at the bottom of the canvas. Linear fill across
+  the full composition duration; accent-orange with a glow.
+
+  SOURCE: templates/shorts/anthropic/index.html:82-96 (CSS),
+          templates/shorts/anthropic/index.html:398    (HTML),
+          templates/shorts/anthropic/index.html:499-502 (fill tween).
+
+  PASTE-IN — three sections below. Width 1080px is hardcoded for Shorts;
+  for other canvas widths, change both the .track width AND the
+  addProgressBar(tl, { width }) argument.
+-->
+
+<!-- 1) HTML — paste at the bottom of your composition root, just
+        above any audio elements. -->
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+
+<!-- 2) CSS — merge into your composition's <style> block. -->
+
+<style>
+  /* shared/lib/components/progress-bar — keep this comment block */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange, #E97458);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+</style>
+
+<!--
+  3) JS — call from the host root timeline at t=0 with the total
+     composition duration. The fill animates from 0 to canvas-width
+     across the full video, ease: "none" (linear).
+-->
+
+<script>
+  function addProgressBar(tl, opts) {
+    var width = (opts && opts.width) || 1080;
+    var totalDuration = (opts && opts.totalDuration) || 24;
+    tl.fromTo("#progress-fill",
+      { width: 0 },
+      { width: width, duration: totalDuration, ease: "none" },
+      0);
+  }
+  // Usage: addProgressBar(tl, { width: 1080, totalDuration: 24 });
+</script>

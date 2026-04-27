@@ -224,6 +224,22 @@ Edit in this exact order (one Edit per change):
          data-volume="1"></audio>
 ```
 
+### 8.5. Lib pick (optional but recommended)
+
+The repo ships a shared visual library at [`shared/lib/`](../../../shared/lib/). It has reusable cards, components, effects, and named visual styles — extracted from this very template. Before treating any phase as "fully custom", check whether a lib entry already does what you need.
+
+1. Read [`shared/lib/MANIFEST.md`](../../../shared/lib/MANIFEST.md) — the catalog of every entry, with description + tags.
+2. Read [`shared/lib/visual-styles/anthropic-dark.md`](../../../shared/lib/visual-styles/anthropic-dark.md) — the named-style fragment that ALSO maps which lib entries fit this aesthetic.
+3. For each lib entry you want to reuse:
+   - **Block** (sub-composition): copy `shared/lib/blocks/<name>/block.html` into `videos/<slug>/compositions/<name>.html`. Wire it in `index.html` per the entry's `recipe.md`.
+   - **Component** (paste-in snippet): read `shared/lib/components/<name>/component.html`. Merge its HTML / CSS / JS sections into the host `index.html` per the comments at the top of the file.
+   - **Effect** (GSAP recipe): read `shared/lib/effects/<name>.js`. Paste the function body into the host `<script>` (above the timeline construction) and call it from the timeline.
+   - **Tokens**: copy `shared/lib/tokens/<name>.css` into `videos/<slug>/tokens/<name>.css` and add a `<link rel="stylesheet" href="tokens/<name>.css">` in `<head>`.
+
+**Never reference `shared/lib/` paths from `data-composition-src`, `<img src>`, `<audio src>`, `<video src>`, `<link href>`, or `<script src>` at runtime.** The HyperFrames bundler / preview server (`isSafePath` / `safePath` in `@hyperframes/core`) silently rejects paths outside the project directory. Always copy the file into `videos/<slug>/` first; reference it from the local copy.
+
+This step is optional because the spawned template already inlines the equivalents — but as you customize, lib entries are a way to swap one piece without divergence. They're also the canonical source for any new template you might author later.
+
 ### 9. Lint
 
 ```bash
@@ -344,6 +360,7 @@ cp shared/logos/canva-logo.png            videos/<slug>/assets/   # if used in p
 - Never fabricate stats, dates, URLs, or quotes. Ask for source if missing.
 - Never use a styled-text pseudo-logo when a real one exists in `shared/logos/`. See "Real logos" above.
 - Never modify `templates/shorts/anthropic/` — only the copy under `videos/<slug>/`.
+- Never reference `shared/lib/` paths from `data-composition-src`, `<img src>`, `<audio src>`, `<video src>`, `<link href>`, or `<script src>` at runtime — the HyperFrames bundler silently rejects paths outside the project directory. Always copy the file into `videos/<slug>/` first.
 - Never use `Math.random()` / `Date.now()` in the generated composition (HyperFrames is deterministic).
 - Never write `<br>` in content text — use `max-width` for natural wrapping (HyperFrames `/hyperframes` skill rule).
 - Never animate `visibility` or `display` — use opacity (HyperFrames rule).

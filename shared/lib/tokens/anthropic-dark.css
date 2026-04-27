@@ -1,0 +1,36 @@
+/* ──────────────────────────────────────────────────────────────────────
+   shared/lib/tokens/anthropic-dark.css
+   Anthropic dark-stage palette + spacing + typography tokens.
+
+   SOURCE: templates/shorts/anthropic/index.html:27-46
+   USAGE:
+     - Copy into videos/<slug>/tokens/anthropic-dark.css
+     - Add to videos/<slug>/index.html <head>:
+         <link rel="stylesheet" href="tokens/anthropic-dark.css">
+     - Override per-video by re-declaring any var on a more specific
+       selector (e.g. inside #root, or a per-phase scope).
+
+   These vars are scoped to :root (not #root) so they apply at document
+   level and any consumer inherits without needing a #root wrapper.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --bg: #0B0F18;
+  --card: #161B26;
+  --text: #F5F1EB;
+  --text-dim: #9A958D;
+  --orange: #E97458;
+  --purple: #A78BFA;
+  --blue:   #6B9AEF;
+  --green:  #7DD3A6;
+  --red:    #D14343;
+  --pill-bg: rgba(245, 241, 235, 0.08);
+  --pill-border: rgba(245, 241, 235, 0.18);
+
+  --pad-top: 240px;
+  --pad-x: 60px;
+  --pad-bottom: 240px;
+
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+}

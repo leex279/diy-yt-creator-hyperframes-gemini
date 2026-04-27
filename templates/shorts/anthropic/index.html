@@ -24,6 +24,7 @@
      ROOT TOKENS — colors, spacing, type scale.
      Override per video by changing these CSS vars.
      ────────────────────────────────────────────────── */
+  /* TOKENS: shared/lib/tokens/anthropic-dark.css */
   #root {
     --bg: #0B0F18;
     --card: #161B26;
@@ -46,6 +47,7 @@
   }
 
   /* Ambient orange wash — slow breath under all phases */
+  /* COMPONENT: shared/lib/components/ambient-radial/ */
   #ambient {
     position: absolute;
     inset: -200px;
@@ -90,6 +92,7 @@
      Swap the inner div for an image tag pointing at
      your logo asset (see README "Customizing per video").
      ────────────────────────────────────────────────── */
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
   #top-banner {
     position: absolute;
     top: 60px;
@@ -108,6 +111,7 @@
   }
 
   /* Slim progress bar — bottom edge, accent orange */
+  /* COMPONENT: shared/lib/components/progress-bar/ */
   #progress-track {
     position: absolute;
     bottom: 0;
@@ -229,6 +233,7 @@
     flex-direction: row;
     gap: 18px;
   }
+  /* BLOCK: shared/lib/blocks/stat-pill-row/ */
   .stat-pill {
     display: flex;
     flex-direction: column;
@@ -286,6 +291,7 @@
     gap: 24px;
     width: 940px;
   }
+  /* BLOCK: shared/lib/blocks/timeline-cards/ */
   .tl-card {
     display: flex;
     flex-direction: row;
@@ -370,6 +376,7 @@
     gap: 36px;
   }
   #p4-overline { color: var(--green); }
+  /* BLOCK: shared/lib/blocks/url-cta/ */
   #p4-url {
     font-family: var(--mono);
     font-weight: 700;
@@ -638,6 +645,7 @@
   tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.8);
   tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 1.4);
   // Inline shake on the slam frame — 4 short ticks ±5px, then settle
+  // EFFECT: shared/lib/effects/hero-slam-shake.js
   tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.55);
   tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.60);
   tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.65);
@@ -645,6 +653,7 @@
   tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.2);
 
   // ─── Transition phase1 → phase2 at 5.6s : blur + crossfade ───
+  // EFFECT: shared/lib/effects/phase-crossfade.js
   const T1 = 5.6;
   tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
   tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
@@ -659,6 +668,7 @@
   const P2 = 6.4;
   tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
   tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  // EFFECT: shared/lib/effects/stat-pill-pop.js
   tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 0.9);
   tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 1.4);
 

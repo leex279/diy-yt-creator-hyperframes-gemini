@@ -13,7 +13,8 @@ A multi-video [HyperFrames](https://hyperframes.heygen.com) workspace. Each vide
 │   │   └── anthropic/                      # 1080x1920 dark-stage (Inter + JetBrains Mono)
 │   └── long-form/                          # 1920x1080 — no templates yet
 ├── shared/                                 # repo-level assets shared across all videos
-│   └── logos/                              # 84 brand wordmarks (Anthropic, Claude, OpenAI, …)
+│   ├── logos/                              # 84 brand wordmarks (Anthropic, Claude, OpenAI, …)
+│   └── lib/                                # reusable cards / components / effects / palettes (copy-from)
 ├── CLAUDE.md                               # AI agent guidance (skills, commands, structure)
 ├── AGENTS.md                               # general agent setup notes
 └── skills-lock.json                        # HyperFrames skill versions
@@ -71,6 +72,12 @@ PowerShell equivalent for the copy: `Copy-Item -Recurse templates/shorts/anthrop
 | `templates/long-form/` | Long-form | 1920x1080 | _none yet_ |
 
 Each template ships with its own `README.md` (spawn instructions) and `DESIGN.md` (full design system spec).
+
+## Shared visual library
+
+Reusable visual building blocks — stat-pill cards, timeline cards, CTA pills, ambient washes, progress bars, top-banner wordmarks, GSAP effects (phase crossfade, hero-slam shake, stat-pill pop), CSS palette tokens, and named visual-style fragments — live in [`shared/lib/`](./shared/lib/). Catalog: [`shared/lib/MANIFEST.md`](./shared/lib/MANIFEST.md). Authoring + consumption rules: [`shared/lib/README.md`](./shared/lib/README.md).
+
+`shared/lib/` is **copy-from**, not reference-from. The HyperFrames bundler/preview server rejects paths outside the project directory, so `data-composition-src="../../shared/lib/..."` silently fails at runtime. Copy the entry into `videos/<slug>/` first, then reference the local copy.
 
 ## Add a new template
 
