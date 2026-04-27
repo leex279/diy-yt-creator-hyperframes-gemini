@@ -11,6 +11,7 @@
 | **hyperframes-registry**   | `/hyperframes-registry`   | Installing blocks and components via `hyperframes add`                                            |
 | **website-to-hyperframes** | `/website-to-hyperframes` | Capturing a URL and turning it into a video — full website-to-video pipeline                      |
 | **gsap**                   | `/gsap`                   | GSAP animations for HyperFrames — tweens, timelines, easing, performance                          |
+| **agent-browser**          | `/agent-browser`          | Real Chromium browser — open URL, snapshot DOM, click, fill, screenshot, scrape, QA. Use directly or as a building block inside other skills. |
 
 > **Skills not available?** Ask the user to run `npx hyperframes skills` and restart their
 > agent session, or install manually: `npx skills add heygen-com/hyperframes`.

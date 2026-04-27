@@ -96,6 +96,17 @@ curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/$ELEVENLABS_VOICE_ID" 
 
 > If a value is missing from `.env`, fail loudly — do NOT silently fall back to the ElevenLabs defaults below. The fallback table is reference material for callers who explicitly opt out of project defaults.
 
+### When the audio drives anything visual: use `convert_with_timestamps`
+
+For HyperFrames work — captions, marker highlights, scene transitions tied to narration — call `convert_with_timestamps` instead of `convert`. ElevenLabs returns character-level alignment in the same response, so you get the audio AND a word-level transcript from one model in one call. Don't generate audio first and run Whisper on it; that adds a dependency, costs a second pass, and introduces transcription drift.
+
+See [SKILL.md → Word/character timestamps](../SKILL.md#wordcharacter-timestamps--default-for-any-sync-use-case) for the full pattern. The repo ships a working invocation at `scripts/elevenlabs-tts.py` that loads `.env`, calls `convert_with_timestamps`, writes `audio/narration.wav`, and emits `transcript.json` in HyperFrames' `[{word, start, end}]` shape:
+
+```bash
+python scripts/elevenlabs-tts.py videos/<slug> --shorts   # use ELEVENLABS_SPEED_SHORTS
+python scripts/elevenlabs-tts.py videos/<slug>            # use ELEVENLABS_SPEED (long-form)
+```
+
 ---
 
 ## Parameters

@@ -2,6 +2,8 @@
 
 End-to-end pipeline that turns a **topic prompt** into a previewable HyperFrames Short in the Anthropic dark-stage aesthetic. Zero manual steps; ends at preview, never renders.
 
+> **For research + scriptwriting first**: see `/diy-yt-creator:full-auto`. That orchestrator runs phases 0-3.5 (research → plan → script → critique → fact-check → retention strategy) and writes the artifacts under `videos/<slug>/` that step 4 below picks up via Branch A. Use the pipeline by default; use this skill directly only when you already have a script.
+
 ## Inputs
 
 User provides ONE of:
@@ -59,7 +61,29 @@ Replace the placeholders:
 }
 ```
 
-### 4. Draft the script (skip if user provided one)
+### 4. Draft the script
+
+This step has two branches. **Try Branch A first** — if the pipeline ran, the script already exists and you should use it instead of inventing one.
+
+#### Branch A — pipeline output exists (preferred)
+
+If `videos/<slug>/scripts/full-script.md` exists (Phases 0-2b have run via `/diy-yt-creator:full-auto`):
+
+1. READ `videos/<slug>/scripts/full-script.md` as the authoritative source of narration.
+2. READ `videos/<slug>/plan.md` (if it exists) — pay attention to:
+   - `## Composition Layout` (which phases / sub-comps the plan calls for)
+   - `## Retention Component Picks` (the `retention_component_picks:` YAML block — per-scene marker / caption / audio-reactive / transition picks)
+   - `## Data Timing Budget` (`data_start` / `data_duration` per scene in seconds)
+3. READ `videos/<slug>/retention-strategy.md` (if it exists from Phase 3.5) — this is the most refined per-scene retention strategy and OVERRIDES the plan's picks where they differ. Phase 3.5 has access to the actual transcript timings; the plan does not.
+4. Map the script's `## Scene N: <name>` sections onto the template's 4 phase archetypes (Hero / Stat / Timeline / CTA). The plan's `composition_layout` tells you which scene maps to which template phase.
+5. Skip Branch B's inline drafting entirely. Jump to step 4.5+ using the pipeline-supplied content.
+6. If the plan calls for sub-compositions (`sub-composition` structural pick), follow CLAUDE.md key rule #5 to wire them via `data-composition-src`. The Anthropic Shorts template uses `inline-phase` only — sub-comps would only appear if Phase 1 explicitly chose them (rare for shorts).
+
+If anything in the plan or retention-strategy looks wrong (e.g., it picks a retention component you don't recognize), STOP and tell the user — do NOT invent your own. The pipeline output is authoritative; if it's wrong, fix the plan first.
+
+#### Branch B — no pipeline output (legacy / quick path)
+
+If `videos/<slug>/scripts/full-script.md` does NOT exist, fall back to the inline drafting rules below. This is the legacy path — for any new video, prefer running `/diy-yt-creator:full-auto <topic>` first to produce a researched script, then come back here.
 
 Map narration to the four phase archetypes the template ships:
 
@@ -90,6 +114,24 @@ Save to `videos/<slug>/script.txt`. Use this exact format (one phase per blank-l
 ```
 
 The blank lines are NOT spoken; they help you map narration to phases when you read the transcript back later.
+
+### 4.5. (Optional) Ground the script in real source content
+
+**Skip if**: the topic is text-only opinion / commentary, OR the user already provided full key facts verbatim, OR the source is reachable via plain `WebFetch` (static HTML, e.g. a release-notes Markdown page on GitHub).
+
+**Use when**: the source is a JS-rendered page (SPA, dashboard, blog with dynamic content), or you need to verify a specific stat / quote / version number against the current state of the page (anti-fabrication rule, see step 4).
+
+For text grounding, invoke `/agent-browser` directly:
+
+```bash
+agent-browser open "<source_url>" \
+  && agent-browser wait --load networkidle \
+  && agent-browser get text body
+```
+
+Read the output. Cross-check every stat / date / quote in the draft `script.txt` against this text. If a fact in the script can't be found in the page text, remove it or ask the user. NEVER preserve a fabricated fact just because the draft was already written.
+
+For visual grounding (per-app screenshots used inside phase 3 cards), use the `capture-asset` sub-playbook — see step 8 below.
 
 ### 5. Generate TTS
 
@@ -223,6 +265,16 @@ npx hyperframes preview videos/<slug>
 
 Capture the URL it prints (typically `http://localhost:5173`).
 
+### 11.5. (Optional) QA the rendered preview visually
+
+**Skip if**: lint and inspect both passed cleanly AND the user wants a fast turnaround.
+
+**Use when**: the composition involves new content patterns (custom animations, novel card layouts, atypical font sizes), OR the user explicitly asks "verify the preview".
+
+Sub-playbook: `/diy-yt-creator qa-composition <slug>`. It will use `agent-browser` to snapshot each phase from the running preview server and report any visual issues (overflow, missing assets, broken image icons, leftover template placeholders).
+
+Do NOT block on this step — it's advisory. Report findings in step 12.
+
 ### 12. Report to the user
 
 One concise message containing:
@@ -277,7 +329,8 @@ cp shared/logos/canva-logo.png            videos/<slug>/assets/   # if used in p
 1. Before editing phase 3 timeline cards, check `shared/logos/` for each named app/brand: `ls shared/logos | grep -i <app>`.
 2. If a logo exists, **copy it into the project's `assets/`** and render it as `<img src="assets/<file>" alt="<App>">` inside the card's `.tl-app` slot (or replace the entire app text with the logo). Style with `height: 36-44px; width: auto; vertical-align: middle`.
 3. If a logo does NOT exist, do NOT fabricate one. Either:
-   - Ask the user for the logo file (preferred), OR
+   - Run the `capture-asset` sub-playbook to grab a UI screenshot from the app's homepage: `/diy-yt-creator capture-asset <slug> <app_homepage_url> <app>-screenshot`. Lands at `videos/<slug>/assets/<app>-screenshot.png`. Reference as `<img src="assets/<app>-screenshot.png" alt="<App>">`. Use sparingly — screenshots are heavier than logos and may distract from the card composition. OR
+   - Ask the user for the logo file (preferred for brand consistency), OR
    - Fall back to the styled mono-text app name (current default in the template), OR
    - Pick a different app already in `shared/logos/` IF the script-content allows substitution without losing factual accuracy.
 
@@ -296,3 +349,6 @@ cp shared/logos/canva-logo.png            videos/<slug>/assets/   # if used in p
 - Never animate `visibility` or `display` — use opacity (HyperFrames rule).
 - Never skip the `/hyperframes` skill before editing the composition HTML.
 - Never run multiple `new-anthropic-short` invocations in parallel against the same slug.
+- Never run `agent-browser` (via `capture-asset` or `qa-composition`) against `localhost` or internal IPs without explicit user approval — only public URLs by default.
+- Never store captured PNGs in `shared/` — they belong in `videos/<slug>/assets/` per `shared/README.md`.
+- Never re-run `capture-asset` against the same URL for the same video without `--force` — wasteful and may rate-limit.

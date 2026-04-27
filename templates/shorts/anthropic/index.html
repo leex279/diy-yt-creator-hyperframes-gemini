@@ -56,6 +56,35 @@
     z-index: 0;
   }
 
+  /* Shape backdrop — 14 deterministic Anthropic-style shapes scattered at 5% opacity.
+     Sits between #ambient and phases. Populated by spawnShapes() in script below. */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay — fractal noise via SVG feTurbulence, blended over the entire
+     stack to break up gradient banding. Highest z-index so it tints everything below. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
   /* ──────────────────────────────────────────────────
      TOP CHROME — persistent banner across all phases.
      Swap the inner div for an image tag pointing at
@@ -389,6 +418,10 @@
   <!-- Ambient warm wash -->
   <div id="ambient"></div>
 
+  <!-- Shape backdrop — 14 organic Anthropic shapes scattered behind phases.
+       Populated by spawnShapes() at boot using a seeded PRNG. -->
+  <div id="shape-backdrop"></div>
+
   <!-- Persistent top banner. Anthropic wordmark from shared/logos/. -->
   <div id="top-banner">
     <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
@@ -481,11 +514,105 @@
        <audio> element template. Wire them in once you have
        files at audio/narration.wav and assets/sfx/*.
        ═══════════════════════════════════════════════════════ -->
+
+  <!-- Film-grain overlay — last child so it sits on top and tints everything via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
 </div>
 
 <script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 14 Anthropic shapes.
+  // Mirrors src/shared/components/AnthropicShapeBackground.tsx (Remotion).
+  // No Math.random / Date.now — uses an xmur3-style hash for determinism.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  // Rejection-sample 14 shapes with a minimum center-to-center distance so they
+  // don't visually clump. Each retry mixes an attempt counter into the seed so
+  // the result stays deterministic. Falls back to the best-spaced candidate if
+  // a valid spot isn't found within MAX_TRIES (rare with these defaults).
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      // Hand the rotation to GSAP so the drift tween can layer rotation deltas
+      // on top of the base orientation.
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Subtle ambient drift — each shape gets a slow yoyo translate + rotation delta.
+  // Half-cycle duration is sampled in [T/10, T/5] so every shape goes through
+  // several yoyo cycles during the composition (visible without dominating).
+  // Repeat count is finite (`Math.floor(T / dur) - 1`) so the deterministic
+  // capture engine can seek frames.
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 50;   // ±25px translate
+      const dy = (seedHash(seed + '-dy') - 0.5) * 50;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 7;    // ±3.5° rotation delta
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  spawnShapes('anthropic-short', document.getElementById('shape-backdrop'));
+
   window.__timelines = window.__timelines || {};
   const tl = gsap.timeline({ paused: true });
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'anthropic-short', 24);
 
   // ─────────────────────────────────────────────────────
   // Ambient: slow warm breath across full duration

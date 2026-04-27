@@ -187,6 +187,66 @@ audio2 = client.text_to_speech.convert(
 | `opus_48000_64` | Opus 48kHz 64kbps - efficient streaming codec |
 | `wav_44100` | WAV 44.1kHz - uncompressed with headers |
 
+## Word/character timestamps — default for any sync use case
+
+If downstream code needs to know **when each word is spoken** (subtitles, captions, marker highlights, animation triggers, scene transitions tied to narration), use `convert_with_timestamps` — **never** generate audio first and run Whisper on it. ElevenLabs returns character-level alignment alongside the audio in a single call, so timestamps come from the same model that produced the audio (sample-accurate, no transcription drift, no extra dependency).
+
+### Python — audio + word-level transcript
+
+```python
+import base64, json, os, wave
+from dotenv import load_dotenv
+from elevenlabs import ElevenLabs, VoiceSettings
+
+load_dotenv()
+client = ElevenLabs(api_key=os.environ["ELEVENLABS_API_KEY"])
+
+resp = client.text_to_speech.convert_with_timestamps(
+    voice_id=os.environ["ELEVENLABS_VOICE_ID"],
+    text="Claude just got fifteen new connectors. AllTrails. Spotify.",
+    model_id=os.environ["ELEVENLABS_MODEL_ID"],
+    output_format="pcm_44100",
+    voice_settings=VoiceSettings(
+        stability=float(os.environ["ELEVENLABS_STABILITY"]),
+        similarity_boost=float(os.environ["ELEVENLABS_SIMILARITY_BOOST"]),
+        style=float(os.environ["ELEVENLABS_STYLE"]),
+        speed=float(os.environ["ELEVENLABS_SPEED"]),
+        use_speaker_boost=True,
+    ),
+)
+
+# 1. Audio: base64-decode and wrap raw PCM in a WAV header.
+pcm = base64.b64decode(resp.audio_base_64)
+with wave.open("narration.wav", "wb") as f:
+    f.setnchannels(1); f.setsampwidth(2); f.setframerate(44100)
+    f.writeframes(pcm)
+
+# 2. Word-level transcript: collapse character alignment into whitespace-delimited tokens.
+align = resp.normalized_alignment or resp.alignment  # normalized strips punctuation oddities
+words, current = [], None
+for ch, t0, t1 in zip(align.characters, align.character_start_times_seconds, align.character_end_times_seconds):
+    if ch.isspace():
+        if current: words.append(current); current = None
+    else:
+        if current is None: current = {"word": ch, "start": t0, "end": t1}
+        else: current["word"] += ch; current["end"] = t1
+if current: words.append(current)
+
+with open("transcript.json", "w", encoding="utf-8") as f:
+    json.dump(words, f, ensure_ascii=False, indent=2)
+```
+
+### Response shape
+
+`AudioWithTimestampsResponse` has:
+- `audio_base_64` — the audio (base64-encoded; decode before writing to disk)
+- `alignment` — character-level: `characters[]`, `character_start_times_seconds[]`, `character_end_times_seconds[]`
+- `normalized_alignment` — same shape, but for the *normalized* text (numbers expanded, abbreviations spelled out, etc.). **Prefer this** when grouping into words — it matches what the model actually spoke.
+
+### When to skip timestamps
+
+Plain `convert` (no timestamps) is fine when the audio is the only output and nothing downstream needs sync — e.g. one-off voiceovers, podcasts where word-by-word timing doesn't matter. For anything visual that has to land on a syllable, use `convert_with_timestamps`.
+
 ## Streaming
 
 For real-time applications, use the `stream` method (returns audio chunks as they're generated):
