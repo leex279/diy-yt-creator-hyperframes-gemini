@@ -1,0 +1,61 @@
+<!--
+  shared/lib/components/ambient-radial/component.html
+  Slow-breathing dual radial wash — orange + purple tints — sits behind
+  all phases as ambient depth. data-no-capture so shader transitions
+  don't try to texture it.
+
+  SOURCE: templates/shorts/anthropic/index.html:49-57 (CSS),
+          templates/shorts/anthropic/index.html:493-496 (breath tween).
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this <div> at the top of your composition's
+     <div data-composition-id="..."> root (z-index 0, behind content):
+-->
+
+<div id="ambient" data-no-capture></div>
+
+<!--
+  2) CSS — merge into your composition's <style> block. The container
+     uses inset: -200px so the radials extend past the canvas edges.
+     Tints default to orange (#E97458) and purple (#A78BFA); change them
+     to match your visual style.
+-->
+
+<style>
+  /* shared/lib/components/ambient-radial — keep this comment block */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+</style>
+
+<!--
+  3) JS — call this function from the host root timeline AFTER it's
+     created and BEFORE you register it on window.__timelines.
+
+     The breath tween uses yoyo: true, repeat: 1. The duration argument
+     is ONE HALF of the total composition duration (so the full
+     in-and-out cycle covers the whole video). NEVER use repeat: -1.
+-->
+
+<script>
+  function addAmbientBreath(tl, opts) {
+    var halfDuration = (opts && opts.halfDuration) || 12;
+    tl.fromTo("#ambient",
+      { opacity: 0.85, scale: 1.0 },
+      { opacity: 1.0, scale: 1.04, duration: halfDuration, ease: "sine.inOut", yoyo: true, repeat: 1 },
+      0);
+  }
+  // Usage: addAmbientBreath(tl, { halfDuration: totalDuration / 2 });
+</script>

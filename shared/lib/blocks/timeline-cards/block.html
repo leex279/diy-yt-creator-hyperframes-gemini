@@ -1,0 +1,187 @@
+<!--
+  shared/lib/blocks/timeline-cards/block.html
+  Three dated cards in vertical stack with accent rotation
+  (orange / purple / blue). Each card: solid accent date chip,
+  Sans title, mono subtitle, accent index badge on the right.
+
+  SOURCE: templates/shorts/anthropic/index.html:254-331 (CSS),
+          templates/shorts/anthropic/index.html:550-554 (entrances).
+
+  REQUIRED TOKENS (host must declare or inherit):
+    --sans, --mono, --bg, --text, --orange, --purple, --blue, --green
+  Provide them by linking shared/lib/tokens/anthropic-dark.css before
+  this composition's <link>/<div>.
+
+  See ./recipe.md for full wiring + accent-rotation rules.
+-->
+<template id="timeline-cards-template">
+  <div data-composition-id="timeline-cards" data-start="0" data-duration="6" data-width="1080" data-height="1920">
+
+    <div class="phase-content">
+      <div class="overline" id="tlc-overline">SECTION LABEL</div>
+      <div class="timeline-list">
+        <div class="tl-card orange" id="tlc-card-1">
+          <div class="tl-date">JAN 1</div>
+          <div class="tl-body">
+            <div class="tl-title">First event title</div>
+            <div class="tl-sub">Subtitle line one</div>
+          </div>
+          <div class="tl-index">1</div>
+        </div>
+        <div class="tl-card purple" id="tlc-card-2">
+          <div class="tl-date">JAN 8</div>
+          <div class="tl-body">
+            <div class="tl-title">Second event title</div>
+            <div class="tl-sub">Subtitle line two</div>
+          </div>
+          <div class="tl-index">2</div>
+        </div>
+        <div class="tl-card blue" id="tlc-card-3">
+          <div class="tl-date">JAN 15</div>
+          <div class="tl-body">
+            <div class="tl-title">Third event title</div>
+            <div class="tl-sub">Subtitle line three</div>
+          </div>
+          <div class="tl-index">3</div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      [data-composition-id="timeline-cards"] {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        background: var(--bg, #0B0F18);
+        color: var(--text, #F5F1EB);
+      }
+      [data-composition-id="timeline-cards"] .phase-content {
+        width: 100%;
+        height: 100%;
+        padding: var(--pad-top, 240px) var(--pad-x, 60px) var(--pad-bottom, 240px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 36px;
+        box-sizing: border-box;
+        text-align: center;
+      }
+      [data-composition-id="timeline-cards"] .overline {
+        font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace);
+        font-weight: 700;
+        font-size: 36px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--text, #F5F1EB);
+      }
+      [data-composition-id="timeline-cards"] .timeline-list {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 940px;
+      }
+      [data-composition-id="timeline-cards"] .tl-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 26px;
+        padding: 22px 28px;
+        border-radius: 20px;
+      }
+      [data-composition-id="timeline-cards"] .tl-card.orange {
+        background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+        border: 2px solid rgba(233,116,88,0.40);
+        box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+      }
+      [data-composition-id="timeline-cards"] .tl-card.purple {
+        background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+        border: 2px solid rgba(167,139,250,0.40);
+        box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+      }
+      [data-composition-id="timeline-cards"] .tl-card.blue {
+        background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+        border: 2px solid rgba(107,154,239,0.40);
+        box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+      }
+      [data-composition-id="timeline-cards"] .tl-card.green {
+        background: linear-gradient(135deg, rgba(125,211,166,0.15), rgba(125,211,166,0.05));
+        border: 2px solid rgba(125,211,166,0.40);
+        box-shadow: 0 10px 30px rgba(125,211,166,0.20);
+      }
+      [data-composition-id="timeline-cards"] .tl-date {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 160px;
+        padding: 14px 18px;
+        border-radius: 14px;
+        font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace);
+        font-weight: 900;
+        font-size: 38px;
+        letter-spacing: 1px;
+        line-height: 1;
+        color: var(--bg, #0B0F18);
+      }
+      [data-composition-id="timeline-cards"] .tl-card.orange .tl-date { background: var(--orange, #E97458); }
+      [data-composition-id="timeline-cards"] .tl-card.purple .tl-date { background: var(--purple, #A78BFA); }
+      [data-composition-id="timeline-cards"] .tl-card.blue   .tl-date { background: var(--blue,   #6B9AEF); }
+      [data-composition-id="timeline-cards"] .tl-card.green  .tl-date { background: var(--green,  #7DD3A6); }
+      [data-composition-id="timeline-cards"] .tl-body {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        text-align: left;
+      }
+      [data-composition-id="timeline-cards"] .tl-title {
+        font-family: var(--sans, 'Inter', system-ui, sans-serif);
+        font-weight: 800;
+        font-size: 40px;
+        line-height: 1.1;
+        color: var(--text, #F5F1EB);
+      }
+      [data-composition-id="timeline-cards"] .tl-sub {
+        font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace);
+        font-weight: 600;
+        font-size: 28px;
+        letter-spacing: 1px;
+      }
+      [data-composition-id="timeline-cards"] .tl-card.orange .tl-sub { color: var(--orange, #E97458); }
+      [data-composition-id="timeline-cards"] .tl-card.purple .tl-sub { color: var(--purple, #A78BFA); }
+      [data-composition-id="timeline-cards"] .tl-card.blue   .tl-sub { color: var(--blue,   #6B9AEF); }
+      [data-composition-id="timeline-cards"] .tl-card.green  .tl-sub { color: var(--green,  #7DD3A6); }
+      [data-composition-id="timeline-cards"] .tl-index {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace);
+        font-weight: 900;
+        font-size: 34px;
+        line-height: 1;
+      }
+      [data-composition-id="timeline-cards"] .tl-card.orange .tl-index { background: rgba(233,116,88,0.20); border: 1.5px solid rgba(233,116,88,0.40); color: var(--orange, #E97458); }
+      [data-composition-id="timeline-cards"] .tl-card.purple .tl-index { background: rgba(167,139,250,0.20); border: 1.5px solid rgba(167,139,250,0.40); color: var(--purple, #A78BFA); }
+      [data-composition-id="timeline-cards"] .tl-card.blue   .tl-index { background: rgba(107,154,239,0.20); border: 1.5px solid rgba(107,154,239,0.40); color: var(--blue,   #6B9AEF); }
+      [data-composition-id="timeline-cards"] .tl-card.green  .tl-index { background: rgba(125,211,166,0.20); border: 1.5px solid rgba(125,211,166,0.40); color: var(--green,  #7DD3A6); }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Block timeline — entrances only.
+      window.__timelines = window.__timelines || {};
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+        tl.from("#tlc-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" },                          0.0);
+        tl.from("#tlc-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" },        0.5);
+        tl.from("#tlc-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" },        0.95);
+        tl.from("#tlc-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" },        1.4);
+        window.__timelines["timeline-cards"] = tl;
+      })();
+    </script>
+
+  </div>
+</template>

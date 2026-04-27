@@ -54,6 +54,10 @@ npx hyperframes render videos/$SLUG -o videos/$SLUG/out/short.mp4
 
 PowerShell equivalent for step 2: `Copy-Item -Recurse templates/shorts/anthropic videos/$SLUG`.
 
+## Lib provenance
+
+This template's CSS and JS originate in [`shared/lib/`](../../../shared/lib/). The provenance comments in `index.html` (e.g. `/* BLOCK: shared/lib/blocks/stat-pill-row/ */`, `// EFFECT: shared/lib/effects/phase-crossfade.js`) point at the canonical source for each piece. New templates should be authored by picking entries from [`shared/lib/MANIFEST.md`](../../../shared/lib/MANIFEST.md) — not by copying this file. The named-style fragment for this aesthetic is at [`shared/lib/visual-styles/anthropic-dark.md`](../../../shared/lib/visual-styles/anthropic-dark.md).
+
 ## Customizing per video
 
 Most styling is driven by CSS variables on `#root`:

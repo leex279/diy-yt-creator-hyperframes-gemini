@@ -1,0 +1,78 @@
+<!--
+  shared/lib/components/top-banner-wordmark/component.html
+  Persistent brand wordmark across all phases. Sits in the top safe
+  zone (60px from top), centered, drop-shadowed so it reads on dark
+  canvases. Fades in at t=0.2s, then static.
+
+  SOURCE: templates/shorts/anthropic/index.html:63-79  (CSS),
+          templates/shorts/anthropic/index.html:393-395 (HTML),
+          templates/shorts/anthropic/index.html:504-505 (entrance).
+
+  ──────────────────────────────────────────────────────────────────────
+  IMPORTANT — LOGO MUST BE A LOCAL COPY
+  ──────────────────────────────────────────────────────────────────────
+  HyperFrames' bundler/preview server REJECTS paths outside the project
+  directory (isSafePath / safePath in @hyperframes/core). A path like
+  "../../shared/logos/<file>" lints clean but 404s at preview and
+  renders blank. Always:
+
+    1. Copy the chosen logo from shared/logos/<file> into
+       videos/<slug>/assets/<file>
+    2. Set src="assets/<file>"
+
+  Production proof: videos/claude-connectors-everyday-life/index.html
+  uses src="assets/anthropic-logo-light.svg" with the file physically
+  present in that video's assets/ folder.
+-->
+
+<!-- 1) HTML — paste at the top of your composition's root <div>.
+        Replace __LOGO_FILE__ with your chosen filename (e.g.
+        anthropic-logo-light.svg, claude-code-logo-light.svg). -->
+
+<div id="top-banner">
+  <img id="top-banner-logo" src="assets/__LOGO_FILE__" alt="__BRAND_NAME__" crossorigin="anonymous" />
+</div>
+
+<!-- 2) CSS — merge into your composition's <style> block. -->
+
+<style>
+  /* shared/lib/components/top-banner-wordmark — keep this comment block */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+</style>
+
+<!-- 3) JS — call from the host root timeline. Fades in once at t=0.2s
+        then stays static for the rest of the composition. -->
+
+<script>
+  function addTopBannerEntrance(tl) {
+    tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+  }
+  // Usage: addTopBannerEntrance(tl);
+</script>
+
+<!--
+  ASSET COPY CHECKLIST (do this BEFORE wiring):
+    cp shared/logos/<chosen-logo>.svg videos/<slug>/assets/<chosen-logo>.svg
+    # On Windows PowerShell:
+    # Copy-Item shared/logos/<chosen-logo>.svg videos/<slug>/assets/<chosen-logo>.svg
+
+  For dark-stage compositions (this banner's design intent), pick a
+  *-light.svg variant from shared/logos/ — they have white/cream marks
+  that contrast on dark. The full shared logo inventory lives in
+  shared/ASSETS.md.
+-->

@@ -65,11 +65,17 @@ diy-yt-creator-hyperframes/
 │       ├── audio/                                ← narration.wav, sfx
 │       ├── assets/                               ← screenshots, logos
 │       └── out/                                  ← rendered MP4 (gitignored)
-└── templates/                                    ← copyable starter projects
-    ├── shorts/
-    │   └── anthropic/                            ← dark-stage Anthropic Shorts (1080x1920)
-    └── long-form/                                ← horizontal templates (1920x1080) — TBD
+├── shared/                                       ← repo-shared assets
+│   ├── logos/                                    ← brand wordmarks (84 files)
+│   └── lib/                                      ← reusable cards, components, effects, palettes — copy-from
+├── templates/                                    ← copyable starter projects
+│   ├── shorts/
+│   │   └── anthropic/                            ← dark-stage Anthropic Shorts (1080x1920)
+│   └── long-form/                                ← horizontal templates (1920x1080) — TBD
+└── scripts/                                      ← repo helpers (sync-shared-* hooks)
 ```
+
+The shared library at `shared/lib/` is **copy-from**, not reference-from. HyperFrames' bundler/preview server rejects paths outside the project directory — see [`shared/lib/README.md`](shared/lib/README.md) for the consumption rules and [`shared/lib/MANIFEST.md`](shared/lib/MANIFEST.md) for the catalog.
 
 ## Adding a new video
 
