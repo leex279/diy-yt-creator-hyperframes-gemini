@@ -519,8 +519,11 @@ That skill (per its updated step 4 Branch A) will:
   - Lint, inspect, preview
 
 Why we pause here: composition build is creative work (logo selection, accent
-rotation, phase timing, SFX placement) that benefits from human-in-the-loop
-judgment. Auto-building would produce a generic output.
+rotation, phase timing) that benefits from human-in-the-loop judgment.
+Auto-building would produce a generic output. SFX wiring **is** automated —
+new-anthropic-short reads retention-strategy.md sfx_cues, runs
+sync-video-sfx.sh, and inserts the <audio> elements per
+.claude/rules/audio-design.md.
 ═══════════════════════════════════════════════════════════════
 ```
 

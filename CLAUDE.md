@@ -68,6 +68,7 @@ diy-yt-creator-hyperframes/
 │       └── out/                                  ← rendered MP4 (gitignored)
 ├── shared/                                       ← repo-shared assets
 │   ├── logos/                                    ← brand wordmarks (84 files)
+│   ├── audio/                                    ← shared SFX library — copy-from
 │   └── lib/                                      ← reusable cards, components, effects, palettes — copy-from
 ├── templates/                                    ← copyable starter projects
 │   ├── shorts/

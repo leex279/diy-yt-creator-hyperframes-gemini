@@ -335,19 +335,35 @@ Define each visual beat with timing in seconds, GSAP ease, and SFX:
 
 Full ease + stagger guidance: `.agents/skills/gsap/SKILL.md` and `.agents/skills/gsap/references/effects.md`.
 
-### 5C: SFX placement (descriptive, not by named constant)
+### 5C: SFX placement (cue names that resolve to library files)
 
-Describe SFX intent and let the composition build phase pick a file:
+Pick cue names from `shared/audio/MANIFEST.md` — every name MUST resolve to a real file in `shared/audio/sfx/<cue>.mp3`. Volume caps and the per-cue defaults are canonical in [`.claude/rules/audio-design.md`](../../rules/audio-design.md). Each SFX renders as a separate `<audio>` element on its own `data-track-index` so simultaneous cues don't clash (per `templates/shorts/anthropic/README.md` "Adding SFX").
 
-| Beat                  | SFX intent                                                            | Volume cap (per template DESIGN.md) |
-| --------------------- | --------------------------------------------------------------------- | ----------------------------------- |
-| Cold open             | none                                                                  | —                                   |
-| Context entrance      | single impact-slam                                                    | ≤ 0.25                              |
-| PIVOT moment          | LAYERED: impact-slam + screen-shake + glitch-zap (each on own track)  | each ≤ 0.25                         |
-| Brand reveal          | scale-slam                                                            | ≤ 0.25                              |
-| Feature card entrance | spring-pop, repeat per card                                           | ≤ 0.20                              |
+| Beat                  | Cue(s) from MANIFEST                                                | Default `data-volume` |
+| --------------------- | ------------------------------------------------------------------- | --------------------- |
+| Cold open             | none (or `sonic-logo` once, optional)                                | sonic-logo: 0.60      |
+| Context entrance      | `impact-slam`                                                        | 0.20                  |
+| PIVOT moment          | LAYERED: `impact-slam` + `screen-shake` + `glitch-zap` (own tracks)  | 0.20 / 0.15 / 0.12    |
+| Brand reveal          | `scale-slam`                                                         | 0.20                  |
+| Feature card entrance | `spring-pop`, repeat per card                                        | 0.15                  |
+| Strikethrough beat    | `strike-cross`                                                       | 0.15                  |
+| Phase / scene change  | `cinematic-whoosh`                                                   | 0.15                  |
 
-Each SFX is a separate `<audio>` element on its own `data-track-index` so simultaneous cues don't clash (per `templates/shorts/anthropic/README.md` "Adding SFX").
+Output a structured `sfx_cues:` block alongside the visual beats — Phase 3.5 consumes this directly to map cue names to seconds, track indices, and volumes:
+
+```yaml
+sfx_cues:                          # consumable by phase3-5-retention.md
+  - beat: "Context entrance"
+    cues: [impact-slam]            # MUST come from shared/audio/MANIFEST.md
+  - beat: "PIVOT"
+    cues: [impact-slam, screen-shake, glitch-zap]
+  - beat: "Brand reveal"
+    cues: [scale-slam]
+  - beat: "Feature card entrance"
+    cues: [spring-pop]
+```
+
+**Hard rule:** every cue name MUST appear in `shared/audio/MANIFEST.md`. If a needed cue is missing, STOP and propose an addition to the library (new row in MANIFEST + new entry in `scripts/generate-sfx-library.py`) — do **not** invent a filename. The sync hook will fail fast with a helpful message listing the actual library contents.
 
 ### 5D: Music profile
 

@@ -84,18 +84,21 @@ Defines: `--bg`, `--card`, `--text`, `--text-dim`, `--orange`, `--purple`, `--bl
 
 ## Audio / SFX
 
-Narration is one stem per scene (or one continuous stem with `data-media-start` offsets). SFX layer as separate `<audio>` elements at low volume. Hard cap **0.25** per single SFX (excluding sonic-logo at 0.50).
+Canonical rules: [`.claude/rules/audio-design.md`](../../../.claude/rules/audio-design.md). Cue files live in [`shared/audio/sfx/`](../../audio/) (sync into a video via [`scripts/sync-video-sfx.sh`](../../../scripts/sync-video-sfx.sh)).
 
-| Cue                | Use on                          | Volume      |
-| ------------------ | ------------------------------- | ----------- |
-| `impact-slam`      | Hero word reveal                | 0.18-0.20   |
-| `scale-slam`       | Stat-pill entrance              | 0.18-0.20   |
-| `screen-shake`     | Hero word inline shake          | 0.13-0.15   |
-| `cinematic-whoosh` | Phase / scene change            | 0.15        |
-| `spring-pop`       | Card or chip entrance           | 0.13-0.15   |
-| `pop`              | Small chip / list item          | 0.12-0.13   |
-| `glitch-zap`       | "BUT…" pivot, regression callout | 0.12       |
-| `sonic-logo`       | Frame 0 only                    | 0.50        |
+Narration is one stem per scene (or one continuous stem with `data-media-start` offsets). SFX layer as separate `<audio>` elements at low volume. Hard cap **0.25** per single per-cue SFX (sonic-logo at 0.60 is the only documented exception).
+
+| Cue                | Use on                          | Default `data-volume` |
+| ------------------ | ------------------------------- | --------------------- |
+| `impact-slam`      | Hero word reveal                | 0.20                  |
+| `scale-slam`       | Stat-pill entrance              | 0.20                  |
+| `screen-shake`     | Hero word inline shake          | 0.15                  |
+| `cinematic-whoosh` | Phase / scene change            | 0.15                  |
+| `spring-pop`       | Card or chip entrance           | 0.15                  |
+| `pop`              | Small chip / list item          | 0.13                  |
+| `glitch-zap`       | "BUT…" pivot, regression callout | 0.12                 |
+| `strike-cross`     | Strikethrough moment            | 0.15                  |
+| `sonic-logo`       | Composition start (optional)    | 0.60                  |
 
 **No background music on Shorts.** Narration + SFX only.
 

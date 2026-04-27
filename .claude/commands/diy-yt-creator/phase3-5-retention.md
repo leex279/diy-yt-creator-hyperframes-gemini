@@ -84,6 +84,8 @@ Task tool:
       8. .agents/skills/hyperframes/references/captions.md
       9. .agents/skills/hyperframes/references/transitions.md
       10. .agents/skills/gsap/references/effects.md (for GSAP effect names)
+      11. .claude/rules/audio-design.md              (SFX volume caps, alignment rule, track-index assignment)
+      12. shared/audio/MANIFEST.md                   (canonical SFX cue catalog)
 
     Filter the transcript: drop entries that are music tokens (♪, �) or single-syllable filler
     (huh/uh/um/ah/oh) shorter than 0.1s. Trust the cleaned word array.
@@ -121,6 +123,28 @@ Task tool:
          - One primary transition (60-70% of scene changes) + 1-2 accents — never different per scene
          - No exit animations on non-final scenes
 
+    7. Resolve SFX cues (replaces the freeform "SFX intent" prose from plan.md):
+       Read plan.md's `cinematic_hook_blueprint.sfx_cues:` block (Phase 1 Step 5C). Each
+       entry maps a beat to one or more cue names from `shared/audio/MANIFEST.md`. For
+       each cue, anchor it to a transcript word and emit a concrete `sfx_cues` block
+       per scene:
+         - cue: name from `shared/audio/MANIFEST.md` (verify it appears there)
+         - anchor_word_index: index into transcript.json[] — the spoken word the SFX
+           is keyed to
+         - offset_seconds: shift relative to the anchor (default 0; allow up to -0.10
+           lead-in for percussive cues with attack-onset)
+         - duration_seconds: copy from `shared/audio/MANIFEST.md` "Duration" column
+         - track_index: 3 for the first SFX in the scene's concurrent group; 4, 5...
+           for additional concurrent cues. Sequential SFX may reuse a track index
+           when they don't overlap in time.
+         - volume: copy from `shared/audio/MANIFEST.md` "Default Volume" column unless
+           explicitly overridden. Must be ≤ 0.25 (sonic-logo at 0.60 is the only
+           documented exception).
+       Compute and write `data-start = transcript.json[anchor_word_index].start + offset_seconds`.
+       Verify `data-start ≥ scene.data_start` and `data-start + duration_seconds ≤ scene.data_start + scene.data_duration`.
+       Verify track_index uniqueness for any cues whose [start, start+duration) overlap.
+       See `.claude/rules/audio-design.md` for the alignment audit rule (drift > 0.15s is a bug).
+
     Write the strategy to `videos/<slug>/retention-strategy.md` with this structure:
 
     # Retention Strategy: <slug>
@@ -141,6 +165,16 @@ Task tool:
       1. `marker-highlight` on "fifteen" — trigger_s: 2.1, sweep_duration: 0.5s
       2. `caption-word-pop` on the whole scene — synced to transcript.json word timings
       3. `blur-crossfade` to Scene 02 — trigger_s: 7.5, duration: 0.5s
+    **SFX cues** (per `.claude/rules/audio-design.md`; cues from `shared/audio/MANIFEST.md`):
+    ```yaml
+    sfx_cues:
+      - cue: impact-slam            # name from shared/audio/MANIFEST.md
+        anchor_word_index: 12       # transcript.json[12].start = 2.1
+        offset_seconds: -0.05       # SFX leads the spoken word by 0.05s
+        duration_seconds: 0.63      # from MANIFEST.md
+        track_index: 3              # unique per concurrent SFX (3, 4, 5...)
+        volume: 0.20                # MANIFEST default; must be ≤ 0.25
+    ```
     **Why these picks**: <one-paragraph justification grounded in the script content>
 
     ### Scene 02: ...

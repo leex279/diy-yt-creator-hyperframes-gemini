@@ -217,12 +217,33 @@ Edit in this exact order (one Edit per change):
 
 ```html
   <audio id="narration"
+         class="clip"
          src="audio/narration.wav"
          data-start="0"
          data-duration="<phase4_end>"
          data-track-index="2"
          data-volume="1"></audio>
 ```
+
+14. **Wire SFX from `retention-strategy.md`** (skip if the file has no `sfx_cues` blocks):
+    1. Read every `sfx_cues:` YAML block under each scene's "**SFX cues**" heading in `videos/<slug>/retention-strategy.md`.
+    2. Build a deduplicated cue list: `cues = unique(all sfx_cues[].cue)`.
+    3. Run: `bash scripts/sync-video-sfx.sh videos/<slug> ${cues[@]}` — copies each cue's `.mp3` from `shared/audio/sfx/` into `videos/<slug>/assets/sfx/`. The script errors if any cue is not in the library; resolve before continuing.
+    4. For every `sfx_cues` entry across all scenes, insert an `<audio>` element below the `<audio id="narration">` block, in source order:
+
+       ```html
+         <audio id="sfx-<cue>-<scene-index>"
+                class="clip"
+                src="assets/sfx/<cue>.mp3"
+                data-start="<computed_start>"
+                data-duration="<duration_seconds>"
+                data-track-index="<track_index>"
+                data-volume="<volume>"></audio>
+       ```
+
+       Use `<computed_start> = transcript[anchor_word_index].start + offset_seconds` (rounded to 0.01s).
+    5. Verify every `data-volume` is ≤ `0.25` (per [`.claude/rules/audio-design.md`](../../rules/audio-design.md)). The single allowed exception is `sfx-sonic-logo` at `0.6`.
+    6. Verify track-index uniqueness for any concurrent cues (overlapping `[start, start+duration)` windows on the same `data-track-index` will trip lint).
 
 ### 8.5. Lib pick (optional but recommended)
 
@@ -250,8 +271,10 @@ Must report `0 errors`. Fix any errors before continuing:
 
 | Error | Likely cause | Fix |
 |---|---|---|
-| `audio_src_not_found` | `narration.wav` missing or path wrong | Check `videos/<slug>/audio/narration.wav` exists; case-sensitive paths |
+| `audio_src_not_found` (narration) | `narration.wav` missing or path wrong | Check `videos/<slug>/audio/narration.wav` exists; case-sensitive paths |
+| `audio_src_not_found` (sfx) | Cue `.mp3` missing from `assets/sfx/` | Run `bash scripts/sync-video-sfx.sh videos/<slug> <missing-cue>` |
 | `overlapping_gsap_tweens` | Two tweens hit the same prop at the same time | Add `overwrite: "auto"` to the later tween, or shift its start |
+| `overlapping_gsap_tweens` (sfx) | Two SFX on same `data-track-index` overlap in time | Bump second SFX to next track index (3 → 4 → 5) |
 | `duplicate_media_discovery_risk` | Stray `<img src=...>` text in an HTML comment | Rephrase the comment |
 | `missing_track_index` | Element has timing attrs but no `data-track-index` | Add it (use 2 for narration, 3+ for SFX) |
 

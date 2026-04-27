@@ -109,20 +109,23 @@ PHASE_PAD_BOTTOM = 240px   (clears the progress bar + reading room)
 
 ## Audio / SFX Cues
 
-Narration is one stem per scene (or one continuous stem with `data-media-start` offsets). SFX are layered as separate `<audio>` elements at low volume, keyed to spoken-word frames.
+Canonical rules: [`.claude/rules/audio-design.md`](../../../.claude/rules/audio-design.md). Cue files live in [`shared/audio/sfx/`](../../../shared/audio/) (sync into a video via [`scripts/sync-video-sfx.sh`](../../../scripts/sync-video-sfx.sh)).
 
-| Cue | Use on | Suggested volume |
+Narration is one stem per scene (or one continuous stem with `data-media-start` offsets). SFX are layered as separate `<audio>` elements at low volume, keyed to spoken-word seconds.
+
+| Cue | Use on | Default `data-volume` |
 |---|---|---|
-| `impact-slam` | Hero word reveal | 0.18-0.20 |
-| `scale-slam` | Stat-pill entrance | 0.18-0.20 |
-| `screen-shake` | Hero word inline shake | 0.13-0.15 |
+| `impact-slam` | Hero word reveal | 0.20 |
+| `scale-slam` | Stat-pill entrance | 0.20 |
+| `screen-shake` | Hero word inline shake | 0.15 |
 | `cinematic-whoosh` | Phase / scene change | 0.15 |
-| `spring-pop` | Card or chip entrance | 0.13-0.15 |
-| `pop` | Small chip / list item | 0.12-0.13 |
+| `spring-pop` | Card or chip entrance | 0.15 |
+| `pop` | Small chip / list item | 0.13 |
 | `glitch-zap` | "BUT…" pivot, regression callout | 0.12 |
-| `sonic-logo` | Frame 0 only | 0.50 |
+| `strike-cross` | Strikethrough moment | 0.15 |
+| `sonic-logo` | Composition start (optional) | 0.60 |
 
-Hard cap: **never** exceed 0.25 on a single SFX bed (excluding sonic-logo). Stack 2-3 quiet ones rather than one loud one.
+Hard cap: **never** exceed `0.25` on a single per-cue SFX (sonic-logo at `0.60` is the only documented exception). Stack 2-3 quiet ones rather than one loud one.
 
 ## What NOT to Do
 

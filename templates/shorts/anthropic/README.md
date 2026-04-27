@@ -104,11 +104,12 @@ Use `*-light.svg` or `*-light.png` variants on this dark-stage template — `*-d
 
 ## Adding SFX
 
-Each SFX is a separate `<audio>` element on its own track index, gated by `data-start` / `data-duration`. Volume is capped per `DESIGN.md` — never exceed `0.25` on a single SFX bed.
+Each SFX is a separate `<audio>` element on its own track index, gated by `data-start` / `data-duration`. Volume is capped per [`.claude/rules/audio-design.md`](../../../.claude/rules/audio-design.md) — never exceed `0.25` on a single per-cue SFX (sonic-logo at `0.60` is the only exception).
 
 ```html
 <audio id="sfx-slam"
-       src="assets/sfx/scale-slam.wav"
+       class="clip"
+       src="assets/sfx/scale-slam.mp3"
        data-start="1.55"
        data-duration="0.9"
        data-track-index="3"
@@ -116,6 +117,16 @@ Each SFX is a separate `<audio>` element on its own track index, gated by `data-
 ```
 
 Place under the `<audio id="narration">` block. Use distinct `data-track-index` values so simultaneous cues don't clash.
+
+### Sourcing the actual SFX files
+
+The cues above are names — the audio files live in [`shared/audio/sfx/`](../../../shared/audio/). To copy them into your video's `assets/sfx/` (required because HyperFrames rejects paths outside the project dir at runtime), run:
+
+```bash
+bash scripts/sync-video-sfx.sh videos/<slug> impact-slam scale-slam spring-pop
+```
+
+Or list the cues you want in `videos/<slug>/sfx-cues.txt` (one per line) and run without arguments. Volume caps and the full per-cue table are in [`.claude/rules/audio-design.md`](../../../.claude/rules/audio-design.md); the cue catalog with default volumes lives in [`shared/audio/MANIFEST.md`](../../../shared/audio/MANIFEST.md).
 
 ## Don'ts
 

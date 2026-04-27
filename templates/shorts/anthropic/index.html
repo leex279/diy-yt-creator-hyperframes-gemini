@@ -516,11 +516,54 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════
-       NARRATION + SFX go here.
-       See README.md "Adding narration" / "Adding SFX" for the
-       <audio> element template. Wire them in once you have
-       files at audio/narration.wav and assets/sfx/*.
+       NARRATION + SFX
+       Rules:        .claude/rules/audio-design.md
+       Cue catalog:  shared/audio/MANIFEST.md
+       Sync into this project (after you copy this template):
+         bash scripts/sync-video-sfx.sh videos/<slug> impact-slam spring-pop
+       Then uncomment the blocks below and tune the data-* values per scene.
        ═══════════════════════════════════════════════════════ -->
+
+  <!--
+  Narration — single track, replaces this comment in real videos.
+
+    audio id="narration"
+           class="clip"
+           src="audio/narration.wav"
+           data-start="0"
+           data-duration="0"
+           data-track-index="2"
+           data-volume="1"
+
+  Optional sonic-logo at composition start (sync first: sync-video-sfx.sh ... sonic-logo).
+
+    audio id="sonic-logo"
+           class="clip"
+           src="assets/sfx/sonic-logo.mp3"
+           data-start="0"
+           data-duration="1.5"
+           data-track-index="3"
+           data-volume="0.6"
+
+  Per-cue SFX — one element per beat. data-track-index 3+ for SFX; bump per
+  concurrent cue. data-volume per .claude/rules/audio-design.md (≤ 0.25).
+
+    audio id="sfx-impact"
+           class="clip"
+           src="assets/sfx/impact-slam.mp3"
+           data-start="1.55"
+           data-duration="0.6"
+           data-track-index="3"
+           data-volume="0.20"
+
+    audio id="sfx-whoosh"
+           class="clip"
+           src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="3.20"
+           data-duration="0.8"
+           data-track-index="4"
+           data-volume="0.15"
+  -->
 
   <!-- Film-grain overlay — last child so it sits on top and tints everything via blend mode -->
   <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
