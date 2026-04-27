@@ -161,7 +161,7 @@ Edit in this exact order (one Edit per change):
 
 1. **`<title>`** in `<head>` → the video title
 2. **`<div id="root">`** `data-duration` → `total_duration` (rounded to 0.1s)
-3. **`#top-banner-text`** content → leave "CLAUDE" if Anthropic-related, else replace with the brand wordmark text
+3. **`#top-banner-logo`** `src` → **always reference `assets/<file>` (a copy inside the project)**, never `../../shared/logos/<file>`. The studio's preview server can only serve files inside the project directory, so external paths render as a broken 21px placeholder even though `hyperframes render` handles them. Copy the logo first: `cp shared/logos/anthropic-logo-light.svg videos/<slug>/assets/`, then set `src="assets/anthropic-logo-light.svg"`. For other brands, copy the relevant file from `shared/logos/` into the project's `assets/` (see "Real logos" below). NEVER use a styled text div when a real logo exists in `shared/logos/`.
 4. **Phase 1**: `#p1-overline`, `#p1-pre`, `#p1-hero` (the slam word), `#p1-caption`
 5. **Phase 2**: `#p2-overline`, `#p2-headline`, both `.stat-pill` blocks (`.stat-num` and `.stat-label`)
 6. **Phase 3**: `#p3-overline`, all three `.tl-card` blocks (`.tl-date`, `.tl-title`, `.tl-sub`). Rotate accent classes (`orange` → `purple` → `blue`) so no two adjacent cards share an accent. If the user's data needs `green`, swap that in — but only one accent per card.
@@ -251,10 +251,45 @@ If any item fails, fix it before reporting. Don't claim success on a half-built 
 
 ---
 
+## Real logos — always use them when they exist
+
+The repo ships a shared logo library at `shared/logos/` (84 PNG/SVG brand wordmarks and icons — Anthropic, Claude, Claude Code, OpenAI, GitHub, Canva, Asana, Slack, Discord, AWS, Cloudflare, Stripe, Vercel, and many more). **Never use styled text or pseudo-logos when a real one exists.**
+
+**Important: copy logos into the project's `assets/`, do NOT reference `shared/logos/` directly.** The studio's preview server only serves files inside the project directory; an `../../shared/logos/...` path 404s in the studio (it'll work in `hyperframes render` but the preview shows a broken 21px placeholder, which silently fails lint).
+
+**Workflow:**
+
+```bash
+# Copy each logo you need into the project's assets folder
+cp shared/logos/anthropic-logo-light.svg videos/<slug>/assets/
+cp shared/logos/canva-logo.png            videos/<slug>/assets/   # if used in phase 3, etc.
+```
+
+**Common picks** (`src` value after copying):
+
+| Where | Anthropic-style video | Other brands |
+|---|---|---|
+| Top banner (`#top-banner-logo` `src`) | `assets/anthropic-logo-light.svg` | Match the video's host brand (e.g. `assets/claude-logo-light.svg`, `assets/claude-code-logo-light.svg`) |
+| Per-app step in phase 3 (if applicable) | `assets/<app>-logo.png` (e.g. `assets/canva-logo.png`, `assets/asana-logo.png`, `assets/slack-logo.svg`) | Same |
+
+**Workflow inside step 8:**
+
+1. Before editing phase 3 timeline cards, check `shared/logos/` for each named app/brand: `ls shared/logos | grep -i <app>`.
+2. If a logo exists, **copy it into the project's `assets/`** and render it as `<img src="assets/<file>" alt="<App>">` inside the card's `.tl-app` slot (or replace the entire app text with the logo). Style with `height: 36-44px; width: auto; vertical-align: middle`.
+3. If a logo does NOT exist, do NOT fabricate one. Either:
+   - Ask the user for the logo file (preferred), OR
+   - Fall back to the styled mono-text app name (current default in the template), OR
+   - Pick a different app already in `shared/logos/` IF the script-content allows substitution without losing factual accuracy.
+
+**Light vs dark variants**: this template is dark-stage (`--bg: #0B0F18`). Always pick the `*-light.svg` or `*-light.png` variant when available — it has white/cream marks that contrast on dark. Avoid `*-dark` variants on this template (they'll be near-invisible).
+
+**Never commit a video that ships with the placeholder text logo (`CLAUDE` styled div) when a real logo exists.** Lint will not catch this — it's a content rule.
+
 ## Don'ts
 
 - Never auto-render — user explicitly always triggers render manually.
 - Never fabricate stats, dates, URLs, or quotes. Ask for source if missing.
+- Never use a styled-text pseudo-logo when a real one exists in `shared/logos/`. See "Real logos" above.
 - Never modify `templates/shorts/anthropic/` — only the copy under `videos/<slug>/`.
 - Never use `Math.random()` / `Date.now()` in the generated composition (HyperFrames is deterministic).
 - Never write `<br>` in content text — use `max-width` for natural wrapping (HyperFrames `/hyperframes` skill rule).

@@ -71,6 +71,18 @@ Most styling is driven by CSS variables on `#root`:
 
 Per-phase accent rotation: change a stat-pill's class from `.orange` to `.purple` or a timeline card from `.blue` to `.green`. The card-color CSS rules cover all four accents already.
 
+## Logos — always use real ones
+
+The repo ships a shared logo library at `shared/logos/` (84 brand wordmarks and icons — see `shared/README.md`). The template's top banner already points at `../../../shared/logos/anthropic-logo-light.svg` (Anthropic wordmark on dark canvas). When you copy this template into a video, the path becomes `../../shared/logos/anthropic-logo-light.svg` (one less `../` because the video lives one level shallower than the template).
+
+For other brands, swap the `src`:
+
+```html
+<img id="top-banner-logo" src="../../shared/logos/claude-code-logo-light.svg" alt="Claude Code" />
+```
+
+Use `*-light.svg` or `*-light.png` variants on this dark-stage template — `*-dark` variants will be near-invisible. Run `ls shared/logos | grep -i <brand>` to find a logo. **Never** swap the img back to a styled text div when a real logo exists.
+
 ## Adding more phases
 
 1. Duplicate one of the four `<div class="phase">` blocks. Give it a new id (`#phase5`), add `z-index: 5; opacity: 0;`.

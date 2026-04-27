@@ -7,11 +7,13 @@ A multi-video [HyperFrames](https://hyperframes.heygen.com) workspace. Each vide
 ```
 .
 ├── videos/                                 # one self-contained HyperFrames project per video
-│   └── claude-connectors-everyday-life/    # the first video (60s short, light cream / Fraunces)
+│   └── claude-connectors-everyday-life/    # the first video (60s anthropic dark-stage short)
 ├── templates/                              # copyable starter projects
 │   ├── shorts/
 │   │   └── anthropic/                      # 1080x1920 dark-stage (Inter + JetBrains Mono)
 │   └── long-form/                          # 1920x1080 — no templates yet
+├── shared/                                 # repo-level assets shared across all videos
+│   └── logos/                              # 84 brand wordmarks (Anthropic, Claude, OpenAI, …)
 ├── CLAUDE.md                               # AI agent guidance (skills, commands, structure)
 ├── AGENTS.md                               # general agent setup notes
 └── skills-lock.json                        # HyperFrames skill versions

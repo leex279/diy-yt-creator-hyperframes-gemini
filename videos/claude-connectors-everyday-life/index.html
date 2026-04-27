@@ -6,34 +6,98 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
   /* ──────────────────────────────────────────────────
-     CANVAS — warm cream paper, 1080x1920 vertical
+     CANVAS — 1080x1920 dark stage. Anthropic shorts
+     template. See DESIGN.md for the full system.
      ────────────────────────────────────────────────── */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     width: 1080px;
     height: 1920px;
     overflow: hidden;
-    background: #F5F1EB;
-    font-family: 'Hanken Grotesk', system-ui, sans-serif;
-    color: #181816;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Ambient warm radial — subtle paper glow, slow breath */
+  /* ──────────────────────────────────────────────────
+     ROOT TOKENS
+     ────────────────────────────────────────────────── */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Ambient orange + purple wash — slow breath */
   #ambient {
     position: absolute;
     inset: -200px;
-    background: radial-gradient(circle at 30% 25%, rgba(204,120,92,0.10), rgba(204,120,92,0) 60%),
-                radial-gradient(circle at 75% 80%, rgba(204,120,92,0.06), rgba(204,120,92,0) 55%);
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
     pointer-events: none;
     z-index: 0;
   }
 
   /* ──────────────────────────────────────────────────
-     SCENES — full-bleed, layered. Scene 1 visible
-     by default; scenes 2-4 start at opacity 0.
+     TOP CHROME — persistent banner across all phases.
+     Swap the inner div for a logo image when ready.
      ────────────────────────────────────────────────── */
-  .scene {
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;       /* explicit canvas width so margin:auto centers reliably */
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;        /* 90% canvas — 5% padding each side; renders ~972x112 */
+    height: auto;
+    display: block;
+    margin: 0 auto;      /* horizontal center inside the 1080px banner */
+  }
+
+  /* Slim progress bar */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — full-bleed, layered. Phase 1 visible by
+     default; phases 2-4 start at opacity 0.
+     ────────────────────────────────────────────────── */
+  .phase {
     position: absolute;
     top: 0;
     left: 0;
@@ -41,331 +105,299 @@
     height: 1920px;
     overflow: hidden;
   }
-  #scene1 { z-index: 1; opacity: 1; }
-  #scene2 { z-index: 2; opacity: 0; }
-  #scene3 { z-index: 3; opacity: 0; }
-  #scene4 { z-index: 4; opacity: 0; }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
 
-  .scene-content {
+  .phase-content {
     width: 100%;
     height: 100%;
-    padding: 200px 80px 320px;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
     display: flex;
     flex-direction: column;
-    justify-content: center;
     box-sizing: border-box;
   }
 
-  /* Shared label style — uppercase tracked, ink subdued */
-  .label {
-    font-family: 'Hanken Grotesk', sans-serif;
+  .overline {
+    font-family: var(--mono);
     font-weight: 700;
     font-size: 36px;
-    letter-spacing: 0.18em;
+    letter-spacing: 6px;
     text-transform: uppercase;
-    color: #5A554F;
   }
 
   /* ──────────────────────────────────────────────────
-     SCENE 1 — Hook
+     PHASE 1 — HERO SLAM ("15 NEW CONNECTORS")
      ────────────────────────────────────────────────── */
-  #scene1 .scene-content { gap: 32px; }
-  #s1-hero {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-size: 360px;
-    line-height: 0.9;
-    letter-spacing: -0.04em;
-    color: #181816;
-    font-variant-numeric: lining-nums tabular-nums;
-  }
-  #s1-heading {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 400;
-    font-style: italic;
-    font-size: 92px;
-    line-height: 1.0;
-    letter-spacing: -0.02em;
-    color: #181816;
-    margin-top: -8px;
-  }
-  #s1-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px 14px;
-    margin-top: 28px;
-  }
-  .s1-chip {
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-weight: 500;
-    font-size: 38px;
-    color: #181816;
-    background: #EAE3D8;
-    border-radius: 999px;
-    padding: 16px 30px;
-    border: 1.5px solid rgba(24,24,22,0.06);
-  }
-  #s1-payoff {
-    font-family: 'Fraunces', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 56px;
-    line-height: 1.15;
-    color: #5A554F;
-    margin-top: 56px;
-    letter-spacing: -0.01em;
-  }
-  #s1-payoff .accent { color: #A85843; font-style: normal; font-weight: 600; }
-
-  /* ──────────────────────────────────────────────────
-     SCENE 2 — Chat / hike example
-     ────────────────────────────────────────────────── */
-  #scene2 .scene-content { gap: 36px; padding: 220px 60px 320px; }
-  #s2-label { margin-bottom: 8px; }
-  #s2-heading {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-style: italic;
-    font-size: 76px;
-    line-height: 1.0;
-    color: #181816;
-    margin-bottom: 36px;
-    letter-spacing: -0.02em;
-  }
-  .chat-card {
-    background: #EAE3D8;
-    border-radius: 32px;
-    padding: 36px 32px;
-    box-shadow: 0 12px 48px rgba(24,24,22,0.07), 0 1px 2px rgba(24,24,22,0.04);
-    border: 1px solid rgba(24,24,22,0.04);
-  }
-  .chat-msg {
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 42px;
-    line-height: 1.3;
-    padding: 28px 36px;
-    border-radius: 24px;
-    max-width: 880px;
-  }
-  .chat-msg.claude { max-width: 100%; }
-  .chat-msg.user {
-    background: #FFF8F0;
-    color: #181816;
-    margin-left: auto;
-    margin-bottom: 28px;
-    border: 1px solid rgba(24,24,22,0.06);
-  }
-  .chat-msg.claude {
-    background: transparent;
-    color: #181816;
-    padding: 0;
-    margin-bottom: 24px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: visible;
-  }
-  .chat-msg.claude .said {
-    padding: 28px 36px;
-    background: rgba(204,120,92,0.06);
-    border-radius: 24px;
-    border-left: 3px solid #CC785C;
-    box-sizing: border-box;
-  }
-  .alltrails-card {
-    margin-top: 24px;
-    background: #FFF8F0;
-    border-radius: 20px;
-    padding: 24px 28px;
-    border: 1px solid rgba(24,24,22,0.08);
-  }
-  .at-header {
-    display: flex;
+  #phase1 .phase-content {
     align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-  .at-logo {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #4A6B3F 0%, #2E4727 100%);
-    display: flex; align-items: center; justify-content: center;
-    color: #F5F1EB;
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    letter-spacing: -0.02em;
-  }
-  .at-source {
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 26px;
-    font-weight: 600;
-    color: #5A554F;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .at-trail {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-size: 44px;
-    color: #181816;
-    line-height: 1.1;
-    margin-bottom: 10px;
-    letter-spacing: -0.015em;
-  }
-  .at-meta {
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 28px;
-    color: #5A554F;
-    font-weight: 400;
-  }
-  .at-meta .dot { margin: 0 14px; opacity: 0.5; }
-  #s2-callout {
-    font-family: 'Fraunces', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 64px;
-    color: #181816;
-    margin-top: 48px;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-  }
-  #s2-callout .accent { color: #A85843; font-style: normal; font-weight: 600; }
-
-  /* ──────────────────────────────────────────────────
-     SCENE 3 — Power user chain
-     ────────────────────────────────────────────────── */
-  #scene3 .scene-content { gap: 32px; padding: 200px 80px 320px; }
-  #s3-heading {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-size: 156px;
-    line-height: 0.95;
-    letter-spacing: -0.035em;
-    color: #181816;
-    margin: 8px 0 28px;
-  }
-  #s3-heading .em { font-style: italic; color: #A85843; }
-  .step {
-    display: grid;
-    grid-template-columns: 88px 1fr;
+    justify-content: flex-start;
+    text-align: center;
     gap: 28px;
-    align-items: baseline;
-    padding: 24px 0;
-    border-top: 1px solid rgba(24,24,22,0.10);
   }
-  .step:last-child { border-bottom: 1px solid rgba(24,24,22,0.10); }
-  .step-num {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 400;
-    font-size: 56px;
-    color: #5A554F;
-    font-variant-numeric: lining-nums tabular-nums;
-    letter-spacing: -0.02em;
-  }
-  .step-body {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .step-app {
-    font-family: 'Hanken Grotesk', sans-serif;
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
     font-weight: 700;
-    font-size: 38px;
-    color: #5A554F;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .step-action {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 500;
-    font-size: 56px;
-    color: #181816;
+    font-size: 72px;
     line-height: 1.05;
-    letter-spacing: -0.015em;
-  }
-  #s3-tally {
-    margin-top: 36px;
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-style: italic;
-    font-size: 60px;
-    line-height: 1.1;
-    color: #181816;
-    letter-spacing: -0.02em;
-  }
-  #s3-tally .strong { color: #A85843; font-style: normal; }
-  #s3-fineprint {
-    margin-top: 22px;
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 32px;
-    color: #5A554F;
-    font-weight: 400;
-    line-height: 1.3;
-  }
-
-  /* ──────────────────────────────────────────────────
-     SCENE 4 — CTA / closing
-     ────────────────────────────────────────────────── */
-  #scene4 .scene-content { gap: 48px; padding: 240px 80px 320px; justify-content: center; }
-  #s4-quote-mark {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-size: 220px;
-    line-height: 0.6;
-    color: #A85843;
-    height: 90px;
-  }
-  #s4-quote {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    font-size: 138px;
-    line-height: 1.0;
-    letter-spacing: -0.035em;
-    color: #181816;
+    color: var(--text);
     max-width: 920px;
   }
-  #s4-quote .em { font-style: italic; color: #A85843; }
-  #s4-attribution {
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-weight: 500;
-    font-size: 38px;
-    color: #5A554F;
-    letter-spacing: 0.04em;
-    margin-top: 16px;
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 360px;
+    line-height: 0.9;
+    letter-spacing: -8px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    font-variant-numeric: lining-nums tabular-nums;
   }
-  #s4-cta {
-    margin-top: 80px;
+  #p1-sub {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 84px;
+    line-height: 1.0;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-top: -8px;
+  }
+  #p1-caption {
+    margin-top: 28px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — STAT PILL ROW (15 new / 200+ directory)
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+  }
+  .stat-pill {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    width: 460px;
+    min-height: 300px;
+    padding: 44px 24px;
+    border-radius: 24px;
   }
-  #s4-cta-pre {
-    font-family: 'Hanken Grotesk', sans-serif;
+  .stat-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 180px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .stat-pill.orange .stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.40); }
+  .stat-pill.purple .stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .stat-label {
+    margin-top: 10px;
+    font-family: var(--mono);
     font-weight: 700;
-    font-size: 36px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #5A554F;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
   }
-  #s4-cta-pill {
-    font-family: 'Hanken Grotesk', sans-serif;
+  #p2-callout {
+    margin-top: 20px;
+    font-family: var(--sans);
     font-weight: 600;
+    font-style: italic;
     font-size: 44px;
-    color: #181816;
-    background: transparent;
-    padding: 22px 36px 22px 0;
-    border-bottom: 2px solid #CC785C;
+    color: var(--text-dim);
+    max-width: 920px;
+    line-height: 1.15;
+  }
+  #p2-callout .accent { color: var(--orange); font-style: normal; font-weight: 700; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — POWER-CHAIN STEPS (Amplitude → Canva → Asana)
+     Reuses the timeline-card archetype with step numbers
+     in the date chip slot.
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p3-overline { color: var(--text); }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 940px;
+  }
+  .tl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 22px 28px;
+    border-radius: 20px;
+  }
+  .tl-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .tl-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .tl-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .tl-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 48px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .tl-card.orange .tl-step { background: var(--orange); }
+  .tl-card.purple .tl-step { background: var(--purple); }
+  .tl-card.blue   .tl-step { background: var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .tl-app {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .tl-card.orange .tl-app { color: var(--orange); }
+  .tl-card.purple .tl-app { color: var(--purple); }
+  .tl-card.blue   .tl-app { color: var(--blue); }
+  .tl-action {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  #p3-tally {
+    margin-top: 16px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 50px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -0.5px;
+  }
+  #p3-tally .strong { color: var(--orange); font-weight: 900; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — CTA / URL SLAM
+     ────────────────────────────────────────────────── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-quote {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 84px;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: var(--text);
+    max-width: 920px;
+    margin-bottom: 8px;
+  }
+  #p4-quote .em { color: var(--orange); font-style: italic; font-weight: 900; }
+  #p4-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 64px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1.0;
+    padding: 22px 36px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.25);
+    max-width: 920px;
+  }
+  #p4-subscribe {
     display: inline-flex;
     align-items: center;
     gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    letter-spacing: 0.5px;
   }
-  #s4-cta-pill .arrow {
-    color: #A85843;
-    font-family: 'Fraunces', Georgia, serif;
+  #p4-subscribe .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
     font-weight: 400;
-    font-size: 56px;
+    font-size: 48px;
     line-height: 0.7;
   }
 </style>
@@ -378,100 +410,97 @@
      data-width="1080"
      data-height="1920">
 
-  <!-- Ambient warm wash -->
   <div id="ambient"></div>
 
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
   <!-- ═══════════════════════════════════════════════════════
-       SCENE 1 — Hook (0-7s)
+       PHASE 1 — HERO SLAM (0-7s)
+       Narration: "Claude just got fifteen new connectors.
+                   AllTrails. Spotify. Uber. Living inside the conversation."
        ═══════════════════════════════════════════════════════ -->
-  <div id="scene1" class="scene">
-    <div class="scene-content">
-      <div class="label" id="s1-label">Announced &middot; Anthropic</div>
-      <div id="s1-hero">15</div>
-      <div id="s1-heading">new connectors.</div>
-      <div id="s1-chips">
-        <span class="s1-chip">AllTrails</span>
-        <span class="s1-chip">Spotify</span>
-        <span class="s1-chip">Uber</span>
-        <span class="s1-chip">Audible</span>
-        <span class="s1-chip">Booking.com</span>
-        <span class="s1-chip">TurboTax</span>
-        <span class="s1-chip">+ 9 more</span>
-      </div>
-      <div id="s1-payoff">Living <span class="accent">inside</span> the conversation.</div>
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Just Announced · Anthropic</div>
+      <div id="p1-pre">Claude just got</div>
+      <div id="p1-hero">15</div>
+      <div id="p1-sub">new connectors.</div>
+      <div id="p1-caption">Living inside the conversation</div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════
-       SCENE 2 — Hike example (7-22s)
+       PHASE 2 — STAT ROW (7-22s)
+       Narration covers the AllTrails example + directory size.
        ═══════════════════════════════════════════════════════ -->
-  <div id="scene2" class="scene">
-    <div class="scene-content">
-      <div class="label" id="s2-label">Example</div>
-      <div id="s2-heading">A weekend hike.</div>
-      <div class="chat-card">
-        <div class="chat-msg user" id="s2-msg-user">Find me a weekend hike near Salzburg.</div>
-        <div class="chat-msg claude" id="s2-msg-claude">
-          <div class="said">Here are three trails close by.</div>
-          <div class="alltrails-card" id="s2-trail-card">
-            <div class="at-header">
-              <div class="at-logo">AT</div>
-              <div class="at-source">AllTrails &middot; in chat</div>
-            </div>
-            <div class="at-trail">Gaisberg via Zistelalm</div>
-            <div class="at-meta">3.4 km<span class="dot">&middot;</span>Moderate<span class="dot">&middot;</span>245 m gain</div>
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">By the numbers</div>
+      <div id="p2-headline">From everyday apps to power tools.</div>
+      <div id="p2-pills">
+        <div class="stat-pill orange" id="p2-pill-1">
+          <div class="stat-num">15</div>
+          <div class="stat-label">new today</div>
+        </div>
+        <div class="stat-pill purple" id="p2-pill-2">
+          <div class="stat-num">200+</div>
+          <div class="stat-label">in the directory</div>
+        </div>
+      </div>
+      <div id="p2-callout">No tabs. <span class="accent">No copy paste.</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — POWER-CHAIN STEPS (22-37s)
+       Narration: "Power users chain them. Pull a query from Amplitude.
+                   Turn it into a Canva deck. Drop the link into Asana.
+                   One conversation. Five tools. Zero tabs."
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">Power users chain them</div>
+      <div class="timeline-list">
+        <div class="tl-card orange" id="p3-card-1">
+          <div class="tl-step">01</div>
+          <div class="tl-body">
+            <div class="tl-app">Amplitude</div>
+            <div class="tl-action">Pull a query</div>
+          </div>
+        </div>
+        <div class="tl-card purple" id="p3-card-2">
+          <div class="tl-step">02</div>
+          <div class="tl-body">
+            <div class="tl-app">Canva</div>
+            <div class="tl-action">Turn it into a deck</div>
+          </div>
+        </div>
+        <div class="tl-card blue" id="p3-card-3">
+          <div class="tl-step">03</div>
+          <div class="tl-body">
+            <div class="tl-app">Asana</div>
+            <div class="tl-action">Drop the link</div>
           </div>
         </div>
       </div>
-      <div id="s2-callout">No tabs. <span class="accent">No copy paste.</span></div>
+      <div id="p3-tally">One conversation. <span class="strong">Five tools.</span> Zero tabs.</div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════
-       SCENE 3 — Power chain (22-37s)
+       PHASE 4 — CTA / URL SLAM (37-60s)
+       Narration: "The browser tab era is ending. Link below."
        ═══════════════════════════════════════════════════════ -->
-  <div id="scene3" class="scene">
-    <div class="scene-content">
-      <div class="label" id="s3-label">Power users</div>
-      <div id="s3-heading">Chain <span class="em">them.</span></div>
-      <div class="step" id="s3-step-1">
-        <div class="step-num">01</div>
-        <div class="step-body">
-          <div class="step-app">Amplitude</div>
-          <div class="step-action">Pull a query</div>
-        </div>
-      </div>
-      <div class="step" id="s3-step-2">
-        <div class="step-num">02</div>
-        <div class="step-body">
-          <div class="step-app">Canva</div>
-          <div class="step-action">Turn it into a deck</div>
-        </div>
-      </div>
-      <div class="step" id="s3-step-3">
-        <div class="step-num">03</div>
-        <div class="step-body">
-          <div class="step-app">Asana</div>
-          <div class="step-action">Drop the link</div>
-        </div>
-      </div>
-      <div id="s3-tally">One conversation. <span class="strong">Five tools.</span> Zero tabs.</div>
-      <div id="s3-fineprint">Claude always asks before it buys or books.</div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════
-       SCENE 4 — CTA / closing (37-60s)
-       ═══════════════════════════════════════════════════════ -->
-  <div id="scene4" class="scene">
-    <div class="scene-content">
-      <div id="s4-quote-mark">&ldquo;</div>
-      <div id="s4-quote">The browser tab era is <span class="em">ending.</span></div>
-      <div id="s4-attribution">Anyone can submit a connector.</div>
-      <div id="s4-cta">
-        <div id="s4-cta-pre">Try it</div>
-        <div id="s4-cta-pill"><span>claude.com/connectors</span><span class="arrow">&rarr;</span></div>
-      </div>
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Try it now</div>
+      <div id="p4-quote">The browser tab era is <span class="em">ending.</span></div>
+      <div id="p4-url">claude.com/connectors</div>
+      <div id="p4-subscribe">Subscribe<span class="arrow">→</span></div>
     </div>
   </div>
 
@@ -498,81 +527,86 @@
     { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 1 },
     0);
 
-  // ═══════════════════════════════════════════════════════
-  // SCENE 1 — Hook (0-7s) : entrances only
-  // ═══════════════════════════════════════════════════════
-  tl.from("#s1-label",   { y: 20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.3);
-  tl.from("#s1-hero",    { y: 80, scale: 0.96, opacity: 0, duration: 1.0, ease: "power3.out" }, 0.6);
-  tl.from("#s1-heading", { y: 40, opacity: 0, duration: 0.7, ease: "power3.out" }, 1.1);
-  tl.from("#s1-chips .s1-chip",
-                         { y: 24, opacity: 0, duration: 0.45, ease: "power2.out", stagger: 0.06 }, 1.6);
-  tl.from("#s1-payoff",  { y: 30, opacity: 0, duration: 0.7, ease: "sine.out" }, 2.4);
+  // Progress bar fills linearly across the composition (60s total)
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: 60, ease: "none" },
+    0);
 
-  // ─── Transition 1->2 at 7.0s : calm blur crossfade ───
-  const T1 = 7.0;
-  tl.to("#scene1", { filter: "blur(20px)", scale: 1.04, duration: 0.6, ease: "power1.in" }, T1);
-  tl.to("#scene1", { opacity: 0,           duration: 0.4, ease: "power1.in" }, T1 + 0.4);
-  tl.set("#scene1", { visibility: "hidden" }, T1 + 0.8);
-  tl.set("#scene2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.5);
-  tl.to("#scene2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.5);
-  tl.to("#scene2", { filter: "blur(0px)", scale: 1,      duration: 0.6, ease: "power1.out",   overwrite: "auto" }, T1 + 0.7);
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
 
   // ═══════════════════════════════════════════════════════
-  // SCENE 2 — Hike (7-22s) : entrances only
+  // PHASE 1 — Hero slam (0-7s) : entrances only
   // ═══════════════════════════════════════════════════════
-  const S2 = 7.7;
-  tl.from("#s2-label",       { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, S2 + 0.0);
-  tl.from("#s2-heading",     { y: 40, opacity: 0, duration: 0.7, ease: "power3.out" }, S2 + 0.3);
-  tl.from(".chat-card",      { y: 60, scale: 0.97, opacity: 0, duration: 0.8, ease: "power2.out" }, S2 + 0.7);
-  tl.from("#s2-msg-user",    { x: 40, opacity: 0, duration: 0.5, ease: "power2.out" }, S2 + 1.4);
-  tl.from("#s2-msg-claude .said",
-                             { x: -40, opacity: 0, duration: 0.5, ease: "power2.out" }, S2 + 2.5);
-  tl.from("#s2-trail-card",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, S2 + 3.4);
-  tl.from(".at-header",      { opacity: 0, duration: 0.4, ease: "power1.out" }, S2 + 3.6);
-  tl.from(".at-trail",       { y: 12, opacity: 0, duration: 0.4, ease: "power2.out" }, S2 + 3.9);
-  tl.from(".at-meta",        { y: 12, opacity: 0, duration: 0.4, ease: "power2.out" }, S2 + 4.2);
-  tl.from("#s2-callout",     { y: 30, opacity: 0, duration: 0.7, ease: "sine.out" }, S2 + 7.5);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.7);
+  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.9, ease: "back.out(1.7)" }, 1.2);
+  // Inline shake on the slam frame — 4 short ticks ±5px
+  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.95);
+  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 2.00);
+  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.05);
+  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.10);
+  tl.from("#p1-sub",      { y: 24, opacity: 0, duration: 0.55, ease: "power3.out" }, 2.25);
+  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 3.2);
 
-  // ─── Transition 2->3 at 22.0s ───
-  const T2 = 22.0;
-  tl.to("#scene2", { filter: "blur(20px)", scale: 1.04, duration: 0.6, ease: "power1.in" }, T2);
-  tl.to("#scene2", { opacity: 0,           duration: 0.4, ease: "power1.in" }, T2 + 0.4);
-  tl.set("#scene2", { visibility: "hidden" }, T2 + 0.8);
-  tl.set("#scene3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.5);
-  tl.to("#scene3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.5);
-  tl.to("#scene3", { filter: "blur(0px)", scale: 1,      duration: 0.6, ease: "power1.out",   overwrite: "auto" }, T2 + 0.7);
+  // ─── Transition phase1 → phase2 at 6.6s ───
+  const T1 = 6.6;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
 
   // ═══════════════════════════════════════════════════════
-  // SCENE 3 — Chain (22-37s)
+  // PHASE 2 — Stat pill row (7-22s) : entrances only
   // ═══════════════════════════════════════════════════════
-  const S3 = 22.7;
-  tl.from("#s3-label",     { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, S3 + 0.0);
-  tl.from("#s3-heading",   { y: 40, opacity: 0, duration: 0.8, ease: "power3.out" }, S3 + 0.4);
-  tl.from("#s3-step-1",    { x: -40, opacity: 0, duration: 0.6, ease: "power2.out" }, S3 + 1.4);
-  tl.from("#s3-step-2",    { x: -40, opacity: 0, duration: 0.6, ease: "power2.out" }, S3 + 2.5);
-  tl.from("#s3-step-3",    { x: -40, opacity: 0, duration: 0.6, ease: "power2.out" }, S3 + 3.6);
-  tl.from("#s3-tally",     { y: 30, opacity: 0, duration: 0.7, ease: "sine.out" }, S3 + 6.0);
-  tl.from("#s3-fineprint", { y: 20, opacity: 0, duration: 0.6, ease: "power2.out" }, S3 + 8.0);
+  const P2 = 7.4;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 1.0);
+  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 1.6);
+  tl.from("#p2-callout",  { y: 24, opacity: 0, duration: 0.7, ease: "sine.out" }, P2 + 5.5);
 
-  // ─── Transition 3->4 at 37.0s ───
-  const T3 = 37.0;
-  tl.to("#scene3", { filter: "blur(20px)", scale: 1.04, duration: 0.6, ease: "power1.in" }, T3);
-  tl.to("#scene3", { opacity: 0,           duration: 0.4, ease: "power1.in" }, T3 + 0.4);
-  tl.set("#scene3", { visibility: "hidden" }, T3 + 0.8);
-  tl.set("#scene4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.5);
-  tl.to("#scene4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.5);
-  tl.to("#scene4", { filter: "blur(0px)", scale: 1,      duration: 0.6, ease: "power1.out",   overwrite: "auto" }, T3 + 0.7);
+  // ─── Transition phase2 → phase3 at 21.6s ───
+  const T2 = 21.6;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
 
   // ═══════════════════════════════════════════════════════
-  // SCENE 4 — CTA (37-60s)
+  // PHASE 3 — Power-chain steps (22-37s) : entrances only
   // ═══════════════════════════════════════════════════════
-  const S4 = 37.7;
-  tl.from("#s4-quote-mark", { y: 20, opacity: 0, duration: 0.6, ease: "power2.out" }, S4 + 0.0);
-  tl.from("#s4-quote",      { y: 40, opacity: 0, duration: 1.0, ease: "power3.out" }, S4 + 0.5);
-  tl.from("#s4-attribution",{ y: 20, opacity: 0, duration: 0.7, ease: "sine.out" }, S4 + 1.6);
-  tl.from("#s4-cta",        { y: 30, opacity: 0, duration: 0.8, ease: "power2.out" }, S4 + 3.4);
+  const P3 = 22.4;
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 0.6);
+  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 1.4);
+  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 2.2);
+  tl.from("#p3-tally",    { y: 24, opacity: 0, duration: 0.7, ease: "sine.out" }, P3 + 6.0);
 
-  // Scene 4 stays fully visible to the end — composition naturally ends at 60s
+  // ─── Transition phase3 → phase4 at 36.6s ───
+  const T3 = 36.6;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — CTA URL slam (37-60s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  const P4 = 37.4;
+  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-quote",     { y: 40, opacity: 0, duration: 0.9, ease: "power3.out" }, P4 + 0.4);
+  tl.from("#p4-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, P4 + 1.5);
+  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 2.6);
+
+  // Phase 4 stays fully visible to the end (60s)
 
   window.__timelines["main"] = tl;
 </script>
