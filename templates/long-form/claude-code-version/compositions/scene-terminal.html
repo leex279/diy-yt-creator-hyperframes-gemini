@@ -1,0 +1,131 @@
+<!--
+  scene-terminal.html — macOS terminal window with code block.
+
+  Structure: small mono overline + 56px headline above; centered terminal
+  window with traffic-light titlebar dots + content area showing a $ prompt
+  and a flag-colored command. Used for "$ claude update" CTA-adjacent moments
+  and for showing Claude Code commands inline (e.g. /plan, /vim).
+
+  Ported from diy-yt-creator/src/ClaudeCodeV21112-118/components/TerminalWindow.tsx
+  into the standard sub-comp shell pattern (data-composition-id, paused timeline,
+  registered on window.__timelines).
+-->
+<template id="scene-terminal-template">
+  <div data-composition-id="scene-terminal"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-terminal-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing: border-box;
+      }
+      #scene-terminal-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align: center;
+      }
+      #scene-terminal-content .term-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #scene-terminal-content .term-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        font-style: normal;
+        color: var(--text);
+        letter-spacing: -1px;
+        text-align: center;
+        max-width: 1400px;
+        line-height: 1.05;
+      }
+      .terminal-window {
+        width: 1400px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(28, 33, 40, 0.95);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55),
+                    0 0 0 1.5px rgba(88, 166, 255, 0.4);
+      }
+      .term-titlebar {
+        height: 40px;
+        display: flex; align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        background: #21262D;
+        position: relative;
+      }
+      .term-titlebar .dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+      }
+      .term-titlebar .dot.red    { background: #FF5F56; }
+      .term-titlebar .dot.yellow { background: #FFBD2E; }
+      .term-titlebar .dot.green  { background: #27C93F; }
+      .term-titlebar .title {
+        position: absolute;
+        left: 50%; transform: translateX(-50%);
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 18px;
+        color: var(--text-secondary);
+      }
+      .term-content {
+        padding: 36px 44px;
+        font-family: var(--mono);
+        font-size: 32px;
+        line-height: 1.5;
+        color: var(--text);
+      }
+      .term-content .prompt { color: var(--accent-4); }
+      .term-content .flag   { color: var(--accent-1); }
+      .term-content .arg    { color: var(--text-secondary); }
+    </style>
+
+    <div id="scene-terminal-content">
+      <div class="header-block">
+        <div class="term-overline" id="term-overline">COMMAND</div>
+        <div class="term-headline" id="term-headline">Run it once. That's it.</div>
+      </div>
+
+      <div class="terminal-window" id="term-window">
+        <div class="term-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="title">~/project</span>
+        </div>
+        <div class="term-content">
+          <span class="prompt">$</span> claude <span class="flag">update</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.from("#term-overline", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0);
+      tl.from("#term-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.2);
+      tl.from("#term-window",   { scale: 0.92, opacity: 0, duration: 0.7, ease: "back.out(1.4)", immediateRender: false }, 0.4);
+
+      window.__timelines["scene-terminal"] = tl;
+    </script>
+  </div>
+</template>

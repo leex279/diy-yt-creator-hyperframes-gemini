@@ -1,0 +1,188 @@
+<!--
+  scene-detail-terminal-ui.html — 4-card 2x2 detail scene for "Terminal UI Fixes".
+
+  Header + 2x2 grid. No closer.
+-->
+<template id="scene-detail-terminal-ui-template">
+  <div data-composition-id="scene-detail-terminal-ui"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-detail-terminal-ui-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 90px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-detail-terminal-ui-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align:center;
+      }
+      #scene-detail-terminal-ui-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        opacity: 0;
+      }
+      #scene-detail-terminal-ui-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .dt-grid {
+        width: 1700px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .dt-card {
+        position: relative;
+        padding: 28px 32px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 12px;
+        min-height: 230px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .dt-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-2)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .dt-card .row { display:flex; align-items:center; gap: 14px; margin-bottom: 4px; }
+      .dt-card .num {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .dt-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .dt-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .dt-card .det code {
+        font-family: var(--mono);
+        font-size: 18px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .dt-card.a { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .dt-card.b { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .dt-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .dt-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .dt-card.a .num { color: var(--accent-2); background: rgba(6, 182, 212, 0.18);   }
+      .dt-card.b .num { color: var(--accent-1); background: rgba(88, 166, 255, 0.18);  }
+      .dt-card.c .num { color: var(--accent-3); background: rgba(163, 113, 247, 0.18); }
+      .dt-card.d .num { color: var(--accent-4); background: rgba(63, 185, 80, 0.18);   }
+    </style>
+
+    <div id="scene-detail-terminal-ui-content">
+      <div class="header-block">
+        <div class="overline" id="dt-overline">TERMINAL UI</div>
+        <div class="headline" id="dt-headline">Terminal rendering got a major cleanup.</div>
+      </div>
+
+      <div class="dt-grid">
+        <div class="dt-card a" id="dt-card-1">
+          <div class="row"><div class="num">01</div></div>
+          <div class="ttl">Fullscreen scroll fixed</div>
+          <div class="det">Fullscreen mode no longer jumps to the bottom after you scroll up.</div>
+        </div>
+        <div class="dt-card b" id="dt-card-2">
+          <div class="row"><div class="num">02</div></div>
+          <div class="ttl">Overflow dialogs scrollable</div>
+          <div class="det">Dialogs taller than your terminal now scroll with arrow keys and the mouse wheel.</div>
+        </div>
+        <div class="dt-card c" id="dt-card-3">
+          <div class="row"><div class="num">03</div></div>
+          <div class="ttl">Wrapped URLs click-through</div>
+          <div class="det">Wrapped URLs in fullscreen open the full URL when clicked &mdash; no more copy-paste reassembly.</div>
+        </div>
+        <div class="dt-card d" id="dt-card-4">
+          <div class="row"><div class="num">04</div></div>
+          <div class="ttl">iTerm2 + Ghostty scrollback</div>
+          <div class="det">Scrollback duplication is fixed across iTerm2 and Ghostty.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Transcript-driven timing. scene_t = root_t - 129.34 (data-start 129.34). Slot 20.41s.
+      // Narration:
+      //   "Terminal rendering got a major cleanup."     scene_t 0.00
+      //   "Fullscreen mode no longer jumps..."          scene_t 2.11 (#281)
+      //   "Dialogs that overflow your terminal..."      scene_t 6.06 (#290)
+      //   "Wrapped URLs in fullscreen..."               scene_t 11.42 (#303)
+      //   "Scrollback duplication is fixed..."          scene_t 15.85 (#313)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#dt-overline", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#dt-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      const cards = [
+        { sel: "#dt-card-1", num: "#dt-card-1 .num", at:  2.11 },
+        { sel: "#dt-card-2", num: "#dt-card-2 .num", at:  6.06 },
+        { sel: "#dt-card-3", num: "#dt-card-3 .num", at: 11.42 },
+        { sel: "#dt-card-4", num: "#dt-card-4 .num", at: 15.85 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 20.0;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 28, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 3.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.6);
+        }
+      });
+
+      // Anchor to slot length (20.41s)
+      tl.set({}, {}, 20.41);
+
+      window.__timelines["scene-detail-terminal-ui"] = tl;
+    </script>
+  </div>
+</template>

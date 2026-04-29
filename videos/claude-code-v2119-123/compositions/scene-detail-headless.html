@@ -1,0 +1,231 @@
+<!--
+  scene-detail-headless.html — 4-card 2x2 detail scene for "Headless & SDK".
+
+  Header (overline + headline) above a 2x2 grid of 4 patch cards. Each card
+  enters on the spoken word that introduces it. A closer banner ("Pipe it.
+  Script it. Ship it.") lands at the end of the slot.
+
+  Pattern source: forked from scene-feature-cards.html (cards CSS) +
+  scene-stats-opener.html (header CSS). 4 cards instead of 6 means the
+  layout becomes 2x2 with larger card body type for legibility.
+-->
+<template id="scene-detail-headless-template">
+  <div data-composition-id="scene-detail-headless"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-detail-headless-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 90px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-detail-headless-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align:center;
+      }
+      #scene-detail-headless-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        opacity: 0;
+      }
+      #scene-detail-headless-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .dh-grid {
+        width: 1700px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .dh-card {
+        position: relative;
+        padding: 28px 32px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 12px;
+        min-height: 230px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .dh-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-1)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .dh-card .row {
+        display:flex; flex-direction:row;
+        align-items:center; gap: 14px;
+        margin-bottom: 4px;
+      }
+      .dh-card .num {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .dh-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .dh-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .dh-card .det code {
+        font-family: var(--mono);
+        font-size: 18px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .dh-card.a { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .dh-card.b { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .dh-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .dh-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .dh-card.a .num { color: var(--accent-1); background: rgba(88, 166, 255, 0.18); }
+      .dh-card.b .num { color: var(--accent-2); background: rgba(6, 182, 212, 0.18); }
+      .dh-card.c .num { color: var(--accent-3); background: rgba(163, 113, 247, 0.18); }
+      .dh-card.d .num { color: var(--accent-4); background: rgba(63, 185, 80, 0.18); }
+
+      #dh-close {
+        position: absolute;
+        left: 50%; bottom: 42px;
+        opacity: 0;
+        background: rgba(63, 185, 80, 0.16);
+        border: 2px solid var(--accent-4);
+        border-radius: 14px;
+        padding: 10px 28px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--accent-4);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 28px rgba(63, 185, 80, 0.4);
+      }
+    </style>
+
+    <div id="scene-detail-headless-content">
+      <div class="header-block">
+        <div class="overline" id="dh-overline">HEADLESS &amp; SDK</div>
+        <div class="headline" id="dh-headline">Headless and SDK tools got serious.</div>
+      </div>
+
+      <div class="dh-grid">
+        <div class="dh-card a" id="dh-card-1">
+          <div class="row">
+            <div class="num">01</div>
+          </div>
+          <div class="ttl">claude ultrareview headless</div>
+          <div class="det">Runs non-interactively from any script or CI job. Pipe findings straight to <code>stdout</code>.</div>
+        </div>
+        <div class="dh-card b" id="dh-card-2">
+          <div class="row">
+            <div class="num">02</div>
+          </div>
+          <div class="ttl"><code>--from-pr</code> goes multi-host</div>
+          <div class="det">Now accepts GitLab, Bitbucket, and GitHub Enterprise URLs &mdash; not just github.com.</div>
+        </div>
+        <div class="dh-card c" id="dh-card-3">
+          <div class="row">
+            <div class="num">03</div>
+          </div>
+          <div class="ttl">SDK fork-subagent in headless</div>
+          <div class="det"><code>CLAUDE_CODE_FORK_SUBAGENT</code> finally works in non-interactive sessions.</div>
+        </div>
+        <div class="dh-card d" id="dh-card-4">
+          <div class="row">
+            <div class="num">04</div>
+          </div>
+          <div class="ttl">mcp authenticate &mdash; custom URI</div>
+          <div class="det">Now supports <code>redirect_uri</code> for custom-scheme OAuth completion.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dh-close">&#10003; Pipe it. Script it. Ship it.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Transcript-driven timing. scene_t = root_t - 57.26 (data-start 57.26). Slot 27.05s.
+      // Narration:
+      //   "Headless and SDK tools got serious."             scene_t 0.00 (#126)
+      //   "claude ultrareview runs non-interactively..."    scene_t 4.08 (#135)
+      //   "dash dash from-pr now accepts GitLab..."         scene_t 8.25 (#145)
+      //   "The SDK gets CLAUDE CODE FORK SUBAGENT..."       scene_t 16.01 (#160)
+      //   "And mcp authenticate supports redirect URI..."   scene_t 19.66 (#167)
+      //   "Pipe it. Script it. Ship it."                    scene_t 24.09 (#176)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#dh-overline", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#dh-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      const cards = [
+        { sel: "#dh-card-1", num: "#dh-card-1 .num", at:  4.08 },
+        { sel: "#dh-card-2", num: "#dh-card-2 .num", at:  8.25 },
+        { sel: "#dh-card-3", num: "#dh-card-3 .num", at: 16.01 },
+        { sel: "#dh-card-4", num: "#dh-card-4 .num", at: 19.66 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 24.09;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 28, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 3.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.6);
+        }
+      });
+
+      // Closer banner on "Pipe it" @ 24.09
+      tl.fromTo("#dh-close",
+        { xPercent: -50, scale: 0.85, opacity: 0 },
+        { xPercent: -50, scale: 1,    opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+        24.09);
+
+      // Anchor to slot length (27.05s)
+      tl.set({}, {}, 27.05);
+
+      window.__timelines["scene-detail-headless"] = tl;
+    </script>
+  </div>
+</template>

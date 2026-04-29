@@ -14,6 +14,9 @@ videos/*/.phase-cache/
 # Claude Code personal local settings (per-user, not shared)
 .claude/settings.local.json
 
+# Workflow run logs (timing/tooling telemetry — local only, see scripts/log-run.py)
+.claude/runs/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -21,3 +24,7 @@ Thumbs.db
 # Editor scratch
 *.swp
 *.tmp
+
+# Python
+__pycache__/
+*.pyc

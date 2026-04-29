@@ -100,13 +100,16 @@ In autonomous mode, use the brief's `Duration` / `Tone` / `Template` fields or s
 
 ### 2A: Scene count by duration
 
-| Duration | Scenes | Avg scene length | Notes                                        |
-| -------- | ------ | ---------------- | -------------------------------------------- |
-| 15-30s   | 3-4    | 4-7s             | Anthropic Shorts: typically 4 inline phases  |
-| 45s      | 5-6    | 8-10s            | Anthropic Shorts: extend with extra phases   |
-| 60s      | 6-7    | 9-10s            |                                              |
-| 90s      | 7-8    | 11-13s           |                                              |
-| 3min     | 8-10   | 15-22s           |                                              |
+| Duration | Scenes              | Avg scene length | Notes                                                                       |
+| -------- | ------------------- | ---------------- | --------------------------------------------------------------------------- |
+| ≤ 60s    | **MAX 5 scenes**    | 9–12s            | **HARD CAP** — fragmentation kills narrative flow; connector room requires ≥9s scenes |
+| 15-30s   | 3-4                 | 4-7s             | Anthropic Shorts: typically 4 inline phases                                 |
+| 45s      | 4-5 (cap applies)   | 9-11s            | Anthropic Shorts: prefer 4-5 inline phases to leave room for connectors     |
+| 60s      | 5 (cap applies)     | 11-12s           | Stay within the ≤60s cap                                                    |
+| 90s      | 7-8                 | 11-13s           | Cap lifts above 60s                                                         |
+| 3min     | 8-10                | 15-22s           |                                                                             |
+
+**Why the ≤60s cap exists**: short scenes (5–6s) cannot fit explanatory connectors (`because`, `to keep`, `Why … Because`) between transitions. Pure-fragment scripts result, which fail Phase 2.5 Pass 6. If a 60s plan needs more than 5 scenes, either (a) trim content, (b) merge two scenes into one with two beats, or (c) bump duration above 60s.
 
 For the `shorts/anthropic` template: the 4 base archetypes are `hero-slam`, `stat-pill-row`, `timeline-cards`, `cta-url-slam` (per `templates/shorts/anthropic/README.md:11-18`). To add more scenes, follow the template's "Adding more phases" section — duplicate a `<div class="phase">` block, bump `data-duration` on `#root`, follow the `P1 → T1 → P2 → T2 …` naming convention.
 
@@ -142,6 +145,10 @@ Structure the scene order as:
 5. **Deep Dive** (40-50%) — 3-5 feature scenes, each BENEFIT-LED not feature-led.
 6. **Social Proof / Trust** (10-15%) — proof points, cult-hop references.
 7. **CTA** (10%) — closing call to action.
+
+**For `news-explainer` profile** (per `content-brief.md`'s `voice_profile` field): every scene MUST connect to the next via an explanatory connector (`because`, `why`, `to <verb>`, `and`, `but`, `plus`, `so`, `here's why`, `the reason`). Plan a connector word per scene transition in the Master Timeline. Pure-fragment scripts will fail Phase 2.5 Pass 6 (Narrative Flow gate).
+
+**For `tutorial` profile**: connectors are nice-to-have, not mandatory. Tutorial narration is allowed terse — Phase 2.5 Pass 6 skips for tutorial profile.
 
 ### 2D: The Explosion Timer
 
@@ -263,11 +270,24 @@ Score each variant on three dimensions (1-10 each):
 
 **Stun Gun bonus**: +0.1 if But/However/Yet present.
 **Promise bonus**: +1 if explicit promise of resolution.
+**Narrative Flow bonus**: +0.5 if the hook is one or more sentences containing an explanatory connector (`because`, `to keep`, `to <verb>`, `why … because`, `and so`, `here's why`). 0 otherwise. Pure-stat openers (e.g., `"100B. 5GW. Zero Nvidia."`) score 0 here regardless of specificity.
+
+**Source Fidelity gate (HARD — added 2026-04-29 after the NEC `30,000 engineers` slip)**: for EACH hook variant, you MUST emit a `source_fidelity` block with:
+- `source_quote`: the exact source sentence the claim derives from (verbatim from research/content-brief.md), AND
+- `head_nouns`: every head noun the variant uses for a digit/date/named-entity (e.g., `"engineers"`, `"organizations"`, `"partners"`).
+
+**Reject any variant whose `head_nouns` contain a substitution of the source's noun even when the digit matches.** Examples of disqualifying substitutions: source says `30,000 employees` → variant says `30,000 engineers` (REJECT), source says `engineering organizations` → variant says `engineering teams` (REJECT). Both swaps drift the scope under the same digit.
+
+This gate runs BEFORE advisory scoring. A variant that fails Source Fidelity is dropped from the variants list — no second chances, no "but the score is high." The cost of catching this here is one regenerated variant; the cost of catching it after TTS is a full TTS regen + composition retiming.
 
 ```
-base = (curiosity + stakes + specificity) / 3
-hook_score = min(10, round(base + stun_bonus + alignment_bonus + promise, 1))
+base = (curiosity * 0.4) + (stakes * 0.4) + (specificity * 0.2)
+hook_score = min(10, round(base + stun_bonus + alignment_bonus + promise + narrative_flow_bonus, 1))
 ```
+
+**Why the new weighting**: equal weighting (`base = (c + s + sp) / 3`) auto-rewarded triple-stat openers because Specificity scored 10/10 there. Down-weighting Specificity to 0.2 forces the variant to earn its score on Curiosity and Stakes. The narrative_flow_bonus rewards openers that earn the click via a *reason*, not just a number.
+
+**Sync rule**: this formula MUST stay in lockstep with Phase 2.5's Pass 1 (`phase2-5-critique.md`). If you change one, change the other.
 
 ### 4E: Plan output format
 
@@ -277,16 +297,28 @@ hook_variants:
     type: "counterintuitive"
     opening_line: "<exact first sentence>"
     layers_present: [1, 4, 5]
+    source_fidelity:
+      source_quote: "<verbatim source sentence the claim derives from>"
+      head_nouns: ["<noun-1>", "<noun-2>"]   # every digit/date/named-entity head noun
+      passes_gate: true                       # false → variant is dropped, not scored
     advisory_score: X.X
   variant_b:
     type: "stakes"
     opening_line: "<exact first sentence>"
     layers_present: [2, 3, 4, 5]
+    source_fidelity:
+      source_quote: "<verbatim source sentence>"
+      head_nouns: ["<noun-1>", "<noun-2>"]
+      passes_gate: true
     advisory_score: X.X
   variant_c:
     type: "number"
     opening_line: "<exact first sentence>"
     layers_present: [3, 4, 5]
+    source_fidelity:
+      source_quote: "<verbatim source sentence>"
+      head_nouns: ["<noun-1>"]
+      passes_gate: true
     advisory_score: X.X
   recommended: "variant_b"
 ```

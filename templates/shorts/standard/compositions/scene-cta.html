@@ -1,0 +1,114 @@
+<!--
+  scene-cta.html — Closing CTA (~7s).
+
+  Pattern: kicker overline → "Read more at" → URL frame → subscribe pill.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-cta"].
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-cta-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-cta-content .kicker {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-cta-content .lede {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 48px;
+        line-height: 1.2;
+        color: var(--text);
+      }
+      #scene-cta-content .url {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 56px;
+        letter-spacing: 1px;
+        color: var(--text-on-warm);
+        line-height: 1.0;
+        padding: 26px 44px;
+        border-radius: 22px;
+        background: var(--accent-warm);
+        box-shadow: 0 14px 36px rgba(224, 122, 95, 0.35);
+        max-width: 920px;
+      }
+      #scene-cta-content .subscribe {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 38px;
+        border-radius: 999px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-deep);
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 38px;
+        color: var(--accent-deep);
+        letter-spacing: 0.5px;
+        box-shadow: var(--shadow-warm);
+      }
+      #scene-cta-content .subscribe .arrow {
+        color: var(--accent-warm);
+        font-family: var(--sans);
+        font-weight: 400;
+        font-size: 48px;
+        line-height: 0.7;
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <div class="kicker"    id="cta-kicker">Try it</div>
+      <div class="lede"      id="cta-lede">Docs &amp; install &mdash;</div>
+      <div class="url"       id="cta-url">hyperframes.heygen.com</div>
+      <div class="subscribe" id="cta-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance (0 → 2s)
+      tl.from("#cta-kicker",    { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#cta-lede",      { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+      tl.from("#cta-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, 0.7);
+      tl.from("#cta-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 1.5);
+
+      // Mid-beats — keep the closing CTA visually alive (it's the longest hold)
+      // Beat A (4s): URL pill subtle pulse
+      tl.to("#cta-url", { scale: 1.03, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 4);
+      // Beat B (6.5s): subscribe arrow nudges right
+      tl.to("#cta-subscribe .arrow", { x: 8, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 6.5);
+      // Beat C (9s): URL emphasis again
+      tl.to("#cta-url", { scale: 1.04, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 9);
+      // Beat D (11s): subscribe pill scale-pop
+      tl.to("#cta-subscribe", { scale: 1.04, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 11);
+      // Beat E (13.5s): kicker letter-spacing emphasis
+      tl.to("#cta-kicker", { letterSpacing: "8px", duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 13.5);
+      // Beat F (16s): final URL + subscribe pulse together
+      tl.to("#cta-url, #cta-subscribe", { scale: 1.025, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 16);
+      // Beat G (18.5s): arrow nudge right one more time
+      tl.to("#cta-subscribe .arrow", { x: 10, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 18.5);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

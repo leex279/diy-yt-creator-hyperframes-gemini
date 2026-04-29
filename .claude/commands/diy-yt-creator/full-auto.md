@@ -132,7 +132,7 @@ PARAMS:
   topic: "<from $ARGUMENTS>"
   slug: "<from brief Slug field, or kebab-case derivation from topic>"
   template: "<from Step 1.5 (user-confirmed) OR brief Template field>"
-  duration: "<from brief or default based on template — shorts/anthropic: 45s>"
+  duration: "<from brief or default based on template — shorts/anthropic: 90s, shorts/archon: 90s, long-form/standard: 8min>"
   tone: "<from brief or default: tech-influencer-edgy>"
   links: "<URLs from brief or empty>"
   must_mention: "<from brief Must-Mention Points or empty>"

@@ -1,0 +1,168 @@
+<!--
+  scene-chart.html — Animated horizontal bar chart (~13s).
+
+  Pattern: header → 4 horizontal bars (label on left, animated fill
+           extending to the right, value on the right). Each bar grows
+           with a stagger; values count up in sync.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-chart"].
+-->
+<template id="scene-chart-template">
+  <div data-composition-id="scene-chart"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-chart-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-chart-content .header {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 76px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        max-width: 880px;
+      }
+      #scene-chart-content .header .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-chart-content .chart {
+        display: flex; flex-direction: column;
+        gap: 22px; width: 920px;
+      }
+      #scene-chart-content .row {
+        display: flex; align-items: center; gap: 18px;
+      }
+      #scene-chart-content .row .label {
+        flex: 0 0 200px;
+        text-align: right;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent-ink);
+      }
+      #scene-chart-content .row .track {
+        flex: 1 1 auto;
+        height: 56px;
+        background: rgba(43, 42, 40, 0.06);
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+      }
+      #scene-chart-content .row .bar {
+        height: 100%;
+        width: 0;
+        border-radius: 14px;
+        box-shadow: 0 4px 12px rgba(176, 124, 90, 0.18);
+        transform-origin: left center;
+      }
+      #scene-chart-content .row.r1 .bar { background: var(--accent-warm); }
+      #scene-chart-content .row.r2 .bar { background: var(--accent-deep); }
+      #scene-chart-content .row.r3 .bar { background: var(--accent-sage); }
+      #scene-chart-content .row.r4 .bar { background: var(--accent-gold); }
+      #scene-chart-content .row .value {
+        flex: 0 0 auto;
+        min-width: 110px;
+        text-align: left;
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 44px;
+        letter-spacing: -1px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      #scene-chart-content .row.r1 .value { color: var(--accent-warm); }
+      #scene-chart-content .row.r2 .value { color: var(--accent-deep); }
+      #scene-chart-content .row.r3 .value { color: var(--accent-sage); }
+      #scene-chart-content .row.r4 .value { color: var(--accent-gold); }
+    </style>
+
+    <div id="scene-chart-content">
+      <div class="header" id="ch-header">
+        Adoption <span class="em">curve.</span>
+      </div>
+      <div class="chart">
+        <div class="row r1" id="ch-row-1">
+          <div class="label">Q1</div>
+          <div class="track"><div class="bar" id="ch-bar-1"></div></div>
+          <div class="value" id="ch-val-1">0%</div>
+        </div>
+        <div class="row r2" id="ch-row-2">
+          <div class="label">Q2</div>
+          <div class="track"><div class="bar" id="ch-bar-2"></div></div>
+          <div class="value" id="ch-val-2">0%</div>
+        </div>
+        <div class="row r3" id="ch-row-3">
+          <div class="label">Q3</div>
+          <div class="track"><div class="bar" id="ch-bar-3"></div></div>
+          <div class="value" id="ch-val-3">0%</div>
+        </div>
+        <div class="row r4" id="ch-row-4">
+          <div class="label">Q4</div>
+          <div class="track"><div class="bar" id="ch-bar-4"></div></div>
+          <div class="value" id="ch-val-4">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Targets (percent of track width filled, and the displayed number)
+      const targets = [22, 41, 67, 88];
+      const valEls = [
+        document.getElementById('ch-val-1'),
+        document.getElementById('ch-val-2'),
+        document.getElementById('ch-val-3'),
+        document.getElementById('ch-val-4')
+      ];
+      const counters = targets.map(() => ({ v: 0 }));
+
+      tl.from("#ch-header", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
+      tl.from("#ch-row-1, #ch-row-2, #ch-row-3, #ch-row-4", {
+        x: -30, opacity: 0, duration: 0.45, ease: "power2.out", stagger: 0.18
+      }, 0.4);
+
+      // Bars grow, values count up — staggered per row
+      for (let i = 0; i < 4; i++) {
+        const at = 1.2 + i * 0.35;
+        tl.to('#ch-bar-' + (i + 1), {
+          width: targets[i] + '%',
+          duration: 1.2,
+          ease: "power2.out"
+        }, at);
+        tl.to(counters[i], {
+          v: targets[i],
+          duration: 1.2,
+          ease: "power2.out",
+          onUpdate: ((idx) => () => { valEls[idx].textContent = Math.round(counters[idx].v) + '%'; })(i)
+        }, at);
+      }
+
+      // Mid-beats — sequential per-row scale-pop, then fresh bar glow at end
+      tl.to("#ch-row-1 .value", { scale: 1.1, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 6.2);
+      tl.to("#ch-row-2 .value", { scale: 1.1, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 7.2);
+      tl.to("#ch-row-3 .value", { scale: 1.1, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 8.2);
+      tl.to("#ch-row-4 .value", { scale: 1.15, duration: 0.45, ease: "back.out(2)", yoyo: true, repeat: 1 }, 9.2);
+      // Final beat: all bars pulse together
+      tl.to("#scene-chart-content .bar", { scaleY: 1.08, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 11.0);
+      // Header re-emphasis
+      tl.to("#ch-header .em", { scale: 1.06, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 12.5);
+
+      window.__timelines["scene-chart"] = tl;
+    </script>
+  </div>
+</template>

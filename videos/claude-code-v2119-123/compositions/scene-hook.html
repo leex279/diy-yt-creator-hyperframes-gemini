@@ -1,0 +1,156 @@
+<!--
+  scene-hook.html — Hero hook archetype (scroll-stop opener, ~10-12s).
+
+  Structure:
+    overline → headline → stat slam → optional sub-line.
+
+  The whole scene is its own paused GSAP timeline, registered on
+  window.__timelines["scene-hook"]. The root composition only handles
+  the wrapper-level crossfade into / out of this scene.
+-->
+<template id="scene-hook-template">
+  <div data-composition-id="scene-hook"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-hook-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:24px;
+        box-sizing:border-box;
+      }
+      #scene-hook-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        opacity: 0;
+      }
+      #scene-hook-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 100px;
+        line-height: 1.02;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      #scene-hook-content .stat {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 160px;
+        line-height: 0.9;
+        letter-spacing: -4px;
+        color: var(--accent-stat);
+        font-variant-numeric: tabular-nums lining-nums;
+        text-shadow: 0 0 80px rgba(247, 129, 102, 0.55),
+                     0 8px 24px rgba(0, 0, 0, 0.6);
+        opacity: 0;
+      }
+      #scene-hook-content .subline {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 32px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        opacity: 0;
+      }
+      #scene-hook-content .badges {
+        display: flex; flex-direction: row;
+        gap: 14px;
+        margin-top: 6px;
+        opacity: 0;
+      }
+      #scene-hook-content .badges .vbadge {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 1.5px;
+        color: var(--accent-1);
+        background: rgba(88, 166, 255, 0.14);
+        border: 1.5px solid rgba(88, 166, 255, 0.45);
+        border-radius: 999px;
+        padding: 8px 18px;
+      }
+    </style>
+
+    <div id="scene-hook-content">
+      <div class="overline" id="hook-overline">RANGE RELEASE</div>
+      <div class="headline" id="hook-headline">Three Claude Code releases. Two weeks.</div>
+      <div class="stat"     id="hook-stat">100+</div>
+      <div class="subline"  id="hook-subline">changes shipped</div>
+      <div class="badges" id="hook-badges">
+        <span class="vbadge">v2.1.119</span>
+        <span class="vbadge">v2.1.120</span>
+        <span class="vbadge">v2.1.121</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance — paced over the first 4s of an 18s scene.
+      tl.fromTo("#hook-overline", { y: 24, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.6, ease: "power2.out" }, 0);
+      tl.fromTo("#hook-headline", { y: 32, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.7, ease: "power3.out" }, 0.5);
+      tl.fromTo("#hook-stat",     { scale: 0.78, opacity: 0 },
+                                  { scale: 1,    opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 1.4);
+      tl.fromTo("#hook-subline",  { y: 16, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.5, ease: "power2.out" }, 2.2);
+
+      // Version badges enter one-by-one (matches narration "version one twenty one is the latest...")
+      tl.fromTo("#hook-badges", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 3.5);
+      tl.fromTo("#hook-badges .vbadge:nth-child(1)",
+                { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 3.6);
+      tl.fromTo("#hook-badges .vbadge:nth-child(2)",
+                { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 4.1);
+      tl.fromTo("#hook-badges .vbadge:nth-child(3)",
+                { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 4.6);
+
+      // Keep-alive: stagger pulses across the scene so nothing sits idle >3s.
+      tl.to("#hook-stat",
+        { scale: 1.06, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        6.5);
+      // Badges shimmer one after another between stat pulses
+      tl.to("#hook-badges .vbadge:nth-child(1)",
+        { scale: 1.10, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 8.0);
+      tl.to("#hook-badges .vbadge:nth-child(2)",
+        { scale: 1.10, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 9.0);
+      tl.to("#hook-badges .vbadge:nth-child(3)",
+        { scale: 1.10, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 10.0);
+      tl.to("#hook-stat",
+        { scale: 1.08, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        11.0);
+      // Headline color flash on the version number emphasis word
+      tl.to("#hook-headline",
+        { color: "#58A6FF", duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" },
+        12.5);
+      // Subline pulse-glow late — pattern interrupt before crossfade
+      tl.to("#hook-subline",
+        { color: "#F78166", duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" },
+        14.0);
+      // Final stat punch right before crossfade — keeps the eye on the headline number
+      tl.to("#hook-stat",
+        { scale: 1.10, duration: 0.45, ease: "back.out(1.6)", yoyo: true, repeat: 1 },
+        15.5);
+      // Badges synchronized pulse at the very end
+      tl.to("#hook-badges .vbadge",
+        { scale: 1.08, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut", stagger: 0.08 },
+        16.5);
+
+      window.__timelines["scene-hook"] = tl;
+    </script>
+  </div>
+</template>

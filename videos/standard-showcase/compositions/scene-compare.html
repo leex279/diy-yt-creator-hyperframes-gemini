@@ -1,0 +1,120 @@
+<!--
+  scene-compare.html — Side-by-side comparison cards (~8s).
+
+  Pattern: header → 2 stacked cards (left = "before", right = "after"),
+           label band → big claim → supporting line. Optional X / check
+           glyph. Vertical-stacked because canvas is portrait.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-compare"].
+-->
+<template id="scene-compare-template">
+  <div data-composition-id="scene-compare"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-compare-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-compare-content .header {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 76px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        max-width: 880px;
+      }
+      #scene-compare-content .stack {
+        display: flex; flex-direction: column; gap: 24px;
+        width: 920px;
+      }
+      #scene-compare-content .card {
+        position: relative;
+        padding: 32px 36px 28px;
+        border-radius: 24px;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        box-shadow: var(--shadow-warm);
+        text-align: left;
+      }
+      #scene-compare-content .card.before { border-color: rgba(43, 42, 40, 0.18); opacity: 0.92; }
+      #scene-compare-content .card.after  { border-color: var(--accent-warm); }
+      #scene-compare-content .ribbon {
+        display: inline-block;
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      }
+      #scene-compare-content .card.before .ribbon { background: var(--bg-tint); color: var(--text-secondary); }
+      #scene-compare-content .card.after .ribbon  { background: var(--accent-warm); color: var(--text-on-warm); }
+      #scene-compare-content .claim {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.0;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        margin-bottom: 8px;
+      }
+      #scene-compare-content .card.before .claim { text-decoration: line-through; text-decoration-thickness: 4px; text-decoration-color: rgba(224, 122, 95, 0.6); color: var(--text-secondary); }
+      #scene-compare-content .support {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 32px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+      #scene-compare-content .vs {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-deep);
+      }
+    </style>
+
+    <div id="scene-compare-content">
+      <div class="header" id="compare-header">Two ways to ship.</div>
+      <div class="stack">
+        <div class="card before" id="compare-before">
+          <span class="ribbon">Before</span>
+          <div class="claim">React. JSX. Build steps.</div>
+          <div class="support">An hour of setup before your first frame.</div>
+        </div>
+        <div class="vs" id="compare-vs">vs.</div>
+        <div class="card after" id="compare-after">
+          <span class="ribbon">After</span>
+          <div class="claim">HTML. GSAP. Done.</div>
+          <div class="support">Open the file. Edit. Preview. Render.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#compare-header", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
+      tl.from("#compare-before", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.4);
+      tl.from("#compare-vs",     { scale: 0.7, opacity: 0, duration: 0.5, ease: "back.out(1.6)" }, 0.9);
+      tl.from("#compare-after",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 1.2);
+
+      window.__timelines["scene-compare"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,326 @@
+<!--
+  scene-feature-cards.html — Per-release rewrite for v2.1.119 → v2.1.121.
+
+  Two-phase structure (mirrors Remotion ClaudeCodeV21112-118/Scene02Highlights):
+    Phase 1 (0..4s):   centered "Six Highlights" intro title + subtitle
+    Phase 2 (4..58s):  intro fades out; phase-2 header fades in; six cards
+                       enter one-by-one at staggered times matching narration.
+
+  Cards:
+    01 — Windows: no Git required           (enters t≈ 5s)
+    02 — claude ultrareview headless         (enters t≈14s)
+    03 — /config finally persists            (enters t≈22s)
+    04 — MCP alwaysLoad flag                 (enters t≈31s)
+    05 — PostToolUse override                (enters t≈40s)
+    06 — Faster startup + LSP summaries      (enters t≈49s)
+    CLOSE — "✓ Three releases. All shipped." (enters t≈58s)
+-->
+<template id="scene-feature-cards-template">
+  <div data-composition-id="scene-feature-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      /* Phase 1 — centered intro title overlay */
+      #fc-phase1 {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 18px;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        text-align: center;
+        box-sizing: border-box;
+        opacity: 1;
+      }
+      #fc-phase1 .p1-title {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 96px;
+        line-height: 1.02;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      #fc-phase1 .p1-sub {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+
+      /* Phase 2 — header + cards grid */
+      #fc-phase2 {
+        position: absolute; inset: 0;
+        padding: 60px var(--pad-x) 90px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: flex-start;
+        gap: 28px;
+        box-sizing: border-box;
+        opacity: 0;        /* hidden during phase 1 */
+      }
+      #fc-phase2 .p2-header {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 48px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-3);
+        text-align: center;
+        opacity: 0;        /* faded in by GSAP */
+      }
+      .feature-cards {
+        width: 1700px;
+        display:flex; flex-wrap: wrap;
+        align-content: flex-start;
+        justify-content: center;
+        gap: 22px;
+      }
+      .feature-cards .feat-card { flex: 1 1 calc(33.333% - 16px); max-width: calc(33.333% - 16px); }
+
+      .feat-card {
+        position: relative;
+        padding: 22px 26px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 10px;
+        min-height: 220px;
+        box-sizing: border-box;
+        opacity: 0;        /* each card faded in by GSAP at its trigger time */
+      }
+      .feat-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-1)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .feat-card .row {
+        display:flex; flex-direction:row;
+        align-items:center; gap: 12px;
+        margin-bottom: 6px;
+      }
+      .feat-card .num {
+        width: 38px; height: 38px;
+        border-radius: 8px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: 1px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .feat-card .ver {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 1.5px;
+        padding: 4px 10px;
+        border-radius: 999px;
+      }
+      .feat-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 24px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .feat-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .feat-card .det code {
+        font-family: var(--mono);
+        font-size: 16px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .feat-card.a { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .feat-card.b { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .feat-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .feat-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .feat-card.e { --card-accent: var(--accent-warn); border-color: rgba(247, 129, 102, 0.55); }
+      .feat-card.f { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+
+      .feat-card.a .num { color: var(--accent-1);    background: rgba(88, 166, 255, 0.18);  }
+      .feat-card.b .num { color: var(--accent-2);    background: rgba(6, 182, 212, 0.18);   }
+      .feat-card.c .num { color: var(--accent-3);    background: rgba(163, 113, 247, 0.18); }
+      .feat-card.d .num { color: var(--accent-4);    background: rgba(63, 185, 80, 0.18);   }
+      .feat-card.e .num { color: var(--accent-warn); background: rgba(247, 129, 102, 0.18); }
+      .feat-card.f .num { color: var(--accent-1);    background: rgba(88, 166, 255, 0.18);  }
+
+      .feat-card.a .ver { color: var(--accent-1);    background: rgba(88, 166, 255, 0.14);  }
+      .feat-card.b .ver { color: var(--accent-2);    background: rgba(6, 182, 212, 0.14);   }
+      .feat-card.c .ver { color: var(--accent-3);    background: rgba(163, 113, 247, 0.14); }
+      .feat-card.d .ver { color: var(--accent-4);    background: rgba(63, 185, 80, 0.14);   }
+      .feat-card.e .ver { color: var(--accent-warn); background: rgba(247, 129, 102, 0.14); }
+      .feat-card.f .ver { color: var(--accent-1);    background: rgba(88, 166, 255, 0.14);  }
+
+      /* Closing accent banner — GSAP owns transform; xPercent:-50 + scale set in tweens */
+      #fc-close {
+        position: absolute;
+        left: 50%; bottom: 70px;
+        opacity: 0;
+        background: rgba(63, 185, 80, 0.16);
+        border: 2px solid var(--accent-4);
+        border-radius: 14px;
+        padding: 12px 30px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        color: var(--accent-4);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 28px rgba(63, 185, 80, 0.4);
+      }
+    </style>
+
+    <!-- Phase 1: intro title -->
+    <div id="fc-phase1">
+      <div class="p1-title" id="fc-p1-title">Six changes that matter</div>
+      <div class="p1-sub"   id="fc-p1-sub">Before we dig into the details</div>
+    </div>
+
+    <!-- Phase 2: cards grid -->
+    <div id="fc-phase2">
+      <div class="p2-header" id="fc-header">Six changes that matter</div>
+      <div class="feature-cards" id="fc-grid">
+        <div class="feat-card a" id="fc-card-1">
+          <div class="row">
+            <div class="num">01</div>
+            <div class="ver">v2.1.120</div>
+          </div>
+          <div class="ttl">Windows: no Git required</div>
+          <div class="det">PowerShell is now the fallback when Git for Windows isn&rsquo;t installed. One less dependency on every fresh laptop.</div>
+        </div>
+        <div class="feat-card b" id="fc-card-2">
+          <div class="row">
+            <div class="num">02</div>
+            <div class="ver">v2.1.120</div>
+          </div>
+          <div class="ttl">claude ultrareview headless</div>
+          <div class="det">New CLI command runs <code>/ultrareview</code> non-interactively. Pipe findings to stdout from CI or scripts.</div>
+        </div>
+        <div class="feat-card c" id="fc-card-3">
+          <div class="row">
+            <div class="num">03</div>
+            <div class="ver">v2.1.119</div>
+          </div>
+          <div class="ttl">/config finally persists</div>
+          <div class="det">Settings written via <code>/config</code> save to your home directory with project / local / policy precedence.</div>
+        </div>
+        <div class="feat-card d" id="fc-card-4">
+          <div class="row">
+            <div class="num">04</div>
+            <div class="ver">v2.1.121</div>
+          </div>
+          <div class="ttl">MCP alwaysLoad flag</div>
+          <div class="det">Tools from servers marked <code>alwaysLoad: true</code> skip the search-deferral and load right when the session starts.</div>
+        </div>
+        <div class="feat-card e" id="fc-card-5">
+          <div class="row">
+            <div class="num">05</div>
+            <div class="ver">v2.1.121</div>
+          </div>
+          <div class="ttl">PostToolUse override</div>
+          <div class="det">Hooks can now replace tool output for any tool via <code>updatedToolOutput</code>. Was MCP-only.</div>
+        </div>
+        <div class="feat-card f" id="fc-card-6">
+          <div class="row">
+            <div class="num">06</div>
+            <div class="ver">v2.1.121</div>
+          </div>
+          <div class="ttl">Faster startup + LSP summaries</div>
+          <div class="det">Recent Activity panel removed for faster cold start. LSP diagnostic summaries now expand on click instead of dumping inline.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closing accent banner -->
+    <div id="fc-close">&#10003; Those are the headlines. Now the details.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Transcript-driven timing. scene_t = root_t - 30.52 (data-start 30.52). Slot 21.30s.
+      // Narration:
+      //   "Before we dig deeper — six changes..."   scene_t 0.00  (#64)
+      //   "PowerShell replaces Git..."              scene_t 3.65  (#74)  → card 1
+      //   "claude ultrareview runs headless."       scene_t 6.23  (#79)  → card 2
+      //   "Slash config persists on restart."       scene_t 8.32  (#83)  → card 3
+      //   "MCP servers got an always load flag."    scene_t 10.77 (#88)  → card 4
+      //   "PostToolUse hooks override..."           scene_t 13.51 (#95)  → card 5
+      //   "And cold start is faster."               scene_t 16.84 (#101) → card 6
+      //   "Those are the headlines."                scene_t 18.63 (#106)
+      //   "Now the details."                        scene_t 19.86 (#110)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ─── Phase 1: intro title (0..3s) for "Before we dig deeper — six changes..." ───
+      tl.fromTo("#fc-p1-title",
+        { y: 30, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.55, ease: "power3.out" },
+        0.0);
+      tl.fromTo("#fc-p1-sub",
+        { y: 20, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.45, ease: "power3.out" },
+        0.25);
+
+      // Phase 1 → Phase 2 crossfade just before "PowerShell..." @ 3.65
+      tl.to("#fc-phase1", { opacity: 0, duration: 0.4, ease: "power2.in" }, 3.10);
+      tl.to("#fc-phase2", { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.10);
+
+      // Phase 2 header
+      tl.fromTo("#fc-header",
+        { y: 24, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.35, ease: "power3.out" },
+        3.30);
+
+      const cardTriggers = [
+        { sel: "#fc-card-1", num: "#fc-card-1 .num", at:  3.65 },
+        { sel: "#fc-card-2", num: "#fc-card-2 .num", at:  6.23 },
+        { sel: "#fc-card-3", num: "#fc-card-3 .num", at:  8.32 },
+        { sel: "#fc-card-4", num: "#fc-card-4 .num", at: 10.77 },
+        { sel: "#fc-card-5", num: "#fc-card-5 .num", at: 13.51 },
+        { sel: "#fc-card-6", num: "#fc-card-6 .num", at: 16.84 },
+      ];
+      cardTriggers.forEach(({ sel, num, at }, i) => {
+        const next = cardTriggers[i + 1] ? cardTriggers[i + 1].at : 18.63;
+        const dwell = next - at;
+
+        // Card slides in on its narration cue
+        tl.fromTo(sel,
+          { y: 30, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" },
+          at);
+        // Number badge tick ~1.5s after entrance — underlines the spoken header
+        if (dwell > 2.0) {
+          tl.to(num, { scale: 1.20, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.2);
+        }
+      });
+
+      // Closing banner on "Those are the headlines" @ 18.63
+      tl.fromTo("#fc-close",
+        { xPercent: -50, scale: 0.85, opacity: 0 },
+        { xPercent: -50, scale: 1,    opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+        18.63);
+
+      // Anchor timeline to slot length (21.30s)
+      tl.set({}, {}, 21.30);
+
+      window.__timelines["scene-feature-cards"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,191 @@
+<!--
+  scene-terminal.html — macOS terminal window with code block.
+
+  Structure: small mono overline + 56px headline above; centered terminal
+  window with traffic-light titlebar dots + content area showing a $ prompt
+  and a flag-colored command. Used for "$ claude update" CTA-adjacent moments
+  and for showing Claude Code commands inline (e.g. /plan, /vim).
+
+  Ported from diy-yt-creator/src/ClaudeCodeV21112-118/components/TerminalWindow.tsx
+  into the standard sub-comp shell pattern (data-composition-id, paused timeline,
+  registered on window.__timelines).
+-->
+<template id="scene-terminal-template">
+  <div data-composition-id="scene-terminal"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-terminal-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing: border-box;
+      }
+      #scene-terminal-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align: center;
+      }
+      #scene-terminal-content .term-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #scene-terminal-content .term-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        font-style: normal;
+        color: var(--text);
+        letter-spacing: -1px;
+        text-align: center;
+        max-width: 1400px;
+        line-height: 1.05;
+      }
+      .terminal-window {
+        width: 1400px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(28, 33, 40, 0.95);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55),
+                    0 0 0 1.5px rgba(88, 166, 255, 0.4);
+      }
+      .term-titlebar {
+        height: 40px;
+        display: flex; align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        background: #21262D;
+        position: relative;
+      }
+      .term-titlebar .dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+      }
+      .term-titlebar .dot.red    { background: #FF5F56; }
+      .term-titlebar .dot.yellow { background: #FFBD2E; }
+      .term-titlebar .dot.green  { background: #27C93F; }
+      .term-titlebar .title {
+        position: absolute;
+        left: 50%; transform: translateX(-50%);
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 18px;
+        color: var(--text-secondary);
+      }
+      .term-content {
+        padding: 36px 44px;
+        font-family: var(--mono);
+        font-size: 32px;
+        line-height: 1.5;
+        color: var(--text);
+      }
+      .term-content .prompt { color: var(--accent-4); }
+      .term-content .flag   { color: var(--accent-1); }
+      .term-content .arg    { color: var(--text-secondary); }
+      .term-content .cursor {
+        display: inline-block;
+        width: 14px; height: 30px;
+        background: var(--accent-4);
+        margin-left: 6px;
+        vertical-align: -4px;
+      }
+      .term-content .out-line {
+        display: block;
+        margin-top: 14px;
+        font-size: 22px;
+        color: var(--text-secondary);
+        opacity: 0;
+      }
+      .term-content .out-line.warn { color: var(--accent-warn); }
+      .term-content .out-line.ok   { color: var(--accent-4); }
+      #scene-terminal-content .term-overline,
+      #scene-terminal-content .term-headline { opacity: 0; }
+      .terminal-window { opacity: 0; }
+    </style>
+
+    <div id="scene-terminal-content">
+      <div class="header-block">
+        <div class="term-overline" id="term-overline">RUN IT HEADLESS</div>
+        <div class="term-headline" id="term-headline">Code review, in one command.</div>
+      </div>
+
+      <div class="terminal-window" id="term-window">
+        <div class="term-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="title">~/project</span>
+        </div>
+        <div class="term-content">
+          <span class="prompt">$</span> claude <span class="flag">ultrareview</span> <span class="arg">src/auth.ts</span><span class="cursor" id="term-cursor"></span>
+          <span class="out-line warn" id="term-out-1">  ⚠ src/auth.ts:42  unhandled rejection on token refresh</span>
+          <span class="out-line warn" id="term-out-2">  ⚠ src/auth.ts:81  missing expires_in fallback</span>
+          <span class="out-line ok"   id="term-out-3">  ✓ 2 findings · piped to stdout</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Transcript-driven timing. scene_t = root_t - 81 (data-start 81). Slot 9s.
+      // Narration: "Headless code review, in one command. Point it at a file. Or
+      // a directory. Pipe the output anywhere. Just findings, straight to standard output."
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Header before "Headless code review" @ scene_t 0.26
+      tl.fromTo("#term-overline", { y: 20, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.4, ease: "power3.out" }, 0);
+      tl.fromTo("#term-headline", { y: 30, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.5, ease: "power3.out" }, 0.1);
+      tl.fromTo("#term-window", { scale: 0.92, opacity: 0 },
+                                { scale: 1,    opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.26);
+
+      // Findings on spoken phrases:
+      //   "Point it at a file"  @ 2.61
+      //   "Or a directory"      @ 4.47
+      //   "Pipe the output"     @ 5.47
+      tl.fromTo("#term-out-1",
+        { x: -10, opacity: 0 },
+        { x: 0,   opacity: 1, duration: 0.3, ease: "power2.out" }, 2.61);
+      tl.fromTo("#term-out-2",
+        { x: -10, opacity: 0 },
+        { x: 0,   opacity: 1, duration: 0.3, ease: "power2.out" }, 4.47);
+      tl.fromTo("#term-out-3",
+        { x: -10, opacity: 0 },
+        { x: 0,   opacity: 1, duration: 0.35, ease: "back.out(1.4)" }, 5.47);
+
+      // Cursor blink across the full scene (~9s, 18 cycles)
+      tl.to("#term-cursor", { opacity: 0, duration: 0.5, ease: "steps(1)", yoyo: true, repeat: 16 }, 0.8);
+
+      // Border breathe (4 cycles)
+      tl.to("#term-window", {
+        boxShadow: "0 25px 60px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(88, 166, 255, 0.7)",
+        duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 4
+      }, 0.8);
+
+      // "Just findings" @ 6.93 → OK line emphasis
+      tl.to("#term-out-3", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 6.93);
+      tl.to("#term-out-3", { color: "#7EE08A", duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 7.1);
+
+      // "standard output" @ 8.19 → headline color + terminal punch
+      tl.to("#term-headline", { color: "#06B6D4", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 8.19);
+      tl.to("#term-window", { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 8.3);
+
+      // Anchor timeline duration to 9s = slot length
+      tl.set({}, {}, 9);
+
+      window.__timelines["scene-terminal"] = tl;
+    </script>
+  </div>
+</template>

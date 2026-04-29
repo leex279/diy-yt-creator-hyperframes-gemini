@@ -32,7 +32,7 @@ Open the studio URL it prints. Hot-reload on save.
 
 ```bash
 npx hyperframes render videos/claude-connectors-everyday-life \
-  -o videos/claude-connectors-everyday-life/out/short.mp4
+  -o videos/claude-connectors-everyday-life/out/claude-connectors-everyday-life.mp4
 ```
 
 `out/` is gitignored.
@@ -59,7 +59,7 @@ npx hyperframes inspect videos/$SLUG
 npx hyperframes preview videos/$SLUG
 
 # Ship
-npx hyperframes render videos/$SLUG -o videos/$SLUG/out/short.mp4
+npx hyperframes render videos/$SLUG -o videos/$SLUG/out/$SLUG.mp4
 ```
 
 PowerShell equivalent for the copy: `Copy-Item -Recurse templates/shorts/anthropic videos/$SLUG`.

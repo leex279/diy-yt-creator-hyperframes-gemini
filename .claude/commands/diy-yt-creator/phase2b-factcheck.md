@@ -89,6 +89,22 @@ For each Tier 1 and Tier 2 claim:
 3. **Prefer primary sources**: Official reports, press releases, earnings transcripts, and documentation over blog posts or news articles.
 4. **Check recency**: If the claim says "2024" but the best source is from 2023, flag as STALE.
 5. **Verify exact numbers**: "nearly 24 million" vs "23.8 million" — the script can round, but the underlying number must be correct.
+6. **Noun-phrase fidelity (HARD RULE — added 2026-04-29 after the NEC `30,000 engineers` slip)**: a digit alone is NOT the claim. The claim is the **full noun phrase** the digit modifies. For every verified number/date/named-entity, quote the **complete source sentence** alongside the verdict and check that the script's HEAD NOUN matches.
+
+   **Common substitutions to catch:**
+   - `employees ↔ engineers` (different scope — engineers are a subset)
+   - `organizations ↔ teams ↔ departments` (different structures)
+   - `partners ↔ customers ↔ clients`
+   - `users ↔ developers ↔ accounts`
+   - `installs ↔ downloads ↔ MAU`
+
+   **Verdict logic:**
+   - Source: "approximately 30,000 NEC Group employees worldwide"
+   - Script: "30,000 engineers" → **CORRECTED, Tier 1** (digit matches but noun changed scope)
+   - Script: "30,000 employees" → VERIFIED ✓
+   - Script: "around 30,000 NEC employees worldwide" → VERIFIED ✓ (paraphrase preserves the head noun)
+
+   Flag every head-noun substitution as a **CORRECTED** verdict (Tier 1, not advisory) — the script must be rewritten to match the source's noun even when the digit, date, or entity name is correct. The substitution is an invisible scope drift that no other gate catches.
 
 ### Method B: Perplexity API (OPTIONAL — skipped in this project)
 

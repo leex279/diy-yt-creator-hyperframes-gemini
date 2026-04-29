@@ -19,12 +19,12 @@ If the topic has no real source data and would require fabricated stats/dates, *
 A previewable HyperFrames project at `videos/<slug>/` with:
 
 - `script.txt` — narration script
-- `audio/narration.wav` — Kokoro TTS narration
-- `transcript.json` — word-level timestamps
+- `audio/narration.wav` — ElevenLabs TTS narration (via `python scripts/elevenlabs-tts.py`)
+- `transcript.json` — word-level timestamps (returned directly by ElevenLabs alignment — no separate transcribe step)
 - `index.html` — composition filled with real content, transitions sync'd to spoken-word frames
 - Preview studio open in the browser at the URL printed by `hyperframes preview`
 
-The user runs render themselves: `npx hyperframes render videos/<slug> -o videos/<slug>/out/short.mp4`.
+The user runs render themselves: `npx hyperframes render videos/<slug> -o videos/<slug>/out/<slug>.mp4`.
 
 ---
 
@@ -61,6 +61,41 @@ Replace the placeholders:
 }
 ```
 
+### 3.5. Ask: Add Dynamous promotion?
+
+Before any content goes in, ask the user the per-video opt-in question:
+
+> **"Add Dynamous promotion to this Short? (y/N — default no)"**
+
+Record the answer in `meta.json` for later audit:
+
+```json
+{
+  "id": "<slug>",
+  "name": "<Title Case Name>",
+  "dynamousPromotion": false
+}
+```
+
+#### On NO (default)
+
+Add `"dynamousPromotion": false` to `meta.json` and proceed to Step 4 normally. The Short is identical to today's behavior.
+
+#### On YES
+
+1. Add `"dynamousPromotion": true` to `meta.json`.
+2. Open [`videos/_template-wiring-snippet.md`](../../../videos/_template-wiring-snippet.md) and follow Steps 1–7. Specifically:
+   - **Step 1** (badge) — paste-in component, fires at `t=3.0s`. Required.
+   - **Step 2** (endcard) — sub-composition replacing the trailing 5.0s (sized to match YouTube end-screen window). Required.
+   - **Step 3** (module interstitial) — only if `node scripts/find-dynamous-module.js <tags>` prints a real module. Skip if `NO_MATCH`.
+   - **Step 4** (discount bubble) — only for tutorial / over-the-shoulder Shorts where the platform is on screen. Skip otherwise.
+   - **Step 5** — append the locked outro line to `script.txt` after Branch A/B drafting (Step 4 below).
+   - **Steps 6–7** — stub `videos/<slug>/description.md` and `videos/<slug>/pinned-comment.md` with the verbatim templates.
+3. Run the wiring snippet's "Execution checklist" (Value Test, Friend Test, Hook Test, CTA softness, frictionless purchase) before previewing.
+4. The endcard reserves the trailing 5.0s — adjust your final phase (CTA) so the host narration ends roughly 5s before total duration, leaving the endcard window to carry the close. Typical pattern: shrink the CTA phase to 3s and leave 2s of breathing room before the endcard fires.
+
+**Don't wire any of the four artifacts on a NO answer.** A "no" never gets retroactively flipped — re-spawn the video to change the decision.
+
 ### 4. Draft the script
 
 This step has two branches. **Try Branch A first** — if the pipeline ran, the script already exists and you should use it instead of inventing one.
@@ -96,10 +131,11 @@ Map narration to the four phase archetypes the template ships:
 
 **Style rules for narration text:**
 
+- Read `.claude/references/script-library.md` first — its annotated gold-standard examples set the rhythm target. The rules below are the fence; the library is the goal.
 - Short sentences. Kokoro TTS reads commas as breaths and periods as full pauses.
 - Never use semicolons or em-dashes in script.txt — Kokoro stumbles. Use periods.
 - Numbers: write digits, not words ("3 bugs", not "three bugs") — matches the visual stat pills.
-- Total target: 24-45s of narration. Going past 60s is fine for content-dense topics.
+- Total target: **~90s of narration (default)**. The 90s budget gives room for context + 1-2 evidence layers + CTA, which 45s consistently underdelivers on. Going shorter (45-60s) is allowed for thin topics; going longer (up to 180s) is fine for dense content.
 
 Save to `videos/<slug>/script.txt`. Use this exact format (one phase per blank-line block):
 
@@ -133,38 +169,50 @@ Read the output. Cross-check every stat / date / quote in the draft `script.txt`
 
 For visual grounding (per-app screenshots used inside phase 3 cards), use the `capture-asset` sub-playbook — see step 8 below.
 
-### 5. Generate TTS
+### 4.6. Trust-signal screenshot (REQUIRED for news / blog / announcement topics)
+
+**Required when**: the topic is an Anthropic news post, an official blog announcement, a press release, a release-note page, or any "this just happened, here's the source" framing. Examples: `anthropic.com/news/*`, `anthropic.com/research/*`, `openai.com/blog/*`, `claude.com/release-notes/*`. The screenshot is the receipt — viewers see the headline + dateline + page chrome and trust the claim within ~2-3s.
+
+**Skip when**: the topic is opinion / commentary / explainer not tied to a single canonical source page, OR the user already supplied a screenshot.
+
+**Capture command** (Playwright via Python — gives a clean 1024×1200 capture with cookie banners dismissed):
 
 ```bash
-npx hyperframes tts videos/<slug>/script.txt \
-  -o videos/<slug>/audio/narration.wav \
-  -v af_heart \
-  -s 1.0
+python -c "
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    ctx = browser.new_context(viewport={'width': 1024, 'height': 1200}, device_scale_factor=2)
+    page = ctx.new_page()
+    page.goto('<source_url>', wait_until='networkidle')
+    for sel in ['button:has-text(\"Reject all cookies\")', 'button:has-text(\"Accept all cookies\")', 'button:has-text(\"OK\")']:
+        try: page.locator(sel).first.click(timeout=2000); break
+        except Exception: pass
+    page.wait_for_timeout(1500)
+    page.screenshot(path='videos/<slug>/assets/<slug>-source-page.png', full_page=False)
+    browser.close()
+"
 ```
 
-**Voice picker** (default: `af_heart` — warm female):
+(If Playwright's chromium isn't installed, use the bundled hyperframes chrome-headless-shell with `--window-size=1024,1200 --hide-scrollbars --virtual-time-budget=8000 --screenshot=...` — but cookie banners may show.)
 
-| Voice | Use when |
-|---|---|
-| `af_heart` | Default. Warm, confident female. Works for almost everything. |
-| `af_nova` | Brighter, younger female. Good for product launches. |
-| `am_adam` | Confident American male. Good for news / postmortems. |
-| `bm_george` | British male. Good for documentary / explainer. |
-| `am_michael` | Deeper American male. Good for warning / heavy topics. |
+**Wire into the composition** in step 8 — see "Trust-signal card" sub-section there.
 
-Speed: keep at `1.0` for the first pass. If the script feels rushed at preview, regenerate at `0.95`. Never go above `1.15` — Kokoro distorts.
-
-If TTS fails or the model isn't downloaded, the CLI prints a download prompt — accept it, then re-run.
-
-### 6. Transcribe for word-level sync
+### 5. Generate TTS + transcript (one shot, ElevenLabs)
 
 ```bash
-npx hyperframes transcribe videos/<slug>/audio/narration.wav -d videos/<slug>
+python scripts/elevenlabs-tts.py videos/<slug> --shorts
 ```
 
-This writes `videos/<slug>/transcript.json` with the shape `[{ word, start, end, ... }, ...]` (seconds).
+This writes BOTH `videos/<slug>/audio/narration.wav` AND `videos/<slug>/transcript.json` in a single API call. Voice ID, model ID, voice settings (stability, similarity, style, speed, speaker boost), and pronunciation dictionary are all loaded from the repo-root `.env` — never hardcode them. The `--shorts` flag selects `ELEVENLABS_SPEED_SHORTS` over `ELEVENLABS_SPEED`.
 
-Default model is `small.en` — fine for 24-60s clips. If accuracy looks off on technical jargon, re-run with `-m medium.en`.
+The transcript is returned by ElevenLabs' alignment API — character-level timestamps grouped into whitespace-delimited word tokens. No separate transcribe step is needed (skip the legacy `npx hyperframes transcribe` path; whisper is no longer required for any new video).
+
+If the script changes, re-run this command — it overwrites both `narration.wav` and `transcript.json` atomically.
+
+### 6. Transcript verification
+
+The script writes `transcript.json` directly. Confirm it lands at `videos/<slug>/transcript.json` and the last word's `end` matches the audio duration printed by the script (they should match within 0.1s). No further action needed.
 
 ### 7. Compute phase boundaries
 
@@ -204,7 +252,7 @@ Edit in this exact order (one Edit per change):
 1. **`<title>`** in `<head>` → the video title
 2. **`<div id="root">`** `data-duration` → `total_duration` (rounded to 0.1s)
 3. **`#top-banner-logo`** `src` → **always reference `assets/<file>` (a copy inside the project)**, never `../../shared/logos/<file>`. The studio's preview server can only serve files inside the project directory, so external paths render as a broken 21px placeholder even though `hyperframes render` handles them. Copy the logo first: `cp shared/logos/anthropic-logo-light.svg videos/<slug>/assets/`, then set `src="assets/anthropic-logo-light.svg"`. For other brands, copy the relevant file from `shared/logos/` into the project's `assets/` (see "Real logos" below). NEVER use a styled text div when a real logo exists in `shared/logos/`.
-4. **Phase 1**: `#p1-overline`, `#p1-pre`, `#p1-hero` (the slam word), `#p1-caption`
+4. **Phase 1**: `#p1-overline`, `#p1-pre`, `#p1-hero` (the slam word), `#p1-caption`. **For news/blog/announcement topics (per step 4.6 above), ALSO add a trust-signal screenshot card** — see "Trust-signal card" below.
 5. **Phase 2**: `#p2-overline`, `#p2-headline`, both `.stat-pill` blocks (`.stat-num` and `.stat-label`)
 6. **Phase 3**: `#p3-overline`, all three `.tl-card` blocks (`.tl-date`, `.tl-title`, `.tl-sub`). Rotate accent classes (`orange` → `purple` → `blue`) so no two adjacent cards share an accent. If the user's data needs `green`, swap that in — but only one accent per card.
 7. **Phase 4**: `#p4-overline`, `#p4-url` (real URL), `#p4-subscribe` (usually leave as "Subscribe")
@@ -244,6 +292,96 @@ Edit in this exact order (one Edit per change):
        Use `<computed_start> = transcript[anchor_word_index].start + offset_seconds` (rounded to 0.01s).
     5. Verify every `data-volume` is ≤ `0.25` (per [`.claude/rules/audio-design.md`](../../rules/audio-design.md)). The single allowed exception is `sfx-sonic-logo` at `0.6`.
     6. Verify track-index uniqueness for any concurrent cues (overlapping `[start, start+duration)` windows on the same `data-track-index` will trip lint).
+    7. **SFX density cap (HARD)**: target **~2 SFX placements per 10 seconds of narration**, maximum **2.5/10s**. The reference is `videos/anthropic-100b-deal/index.html` (1.95/10s, 15 cues over 77s). Per-cue volumes from `audio-design.md` are already calibrated; the perception of "too loud" comes from density, not gain. Density audit: count `<audio id="sfx-...">` and divide by narration duration in 10s units. If you're over 2.5/10s, drop:
+       - **Layered stacks of >2 cues** at the same anchor moment (typical offender: PIVOT moments with `impact-slam + screen-shake + glitch-zap + strike-cross` — keep at most 2 of those four). The reference has zero layered stacks.
+       - **Mid-stagger pops** in 3+ card grids (keep first and last card pops, drop the middle ones). Example: a 4-card vertical grid gets 2 spring-pops, not 4.
+       - **Secondary-stat slams** when a primary stat already has its slam (e.g., the dimmed `105K` next to a primary `30K` — only the primary needs a `scale-slam`).
+       - **Subscribe-pill pops** when an `audio-reactive-glow` is already on the pill (pick one mechanism, not both).
+
+### 8.4. Trust-signal card (REQUIRED for news / blog / announcement topics)
+
+When step 4.6 captured a source-page screenshot, wire it into Phase 1 as a "browser frame" card that holds during the spoken hook (~0.6s → ~5.5s window) so viewers see the official page chrome + headline before the slam takes over. Reference implementation: `videos/anthropic-nec-partnership/index.html` — search for `#p1-source-card`.
+
+**HTML** (insert inside `#phase1` `.phase-content`, after `#p1-caption`):
+
+```html
+<div id="p1-source-card">
+  <div id="p1-source-chrome">anthropic.com/news/anthropic-nec</div>
+  <img id="p1-source-img" src="assets/<slug>-source-page.png" alt="<source title> page" crossorigin="anonymous" />
+</div>
+```
+
+The chrome bar text is the visible URL (no protocol). The `::before` pseudo-element renders fake macOS traffic-light dots so the card reads as a real browser window in <2s.
+
+**CSS** (add to the `<style>` block):
+
+```css
+/* Trust signal screenshot card (Scene 1) — 900px wide, ~90px gutter on each side */
+#p1-source-card {
+  position: absolute;
+  top: 320px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  z-index: 4;
+  opacity: 0;
+  pointer-events: none;
+}
+#p1-source-chrome {
+  width: 100%;
+  background: rgba(28, 32, 44, 0.96);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-bottom: none;
+  border-radius: 14px 14px 0 0;
+  padding: 14px 22px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.78);
+  text-align: left;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+}
+#p1-source-chrome::before {
+  content: "● ● ●";
+  color: rgba(255,255,255,0.30);
+  font-size: 14px;
+  letter-spacing: 5px;
+  margin-right: 16px;
+}
+#p1-source-img {
+  width: 900px;
+  height: auto;
+  display: block;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  background: #fff;
+}
+```
+
+**GSAP** (add to the timeline ABOVE the existing Phase 1 entrance tweens):
+
+```js
+// Trust signal screenshot card: fade in 0.6s → out by 6.0s
+tl.fromTo("#p1-source-card",
+  { y: 16, opacity: 0 },
+  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false },
+  0.6);
+tl.to("#p1-source-card",
+  { opacity: 0, duration: 0.5, ease: "power2.in", overwrite: "auto" },
+  5.5);
+```
+
+**Phase 1 timing reconciliation**: delay `#p1-pre` (the sub-line) entrance to ~6.2s so it doesn't compete with the screenshot card. The slam (`#p1-hero`) typically lands later (7-9s) and won't conflict.
+
+**Sizing rule**: 900px width on a 1080px canvas leaves ~90px gutter each side — enough for the dark stage to frame the card, not enough to make the screenshot feel small. Don't shrink below 800px (loses readability) or grow above 960px (eats the gutter).
+
+**Don't**:
+- Don't show the screenshot during the slam (≥6.0s) — it competes for visual attention.
+- Don't link the screenshot to a specific scene's content beyond Scene 1; the trust beat is in the hook, not in the body.
+- Don't use a full-page screenshot taller than ~1200px — it crowds the card past where the slam lands.
 
 ### 8.5. Lib pick (optional but recommended)
 
@@ -320,9 +458,9 @@ One concise message containing:
 
 - **Slug + path**: `videos/<slug>/`
 - **Total duration**: `XX.Xs`
-- **Voice**: `af_heart` (or whichever was used)
+- **Voice**: `am_michael` (or whichever was used)
 - **Preview URL**: `http://localhost:5173`
-- **Render command** (do NOT run it): `npx hyperframes render videos/<slug> -o videos/<slug>/out/short.mp4`
+- **Render command** (do NOT run it): `npx hyperframes render videos/<slug> -o videos/<slug>/out/<slug>.mp4`
 - **Any inspect findings** that needed manual content tradeoffs (e.g. "shortened slam word from BREAKTHROUGH to MAJOR for fit")
 
 That's it. Stop. Wait for user to iterate or trigger render manually.

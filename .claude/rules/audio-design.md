@@ -78,16 +78,18 @@ file in `shared/audio/sfx/<cue>.mp3`, copied into a video via
 
 | Cue                | File                  | `data-volume` | Use for                                          |
 | ------------------ | --------------------- | ------------- | ------------------------------------------------ |
-| `impact-slam`      | `impact-slam.mp3`     | **0.20**      | Hero word reveal; pivot moment                    |
-| `scale-slam`       | `scale-slam.mp3`      | **0.20**      | Stat-pill entrance; big number reveal             |
-| `screen-shake`     | `screen-shake.mp3`    | **0.15**      | Hero word inline shake; layer with impact-slam    |
-| `cinematic-whoosh` | `cinematic-whoosh.mp3`| **0.15**      | Phase / scene change                              |
-| `spring-pop`       | `spring-pop.mp3`      | **0.15**      | Card or chip entrance                             |
-| `pop`              | `pop.mp3`             | **0.13**      | Small chip / list item                            |
-| `glitch-zap`       | `glitch-zap.mp3`      | **0.12**      | "BUT…" pivot, regression callout                  |
-| `strike-cross`     | `strike-cross.mp3`    | **0.15**      | Strikethrough moment                              |
-| `sonic-logo`       | `sonic-logo.mp3`      | **0.60**      | Brand stinger at composition start (optional)     |
-| **fallback**       | (any unlisted cue)    | **0.15**      | Hard cap unless explicitly tuned                  |
+| `impact-slam`      | `impact-slam.mp3`     | **0.15**      | Hero word reveal; pivot moment                    |
+| `scale-slam`       | `scale-slam.mp3`      | **0.15**      | Stat-pill entrance; big number reveal             |
+| `screen-shake`     | `screen-shake.mp3`    | **0.11**      | Hero word inline shake; layer with impact-slam    |
+| `cinematic-whoosh` | `cinematic-whoosh.mp3`| **0.11**      | Phase / scene change                              |
+| `spring-pop`       | `spring-pop.mp3`      | **0.11**      | Card or chip entrance                             |
+| `pop`              | `pop.mp3`             | **0.10**      | Small chip / list item                            |
+| `glitch-zap`       | `glitch-zap.mp3`      | **0.09**      | "BUT…" pivot, regression callout                  |
+| `strike-cross`     | `strike-cross.mp3`    | **0.11**      | Strikethrough moment                              |
+| `sonic-logo`       | `sonic-logo.mp3`      | **0.45**      | Brand stinger at composition start (optional)     |
+| **fallback**       | (any unlisted cue)    | **0.11**      | Hard cap unless explicitly tuned                  |
+
+> **Calibration history**: 2026-04-28 — all SFX volumes reduced 25% from the original calibration (0.20 → 0.15, 0.15 → 0.11, 0.13 → 0.10, 0.12 → 0.09, 0.60 → 0.45). The earlier values still met the 0.25 hard cap but felt too loud relative to narration in the actual mix. The hard cap of 0.25 is unchanged.
 
 If a needed cue is missing from this table, **stop and propose adding it to
 `shared/audio/MANIFEST.md`**. Do not invent a filename — the sync hook will fail
@@ -107,7 +109,7 @@ own track:
        data-start="0"
        data-duration="1.5"
        data-track-index="3"
-       data-volume="0.6"></audio>
+       data-volume="0.45"></audio>
 ```
 
 The 0.6 volume is allowed only here because the sonic-logo is meant to play
@@ -270,7 +272,7 @@ arrives, a beat-alignment helper will land here.
           data-start="1.55"
           data-duration="0.6"
           data-track-index="3"
-          data-volume="0.20"></audio>
+          data-volume="0.15"></audio>
    ```
 
 4. **Audit alignment** (post-build): see "SFX Must Be Aligned …" above.

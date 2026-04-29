@@ -1,0 +1,110 @@
+<!--
+  shared/lib/components/dynamous-badge/component.html
+  Persistent Dynamous brand mark across all phases of an opted-in
+  Short. Sits in the YouTube Shorts safe zone (bottom-left, clear of
+  the action column and below the comment/likes/subscribe row).
+  Idle opacity 0.55 — visible but quiet. Single 0.6s entrance at
+  t=3.0s — AFTER the 3-second hook so the badge never competes with
+  the opening visual.
+
+  SOURCE:
+    diy-yt-creator/src/shared/components/ShortsDynamousBadge.tsx:1-93
+      (timing, opacity, "muted text + small mark" composition)
+    DynamousMidroll.tsx:78-95   (modern-gradient palette)
+    DynamousMidroll.tsx:977-979 (logo asset path)
+    shared/lib/components/top-banner-wordmark/component.html:1-79
+      (three-section paste-in pattern this file mirrors)
+    .claude/PRPs/plans/dynamous-shorts-promotion.plan.md (strategy doc
+    rule: "Never start the video with the brand name. You have less
+    than 3 seconds to stop the scroll.")
+
+  ──────────────────────────────────────────────────────────────────────
+  IMPORTANT — LOGO MUST BE A LOCAL COPY
+  ──────────────────────────────────────────────────────────────────────
+  HyperFrames' bundler/preview server REJECTS paths outside the project
+  directory (isSafePath / safePath in @hyperframes/core). A path like
+  "../../shared/logos/dynamous-logo.png" lints clean but 404s at
+  preview and renders blank. Always:
+
+    1. Copy the logo from shared/logos/dynamous-logo.png into
+       videos/<slug>/assets/dynamous-logo.png
+    2. Set src="assets/dynamous-logo.png"
+-->
+
+<!-- 1) HTML — paste at the top of your composition's root <div>. -->
+
+<div id="dynamous-badge">
+  <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+  <span id="dynamous-badge-url">dynamous.ai</span>
+</div>
+
+<!-- 2) CSS — merge into your composition's <style> block. NOTE: position
+        absolute, z-index 10, NO class="clip" (the badge is persistent,
+        not part of the clip system). -->
+
+<style>
+  /* shared/lib/components/dynamous-badge — keep this comment block */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 460px;
+    /* clear of YouTube Shorts subscribe / action column (bottom 380 reserve + breathing room) */
+    left: 60px;
+    /* clear of left-edge safe zone */
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    /* midroll bgDark @ 55% — glass surface */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* midroll glassBorder */
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    /* idle — subtle but readable on dark canvases */
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+
+  #dynamous-badge-mark {
+    width: 50px;
+    height: 50px;
+    display: block;
+  }
+
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+    /* midroll textPrimary — meets AA on the dark canvas */
+  }
+</style>
+
+<!-- 3) JS — call from the host root timeline. Single 0.6s entrance at
+        t=3.0s, then static. The 3.0s delay is INTENTIONAL: strategy
+        doc rule "You have less than 3 seconds to stop the scroll.
+        Never start the video with the brand name." -->
+
+<script>
+  function addDynamousBadgeEntrance(tl) {
+    // DO NOT lower the start time below 3.0s — the badge must not
+    // compete with the opening hook frame.
+    tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+  }
+  // Usage: addDynamousBadgeEntrance(tl);
+</script>
+
+<!--
+  ASSET COPY CHECKLIST (do this BEFORE wiring):
+    cp shared/logos/dynamous-logo.png videos/<slug>/assets/dynamous-logo.png
+    # On Windows PowerShell:
+    # Copy-Item shared/logos/dynamous-logo.png videos/<slug>/assets/dynamous-logo.png
+
+  This component is OPT-IN per video. Do NOT add it by default to
+  templates or to existing videos retroactively. The author chooses
+  per video at spawn time (see videos/_template-wiring-snippet.md).
+-->

@@ -1,5 +1,5 @@
 ---
-description: "Phase 2.5 — LLM script critique loop: five-pass quality gate before TTS"
+description: "Phase 2.5 — LLM script critique loop: six-pass quality gate before TTS"
 argument-hint: <slug>
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ---
@@ -7,11 +7,11 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 <objective>
 Execute Phase 2.5 of the HyperFrames pipeline.
 
-**Goal**: Catch structural problems in the script before TTS generation. Run a five-pass automated critique that gates progress to Phase 2a.
+**Goal**: Catch structural problems in the script before TTS generation. Run a six-pass automated critique that gates progress to Phase 2a.
 
 **Input**: `videos/<slug>/scripts/full-script.md` (from Phase 2)
 **Output**: `videos/<slug>/scripts/critique-report.md`
-**Gate condition**: Hook Score ≥ 7.0 AND Story Arc Score ≥ 7.0 AND Loop Opener count ≥ required minimum AND banned phrase count == 0
+**Gate condition**: Hook Score (QG-1) ≥ 7.0 AND Story Arc QG-2a (Arc 1+2+4 average) ≥ 7.0 AND CTA Strength QG-2b (Arc 3 standalone) ≥ 7.0 AND Loop Opener count (QG-3) ≥ required minimum AND banned phrase count (QG-4) == 0 AND (Pass 6 / QG-5: connector density + direct address + engagement CTA all pass — SKIPPED for `voice_profile == tutorial`).
 
 If ANY gate fails, the script is BLOCKED from Phase 2a until the issue is fixed and Phase 2.5 is re-run.
 </objective>
@@ -19,7 +19,7 @@ If ANY gate fails, the script is BLOCKED from Phase 2a until the issue is fixed 
 <autonomous-mode>
 ## When called from /diy-yt-creator:full-auto
 
-Run all five passes automatically. If all gates pass, proceed to Phase 2a immediately. If any gate fails, STOP orchestration and report which gate(s) failed with specific actionable issues. Do not ask questions.
+Run all six passes automatically (Pass 6 skips if `voice_profile == tutorial`). If all gates pass, proceed to Phase 2a immediately. If any gate fails, STOP orchestration and report which gate(s) failed with specific actionable issues. Do not ask questions.
 </autonomous-mode>
 
 <process>
@@ -98,11 +98,18 @@ Explicit promise of resolution ("In the next X minutes, you will...").
 ### Scoring Formula
 
 ```
-base = (D1 + D2 + D3) / 3
-stun_bonus = D4 / 20        # 0.0 or 0.1
-alignment_bonus = D4b       # 0.0 or 0.5
-hook_score = min(10, round(base + stun_bonus + alignment_bonus + D5, 1))
+base = (D1 * 0.4) + (D2 * 0.4) + (D3 * 0.2)   # was equal-weighted (D1 + D2 + D3) / 3
+stun_bonus = D4 / 20                            # 0.0 or 0.1
+alignment_bonus = D4b                           # 0.0 or 0.5
+narrative_flow_bonus = 0.5 if hook contains an explanatory connector
+                       (because / to keep / to <verb> / why … because / and so /
+                       here's why), else 0
+hook_score = min(10, round(base + stun_bonus + alignment_bonus + D5 + narrative_flow_bonus, 1))
 ```
+
+**Why the rebalance**: equal weighting auto-rewarded triple-stat openers like `"100 billion dollars. 5 gigawatts. Zero Nvidia chips."` because Specificity (D3) scored 10/10 there. Down-weighting D3 to 0.2 forces the hook to earn its score on Curiosity Gap (D1) and Stakes Clarity (D2). The narrative_flow_bonus rewards openers that earn the click via a *reason*, not just a number.
+
+**Sync rule**: this formula MUST stay in lockstep with `phase1-plan.md` Step 4D. If you change one, change the other.
 
 **Quality Gate 1**: Hook Score MUST be ≥ 7.0 to proceed.
 
@@ -257,12 +264,24 @@ Advisory — adds 0.5 bonus points to story arc score when present.
 ### Scoring Formula
 
 ```
-story_arc_score = round((Arc1 + Arc2 + Arc3 + Arc4) / 4, 1)
+# Quality Gate 2 splits into TWO independent sub-gates:
+#   QG-2a — average of Arc1, Arc2, Arc4 (timing + benefit-led + cohesion). MUST be ≥ 7.0.
+#   QG-2b — Arc3 (CTA Strength) standalone. MUST be ≥ 7.0.
+# BOTH MUST PASS — a strong arc cannot mask a weak CTA.
+
+qg2a_score = round((Arc1 + Arc2 + Arc4) / 3, 1)
 experience_bonus = 0.5 if Arc5 == 1 else 0
-story_arc_score = min(10, story_arc_score + experience_bonus)
+qg2a_score = min(10, qg2a_score + experience_bonus)
+
+qg2b_score = Arc3   # CTA Strength as independent sub-gate
 ```
 
-**Quality Gate 2**: Story Arc Score MUST be ≥ 7.0 to proceed.
+**Why the split**: previously, the CTA score was averaged with the other three arc elements, so a 5/10 CTA passed when the others were 9–10. The Gemini gold-standard CTA pattern (rhetorical question + comments-ask + subscribe-ask) MUST score ≥ 7 on its own. A weak declarative closer ("The compute crunch is over.") cannot ride on the back of a strong hook.
+
+**Quality Gate 2a**: Average of (Arc1, Arc2, Arc4) MUST be ≥ 7.0.
+**Quality Gate 2b**: Arc3 (CTA Strength) MUST be ≥ 7.0 INDEPENDENTLY.
+
+Both must pass. Either failing blocks the script.
 
 ### Output Format
 
@@ -270,12 +289,13 @@ story_arc_score = min(10, story_arc_score + experience_bonus)
 | ---------------------- | ------------ | ---------------------------------------------------- |
 | Hook to Value Timing   | X/10         | [observation]                                        |
 | Benefit-Led Scenes     | X/10         | [which scenes are feature-led]                       |
-| CTA Strength           | X/10         | [debate question present?]                           |
+| CTA Strength           | X/10         | [debate question + comments-ask + subscribe-ask?]    |
 | Narrative Cohesion     | X/10         | [open loop resolved?]                                |
 | Experience Signal      | 0 or +0.5    | [scar found / not found — quote if found]            |
-| **STORY ARC SCORE**    | **X.X/10**   | **PASS / FAIL (threshold: 7.0)**                     |
+| **QG-2a (Arc 1+2+4)**  | **X.X/10**   | **PASS / FAIL (threshold: 7.0)**                     |
+| **QG-2b (CTA solo)**   | **X.X/10**   | **PASS / FAIL (threshold: 7.0)**                     |
 
-**On FAIL**: Provide 2-3 specific structural rewrites pointing to exact scenes that need changes.
+**On FAIL**: Provide 2-3 specific structural rewrites pointing to exact scenes that need changes. If QG-2b fails, quote the existing CTA verbatim and propose a replacement that includes a rhetorical question, a comments-ask, and a subscribe-ask (per `brand-voice-news-explainer.md` CTA Pattern, when `voice_profile == news-explainer`).
 
 ---
 
@@ -382,6 +402,79 @@ Result: X blocking hits — **PASS / FAIL**
 
 **On FAIL**: List each hit with scene location and a concrete fix. Writer must address ALL blocking hits before re-running QG-4.
 
+---
+
+## Pass 6: Narrative Flow & Direct Address (Quality Gate 5 — news-explainer profile)
+
+**Skip if `voice_profile == tutorial`** (lookup `voice_profile` from `videos/<slug>/research/content-brief.md`; default to `news-explainer` if missing). Tutorial scripts are allowed terse and fragment-heavy by design — return PASS without scoring and note "skipped (tutorial profile)" in the report.
+
+For `news-explainer` and `comparison` profiles, score three sub-checks. ALL three sub-gates must pass for QG-5 PASS.
+
+### Check 1 — Connector Density (1–10)
+
+Count occurrences in **body scenes** (NOT hook, NOT CTA) of these explanatory connectors:
+`because`, `why`, `to <verb>`, `and` (sentence-initial), `but`, `plus`, `so`, `here's why`, `the reason`. Match case-insensitive, on word boundaries. Each unique connector type counts once per scene; the same connector appearing twice in one scene counts once.
+
+| Score | Criteria                                                  |
+| ----- | --------------------------------------------------------- |
+| 9–10  | ≥ 5 connectors across body, ≥ 3 unique types             |
+| 7–8   | ≥ 4 connectors, ≥ 2 unique types                          |
+| 5–6   | ≥ 3 connectors                                            |
+| 3–4   | ≥ 1 connector                                             |
+| 1–2   | 0 connectors (pure-fragment script)                       |
+
+**QG-5a passes if score ≥ 6.**
+
+### Check 2 — Direct Address Sentence (0 or 2)
+
+Scan body scenes (NOT hook, NOT CTA) for at least one second-person sentence matching these patterns:
+
+- `"If you ['re building on / 've noticed / use / care about / build on] X, [implication]"`
+- `"You ['re probably / might be] [verb]ing X — [implication]"`
+- `"Your [thing] just got [Y]."`
+
+| Score | Criteria                                                  |
+| ----- | --------------------------------------------------------- |
+| 2     | At least one direct-address sentence in body              |
+| 0     | Zero direct-address sentences (or only in hook / CTA)     |
+
+**QG-5b passes if score == 2.**
+
+### Check 3 — Engagement CTA Closer (0, 1, or 2)
+
+Scan the FINAL scene for ALL three components:
+
+1. **Rhetorical / debate question** — sentence ends with `?` and is open-ended (not a question being immediately answered)
+2. **Comments-ask** — contains one of: `comments`, `let me know`, `tell me below`, `drop your take`
+3. **Subscribe-ask** — contains one of: `subscribe`, `for more <topic>`, `follow for more`
+
+| Score | Criteria                                                  |
+| ----- | --------------------------------------------------------- |
+| 2     | All three components present                              |
+| 1     | Two of three present                                      |
+| 0     | One or zero present (declarative non-engagement closer)   |
+
+**QG-5c passes if score ≥ 2.**
+
+### Scoring & Output Format
+
+```
+QG-5 PASS: QG-5a passes (score ≥ 6) AND QG-5b passes (score == 2) AND QG-5c passes (score ≥ 2)
+```
+
+| Sub-check                 | Score      | Notes                                                                            |
+| ------------------------- | ---------- | -------------------------------------------------------------------------------- |
+| Connector Density         | X/10       | [list of connectors found per scene; "0 connectors found" if pure-fragment]      |
+| Direct Address (body)     | 0 or 2     | [quote the line if found, or "absent" if not]                                    |
+| Engagement CTA Closer     | 0, 1, 2    | [quote the final scene; flag missing components]                                 |
+| **QG-5 (Narrative Flow)** | **PASS / FAIL** | **All three sub-gates must pass**                                            |
+
+**On FAIL**: provide concrete rewrites for each missing element:
+
+- If QG-5a fails: list 3-5 sentences from the script that could naturally accept a connector, propose the connector phrase
+- If QG-5b fails: propose 2 candidate direct-address sentences using the canonical patterns above, anchored to the topic's viewer experience
+- If QG-5c fails: propose a replacement final scene using the canonical CTA template `"[Rhetorical question about the topic]? Let me know in the comments. And subscribe for more [topic] news."`
+
 </process>
 
 <output>
@@ -390,18 +483,20 @@ Result: X blocking hits — **PASS / FAIL**
 
 Produce the final gate summary table:
 
-| Gate | Check                  | Result      | Score/Status                          |
-| ---- | ---------------------- | ----------- | ------------------------------------- |
-| QG-1 | Hook Strength          | PASS / FAIL | X.X/10 (threshold: 7.0)               |
-| QG-2 | Story Arc              | PASS / FAIL | X.X/10 (threshold: 7.0)               |
-| QG-3 | Loop Opener Frequency  | PASS / FAIL | X found, Y required                   |
-| QG-4 | AI-Phrasing Detection  | PASS / FAIL | X banned phrases found                |
+| Gate  | Check                              | Result      | Score/Status                                                |
+| ----- | ---------------------------------- | ----------- | ----------------------------------------------------------- |
+| QG-1  | Hook Strength                      | PASS / FAIL | X.X/10 (threshold: 7.0)                                     |
+| QG-2a | Story Arc (Arc1+Arc2+Arc4 avg)     | PASS / FAIL | X.X/10 (threshold: 7.0)                                     |
+| QG-2b | CTA Strength (Arc3 standalone)     | PASS / FAIL | X.X/10 (threshold: 7.0, independent sub-gate)               |
+| QG-3  | Loop Opener Frequency              | PASS / FAIL | X found, Y required                                         |
+| QG-4  | AI-Phrasing Detection              | PASS / FAIL | X banned phrases found                                      |
+| QG-5  | Narrative Flow & Direct Address    | PASS / FAIL / SKIPPED | (skipped if voice_profile == tutorial)            |
 
-**Overall Verdict**: PASS or FAIL
+**Overall Verdict**: PASS or FAIL — ALL applicable gates must pass. QG-5 returns SKIPPED for tutorial profile (counts as PASS for verdict purposes).
 
 ### On PASS
 
-All four quality gates cleared. The script is approved for TTS optimization.
+All applicable quality gates cleared. The script is approved for TTS optimization.
 
 Next step: Run `/diy-yt-creator:phase2a-tts-script <slug>`
 

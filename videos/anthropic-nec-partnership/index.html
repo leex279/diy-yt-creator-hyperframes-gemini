@@ -1,0 +1,1699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic × NEC: The Real Shocker Isn't 30,000 Seats</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Full design system
+     in DESIGN.md.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOKENS: shared/lib/tokens/anthropic-dark.css */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Ambient orange wash */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* TOP BANNER — Anthropic wordmark × NEC wordmark */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    height: 76px;
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+  }
+  #top-banner-nec {
+    height: 64px;
+    width: auto;
+    display: block;
+    filter:
+      drop-shadow(0 0 6px rgba(255,255,255,0.85))
+      drop-shadow(0 0 14px rgba(255,255,255,0.45));
+  }
+  #top-banner-x {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 52px;
+    letter-spacing: 1px;
+    color: #F5F1EB;
+    line-height: 1;
+  }
+
+  /* Slim progress bar */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* PHASES */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; visibility: hidden; }
+  #phase3 { z-index: 3; opacity: 0; visibility: hidden; }
+  #phase4 { z-index: 4; opacity: 0; visibility: hidden; }
+  #phase5 { z-index: 5; opacity: 0; visibility: hidden; }
+  #phase6 { z-index: 6; opacity: 0; visibility: hidden; }
+  #phase7 { z-index: 7; opacity: 0; visibility: hidden; }
+  #phase8 { z-index: 8; opacity: 0; visibility: hidden; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — HERO SLAM (Scene 01: Stakes Pivot, 0-14s)
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 240px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+  #p1-strike {
+    position: absolute;
+    top: 50%;
+    left: -2%;
+    width: 0%;
+    height: 14px;
+    background: var(--red);
+    box-shadow: 0 0 18px rgba(209, 67, 67, 0.85);
+    transform: translateY(-50%) rotate(-4deg);
+    transform-origin: left center;
+    pointer-events: none;
+    border-radius: 4px;
+  }
+  #p1-pivot {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 240px;
+    line-height: 0.9;
+    letter-spacing: -2px;
+    color: var(--red);
+    text-shadow: 0 0 80px rgba(209, 67, 67, 0.55), 0 8px 24px rgba(0,0,0,0.6);
+    opacity: 0;
+    margin-top: 12px;
+  }
+  #p1-caption {
+    margin-top: 32px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 940px;
+    text-align: center;
+  }
+
+  /* Trust signal screenshot card (Scene 1) — 900px wide, ~90px gutter on each side */
+  #p1-source-card {
+    position: absolute;
+    top: 320px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    z-index: 4;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #p1-source-chrome {
+    width: 100%;
+    background: rgba(28, 32, 44, 0.96);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    padding: 14px 22px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.78);
+    text-align: left;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  }
+  #p1-source-chrome::before {
+    content: "● ● ●";
+    color: rgba(255,255,255,0.30);
+    font-size: 14px;
+    letter-spacing: 5px;
+    margin-right: 16px;
+  }
+  #p1-source-img {
+    width: 900px;
+    height: auto;
+    display: block;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    background: #fff;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — TIMELINE CARDS (Scene 02: Edison-Era → AI-Native, 14-25.5s)
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 30px;
+  }
+  #p3-overline { color: var(--text); }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 940px;
+  }
+  .tl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 26px;
+    border-radius: 20px;
+  }
+  .tl-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .tl-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .tl-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .tl-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 170px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 34px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+    text-align: center;
+  }
+  .tl-card.orange .tl-date { background: var(--orange); }
+  .tl-card.purple .tl-date { background: var(--purple); }
+  .tl-card.blue   .tl-date { background: var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left; }
+  .tl-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 36px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .tl-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: 1px;
+    line-height: 1.2;
+  }
+  .tl-card.orange .tl-sub { color: var(--orange); }
+  .tl-card.purple .tl-sub { color: var(--purple); }
+  .tl-card.blue   .tl-sub { color: var(--blue); }
+
+  #p3-caption {
+    margin-top: 16px;
+    padding: 12px 24px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 920px;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — STAT PILL ROW (Scene 03: First Japan partner, 25.5-35.7s)
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p2-overline { color: var(--purple); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+  }
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 460px;
+    min-height: 300px;
+    padding: 44px 24px;
+    border-radius: 24px;
+  }
+  .stat-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .stat-pill.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.20), rgba(107,154,239,0.06));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 14px 36px rgba(107,154,239,0.20);
+  }
+  .stat-pill.dim { opacity: 0.55; box-shadow: none; }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 180px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .stat-pill.orange .stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.40); }
+  .stat-pill.purple .stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .stat-pill.blue   .stat-num { color: var(--blue);   text-shadow: 0 0 60px rgba(107,154,239,0.40); }
+  .stat-label {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  #p2-pill-1 { position: relative; }
+  #p2-marker-svg {
+    position: absolute;
+    left: 0;
+    top: 22px;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+  }
+  #p2-marker-svg path {
+    fill: none;
+    stroke: var(--purple);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.45));
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 5 — STAT PILL ROW (Scene 04: 30K of 105K, 35.7-47.7s)
+     ────────────────────────────────────────────────── */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p5-overline { color: var(--orange); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p5-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+  }
+  /* P5 stat-num shrunk to fit "105,000" inside the 460px - 48px padding pill content area. */
+  #phase5 .stat-num {
+    font-size: 108px;
+    letter-spacing: -4px;
+  }
+  #p5-caption {
+    margin-top: 20px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 920px;
+    text-align: center;
+    line-height: 1.3;
+    position: relative;
+    display: inline-block;
+  }
+  #p5-highlight {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0%;
+    height: 70%;
+    background: rgba(167, 139, 250, 0.32);
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 8px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 6 — CLIENT ZERO (Scene 05: 47.7-62.2s)
+     ────────────────────────────────────────────────── */
+  #phase6 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 30px;
+  }
+  #p6-overline { color: var(--green); }
+  #p6-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 940px;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  /* AI-NATIVE highlight inline */
+  #p6-headline-highlight-wrap { position: relative; display: inline-block; }
+  #p6-headline-highlight {
+    position: absolute;
+    top: 50%;
+    left: -4px;
+    width: 0%;
+    height: 60%;
+    background: rgba(125, 211, 166, 0.30);
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 6px;
+  }
+  /* Client Zero badge */
+  #p6-badge-wrap {
+    position: relative;
+    display: inline-flex;
+    margin-top: 18px;
+  }
+  #p6-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 32px 64px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.22), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.55);
+    border-radius: 28px;
+    box-shadow: 0 14px 40px rgba(125,211,166,0.25);
+  }
+  #p6-badge-tag {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(125,211,166,0.85);
+  }
+  #p6-badge-title {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 96px;
+    letter-spacing: -2px;
+    line-height: 0.95;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(125, 211, 166, 0.45);
+  }
+  /* marker-circle on Client Zero badge */
+  #p6-marker-svg {
+    position: absolute;
+    left: -20px;
+    top: -20px;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+  }
+  #p6-marker-svg path {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 1800;
+    stroke-dashoffset: 1800;
+    filter: drop-shadow(0 0 8px rgba(125, 211, 166, 0.5));
+  }
+  #p6-caption {
+    margin-top: 22px;
+    padding: 12px 24px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 920px;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 7 — BLUSTELLAR + 4 VERTICALS (Scene 06: 62.2-79.3s)
+     ────────────────────────────────────────────────── */
+  #phase7 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p7-overline { color: var(--purple); }
+  #p7-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 50px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 940px;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  #p7-headline-highlight-wrap { position: relative; display: inline-block; }
+  #p7-headline-highlight {
+    position: absolute;
+    top: 50%;
+    left: -4px;
+    width: 0%;
+    height: 60%;
+    background: rgba(167, 139, 250, 0.30);
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 6px;
+  }
+  #p7-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    width: 940px;
+    margin-top: 12px;
+  }
+  .vert-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 28px 18px;
+    border-radius: 22px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 38px;
+    letter-spacing: 3px;
+    line-height: 1.05;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .vert-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    color: var(--purple);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .vert-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    color: var(--orange);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .vert-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    color: var(--blue);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .vert-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    color: var(--green);
+    box-shadow: 0 10px 30px rgba(125,211,166,0.20);
+  }
+  #p7-caption {
+    margin-top: 14px;
+    padding: 12px 24px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 940px;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 8 — RECEIPTS (Scene 07: 79.3-97.0s)
+     ────────────────────────────────────────────────── */
+  #phase8 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p8-overline { color: var(--blue); }
+  #p8-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 72px;
+    line-height: 1.0;
+    color: var(--text);
+    letter-spacing: -2px;
+  }
+  #p8-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 940px;
+    margin-top: 8px;
+  }
+  .receipt-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px 28px;
+    border-radius: 22px;
+    text-align: left;
+  }
+  .receipt-row.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .receipt-row.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.16), rgba(167,139,250,0.04));
+    border: 2px solid rgba(167,139,250,0.35);
+  }
+  .receipt-row.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.16), rgba(107,154,239,0.04));
+    border: 2px solid rgba(107,154,239,0.35);
+  }
+  .receipt-row.dim { opacity: 0.78; box-shadow: none; }
+  .receipt-figure {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 84px;
+    letter-spacing: -3px;
+    line-height: 1.0;
+    font-variant-numeric: tabular-nums lining-nums;
+    position: relative;
+    display: inline-block;
+  }
+  .receipt-row.orange .receipt-figure { color: var(--orange); text-shadow: 0 0 50px rgba(233,116,88,0.40); }
+  .receipt-row.purple .receipt-figure { color: var(--purple); }
+  .receipt-row.blue   .receipt-figure { color: var(--blue); }
+  .receipt-label {
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  /* marker-highlight sweeps for $3B and $10B */
+  #p8-mark-3b, #p8-mark-10b {
+    position: absolute;
+    top: 50%;
+    left: -4px;
+    width: 0%;
+    height: 70%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 8px;
+  }
+  #p8-mark-3b  { background: rgba(167, 139, 250, 0.34); }
+  #p8-mark-10b { background: rgba(107, 154, 239, 0.34); }
+
+  #p8-caption {
+    margin-top: 14px;
+    padding: 12px 24px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 920px;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — CTA / Card stack (Scene 08: Who's Next?, 97.0-113.0s)
+     ────────────────────────────────────────────────── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  #p4-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 760px;
+  }
+  .cta-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+    border-radius: 22px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 64px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .cta-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    color: var(--purple);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .cta-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    color: var(--blue);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .cta-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    color: var(--green);
+    box-shadow: 0 10px 30px rgba(125,211,166,0.20);
+  }
+  #p4-card-1 { position: relative; }
+  #p4-marker-svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #p4-marker-svg path {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    filter: drop-shadow(0 0 8px rgba(125, 211, 166, 0.5));
+  }
+  #p4-subscribe {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 36px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p4-subscribe .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 0.7;
+  }
+
+  /* ──────────────────────────────────────────────────
+     DYNAMOUS BADGE (persistent, opt-in)
+     shared/lib/components/dynamous-badge — keep this comment block
+     ────────────────────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 460px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    width: 42px;
+    height: 42px;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 33px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* DYNAMOUS endcard mount */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="115.5"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient warm wash -->
+  <div id="ambient"></div>
+
+  <!-- Shape backdrop -->
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner: Anthropic wordmark × NEC wordmark -->
+  <div id="top-banner">
+    <div id="top-banner-content">
+      <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      <span id="top-banner-x">×</span>
+      <img id="top-banner-nec" src="assets/nec-logo.png" alt="NEC" crossorigin="anonymous" />
+    </div>
+  </div>
+
+  <!-- Dynamous persistent badge -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — Scene 01: Stakes Pivot (0-14.0s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">THE ANTHROPIC × NEC DEAL</div>
+      <div id="p1-pre">30,000 NEC seats. The headline number.</div>
+      <div id="p1-hero-wrap">
+        <div id="p1-hero">30,000</div>
+        <div id="p1-strike"></div>
+      </div>
+      <div id="p1-pivot">BUT.</div>
+      <div id="p1-caption">Anthropic just out-flanked OpenAI in Japan</div>
+    </div>
+    <!-- Trust signal screenshot (live during 0.6-5.5s) -->
+    <div id="p1-source-card">
+      <div id="p1-source-chrome">anthropic.com/news/anthropic-nec</div>
+      <img id="p1-source-img" src="assets/anthropic-nec-page.png" alt="Anthropic announcement page" crossorigin="anonymous" />
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — Scene 02: Edison-Era → AI-Native Timeline (14.0-25.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">FOUNDED 1899</div>
+      <div class="timeline-list">
+        <div class="tl-card purple" id="p3-card-1">
+          <div class="tl-date">1899</div>
+          <div class="tl-body">
+            <div class="tl-title">EDISON ERA</div>
+            <div class="tl-sub">NEC founded — telegraph cables</div>
+          </div>
+        </div>
+        <div class="tl-card orange" id="p3-card-2">
+          <div class="tl-date">2026</div>
+          <div class="tl-body">
+            <div class="tl-title">AI-NATIVE</div>
+            <div class="tl-sub">Anthropic's first Japan partner</div>
+          </div>
+        </div>
+        <div class="tl-card blue" id="p3-card-3">
+          <div class="tl-date">127 YRS</div>
+          <div class="tl-body">
+            <div class="tl-title">OVERNIGHT</div>
+            <div class="tl-sub">Edison-era → AI-native engineering</div>
+          </div>
+        </div>
+      </div>
+      <div id="p3-caption">telegraph cables &rarr; AI-native engineering</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — Scene 03: First Japan Partner (25.5-35.7s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">FIRST</div>
+      <div id="p2-headline">Anthropic's first Japan-based global partner</div>
+      <div id="p2-pills">
+        <div class="stat-pill purple" id="p2-pill-1">
+          <svg id="p2-marker-svg" width="460" height="220" viewBox="0 0 460 220">
+            <path d="M 230 18 C 370 18, 422 70, 422 110 C 422 168, 350 202, 230 200 C 110 198, 38 168, 38 110 C 38 72, 110 22, 230 18 C 296 18, 360 30, 408 56" />
+          </svg>
+          <div class="stat-num">1st</div>
+          <div class="stat-label">JAPAN-BASED<br>GLOBAL PARTNER</div>
+        </div>
+        <div class="stat-pill orange dim" id="p2-pill-2">
+          <div class="stat-num">0</div>
+          <div class="stat-label">BEFORE<br>THIS DEAL</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — Scene 04: 30K of 105K Rollout (35.7-47.7s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">THE ROLLOUT</div>
+      <div id="p5-headline">30,000 of 105,000 employees</div>
+      <div id="p5-pills">
+        <div class="stat-pill orange" id="p5-pill-1">
+          <div class="stat-num" id="p5-num-1">0</div>
+          <div class="stat-label">CLAUDE<br>SEATS</div>
+        </div>
+        <div class="stat-pill blue dim" id="p5-pill-2">
+          <div class="stat-num" id="p5-num-2">0</div>
+          <div class="stat-label">TOTAL NEC<br>GROUP</div>
+        </div>
+      </div>
+      <div id="p5-caption-wrap" style="position: relative; display: inline-block;">
+        <div id="p5-caption">
+          ~29% of the entire group
+          <span id="p5-highlight"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 6 — Scene 05: Client Zero (47.7-62.2s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">CLIENT ZERO</div>
+      <div id="p6-headline">
+        One of Japan's largest
+        <span id="p6-headline-highlight-wrap"
+          >AI-native engineering<span id="p6-headline-highlight"></span
+        ></span>
+        teams
+      </div>
+      <div id="p6-badge-wrap">
+        <svg id="p6-marker-svg" width="600" height="240" viewBox="0 0 600 240">
+          <path d="M 300 20 C 480 20, 560 80, 560 120 C 560 180, 460 220, 300 218 C 140 216, 40 180, 40 120 C 40 80, 140 22, 300 20 C 380 20, 460 32, 528 64" />
+        </svg>
+        <div id="p6-badge">
+          <div id="p6-badge-tag">PROGRAM</div>
+          <div id="p6-badge-title">CLIENT ZERO</div>
+        </div>
+      </div>
+      <div id="p6-caption">Shipping Claude internally first</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 7 — Scene 06: BluStellar + 4 Verticals (62.2-79.3s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">BLUSTELLAR SCENARIO</div>
+      <div id="p7-headline">
+        Plugging into NEC's
+        <span id="p7-headline-highlight-wrap"
+          >customer platform<span id="p7-headline-highlight"></span
+        ></span>
+      </div>
+      <div id="p7-grid">
+        <div class="vert-card purple"  id="p7-card-1">FINANCE</div>
+        <div class="vert-card orange"  id="p7-card-2">MANUFACTURING</div>
+        <div class="vert-card blue"    id="p7-card-3">LOCAL GOVT</div>
+        <div class="vert-card green"   id="p7-card-4">SECURITY OPS</div>
+      </div>
+      <div id="p7-caption">If you build on Claude in regulated markets</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 8 — Scene 07: Why Now / Receipts (79.3-97.0s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">WHY NOW?</div>
+      <div id="p8-headline">The receipts.</div>
+      <div id="p8-rows">
+        <div class="receipt-row orange" id="p8-row-1">
+          <div class="receipt-figure"><span id="p8-fig-1">17.7M &rarr; 17.7M</span></div>
+          <div class="receipt-label">Claude Code installs · 4 months</div>
+        </div>
+        <div class="receipt-row purple dim" id="p8-row-2">
+          <div class="receipt-figure"><span id="p8-fig-2">$3B/yr</span><span id="p8-mark-3b"></span></div>
+          <div class="receipt-label">OpenAI × SoftBank</div>
+        </div>
+        <div class="receipt-row blue dim" id="p8-row-3">
+          <div class="receipt-figure"><span id="p8-fig-3">$10B</span><span id="p8-mark-10b"></span></div>
+          <div class="receipt-label">Microsoft Japan · 5 partners</div>
+        </div>
+      </div>
+      <div id="p8-caption">Anthropic went deeper.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — Scene 08: Who's Next? CTA (97.0-113.0s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">WHO'S NEXT?</div>
+      <div id="p4-headline">The Japan AI race just got real</div>
+      <div id="p4-cards">
+        <div class="cta-card purple" id="p4-card-1">
+          <svg id="p4-marker-svg" width="760" height="120" viewBox="0 0 760 120">
+            <path d="M 380 10 C 560 10, 670 26, 678 60 C 686 96, 530 112, 380 110 C 230 108, 76 102, 86 62 C 94 28, 220 10, 380 10 C 480 10, 580 16, 650 32" />
+          </svg>
+          <span>FUJITSU</span>
+        </div>
+        <div class="cta-card blue" id="p4-card-2">HITACHI</div>
+        <div class="cta-card green" id="p4-card-3">NTT DATA</div>
+      </div>
+      <div id="p4-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       DYNAMOUS ENDCARD MOUNT (110.5-115.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="110.5"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX
+       ═══════════════════════════════════════════════════════ -->
+
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="110.53"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Scene 01 SFX (0-13.95s) -->
+  <audio id="sfx-impact-slam-1" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="9.470" data-duration="0.63" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-strike-cross-1" class="clip" src="assets/sfx/strike-cross.mp3"
+         data-start="11.407" data-duration="0.63" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-impact-slam-2" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="11.583" data-duration="0.63" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-cinematic-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="13.505" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Scene 02 SFX (13.95-25.24s) -->
+  <audio id="sfx-spring-pop-2-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="19.465" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-spring-pop-2-3" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="20.213" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-scale-slam-2-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="21.254" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-cinematic-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="24.738" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Scene 03 SFX (25.24-35.96s) -->
+  <audio id="sfx-scale-slam-3-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="27.176" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-cinematic-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="35.466" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Scene 04 SFX (35.96-47.10s) -->
+  <audio id="sfx-scale-slam-4-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="38.193" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-spring-pop-4-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="44.335" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-cinematic-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="46.596" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Scene 05 SFX (47.10-61.68s) -->
+  <audio id="sfx-scale-slam-5-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="53.840" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-spring-pop-5-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="59.869" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-cinematic-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="61.177" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Scene 06 SFX (61.68-78.18s) -->
+  <audio id="sfx-scale-slam-6-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="65.859" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-spring-pop-6-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="73.232" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-spring-pop-6-4" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="76.111" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-cinematic-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="77.684" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Scene 07 SFX (78.18-95.77s) -->
+  <audio id="sfx-scale-slam-7-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="83.971" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-cinematic-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="95.270" data-duration="0.84" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Scene 08 SFX (95.77-110.33s) -->
+  <audio id="sfx-spring-pop-8-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="96.719" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-spring-pop-8-3" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="98.901" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter (xmur3 hash).
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 50;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 50;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 7;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Dynamous badge entrance — shared/lib/components/dynamous-badge
+  // Single 0.6s entrance at t=3.0s. DO NOT lower the start time.
+  // ─────────────────────────────────────────────────────
+  function addDynamousBadgeEntrance(tl) {
+    tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+  }
+
+  spawnShapes('anthropic-nec', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const totalDuration = 115.5;
+
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'anthropic-nec', totalDuration);
+
+  // Ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: totalDuration / 2, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: totalDuration, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Dynamous badge entrance
+  addDynamousBadgeEntrance(tl);
+
+  // Phase initial states (mutex — only phase1 visible at start)
+  tl.set("#phase2", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase3", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase4", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase5", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase6", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase7", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase8", { visibility: "hidden", opacity: 0 }, 0);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Scene 01: Stakes Pivot (0-14.0s)
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+
+  // Trust signal screenshot card: fade in 0.6s → out by 6.0s
+  tl.fromTo("#p1-source-card",
+    { y: 16, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false },
+    0.6);
+  tl.to("#p1-source-card",
+    { opacity: 0, duration: 0.5, ease: "power2.in", overwrite: "auto" },
+    5.5);
+
+  // Pre-line delayed until after screenshot fades out (6.2s)
+  tl.from("#p1-pre", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 6.2);
+
+  // Slam "30,000" anchored to "thirty" word at 9.520s (slight lead-in)
+  tl.from("#p1-hero", { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 9.375);
+
+  // Inline shake on the slam
+  tl.to("#p1-hero", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 9.575);
+  tl.to("#p1-hero", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 9.625);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 9.675);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 9.725);
+
+  // Strikethrough sweep starting just before "But" (11.633)
+  tl.to("#p1-strike", { width: "104%", duration: 0.5, ease: "power2.out" }, 11.407);
+
+  // Pivot word "BUT." slam at 11.633 (= "But" word.start)
+  tl.to("#p1-pivot", { opacity: 1, scale: 1, duration: 0.0, ease: "none" }, 11.633);
+  tl.fromTo("#p1-pivot",
+    { scale: 0.78 },
+    { scale: 1, duration: 0.5, ease: "back.out(1.7)", overwrite: "auto", immediateRender: false },
+    11.633);
+
+  // Caption fade-in after pivot
+  tl.from("#p1-caption", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 12.307);
+
+  // ─── Transition phase1 → phase3 (Scene 02) at T1 ≈ 13.50 ───
+  const T1 = 13.50;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Scene 02: Edison-Era timeline (13.95-25.24s)
+  // ═══════════════════════════════════════════════════════
+  const P3 = 14.4;
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  // Cards land on the spoken "eighteen" / "ninety-nine" / "Edison-era" anchors
+  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 19.360);
+  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 20.160);
+  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 21.188);
+  // caption-fade-slide
+  tl.from("#p3-caption",  { y: 16, opacity: 0, duration: 0.6, ease: "power2.out" }, 22.138);
+
+  // ─── Transition phase3 → phase2 (Scene 03) at T2 ≈ 24.74 ───
+  const T2 = 24.74;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Scene 03: First Japan partner (25.24-35.96s)
+  // ═══════════════════════════════════════════════════════
+  const P2 = 25.64;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  // Pills land on "first" word anchor (27.226)
+  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 26.902);
+  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 27.102);
+  // marker-circle on "1st" — anchored to "first" at 27.226
+  tl.to("#p2-marker-svg path",
+    { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" },
+    27.226);
+
+  // ─── Transition phase2 → phase5 (Scene 04) at T3 ≈ 35.46 ───
+  const T3 = 35.46;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase5", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — Scene 04: 30K of 105K Rollout (35.96-47.10s)
+  // ═══════════════════════════════════════════════════════
+  const P5 = 36.16;
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P5 + 0.0);
+  tl.from("#p5-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P5 + 0.3);
+  tl.from("#p5-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 37.950);
+  tl.from("#p5-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 38.150);
+
+  // gsap-counter-tween — 0 → 30,000 anchored to "Thirty" at 38.243
+  tl.to({ v: 0 }, {
+    v: 30000, duration: 1.0, ease: "power3.out",
+    onUpdate: function () {
+      document.getElementById('p5-num-1').textContent = Math.round(this.targets()[0].v).toLocaleString('en-US');
+    }
+  }, 38.193);
+  // 0 → 105,000 anchored to "one hundred" at 40.135
+  tl.to({ v: 0 }, {
+    v: 105000, duration: 1.4, ease: "power3.out",
+    onUpdate: function () {
+      document.getElementById('p5-num-2').textContent = Math.round(this.targets()[0].v).toLocaleString('en-US');
+    }
+  }, 40.085);
+
+  // caption-fade-slide on "~29% of the entire group"
+  tl.from("#p5-caption", { y: 16, opacity: 0, duration: 0.6, ease: "power2.out" }, 43.890);
+
+  // marker-highlight sweep on "29%" caption — anchored to "twenty-nine" at 44.385
+  tl.to("#p5-highlight", { width: "100%", duration: 0.7, ease: "power2.out" }, 44.385);
+
+  // ─── Transition phase5 → phase6 (Scene 05) at T4 ≈ 46.60 ───
+  const T4 = 46.60;
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase5", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase6", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase6", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T4 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 6 — Scene 05: Client Zero (47.10-61.68s)
+  // ═══════════════════════════════════════════════════════
+  const P6 = 47.30;
+  tl.from("#p6-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P6 + 0.0);
+  tl.from("#p6-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P6 + 0.4);
+  // marker-highlight sweep on "AI-native engineering" — anchored to "AI-native" at 53.940
+  tl.to("#p6-headline-highlight", { width: "100%", duration: 0.7, ease: "power2.out" }, 53.940);
+  // gsap-flip-reveal on Client Zero badge — anchored to "Client" at 59.919
+  tl.from("#p6-badge",
+    { scale: 0.5, opacity: 0, rotationY: -25, duration: 0.7, ease: "back.out(1.7)" },
+    59.919);
+  // marker-circle on Client Zero badge
+  tl.to("#p6-marker-svg path",
+    { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" },
+    60.076);
+  // caption fade
+  tl.from("#p6-caption", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 60.576);
+
+  // ─── Transition phase6 → phase7 (Scene 06) at T5 ≈ 61.18 ───
+  const T5 = 61.18;
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase6", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase6", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase7", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase7", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase7", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T5 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 7 — Scene 06: BluStellar + 4 Verticals (61.68-78.18s)
+  // ═══════════════════════════════════════════════════════
+  const P7 = 61.88;
+  tl.from("#p7-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P7 + 0.0);
+  tl.from("#p7-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P7 + 0.3);
+  // marker-highlight on "customer platform" anchored to "BluStellar" at 65.909
+  tl.to("#p7-headline-highlight", { width: "100%", duration: 0.7, ease: "power2.out" }, 65.909);
+  // 4 vertical cards land on their spoken words: finance/manufacturing/local/security
+  tl.from("#p7-card-1", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 73.282);
+  tl.from("#p7-card-2", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 73.967);
+  tl.from("#p7-card-3", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 74.872);
+  tl.from("#p7-card-4", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 76.161);
+  // Caption appears with the headline (visible the whole scene)
+  tl.from("#p7-caption", { y: 16, opacity: 0, duration: 0.6, ease: "power2.out" }, P7 + 8.4);
+
+  // ─── Transition phase7 → phase8 (Scene 07) at T6 ≈ 77.68 ───
+  const T6 = 77.68;
+  tl.to("#phase7", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T6);
+  tl.to("#phase7", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T6 + 0.3);
+  tl.set("#phase7", { visibility: "hidden" }, T6 + 0.7);
+  tl.set("#phase8", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T6 + 0.4);
+  tl.to("#phase8", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T6 + 0.4);
+  tl.to("#phase8", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T6 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 8 — Scene 07: Why Now / Receipts (78.18-95.77s)
+  // ═══════════════════════════════════════════════════════
+  const P8 = 78.38;
+  tl.from("#p8-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P8 + 0.0);
+  tl.from("#p8-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P8 + 0.4);
+  // Row 1 — install curve, with counter tween 17.7 → 29
+  tl.from("#p8-row-1", { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 80.910);
+  tl.to({ v: 17.7 }, {
+    v: 29.0, duration: 1.4, ease: "power3.out",
+    onUpdate: function () {
+      const v = this.targets()[0].v;
+      document.getElementById('p8-fig-1').textContent = '17.7M → ' + v.toFixed(1) + 'M';
+    }
+  }, 83.521);
+  // audio-reactive-glow on the 29M counter — subtle sin-driven scale + glow 84.50-86.00s
+  function audioReactive29MPulse(t) {
+    const start = 84.50, end = 86.00;
+    if (t < start || t > end) return;
+    const phase = (t - start) / (end - start);
+    const wave = Math.sin(phase * Math.PI * 5);
+    const scale = 1 + wave * 0.04;
+    const glow = 30 + Math.abs(wave) * 30;
+    const el = document.getElementById('p8-fig-1');
+    if (el) {
+      el.style.display = 'inline-block';
+      el.style.transformOrigin = 'left center';
+      el.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      el.style.textShadow = '0 0 ' + glow.toFixed(1) + 'px rgba(233, 116, 88, 0.55)';
+    }
+  }
+  for (let t = 84.50; t <= 86.00; t += 0.08) {
+    const sampleT = +t.toFixed(2);
+    tl.call(audioReactive29MPulse, [sampleT], sampleT);
+  }
+  // Row 2 — $3B/yr OpenAI×SoftBank
+  tl.from("#p8-row-2", { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 86.409);
+  tl.to("#p8-mark-3b", { width: "100%", duration: 0.6, ease: "power2.out" }, 87.458);
+  // Row 3 — $10B Microsoft × 5 partners
+  tl.from("#p8-row-3", { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 90.693);
+  tl.to("#p8-mark-10b", { width: "100%", duration: 0.6, ease: "power2.out" }, 91.660);
+  // Closing caption
+  tl.from("#p8-caption", { y: 16, scale: 0.92, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 94.327);
+
+  // ─── Transition phase8 → phase4 (Scene 08) at T7 ≈ 95.27 ───
+  const T7 = 95.27;
+  tl.to("#phase8", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T7);
+  tl.to("#phase8", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T7 + 0.3);
+  tl.set("#phase8", { visibility: "hidden" }, T7 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T7 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T7 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T7 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Scene 08: Who's Next? CTA (95.77-110.33s)
+  // ═══════════════════════════════════════════════════════
+  const P4 = 95.97;
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P4 + 0.4);
+
+  // Cards land on the spoken SI names: Fujitsu @ 96.769, Hitachi @ 97.500, NTT Data @ 98.951
+  tl.from("#p4-card-1", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 96.769);
+  tl.from("#p4-card-2", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 97.500);
+  tl.from("#p4-card-3", { scale: 0.85, opacity: 0, y: 24, duration: 0.4, ease: "back.out(1.7)" }, 98.951);
+
+  // marker-circle on FUJITSU
+  tl.to("#p4-marker-svg path", { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 97.069);
+
+  // Subscribe pill entrance on "Subscribe" word at 108.739
+  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 108.051);
+
+  // audio-reactive-glow on subscribe pill — 108.739 → 110.329
+  function audioReactiveSubscribePulse(t) {
+    const start = 108.739, end = 110.329;
+    if (t < start || t > end) return;
+    const phase = (t - start) / (end - start);
+    const wave = Math.sin(phase * Math.PI * 6);
+    const scale = 1 + wave * 0.03;
+    const glow = 12 + Math.abs(wave) * 18;
+    const el = document.getElementById('p4-subscribe');
+    if (el) {
+      el.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      el.style.boxShadow = '0 0 ' + glow.toFixed(1) + 'px rgba(233, 116, 88, 0.45)';
+    }
+  }
+  for (let t = 108.739; t <= 110.329; t += 0.08) {
+    const sampleT = +t.toFixed(3);
+    tl.call(audioReactiveSubscribePulse, [sampleT], sampleT);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // DYNAMOUS endcard handoff — fade out competing content
+  // 0.5s before endcard fires (110.0s = totalDuration - 5.5)
+  // ═══════════════════════════════════════════════════════
+  tl.to("#phase4",         { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 110.0);
+  tl.to("#dynamous-badge", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 110.0);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -41,6 +41,8 @@ Read `videos/<slug>/plan.md` and `videos/<slug>/research/content-brief.md`.
 
 Extract: scene list, durations, key messaging, tone, visual beats, hook architecture, cult-hopping references, must-mention points, technical terms.
 
+**Also extract `voice_profile`** from `videos/<slug>/research/content-brief.md` (added in Phase 0 Step 0E). Acceptable values: `tutorial`, `news-explainer`, `comparison`. If the field is missing or unrecognized, default to `news-explainer` (per `brand-voice.md` dispatcher rules). Store this value — it drives Step 3.55, Step 3.6, and Step 4c below.
+
 ### Selected Hook Variant
 
 Confirm which hook variant was selected in Phase 1:
@@ -133,29 +135,44 @@ For sub-30s Shorts, the hook variant IS the preview — skip this step.
 [Promise statement — 8-12 words]
 ```
 
+## Step 3.55 — Read the Script Library (gold-standard examples)
+
+Before applying any voice rules, read the matching profile section in `.claude/references/script-library.md`. The library quotes verbatim scripts that worked, with per-paragraph annotations showing exactly which moves earned the click.
+
+Look up the section by `voice_profile` (extracted in Step 1):
+
+- `news-explainer` → read the **Profile: news-explainer** section (Anthropic / AWS deal annotated example)
+- `tutorial` → read the **Profile: tutorial** section (placeholder if no winners shipped yet)
+- `comparison` → fall back to news-explainer (deferred — no comparison-specific examples yet)
+
+Note the rhythm: **claim → explanation → stake → direct address → CTA**. Aim for the same shape, NOT the same words. Each annotated example calls out "what to learn" (rhythm targets) and "what NOT to copy" (specific phrases that are now burned).
+
+The library is the single source of truth for "what good looks like." Voice rules are the single source of truth for "what bad looks like." Read the library first; voice rules are the fence, not the goal.
+
 ## Step 3.6 — Consult the Scriptwriting References
 
 Before writing, read BOTH reference docs in this order — brand-voice is more specific and overrides the generic playbook where they differ:
 
-### A. `.claude/references/brand-voice.md` (CHANNEL-SPECIFIC — read first)
+### A. The matching brand-voice profile (CHANNEL-SPECIFIC — read first)
 
-This is the narrator's voice spec — it tells you exactly how the script should sound when read aloud. Apply ALL rules:
+Look up the active brand-voice profile by the `voice_profile` field (from Step 1):
 
-- **Voice profile**: Enthusiastic. Practical. Honest. (3 core adjectives — every line should fit at least one)
-- **The 4 acceptable hook types** (only these — narrower than the generic catalog):
-  - Type A — The Honest Result: *"I ran [X] for [time]. Here's what actually happened."*
-  - Type B — The Counterintuitive Observation: *"[Common assumption]. [One sentence that breaks it]."*
-  - Type C — The Specific Number: *"[Precise number] [thing]. [Why that matters in one sentence]."*
-  - Type D — The Shared Frustration: *"[Specific problem stated as a fact, not a question]."*
-- **First-person singular only**: "I tried", "I was wrong" — never "we", never "one should"
-- **Short → Longer → Short → Opinion** rhythm pattern (per §"Sentence Rhythm Rules")
-- **No false research claims**: banned to imply original benchmarks/long-term tests that didn't happen ("I tested X for 30 days" → BANNED unless explicitly true and brief). Curate, don't invent.
-- **Always attribute third-party claims to a source** — never present someone else's claim as personal validation
-- **Per-scene structure**: Observation → Implication → Action/Example
-- **The 10 hard rules** ("What Claude Must NOT Do"): no greeting, no preview summary, no motivational frame, no manufactured stakes, no em dashes in narration, no bullet narration, no attributed emotions to viewer, no vague promise endings, no false research claims, always attribute claims
-- **Banned word lists** (§"The 50-Word Banned List"): generic AI phrases (delve, leverage, paradigm, seamless, …), hype phrases (changed everything, smash that like button, mind-blowing, …), over-hedging phrases (some might argue, arguably, …)
+- `tutorial` → read `.claude/references/brand-voice-tutorial.md`
+- `news-explainer` → read `.claude/references/brand-voice-news-explainer.md`
+- `comparison` → currently falls back to `.claude/references/brand-voice-news-explainer.md` (deferred — no comparison-specific profile yet)
+- missing or unrecognized → read `.claude/references/brand-voice-news-explainer.md` (default per `brand-voice.md` dispatcher)
 
-The Phase 2.5 critique will enforce ALL of these.
+The active profile is the narrator's voice spec — it tells you exactly how the script should sound when read aloud. Apply ALL rules from the matching file. Each profile defines its own:
+
+- 3 core adjectives (e.g., tutorial: "Enthusiastic. Practical. Honest." / news-explainer: "Clear. Contextual. Direct.")
+- Sentence rhythm pattern (e.g., tutorial: Short → Longer → Short → Opinion / news-explainer: Claim → Explanation → Stake → Implication)
+- Acceptable hook types (some shared across profiles, some profile-specific — e.g., news-explainer adds Type A-news Magnitude framing, tutorial keeps Type A Honest Result)
+- Per-scene structure
+- Hard rules (the "what Claude must NOT do" list)
+- Banned word lists (Universal Bans shared across profiles + profile-specific additions/relaxations)
+- For news-explainer specifically: mandatory connectors (≥3 in body), mandatory direct-address sentence (≥1 in body), mandatory engagement CTA (question + comments-ask + subscribe-ask). Phase 2.5 Pass 6 enforces these.
+
+The Phase 2.5 critique will enforce ALL of the active profile's rules. Pass 6 (Narrative Flow / Direct Address / CTA) skips for `voice_profile == tutorial`.
 
 ### B. `.claude/references/faceless-tech-scriptwriting-playbook.md` (GENERIC — broader context)
 
@@ -251,6 +268,39 @@ After writing the full script, review it through the lens of the **6 Story Locks
 6. **Contrast Words**: Ensure key pivot sentences use A→but→B structure — vary the contrast word (but, actually, instead, turns out, except).
 
 **Note**: Don't force every lock into every script. Short scripts (15-30s) may only use Embedded Truths + Contrast Words. The goal is natural integration, not a checklist quota.
+
+## Step 4c — Apply Narrative Flow (news-explainer profile only)
+
+**Skip if `voice_profile == tutorial`.** Tutorial scripts are allowed terse and fragment-heavy because the narrator is the practitioner — they don't need to bridge scenes with explanatory connectors.
+
+**For `news-explainer` and `comparison` profiles**, the script MUST include at least:
+
+1. **3 explanatory connectors across the body** (across all scenes between the hook and the CTA), with **at least 2 unique** types from this list:
+   `because` / `why` / `to <verb>` / `and` / `but` / `plus` / `so` / `here's why` / `the reason`
+
+   Pure-fragment scripts ("$100B. 5GW. Zero Nvidia. Compute crunch is over.") have zero connectors and FAIL Phase 2.5 Pass 6 Check 1. Aim for 5+ connectors (the gold-standard target — see `script-library.md`).
+
+2. **1 direct-address sentence in the body** (NOT in the hook, NOT only in the CTA). Canonical patterns:
+   - `"If you ['re building on / 've noticed / use / care about] X, [implication]"`
+   - `"You ['re probably / might be] [verb]ing X — [implication]"`
+   - `"Your [thing] just got [Y]."`
+
+   The Gemini gold-standard line is: `"If you've noticed Claude being slow or buggy during peak hours, this is why."` Aim for the same texture, not the same words.
+
+3. **1 engagement-CTA closer** with all three components in the final scene:
+   - Rhetorical / debate question (ends with `?`)
+   - Comments-ask (`comments`, `let me know`, `tell me below`)
+   - Subscribe-ask (`subscribe`, `for more <topic> news`)
+
+   Canonical template: `"[Rhetorical question about the topic]? Let me know in the comments. And subscribe for more [topic] news."`
+
+**Audit pass (do this BEFORE saving the script in Step 5)**:
+
+- [ ] Count connectors. Are there ≥ 3 in body scenes, with ≥ 2 unique types?
+- [ ] Find the direct-address sentence. Is there ≥ 1 in the body, in second person?
+- [ ] Read the final scene. Does it have all three CTA components in this order: question → comments-ask → subscribe-ask?
+
+If any of these are missing, REWRITE before saving. Phase 2.5 Pass 6 will FAIL the script and block TTS otherwise.
 
 ## Step 5 — Save Full Script for Review
 

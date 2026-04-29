@@ -1,0 +1,51 @@
+/* ──────────────────────────────────────────────────────────────────────
+   shared/lib/tokens/dynamous-modern.css
+   Dynamous "modern-gradient" brand palette — single source of truth
+   for Dynamous-promotion artifacts (badge, endcard, module
+   interstitial, discount bubble).
+
+   SOURCE: diy-yt-creator/src/shared/components/DynamousMidroll.tsx:78-95
+           (the canonical v3 brand expression — slate + purple + pink +
+           cyan, with red 10% OFF accent)
+
+   USAGE:
+     - Used by all four Dynamous-promotion artifacts under
+       shared/lib/components/dynamous-* and shared/lib/blocks/dynamous-*.
+     - Optional for hosts: copy into videos/<slug>/tokens/ and link if
+       you want the full Dynamous palette available across the video.
+       Most videos do NOT need the full palette — the artifacts inline
+       only the few colors they actually use, with sensible fallbacks.
+
+   These vars are scoped to :root so any consumer inherits.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surface */
+  --dynamous-bg-dark:        #0f172a;  /* slate 900 — primary surface */
+  --dynamous-bg-mid:         #16213e;  /* slate 800 — elevated surface */
+
+  /* Accent — gradient pair */
+  --dynamous-purple:         #a855f7;  /* purple 500 — primary accent */
+  --dynamous-pink:           #ec4899;  /* pink 500 — pair w/ purple */
+  --dynamous-indigo:         #6366f1;
+  --dynamous-violet:         #8b5cf6;
+  --dynamous-cyan:           #06b6d4;
+
+  /* Status / utility */
+  --dynamous-orange:         #f97316;
+  --dynamous-amber:          #f59e0b;
+  --dynamous-green:          #22c55e;
+  --dynamous-red:            #dc2626;  /* the "10% OFF" badge color */
+
+  /* Text */
+  --dynamous-text-primary:   #e2e8f0;
+  --dynamous-text-secondary: #94a3b8;
+
+  /* Glass surfaces */
+  --dynamous-glass:          rgba(255, 255, 255, 0.03);
+  --dynamous-glass-border:   rgba(255, 255, 255, 0.08);
+
+  /* Composite gradients used by the CTA + discount badge */
+  --dynamous-cta-gradient:   linear-gradient(135deg, #a855f7, #ec4899, #a855f7);
+  --dynamous-discount-grad:  linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+}

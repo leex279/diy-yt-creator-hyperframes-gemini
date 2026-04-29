@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Dynamous lib smoke test</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Smoke-test phase: single hold ─── */
+  #phase1 {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 1;
+  }
+  #phase1 .label {
+    font-size: 64px;
+    font-weight: 800;
+    color: #F5F1EB;
+    letter-spacing: -0.5px;
+  }
+
+  /* ─── Persistent badge — bottom-left, opt-in ─── */
+  /* COMPONENT: shared/lib/components/dynamous-badge/ */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 460px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark { width: 42px; height: 42px; display: block; }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 33px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* ─── Discount bubble — opt-in time-bounded ─── */
+  /* COMPONENT: shared/lib/components/dynamous-discount-bubble/
+     The mark is rendered via CSS background-image (not <img>) to avoid
+     a duplicate_media_discovery_risk warning when the persistent badge
+     above already references the same logo file. */
+  #dynamous-discount-bubble {
+    position: absolute;
+    top: 1180px;
+    left: 60px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 18px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 32px;
+    height: 32px;
+    display: block;
+    background-image: url('assets/dynamous-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #ddb-url {
+    font-weight: 700;
+    font-size: 26px;
+    color: #e2e8f0;
+    letter-spacing: 0.3px;
+  }
+  #ddb-discount {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 22px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer {
+    font-weight: 600;
+    font-size: 22px;
+    color: #94a3b8;
+    letter-spacing: 0.2px;
+  }
+  #ddb-pointer .ddb-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    transform: translateY(2px);
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="12"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Single placeholder phase — the smoke test only validates the four
+       Dynamous artifacts; the rest of the canvas is a static label. -->
+  <div id="phase1">
+    <div class="label">Dynamous lib smoke test</div>
+  </div>
+
+  <!-- ─── Persistent Dynamous badge ─── -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- ─── Module interstitial sub-composition (mid: 4.0–7.0s) ───
+       The card slides in from +540px and slides out to +540px, so it
+       intentionally extends past the right edge during the entrance/exit
+       windows. data-layout-allow-overflow marks the off-canvas animation
+       as intentional so the layout inspector doesn't flag it. -->
+  <div id="dynamous-mod-int-mount"
+       data-composition-id="dynamous-module-interstitial"
+       data-composition-src="compositions/dynamous-module-interstitial.html"
+       data-start="4"
+       data-duration="3"
+       data-track-index="3"
+       data-width="1080"
+       data-height="1920"
+       data-layout-allow-overflow></div>
+
+  <!-- ─── Discount bubble (mid: 6.0–9.5s, overlaps interstitial tail by 1s) ─── -->
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="6"
+       data-duration="3.5"
+       data-track-index="9">
+    <span id="ddb-mark" role="img" aria-label="Dynamous"></span>
+    <span id="ddb-url">Dynamous.ai</span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-pointer">in the link <span class="ddb-arrow">↓</span></span>
+  </div>
+
+  <!-- ─── Endcard sub-composition (last 5s: 7.0–12.0s, sized for YouTube "Watch next") ─── -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="7"
+       data-duration="5"
+       data-track-index="2"
+       data-width="1080"
+       data-height="1920"></div>
+
+</div>
+
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // Persistent badge — single 0.6s entrance at t=3.0s (3-second-hook rule)
+  tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+
+  // Discount bubble — slide-up + fade-in at scene start; fade-out in the
+  // final 0.4s of the 3.5s scene (i.e. from t=9.1 to t=9.5). Use fromTo
+  // (not from) so the tween's start state is bound to the timeline
+  // position rather than the construction-time immediate render — this
+  // keeps the entry and exit opacity tweens from overlapping at t=0.
+  function addDynamousDiscountBubbleEntrance(tl, sceneStart, duration) {
+    tl.fromTo("#dynamous-discount-bubble",
+      { y: 16, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false },
+      sceneStart);
+    tl.to("#dynamous-discount-bubble",
+      { opacity: 0, duration: 0.4, ease: "power2.in", overwrite: "auto" },
+      sceneStart + duration - 0.4);
+  }
+  addDynamousDiscountBubbleEntrance(tl, 6.0, 3.5);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

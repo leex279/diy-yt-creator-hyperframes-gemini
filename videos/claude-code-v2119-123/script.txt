@@ -1,0 +1,55 @@
+[SCENE: stats-opener]
+
+Thirty two new features. Seventy one bug fixes. Eleven improvements under the hood.
+
+The biggest patch lands on slash commands and settings. Slash config finally persists with project, local, and policy precedence. The slash command picker stops jumping mid-search. Vim mode no longer pulls queued messages back on Esc. And settings stop getting invalidated — by legacy enum values, or by a single malformed hooks entry.
+
+All of that — now patched.
+
+[SCENE: feature-cards]
+
+Before we dig deeper — six changes that actually matter.
+
+PowerShell replaces Git for Windows. claude ultrareview runs headless. Slash config persists on restart. MCP servers got an always load flag. PostToolUse hooks override any tool's output. And slash resume now finds sessions by P R URL.
+
+Those are the headlines. Now the details.
+
+[SCENE: detail-headless]
+
+Headless and SDK tools got serious.
+
+claude ultrareview runs non-interactively from any script or C I job. dash dash from-pr now accepts GitLab, Bitbucket, and GitHub Enterprise URLs. The SDK gets CLAUDE CODE FORK SUBAGENT working in non-interactive sessions. And mcp authenticate supports redirect U R I for custom-scheme completion.
+
+Pipe it. Script it. Ship it.
+
+[SCENE: detail-performance]
+
+Performance got a quiet pass. Recent Activity panel removed for faster cold start. L S P diagnostic summaries expand on click instead of dumping inline. Multiple memory leaks plugged — image processing, slash usage on large transcripts, long-running tools that fail to emit progress.
+
+And dangerously skip permissions stops prompting on dot claude directory writes.
+
+[SCENE: detail-plugin-system]
+
+The plugin system picked up real polish.
+
+claude plugin prune removes orphaned auto-installed dependencies. MCP servers with startup errors auto-retry up to three times. Tool search now finds M C P tools that connect after a session starts. And plugins pinned by version constraints auto-update to the highest matching tag.
+
+Small additions, huge for plugin authors.
+
+[SCENE: detail-terminal-ui]
+
+Terminal rendering got a major cleanup.
+
+Fullscreen mode no longer jumps scroll after scrolling up. Dialogs that overflow your terminal now scroll with arrow keys and mouse wheel. Wrapped URLs in fullscreen open the full URL when clicked. Scrollback duplication is fixed across iTerm two and Ghostty.
+
+[SCENE: detail-network]
+
+Networking got overdue attention.
+
+NO PROXY is finally respected for all HTTP clients. M C P HTTP and OAuth got resilience — invalid responses no longer break the connection, and the four oh one retry loop is fixed. Claude dot A I connectors with the same URL are deduplicated, and slash mcp now flags duplicates a manually-added server hides. And on the cloud side — Vertex A I supports X point five oh nine Workload Identity Federation, count tokens behind a proxy, and Bedrock gets a service tier env variable.
+
+Quiet wins for enterprise.
+
+[SCENE: cta]
+
+To pull every fix from this video — run claude update. That's it. Drop a like, comment which fix you needed most, and subscribe for the next version. Which one made your day? Tell me below.

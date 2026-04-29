@@ -1,0 +1,271 @@
+<!--
+  scene-side-by-side.html — Per-release rewrite for v2.1.119 → v2.1.121.
+
+  Scene runs ~29s (33-62s). Multi-phase reveal:
+    0..1.5s   header overline + headline rises
+    2.5s      card A ("v2.1.118 baseline") slides in from left
+    14s       card B ("v2.1.121 today") slides in from right + green accent pulse
+    24s       "All three are gone" CLOSE pill scales in
+
+  Card content held to short prose so the body reads at 22px on a 720px panel.
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-side-by-side-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:36px;
+        box-sizing:border-box;
+      }
+      #scene-side-by-side-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:14px;
+        text-align:center;
+      }
+      #scene-side-by-side-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        opacity: 0;
+      }
+      #scene-side-by-side-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        opacity: 0;
+      }
+      #scene-side-by-side-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 40px;
+      }
+      .sbs-card {
+        width: 720px;
+        padding: 32px 38px;
+        border-radius: 22px;
+        border: 2px solid var(--border-bright);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        display:flex; flex-direction:column;
+        gap: 14px;
+        opacity: 0;
+        position: relative;
+      }
+      .sbs-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        border-radius: 20px 20px 0 0;
+      }
+      .sbs-card.a {
+        background: linear-gradient(135deg,
+                      rgba(247, 129, 102, 0.16) 0%,
+                      rgba(247, 129, 102, 0.04) 100%);
+        border-color: rgba(247, 129, 102, 0.55);
+      }
+      .sbs-card.a::before { background: linear-gradient(90deg, var(--accent-warn), transparent); }
+      .sbs-card.b {
+        background: linear-gradient(135deg,
+                      rgba(63, 185, 80, 0.16) 0%,
+                      rgba(63, 185, 80, 0.04) 100%);
+        border-color: rgba(63, 185, 80, 0.55);
+      }
+      .sbs-card.b::before { background: linear-gradient(90deg, var(--accent-4), transparent); }
+      .sbs-card .label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      .sbs-card.a .label { color: var(--accent-warn); }
+      .sbs-card.b .label { color: var(--accent-4); }
+      .sbs-card .title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 30px;
+        line-height: 1.18;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .sbs-card ul {
+        list-style: none;
+        padding: 0; margin: 0;
+        display: flex; flex-direction: column;
+        gap: 10px;
+      }
+      .sbs-card ul li {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 21px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        padding-left: 26px;
+        position: relative;
+        opacity: 0;     /* each bullet faded in by GSAP */
+      }
+      .sbs-card ul li::before {
+        position: absolute;
+        left: 0; top: 0;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 21px;
+      }
+      .sbs-card.a ul li::before { content: "\2715"; color: var(--accent-warn); }   /* ✕ */
+      .sbs-card.b ul li::before { content: "\2713"; color: var(--accent-4);    }   /* ✓ */
+
+      .sbs-card .stat {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 76px;
+        line-height: 1;
+        letter-spacing: -3px;
+        font-variant-numeric: tabular-nums lining-nums;
+        margin-top: 4px;
+      }
+      .sbs-card.a .stat { color: var(--accent-warn); }
+      .sbs-card.b .stat { color: var(--accent-4); }
+      .sbs-card code {
+        font-family: var(--mono);
+        font-size: 19px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      /* Closing accent pill — GSAP owns transform; xPercent:-50 + scale set in tweens */
+      #sbs-close {
+        position: absolute;
+        left: 50%; bottom: 60px;
+        opacity: 0;
+        background: rgba(63, 185, 80, 0.14);
+        border: 2px solid var(--accent-4);
+        border-radius: 12px;
+        padding: 10px 24px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 24px;
+        color: var(--accent-4);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 24px rgba(63, 185, 80, 0.35);
+      }
+    </style>
+
+    <div id="scene-side-by-side-content">
+      <div class="header-block">
+        <div class="overline" id="sbs-overline">DAY-TO-DAY DELTA</div>
+        <div class="headline" id="sbs-headline">What changed across three releases</div>
+      </div>
+
+      <div class="row">
+        <div class="sbs-card a" id="sbs-card-a">
+          <div class="label">v2.1.118 baseline</div>
+          <div class="title">Three things broke the workflow</div>
+          <ul>
+            <li id="sbs-a-li-1"><code>/config</code> changes lost on restart</li>
+            <li id="sbs-a-li-2">Windows blocked without Git for Windows</li>
+            <li id="sbs-a-li-3"><code>/ultrareview</code> only worked when you watched it</li>
+          </ul>
+          <div class="stat">3 gaps</div>
+        </div>
+        <div class="sbs-card b" id="sbs-card-b">
+          <div class="label">v2.1.121 today</div>
+          <div class="title">All three are gone</div>
+          <ul>
+            <li id="sbs-b-li-1">Settings persist with project / local / policy precedence</li>
+            <li id="sbs-b-li-2">Windows runs on PowerShell &mdash; no Git required</li>
+            <li id="sbs-b-li-3"><code>claude ultrareview</code> runs headless from any script</li>
+          </ul>
+          <div class="stat">0 gaps</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sbs-close">&#10003; Three gaps closed</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Transcript-driven timing. scene_t = root_t - 12 (data-start 12). Slot 20s.
+      // Narration: "Before this batch — three things broke. Settings disappeared on
+      // restart. Windows needed Git for Windows. Ultrareview only worked when you
+      // watched it. After one twenty one — all three are gone. Settings persist.
+      // Windows runs on PowerShell. And ultrareview runs headless from any script."
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Header in place before "Before this batch" @ scene_t 0.59
+      tl.fromTo("#sbs-overline", { y: 20, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#sbs-headline", { y: 30, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      // Card A enters as narrator says "Before this batch" @ 0.59
+      tl.fromTo("#sbs-card-a", { x: -100, opacity: 0 },
+                                { x: 0,    opacity: 1, duration: 0.6, ease: "back.out(1.3)" }, 0.59);
+
+      // Bullets on each spoken phrase:
+      //   "Settings disappeared" @ 3.28
+      //   "Windows needed"       @ 5.47
+      //   "Ultrareview only"     @ 7.75
+      tl.fromTo("#sbs-a-li-1", { x: -16, opacity: 0 },
+                                { x: 0,   opacity: 1, duration: 0.35, ease: "power2.out" }, 3.28);
+      tl.fromTo("#sbs-a-li-2", { x: -16, opacity: 0 },
+                                { x: 0,   opacity: 1, duration: 0.35, ease: "power2.out" }, 5.47);
+      tl.fromTo("#sbs-a-li-3", { x: -16, opacity: 0 },
+                                { x: 0,   opacity: 1, duration: 0.35, ease: "power2.out" }, 7.75);
+
+      // "After one twenty one" @ 10.71 → card A dim + strikethrough flashes + card B in
+      tl.to("#sbs-card-a", { opacity: 0.55, duration: 0.5, ease: "sine.inOut" }, 10.5);
+      tl.to("#sbs-a-li-1", { color: "#F78166", duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 10.6);
+      tl.to("#sbs-a-li-2", { color: "#F78166", duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 10.85);
+      tl.to("#sbs-a-li-3", { color: "#F78166", duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 11.1);
+      // "3 gaps" pulse on the dim
+      tl.to("#sbs-card-a .stat", { scale: 1.10, duration: 0.4, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 10.8);
+      // Card B slides in
+      tl.fromTo("#sbs-card-b", { x: 100, opacity: 0 },
+                                { x: 0,   opacity: 1, duration: 0.6, ease: "back.out(1.3)" }, 10.71);
+
+      // Card B bullets on each spoken phrase:
+      //   "Settings persist"           @ 13.94
+      //   "Windows runs on PowerShell" @ 15.52
+      //   "ultrareview runs headless"  @ 17.68
+      tl.fromTo("#sbs-b-li-1", { x: 16, opacity: 0 },
+                                { x: 0,  opacity: 1, duration: 0.35, ease: "power2.out" }, 13.94);
+      tl.fromTo("#sbs-b-li-2", { x: 16, opacity: 0 },
+                                { x: 0,  opacity: 1, duration: 0.35, ease: "power2.out" }, 15.52);
+      tl.fromTo("#sbs-b-li-3", { x: 16, opacity: 0 },
+                                { x: 0,  opacity: 1, duration: 0.35, ease: "power2.out" }, 17.68);
+      // Per-bullet green flash right after each enters
+      tl.to("#sbs-b-li-1", { color: "#3FB950", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 14.4);
+      tl.to("#sbs-b-li-2", { color: "#3FB950", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 16.0);
+      tl.to("#sbs-b-li-3", { color: "#3FB950", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 18.1);
+      // "0 gaps" pulse riding bullet 3
+      tl.to("#sbs-card-b .stat", { scale: 1.12, duration: 0.45, ease: "back.out(1.6)", yoyo: true, repeat: 1 }, 18.3);
+
+      // Closing pill at scene_t 19.0 (just before crossfade at 19.6)
+      tl.fromTo("#sbs-close",
+                { xPercent: -50, scale: 0.85, opacity: 0 },
+                { xPercent: -50, scale: 1,    opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 19.0);
+
+      // Anchor timeline duration to 20s = slot length (data-start 12, next 32)
+      tl.set({}, {}, 20);
+
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

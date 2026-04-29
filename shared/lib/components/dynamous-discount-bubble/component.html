@@ -1,0 +1,121 @@
+<!--
+  shared/lib/components/dynamous-discount-bubble/component.html
+  Opt-in 3.0–4.0s pill that pops up while the screen recording shows
+  the Dynamous platform. Sound-off viewers see the offer; sound-on
+  viewers also hear the soft verbal CTA. NO coupon code on screen —
+  the discount applies automatically via the description link.
+
+  SOURCE:
+    User-supplied shorts_promotion_strategy.md.resolved §2 "The Text
+    Overlay" recommendation.
+    DynamousMidroll.tsx Phase 6 — red 10% OFF badge styling.
+    shared/lib/components/dynamous-badge/component.html (sibling
+    component pattern this file mirrors, but with class="clip" because
+    this component IS time-bounded).
+
+  ──────────────────────────────────────────────────────────────────────
+  IMPORTANT — LOGO MUST BE A LOCAL COPY
+  ──────────────────────────────────────────────────────────────────────
+  HyperFrames' bundler/preview server REJECTS paths outside the project
+  directory. Always copy the logo into videos/<slug>/assets/ first.
+-->
+
+<!-- 1) HTML — paste at the top of your composition's root <div>. The
+        clip class is REQUIRED here because the bubble is time-bounded.
+        Replace __SCENE_START__ and __DURATION__ at wiring time. -->
+
+<div id="dynamous-discount-bubble"
+     class="clip"
+     data-start="__SCENE_START__"
+     data-duration="__DURATION__"
+     data-track-index="9">
+  <img id="ddb-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+  <span id="ddb-url">Dynamous.ai</span>
+  <span id="ddb-discount">10% OFF</span>
+  <span id="ddb-pointer">in the link <span class="ddb-arrow">↓</span></span>
+</div>
+
+<!-- 2) CSS — merge into your composition's <style> block. -->
+
+<style>
+  /* shared/lib/components/dynamous-discount-bubble — keep this comment block */
+  #dynamous-discount-bubble {
+    position: absolute;
+    top: 1180px;       /* default — sits just below platform-recording area in tutorial Shorts */
+    left: 60px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 18px;
+    background: rgba(15, 23, 42, 0.85);          /* midroll bgDark @ 85% */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* midroll glassBorder */
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 32px;
+    height: 32px;
+    display: block;
+  }
+  #ddb-url {
+    font-weight: 700;
+    font-size: 26px;
+    color: #e2e8f0;
+    letter-spacing: 0.3px;
+  }
+  #ddb-discount {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 22px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer {
+    font-weight: 600;
+    font-size: 22px;
+    color: #94a3b8;
+    letter-spacing: 0.2px;
+  }
+  #ddb-pointer .ddb-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    transform: translateY(2px);
+  }
+</style>
+
+<!-- 3) JS — call from host root timeline. Slide-up + fade-in at scene
+        start; opacity 1 → 0 in the last 0.4s of the scene. -->
+
+<script>
+  function addDynamousDiscountBubbleEntrance(tl, sceneStart, duration) {
+    // Entrance: slide up + fade-in at sceneStart
+    tl.from("#dynamous-discount-bubble",
+      { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, sceneStart);
+    // Exit: fade-out in the last 0.4s of the scene
+    tl.to("#dynamous-discount-bubble",
+      { opacity: 0, duration: 0.4, ease: "power2.in" }, sceneStart + duration - 0.4);
+  }
+  // Usage: addDynamousDiscountBubbleEntrance(tl, 6.0, 3.5);
+</script>
+
+<!--
+  ASSET COPY CHECKLIST (do this BEFORE wiring):
+    cp shared/logos/dynamous-logo.png videos/<slug>/assets/dynamous-logo.png
+
+  This component is OPT-IN per video AND per scene. Wire it ONLY when:
+    1. The author has opted in to the Dynamous promotion at spawn time.
+    2. The Dynamous platform is visibly on screen during the chosen scene.
+    3. The chosen scene start is >= t=3.0s (do NOT fire before the hook).
+
+  Picking a `data-track-index` of 9 keeps it clear of common SFX tracks
+  (3–5) and the captions track (6 in many templates). Verify against
+  your host video before wiring.
+-->

@@ -1,0 +1,181 @@
+<!--
+  shared/lib/blocks/dynamous-endcard/block.html
+  Last-3s contextual endcard for opted-in Shorts. Mastery wordmark +
+  "Join the Community" CTA stack + "Link in Description ↓" pill +
+  red "10% OFF" badge + dynamous.ai URL line, ending with a 0.5s
+  fade-to-black.
+
+  SOURCE:
+    diy-yt-creator/src/shared/components/ShortsContextualEndcard.tsx:1-237
+      (three-phase animation timing)
+    DynamousMidroll.tsx:78-95   (modern-gradient palette)
+    DynamousMidroll.tsx:2018-2257 (Phase 6 CTA layout — copied verbatim)
+    shared/lib/blocks/url-cta/block.html (template wrapper, scoped CSS,
+    self-registered timeline pattern)
+
+  REQUIRED TOKENS:
+    None. The block inlines the midroll v3 palette + Inter font.
+    Host can override the surface color by setting --bg on the
+    [data-composition-id="dynamous-endcard"] selector if needed —
+    but the default `#0f172a` (midroll bgDark) is the locked brand.
+
+  ASSET COPY (do BEFORE wiring — bundler rejects parent-of-project paths):
+    cp shared/logos/dynamous-ai-mastery-white.svg \
+       videos/<slug>/assets/dynamous-ai-mastery-white.svg
+
+  See ./recipe.md for full wiring instructions.
+-->
+<template id="dynamous-endcard-template">
+  <div data-composition-id="dynamous-endcard" data-start="0" data-duration="5" data-width="1080" data-height="1920">
+
+    <!-- Glass CTA card — mirrors midroll Phase 6 stack -->
+    <div class="dec-card">
+      <img class="dec-wordmark" src="../assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" crossorigin="anonymous" />
+      <div class="dec-headline" id="dec-headline">Join the Community</div>
+      <div class="dec-button" id="dec-button">
+        <span>Link in Description</span>
+        <span class="dec-arrow">↓</span>
+      </div>
+      <div class="dec-discount" id="dec-discount">10% OFF</div>
+      <div class="dec-url" id="dec-url">https://dynamous.ai/?code=646a60</div>
+    </div>
+
+    <!-- Final 0.5s fade-to-black overlay -->
+    <div class="dec-blackout"></div>
+
+    <style>
+      [data-composition-id="dynamous-endcard"] {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        background: var(--bg, #0f172a);  /* midroll bgDark */
+        font-family: 'Inter', system-ui, sans-serif;
+        overflow: hidden;
+      }
+      [data-composition-id="dynamous-endcard"] .dec-card {
+        /* Positioned in the UPPER half of the frame to clear YouTube's
+           "Watch next" overlay that auto-renders in the bottom ~50% of
+           Shorts during the last ~5s. Top edge sits at y=340px (below
+           YouTube's 380px title-zone reserve, with 40px breathing room
+           because the card has its own visual weight); card bottom at
+           ~y=920 leaves ~180px clearance above where the next-video
+           overlay typically starts (~y=1100). */
+        position: absolute;
+        left: 50%;
+        top: 340px;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+        padding: 56px 64px;
+        width: 880px;
+        box-sizing: border-box;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow:
+          0 16px 64px rgba(0, 0, 0, 0.5),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+      [data-composition-id="dynamous-endcard"] .dec-wordmark {
+        width: 480px;
+        height: auto;
+        display: block;
+      }
+      [data-composition-id="dynamous-endcard"] .dec-headline {
+        font-size: 56px;
+        font-weight: 900;
+        color: #ffffff;
+        text-align: center;
+        letter-spacing: 0.5px;
+      }
+      [data-composition-id="dynamous-endcard"] .dec-button {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 48px;
+        border-radius: 16px;
+        font-size: 32px;
+        font-weight: 800;
+        color: #ffffff;
+        background: linear-gradient(135deg, #a855f7, #ec4899, #a855f7);
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+        box-shadow:
+          0 4px 24px rgba(168, 85, 247, 0.4),
+          0 0 60px rgba(236, 72, 153, 0.15);
+      }
+      [data-composition-id="dynamous-endcard"] .dec-button .dec-arrow {
+        font-size: 36px;
+        line-height: 0.7;
+      }
+      [data-composition-id="dynamous-endcard"] .dec-discount {
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-size: 36px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+      }
+      [data-composition-id="dynamous-endcard"] .dec-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 26px;
+        font-weight: 600;
+        color: #cbd5e1;
+        letter-spacing: 1px;
+        max-width: 800px;
+        word-break: break-all;
+        text-align: center;
+      }
+      [data-composition-id="dynamous-endcard"] .dec-blackout {
+        position: absolute;
+        inset: 0;
+        background: #000000;
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+
+        // Phase 1 — card scale-in 0–0.4s (midroll cardSpring analogue)
+        tl.from('[data-composition-id="dynamous-endcard"] .dec-card',
+          { scale: 0.9, opacity: 0, duration: 0.4, ease: "back.out(1.2)" }, 0);
+
+        // Phase 2 — content stagger entry 0.4–1.4s
+        tl.from('[data-composition-id="dynamous-endcard"] .dec-wordmark',
+          { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+        tl.from('[data-composition-id="dynamous-endcard"] .dec-headline',
+          { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.55);
+        tl.from('[data-composition-id="dynamous-endcard"] .dec-button',
+          { scale: 0.9, opacity: 0, duration: 0.5, ease: "back.out(1.6)" }, 0.7);
+        tl.from('[data-composition-id="dynamous-endcard"] .dec-discount',
+          { scale: 0.5, opacity: 0, duration: 0.5, ease: "back.out(1.8)" }, 0.85);
+        tl.from('[data-composition-id="dynamous-endcard"] .dec-url',
+          { y: 10, opacity: 0, duration: 0.4, ease: "power2.out" }, 1.0);
+
+        // Hold 1.4–4.5s with a subtle gradient shimmer on the CTA button.
+        // Held longer than the original 3s window because YouTube's
+        // "Watch next" overlay reserves the last 5s of any Short.
+        tl.to('[data-composition-id="dynamous-endcard"] .dec-button',
+          { backgroundPosition: "200% 0%", duration: 3.8, ease: "none" }, 0.7);
+
+        // Phase 3 — fade to black 4.5–5.0s (clean cut at composition end)
+        tl.to('[data-composition-id="dynamous-endcard"] .dec-blackout',
+          { opacity: 1, duration: 0.5, ease: "power2.in" }, 4.5);
+
+        window.__timelines["dynamous-endcard"] = tl;
+      })();
+    </script>
+
+  </div>
+</template>

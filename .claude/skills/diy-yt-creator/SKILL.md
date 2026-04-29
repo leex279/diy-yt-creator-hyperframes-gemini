@@ -12,8 +12,16 @@ Zero-manual-step workflows for spawning fully-prepped HyperFrames videos from th
 Trigger when the user says any of:
 
 - "create / make / spawn a new short / video"
+- "new short about X" / "new generic short about X" / "new standard short about X"
+- "/diy-yt-creator:new-standard-short …"
 - "new anthropic short about X"
 - "/diy-yt-creator:new-anthropic-short …"
+- "new archon short about X"
+- "/diy-yt-creator:new-archon-short …"
+- "new long-form video about X" / "new long-form standard about X"
+- "/diy-yt-creator:new-long-form-standard …"
+- "new claude code version update video" / "claude code release video"
+- "/diy-yt-creator:claude-code-version v2.1.NN" — orchestration command for Claude Code releases
 - Anything that asks to scaffold a video from a template in this repo
 - "capture / screenshot <url> for video <slug>" → uses `capture-asset`
 - "QA / check / verify the preview for <slug>" → uses `qa-composition`
@@ -24,11 +32,15 @@ Trigger when the user says any of:
 
 | Command | Template used | Use when |
 |---|---|---|
+| [new-standard-short.md](./new-standard-short.md) | `templates/shorts/standard/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-180s) in the **brand-neutral standard** aesthetic. Default pick for any topic that isn't anchored to a specific brand. Numbered step cards (01/02/03) instead of dated timeline cards. |
 | [new-anthropic-short.md](./new-anthropic-short.md) | `templates/shorts/anthropic/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-60s) in the Anthropic dark-stage aesthetic |
+| [new-archon-short.md](./new-archon-short.md) | `templates/shorts/archon/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-60s) in the Archon dark-blue / cyan-magenta aesthetic |
+| [new-long-form-standard.md](./new-long-form-standard.md) | `templates/long-form/standard/` | User wants a horizontal YouTube long-form (1920x1080, 30fps, 4-15 min) in the dark-navy + 4-accent baseline aesthetic |
+| [new-claude-code-version-longform.md](./new-claude-code-version-longform.md) | `templates/long-form/claude-code-version/` | User wants a horizontal Claude Code release-update video (1920x1080, 30fps, 3-5 min) with VersionBranding overlay + terminal scene + stats opener. For full automation from a release tag, prefer the [/diy-yt-creator:claude-code-version](../../commands/diy-yt-creator/claude-code-version.md) slash command. |
 | [capture-asset.md](./capture-asset.md) | n/a (uses `agent-browser`) | Per-video screenshot/asset from a public URL into `videos/<slug>/assets/` |
 | [qa-composition.md](./qa-composition.md) | n/a (uses `agent-browser`) | Visually QA a running `hyperframes preview` — snapshot each phase, report issues |
 
-> **Long-form templates do not exist yet.** If the user asks for a long-form video, point them at `templates/long-form/README.md` and offer to build a long-form template first.
+> **Adding a new template?** Follow the "Building New Templates" workflow in the project's [CLAUDE.md](../../../CLAUDE.md). Each new template MUST ship a matching playbook in this directory and a row in the table above.
 
 ### Pipeline commands (research + scriptwriting + retention)
 
@@ -49,10 +61,10 @@ These are first-class slash commands under `.claude/commands/diy-yt-creator/`. T
 ## Pipeline vs direct invocation
 
 - **Use `/diy-yt-creator:full-auto`** when the user gives you a topic and wants a researched, fact-checked, retention-engineered video. This is the default.
-- **Use `/diy-yt-creator:new-anthropic-short` directly** when the user already has a finished `script.txt` (or content brief) and just wants the composition built. Skips all research/critique/fact-check steps.
+- **Use `/diy-yt-creator:new-standard-short`, `new-anthropic-short`, or `new-archon-short` directly** when the user already has a finished `script.txt` (or content brief) and just wants the composition built. Skips all research/critique/fact-check steps. Pick the playbook by aesthetic: **standard** brand-neutral dark-navy (default for any topic) vs **anthropic** dark-orange stage (Anthropic / Claude content) vs **archon** dark-blue / cyan-magenta (Archon workflow content).
 - **Use individual phase commands** when debugging or re-running a single phase after fixes.
 
-The composition-build skill (`new-anthropic-short.md`) reads `videos/<slug>/scripts/full-script.md` and `videos/<slug>/plan.md` if they exist (Branch A in step 4) — so the pipeline output flows naturally into the build.
+Both composition-build skills (`new-anthropic-short.md`, `new-archon-short.md`) read `videos/<slug>/scripts/full-script.md` and `videos/<slug>/plan.md` if they exist (Branch A in step 4) — so the pipeline output flows naturally into the build, regardless of template choice.
 
 ## Hard rules across every command
 

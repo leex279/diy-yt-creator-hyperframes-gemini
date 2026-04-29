@@ -1,0 +1,149 @@
+<!--
+  scene-cta.html — Closing CTA archetype.
+
+  3-phase content (sequential reveals on a single timeline):
+    1. FitHeadline debate question (40-72px Inter 900) at t=0 — expo.out rise
+    2. Comment-prompt pill + subscribe pill at t=2.5 — back.out(1.4)
+    3. Optional next-video thumbnail card at t=5 — pulsing border (FINITE repeat)
+
+  HARD RULE: subscribe pulse uses a FINITE repeat (yoyo:true, repeat:N) — never
+  repeat:-1. The framework requires deterministic timelines. Compute repeat as
+  Math.ceil(scene_duration / pulse_cycle).
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-cta-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 40px;
+        box-sizing:border-box;
+      }
+      #scene-cta-content .debate {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 64px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1500px;
+      }
+      #scene-cta-content .pills {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 24px;
+      }
+      .cta-pill {
+        padding: 18px 32px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: var(--text);
+        display:inline-flex; align-items:center;
+        gap: 12px;
+      }
+      .cta-pill.comment .icon { color: var(--accent-2); }
+      .cta-pill.subscribe {
+        background: linear-gradient(135deg,
+                      rgba(249, 115, 22, 0.18) 0%,
+                      rgba(249, 115, 22, 0.05) 100%);
+        border-color: rgba(249, 115, 22, 0.55);
+      }
+      .cta-pill.subscribe .arrow {
+        color: var(--accent-warn);
+        font-weight: 900;
+      }
+      #cta-next-card {
+        margin-top: 16px;
+        width: 520px;
+        height: 292px;
+        border-radius: 20px;
+        border: 2px solid var(--border-bright);
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        position: relative;
+      }
+      #cta-next-card img {
+        display:block;
+        width: 100%; height: 100%;
+        object-fit: cover;
+      }
+      #cta-next-card .nx-meta {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        padding: 12px 18px;
+        background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 100%);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text);
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <div class="debate" id="cta-debate">A debate question that earns a comment goes here</div>
+
+      <div class="pills">
+        <div class="cta-pill comment" id="cta-comment">
+          <span class="icon">&#x270F;</span>
+          <span>Drop your take in the comments</span>
+        </div>
+        <div class="cta-pill subscribe" id="cta-subscribe">
+          <span>Subscribe</span>
+          <span class="arrow">&rarr;</span>
+        </div>
+      </div>
+
+      <div id="cta-next-card">
+        <img src="assets/screenshots/next-video-thumbnail.png" alt="Next video" />
+        <div class="nx-meta">Watch next &middot; Replace per video</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Debate question — expo.out rise at t=0
+      tl.from("#cta-debate", { y: 40, opacity: 0, duration: 0.7, ease: "expo.out", immediateRender: false }, 0);
+
+      // Comment + subscribe pills — back.out at t=2.0
+      tl.from("#cta-comment",   { y: 24, opacity: 0, duration: 0.5, ease: "back.out(1.4)", immediateRender: false }, 2.0);
+      tl.from("#cta-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "back.out(1.4)", immediateRender: false }, 2.2);
+
+      // Next-video card — fade + pulse FINITE
+      tl.from("#cta-next-card", { y: 30, scale: 0.95, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 4.0);
+
+      // Subscribe pulse — yoyo border-glow, finite repeat (4 ticks ≈ 4s)
+      tl.to("#cta-subscribe", {
+        boxShadow: "0 0 0 6px rgba(249, 115, 22, 0.35)",
+        duration: 0.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 4,
+        immediateRender: false
+      }, 4.0);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

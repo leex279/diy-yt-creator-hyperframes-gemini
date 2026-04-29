@@ -32,6 +32,9 @@ CSS variable sets (`:root { --bg: ...; --orange: ...; }`). Copy the `.css` file 
 | File | Description | Tags |
 |---|---|---|
 | anthropic-dark.css | Anthropic dark-stage palette, spacing, and typography vars (`--bg`, `--orange`, `--purple`, etc.) | dark-stage, anthropic, palette, tokens |
+| dynamous-modern.css | Dynamous midroll v3 modern-gradient palette (slate + purple + pink + cyan with red 10% OFF accent) | dark-stage, dynamous, palette, tokens, gradient |
+| long-form-standard.css | Generic long-form (1920x1080) palette: dark navy + 4-accent rotation (blue/cyan/purple/green) + orange/yellow warn-stat | dark-stage, long-form, palette, tokens, navy |
+| standard-short.css | Warm paper editorial standard short (1080x1920) palette: cream canvas + 5-accent rotation (terracotta/indigo/sage/sunset-gold/warm-rose) + serif/sans/mono triad. Brand-neutral baseline for vertical Shorts. | warm-paper, short, palette, tokens, editorial, baseline, light |
 <!-- LIB:TOKENS:END -->
 
 ## Blocks
@@ -41,6 +44,8 @@ Standalone sub-compositions. Each block lives in its own directory with `block.h
 <!-- LIB:BLOCKS:BEGIN -->
 | Directory | Description | Dimensions | Tags |
 |---|---|---|---|
+| dynamous-endcard/ | Last-3s Dynamous CTA stack — wordmark + "Join the Community" + gradient pill + 10% OFF badge + URL, ends with fade-to-black | 1080x1920 | dynamous, cta, outro, endcard, vertical |
+| dynamous-module-interstitial/ | Optional 3s mid-video card naming the matching Dynamous AI Mastery module (slide-in from right, hold, slide-out) | 1080x1920 | dynamous, module, interstitial, optional, vertical |
 | stat-pill-row/ | Two color-rotated huge-number stat pills with mono labels | 1080x1920 | stats, numbers, vertical, dark-stage |
 | timeline-cards/ | Three dated cards stacked vertically, accent rotation orange→purple→blue | 1080x1920 | timeline, dates, cards, vertical, dark-stage |
 | url-cta/ | Closing CTA with green-glow URL pill + Subscribe pill | 1080x1920 | cta, url, outro, subscribe, vertical |
@@ -54,6 +59,8 @@ Paste-in HTML+CSS+JS snippets. Each component lives in its own directory with `c
 | Directory | Description | Tags |
 |---|---|---|
 | ambient-radial/ | Slow-breathing dual-radial wash (orange + purple) for background depth | background, ambient, decorative, breath |
+| dynamous-badge/ | Persistent bottom-left Dynamous mark + dynamous.ai wordmark, opacity 0.55, fades in once at t=3.0s | brand, wordmark, dynamous, bottom-left, persistent |
+| dynamous-discount-bubble/ | Opt-in 3-4s pill — logo + Dynamous.ai + red 10% OFF badge + "in the link ↓" (no coupon code field; discount is automatic via the description link) | dynamous, discount, opt-in, time-bounded, tutorial |
 | progress-bar/ | Slim 6px linear progress bar at canvas bottom, accent-orange | progress, bottom-edge, accent |
 | top-banner-wordmark/ | Persistent brand wordmark in the 60px top safe zone (uses local logo copy) | brand, wordmark, top-banner, persistent |
 <!-- LIB:COMPONENTS:END -->
@@ -78,4 +85,6 @@ Named-style fragments — palette + typography + motion signature + suggested li
 | File | Description | Tags |
 |---|---|---|
 | anthropic-dark.md | Dark-stage Anthropic / Claude postmortem aesthetic (Inter 900 hero, Claude orange, back.out springs) | dark-stage, anthropic, premium, tech |
+| long-form-standard.md | Generic long-form (1920x1080) dark-navy stage with 4-accent rotation; canonical baseline for horizontal videos and the parent of future long-form variants | dark-stage, long-form, navy, documentary, baseline |
+| standard-short.md | Warm paper editorial standard short (1080x1920): cream canvas, 5-accent rotation (terracotta/indigo/sage/sunset-gold/warm-rose), Playfair serif + Inter sans + JetBrains Mono. Sub-composition architecture with 9 scene archetypes. Canonical brand-neutral baseline for vertical Shorts. | warm-paper, short, editorial, baseline, light, sub-compositions |
 <!-- LIB:VISUAL-STYLES:END -->

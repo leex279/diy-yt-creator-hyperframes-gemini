@@ -87,6 +87,25 @@ If a URL was provided, fetch the page content now via `WebFetch`. Include this c
 
 **Autonomous mode** (from `full-auto`) — Use context or defaults; do not ask.
 
+### Step 0E: Pick Voice Profile
+
+Set `voice_profile` for this video. The field flows into `content-brief.md` and Phase 2 reads it to pick the right `brand-voice-*.md` rules.
+
+Heuristic — match the topic against the strongest signal first; defaults are conservative:
+
+| Topic signal                                                                                            | Default profile                                                  |
+| ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Topic mentions "I tried", "I built", "tutorial", "guide", "how to use", "walkthrough", "let's build"   | `tutorial`                                                       |
+| Topic mentions "just shipped", "just launched", "just announced", "deal", "acquired", "raised", "vs"    | `news-explainer`                                                 |
+| URL is a GitHub release, vendor blog post, or news article                                              | `news-explainer`                                                 |
+| URL is a tool's homepage with no announcement context                                                   | `tutorial` (offer; ask in interactive mode)                      |
+| Topic frames Tool A vs Tool B / benchmark / comparison                                                  | `comparison` (currently uses `news-explainer` rules)              |
+| None of the above                                                                                       | ASK in interactive mode; default `news-explainer` in autonomous   |
+
+**Default**: when nothing matches and you can't ask (autonomous mode), pick `news-explainer` — it's the dominant format on this channel and the dispatcher (`brand-voice.md`) treats missing values as `news-explainer` anyway.
+
+Store the picked value as `voice_profile` for inclusion in the content brief metadata.
+
 ---
 
 ## WAVE 1 — Parallel Research (4 agents, concurrent)
@@ -525,6 +544,7 @@ The content brief uses this enriched template (ALL sections are mandatory unless
 - **Template**: <shorts/anthropic | long-form/* — currently only shorts/anthropic>
 - **Duration**: <target duration>
 - **Tone**: <tone>
+- **Voice Profile**: `voice_profile: <tutorial | news-explainer | comparison>` — picked in Step 0E (see Voice Profile heuristic). Determines which `brand-voice-*.md` file Phase 2 reads. Default: `news-explainer`.
 - **Target Audience**: <primary and secondary>
 - **Key Angle**: <the ONE thing viewers should remember>
 - **Topic Type**: <PRODUCT_TOOL | CONCEPT | ARTICLE_RESPONSE | COMPARISON>

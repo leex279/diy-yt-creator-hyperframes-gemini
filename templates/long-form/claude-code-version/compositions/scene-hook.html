@@ -1,0 +1,92 @@
+<!--
+  scene-hook.html — Hero hook archetype (scroll-stop opener, ~10-12s).
+
+  Structure:
+    overline → headline → stat slam → optional sub-line.
+
+  The whole scene is its own paused GSAP timeline, registered on
+  window.__timelines["scene-hook"]. The root composition only handles
+  the wrapper-level crossfade into / out of this scene.
+-->
+<template id="scene-hook-template">
+  <div data-composition-id="scene-hook"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-hook-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:24px;
+        box-sizing:border-box;
+      }
+      #scene-hook-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+      }
+      #scene-hook-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 100px;
+        line-height: 1.02;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1500px;
+      }
+      #scene-hook-content .stat {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 130px;
+        line-height: 0.9;
+        letter-spacing: -4px;
+        color: var(--accent-stat);
+        font-variant-numeric: tabular-nums lining-nums;
+        text-shadow: 0 0 80px rgba(251, 188, 4, 0.45),
+                     0 8px 24px rgba(0, 0, 0, 0.6);
+      }
+      #scene-hook-content .subline {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 32px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-hook-content">
+      <div class="overline" id="hook-overline">URGENT</div>
+      <div class="headline" id="hook-headline">YOUR HOOK HEADLINE GOES HERE</div>
+      <div class="stat"     id="hook-stat">0.0&times;</div>
+      <div class="subline"  id="hook-subline">Optional sub-line · context · date</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Entrance only — exit is owned by the root crossfade.
+      // All .from() at position > 0 use immediateRender:false to keep the
+      // base state painted at t=0 (long-form gotcha — scene wrapper is
+      // still rendered at composition t=0 by the framework).
+      tl.from("#hook-overline", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#hook-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+      tl.from("#hook-stat",     { scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.4)", immediateRender: false }, 0.7);
+      tl.from("#hook-subline",  { y: 16, opacity: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, 1.2);
+
+      window.__timelines["scene-hook"] = tl;
+    </script>
+  </div>
+</template>
