@@ -39,7 +39,9 @@
     z-index: 0;
   }
 
-  /* Shape backdrop — 14 deterministic shapes scattered at 4.5% opacity. */
+  /* Shape backdrop — 14 deterministic shapes scattered at ~4.2% opacity
+     (15% more transparent than the original 5%). Shapes also re-randomise
+     their position at every scene boundary — see repositionShapesPerScene(). */
   #shape-backdrop {
     position: absolute;
     inset: 0;
@@ -49,7 +51,7 @@
   }
   #shape-backdrop img {
     position: absolute;
-    opacity: 0.05;
+    opacity: 0.042;
     object-fit: contain;
     pointer-events: none;
   }
@@ -393,20 +395,47 @@
     }
   }
 
-  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+  // Re-randomise shape positions at every scene boundary. Each scene gets a
+  // fresh deterministic placement (overlap-aware, mirrors spawnShapes); the
+  // tween animates over the crossfade window so it reads as part of the
+  // scene transition rather than independent drift.
+  function repositionShapesPerScene(tl, container, seedPrefix, sceneStartTimes) {
     const imgs = container.querySelectorAll('img');
-    imgs.forEach((img, i) => {
-      const seed = seedPrefix + '-drift-' + i;
-      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
-      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
-      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
-      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
-      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
-      tl.to(img, {
-        x: dx, y: dy, rotation: '+=' + dr,
-        duration: dur, ease: 'sine.inOut',
-        yoyo: true, repeat: repeatCount
-      }, 0);
+    if (!imgs.length || !sceneStartTimes.length) return;
+    const w = 1920, h = 1080, minDist = 360, MAX_TRIES = 80;
+    const anchors = Array.from(imgs).map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    sceneStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      imgs.forEach((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        const targetX = (best.cx - size / 2) - anchors[i].left;
+        const targetY = (best.cy - size / 2) - anchors[i].top;
+        tl.to(img, {
+          x: targetX, y: targetY, rotation: best.rot,
+          duration: 1.4, ease: 'power2.inOut'
+        }, sceneT - 0.4);
+      });
     });
   }
 
@@ -439,7 +468,13 @@
     { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 6 },
     0);
 
-  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'long-form-claude-code-version', TOTAL_DURATION);
+  // Reposition shapes at each scene change. Skip t=0 — initial spawn covers it.
+  repositionShapesPerScene(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'long-form-claude-code-version',
+    [33.66, 57.26, 84.31, 109.06, 134.14, 153.03, 194.28]
+  );
 
   tl.fromTo("#progress-fill",
     { width: 0 },
