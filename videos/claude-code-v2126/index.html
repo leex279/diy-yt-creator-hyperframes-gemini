@@ -175,9 +175,77 @@
     z-index: 9;
     pointer-events: none;
   }
+
+  /* ── VIDEO_CONFIG opt-in overlays ────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 48px;
+    left: 48px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px 8px 10px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark { width: 32px; height: 32px; display: block; }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  #dynamous-discount-bubble {
+    position: absolute;
+    bottom: 130px;
+    left: 48px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 28px;
+    height: 28px;
+    display: block;
+    background-image: url('assets/dynamous-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #ddb-url { font-weight: 700; font-size: 20px; color: #e2e8f0; letter-spacing: 0.3px; }
+  #ddb-discount {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 18px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer { font-weight: 600; font-size: 18px; color: #94a3b8; }
 </style>
 </head>
 <body>
+<script src="video.config.js"></script>
 <div id="root"
      data-composition-id="main"
      data-start="0"
@@ -216,6 +284,29 @@
 
   <!-- Slim progress bar -->
   <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ── VIDEO_CONFIG opt-in overlays ────────────────────────────────
+       Enable by setting flags in video.config.js. Guard script below
+       removes disabled elements before HyperFrames boots.            -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="0"
+       data-duration="12"
+       data-track-index="10">
+    <span id="ddb-mark"></span>
+    <span id="ddb-url">Dynamous.ai</span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-pointer">in the link ↓</span>
+  </div>
+  <div id="dynamous-module-interstitial-wrap"
+       data-composition-id="dynamous-module-interstitial"
+       data-composition-src="compositions/dynamous-module-interstitial.html"
+       data-start="39.28"
+       data-track-index="11"></div>
 
   <!-- ═══════════════════════════════════════════════════════
        SCENE WRAPPERS — canonical 8-scene Claude Code release structure.
@@ -343,6 +434,25 @@
          data-start="211.95" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
   <audio id="sfx-pop-cta" class="clip" src="assets/sfx/spring-pop.mp3"
          data-start="239.88" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- VIDEO_CONFIG guard -->
+  <script>
+  (function () {
+    var d = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+    if (!d.badge)              { var e = document.getElementById('dynamous-badge');                     if (e) e.remove(); }
+    if (!d.moduleInterstitial) { var e = document.getElementById('dynamous-module-interstitial-wrap'); if (e) e.remove(); }
+    if (!d.discountBubble) {
+      var e = document.getElementById('dynamous-discount-bubble'); if (e) e.remove();
+    } else {
+      var cta    = document.getElementById('scene-cta-wrap');
+      var bubble = document.getElementById('dynamous-discount-bubble');
+      if (cta && bubble) {
+        bubble.dataset.start    = cta.dataset.start;
+        bubble.dataset.duration = String(d.discountBubbleDuration || 12);
+      }
+    }
+  })();
+  </script>
 
   <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
   <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
@@ -529,6 +639,19 @@
   crossfadeScenes(tl, "#scene-detail-network-wrap",        "#scene-cta-wrap",                   237.61);
 
   tl.set({}, {}, TOTAL_DURATION);
+
+  // ─── VIDEO_CONFIG opt-in GSAP wiring ───
+  var _dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+  if (_dyn.badge) {
+    tl.from('#dynamous-badge', { opacity: 0, x: -12, duration: 0.6, ease: 'power2.out' }, 3.0);
+  }
+  if (_dyn.discountBubble) {
+    var _ctaEl    = document.getElementById('scene-cta-wrap');
+    var _ctaStart = _ctaEl ? parseFloat(_ctaEl.dataset.start || '0') : TOTAL_DURATION - 14;
+    var _bubDur   = _dyn.discountBubbleDuration || 12;
+    tl.from('#dynamous-discount-bubble', { y: 16, opacity: 0, duration: 0.5, ease: 'power2.out' }, _ctaStart);
+    tl.to(  '#dynamous-discount-bubble', { opacity: 0, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, _ctaStart + _bubDur - 0.4);
+  }
 
   window.__timelines["main"] = tl;
 </script>
