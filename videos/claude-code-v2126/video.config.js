@@ -5,14 +5,14 @@ window.VIDEO_CONFIG = {
 
   // ── Dynamous AI promotion ──────────────────────────────────────────
   dynamous: {
-    badge: false,
+    badge: true,
 
-    moduleInterstitial: false,
+    moduleInterstitial: true,
     moduleId: 10,
     moduleName: 'MCP Servers + Skills',
     moduleAccentColor: '#ec4899',
 
-    discountBubble: false,
+    discountBubble: true,
     discountBubbleDuration: 12,
   },
 
