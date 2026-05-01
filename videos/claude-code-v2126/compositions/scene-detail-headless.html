@@ -1,0 +1,224 @@
+<!--
+  scene-detail-headless.html — 4-card 2x2 detail scene for "Enterprise & SDK".
+
+  v2.1.126 repurposed: Enterprise gateway, host-managed analytics, domain
+  allowlist security fix, Agent SDK parallel-tool-call hang fix.
+  Closer: "Ship it."
+-->
+<template id="scene-detail-headless-template">
+  <div data-composition-id="scene-detail-headless"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-detail-headless-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 90px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-detail-headless-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align:center;
+      }
+      #scene-detail-headless-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        opacity: 0;
+      }
+      #scene-detail-headless-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .dh-grid {
+        width: 1700px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .dh-card {
+        position: relative;
+        padding: 28px 32px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 12px;
+        min-height: 230px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .dh-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-1)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .dh-card .row {
+        display:flex; flex-direction:row;
+        align-items:center; gap: 14px;
+        margin-bottom: 4px;
+      }
+      .dh-card .num {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .dh-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .dh-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .dh-card .det code {
+        font-family: var(--mono);
+        font-size: 18px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .dh-card.a { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .dh-card.b { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .dh-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .dh-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .dh-card.a .num { color: var(--accent-1); background: rgba(88, 166, 255, 0.18); }
+      .dh-card.b .num { color: var(--accent-2); background: rgba(6, 182, 212, 0.18); }
+      .dh-card.c .num { color: var(--accent-3); background: rgba(163, 113, 247, 0.18); }
+      .dh-card.d .num { color: var(--accent-4); background: rgba(63, 185, 80, 0.18); }
+
+      #dh-close {
+        position: absolute;
+        left: 50%; bottom: 42px;
+        opacity: 0;
+        background: rgba(63, 185, 80, 0.16);
+        border: 2px solid var(--accent-4);
+        border-radius: 14px;
+        padding: 10px 28px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--accent-4);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 28px rgba(63, 185, 80, 0.4);
+      }
+    </style>
+
+    <div id="scene-detail-headless-content">
+      <div class="header-block">
+        <div class="overline" id="dh-overline">ENTERPRISE &amp; SDK</div>
+        <div class="headline" id="dh-headline">Enterprise and SDK &mdash; all patched.</div>
+      </div>
+
+      <div class="dh-grid">
+        <div class="dh-card a" id="dh-card-1">
+          <div class="row">
+            <div class="num">01</div>
+          </div>
+          <div class="ttl">Gateway model picker</div>
+          <div class="det">The <code>/model</code> picker reads <code>/v1/models</code> from your <code>ANTHROPIC_BASE_URL</code> gateway automatically. No manual model list needed.</div>
+        </div>
+        <div class="dh-card b" id="dh-card-2">
+          <div class="row">
+            <div class="num">02</div>
+          </div>
+          <div class="ttl">Host-managed analytics</div>
+          <div class="det">Bedrock, Vertex, and Foundry deployments no longer auto-disable analytics when <code>CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST</code> is set.</div>
+        </div>
+        <div class="dh-card c" id="dh-card-3">
+          <div class="row">
+            <div class="num">03</div>
+          </div>
+          <div class="ttl">Domain allowlist security fix</div>
+          <div class="det"><code>allowManagedDomainsOnly</code> and <code>allowManagedReadPathsOnly</code> now enforce correctly when a higher-priority settings source lacks a <code>sandbox</code> block.</div>
+        </div>
+        <div class="dh-card d" id="dh-card-4">
+          <div class="row">
+            <div class="num">04</div>
+          </div>
+          <div class="ttl">Agent SDK hang fixed</div>
+          <div class="det">The SDK no longer hangs when the model emits a malformed tool name in a parallel tool call batch.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dh-close">&#10003; Ship it.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // cloned-voice timing. scene_t = root_t - 82.05 (data-start 82.05). Slot 33.77s.
+      // Narration (internal = global - 82.05):
+      //   "Enterprise and SDK."              scene_t  0.00  (#189 Enterprise, global 82.046)
+      //   "If you are on a custom gateway..." scene_t  1.87  (#192 If, global 83.915)
+      //   "Host managed deployments..."      scene_t  9.08  (#214 Host, global 91.125)
+      //   "The domain allowlist..."          scene_t 17.50  (#234 The, global 99.554)
+      //   "And the Agent SDK..."             scene_t 25.64  (#253 And, global 107.692)
+      //   "Ship it."                         scene_t 32.81  (#274 Ship, global 114.855)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#dh-overline", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#dh-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      const cards = [
+        { sel: "#dh-card-1", num: "#dh-card-1 .num", at:  1.87 },
+        { sel: "#dh-card-2", num: "#dh-card-2 .num", at:  9.08 },
+        { sel: "#dh-card-3", num: "#dh-card-3 .num", at: 17.50 },
+        { sel: "#dh-card-4", num: "#dh-card-4 .num", at: 25.64 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 32.81;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 28, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 3.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.6);
+        }
+      });
+
+      tl.fromTo("#dh-close",
+        { xPercent: -50, scale: 0.85, opacity: 0 },
+        { xPercent: -50, scale: 1,    opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+        32.81);
+
+      tl.set({}, {}, 33.77);
+      window.__timelines["scene-detail-headless"] = tl;
+    </script>
+  </div>
+</template>

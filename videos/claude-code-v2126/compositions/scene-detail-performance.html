@@ -1,0 +1,189 @@
+<!--
+  scene-detail-performance.html — 4-card 2x2 detail scene for "Auth & Sessions".
+
+  v2.1.126 repurposed: OAuth credential race, login screen guidance,
+  deferred tools in fork subagents, API retry countdown fix.
+  No closer banner.
+-->
+<template id="scene-detail-performance-template">
+  <div data-composition-id="scene-detail-performance"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-detail-performance-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 90px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-detail-performance-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align:center;
+      }
+      #scene-detail-performance-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        opacity: 0;
+      }
+      #scene-detail-performance-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .dp-grid {
+        width: 1700px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .dp-card {
+        position: relative;
+        padding: 28px 32px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 12px;
+        min-height: 230px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .dp-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-warn)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .dp-card .row { display:flex; align-items:center; gap: 14px; margin-bottom: 4px; }
+      .dp-card .num {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .dp-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .dp-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .dp-card .det code {
+        font-family: var(--mono);
+        font-size: 18px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .dp-card.a { --card-accent: var(--accent-warn); border-color: rgba(247, 129, 102, 0.55); }
+      .dp-card.b { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .dp-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .dp-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .dp-card.a .num { color: var(--accent-warn); background: rgba(247, 129, 102, 0.18); }
+      .dp-card.b .num { color: var(--accent-1);    background: rgba(88, 166, 255, 0.18);  }
+      .dp-card.c .num { color: var(--accent-3);    background: rgba(163, 113, 247, 0.18); }
+      .dp-card.d .num { color: var(--accent-4);    background: rgba(63, 185, 80, 0.18);   }
+    </style>
+
+    <div id="scene-detail-performance-content">
+      <div class="header-block">
+        <div class="overline" id="dp-overline">AUTH &amp; SESSIONS</div>
+        <div class="headline" id="dp-headline">Auth got a thorough pass.</div>
+      </div>
+
+      <div class="dp-grid">
+        <div class="dp-card a" id="dp-card-1">
+          <div class="row"><div class="num">01</div></div>
+          <div class="ttl">Credential race condition</div>
+          <div class="det">A rare race where concurrent writes could clear a valid OAuth refresh token &mdash; patched.</div>
+        </div>
+        <div class="dp-card b" id="dp-card-2">
+          <div class="row"><div class="num">02</div></div>
+          <div class="ttl">Org OAuth error guidance</div>
+          <div class="det">The login screen for &ldquo;OAuth not allowed for organization&rdquo; errors now shows guidance to contact your admin instead of a dead end.</div>
+        </div>
+        <div class="dp-card c" id="dp-card-3">
+          <div class="row"><div class="num">03</div></div>
+          <div class="ttl">Deferred tools in subagents</div>
+          <div class="det"><code>WebSearch</code>, <code>WebFetch</code>, and other deferred tools now load correctly for skills with <code>context: fork</code> on their first turn.</div>
+        </div>
+        <div class="dp-card d" id="dp-card-4">
+          <div class="row"><div class="num">04</div></div>
+          <div class="ttl">API retry countdown</div>
+          <div class="det">The retry countdown no longer sticks at &ldquo;0s&rdquo; &mdash; it now counts down correctly between each attempt.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // cloned-voice timing. scene_t = root_t - 115.82 (data-start 115.82). Slot 28.14s.
+      // Narration (internal = global - 115.82):
+      //   "More on auth."                    scene_t  0.00  (#276 More, global 115.819)
+      //   "A race condition..."              scene_t  1.36  (#279 A, global 117.177)
+      //   "The login screen..."              scene_t  8.38  (#296 The, global 124.201)
+      //   "Deferred tools..."                scene_t 15.43  (#315 Deferred, global 131.249)
+      //   "And the API retry..."             scene_t 22.93  (#333 And, global 138.749)
+      //   "retries."                         scene_t 26.62  (#345 retries., global 142.441)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#dp-overline", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#dp-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      const cards = [
+        { sel: "#dp-card-1", num: "#dp-card-1 .num", at:  1.36 },
+        { sel: "#dp-card-2", num: "#dp-card-2 .num", at:  8.38 },
+        { sel: "#dp-card-3", num: "#dp-card-3 .num", at: 15.43 },
+        { sel: "#dp-card-4", num: "#dp-card-4 .num", at: 22.93 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 26.62;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 28, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 3.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.6);
+        }
+      });
+
+      tl.set({}, {}, 28.14);
+      window.__timelines["scene-detail-performance"] = tl;
+    </script>
+  </div>
+</template>

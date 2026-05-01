@@ -1,0 +1,311 @@
+<!--
+  scene-stats-opener.html — Stats opener (Phase 1) + lead-detail dive (Phase 2).
+
+  Phase 1 (0..8.7s):  3 huge color-rotated stats with version badge
+                       (7 features / 25 fixes / 7 improved)
+  Phase 2 (8.7..38s): pills crossfade out; headline swaps to "Auth & sessions —
+                       four coordinated fixes" and a 2x2 grid of 4 auth/session
+                       patch cards enters one-by-one on narration cues.
+
+  v2.1.126 — May 1, 2026
+-->
+<template id="scene-stats-opener-template">
+  <div data-composition-id="scene-stats-opener"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-stats-opener-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:36px;
+        box-sizing:border-box;
+      }
+      #scene-stats-opener-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:12px;
+        text-align:center;
+      }
+      #scene-stats-opener-content .vbadge {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        opacity: 0;
+      }
+      #scene-stats-opener-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        opacity: 0;
+      }
+      #scene-stats-opener-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 48px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+
+      #so-phase-stack {
+        position: relative;
+        width: 1700px;
+        height: 500px;
+      }
+
+      #so-phase1 {
+        position: absolute; inset: 0;
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 36px;
+      }
+      .so-pill {
+        width: 420px;
+        padding: 48px 32px;
+        border-radius: 28px;
+        border: 1.5px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        display:flex; flex-direction:column;
+        align-items:center; gap: 18px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        opacity: 0;
+      }
+      .so-pill.cyan {
+        background: linear-gradient(135deg,
+                      rgba(88, 166, 255, 0.16) 0%,
+                      rgba(88, 166, 255, 0.04) 100%);
+        border-color: rgba(88, 166, 255, 0.55);
+      }
+      .so-pill.purple {
+        background: linear-gradient(135deg,
+                      rgba(163, 113, 247, 0.18) 0%,
+                      rgba(163, 113, 247, 0.04) 100%);
+        border-color: rgba(163, 113, 247, 0.55);
+      }
+      .so-pill.green {
+        background: linear-gradient(135deg,
+                      rgba(63, 185, 80, 0.16) 0%,
+                      rgba(63, 185, 80, 0.04) 100%);
+        border-color: rgba(63, 185, 80, 0.55);
+      }
+      .so-pill .stat-num {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 110px;
+        line-height: 0.9;
+        letter-spacing: -4px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .so-pill.cyan   .stat-num { color: var(--accent-1); text-shadow: 0 0 60px rgba(88, 166, 255, 0.5); }
+      .so-pill.purple .stat-num { color: var(--accent-3); text-shadow: 0 0 60px rgba(163, 113, 247, 0.5); }
+      .so-pill.green  .stat-num { color: var(--accent-4); text-shadow: 0 0 60px rgba(63, 185, 80, 0.5); }
+      .so-pill .stat-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+
+      #so-phase2 {
+        position: absolute; inset: 0;
+        opacity: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .so-card {
+        position: relative;
+        padding: 24px 28px;
+        border-radius: 14px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 8px;
+        min-height: 170px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .so-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-warn)), transparent);
+        border-radius: 12px 12px 0 0;
+      }
+      .so-card .row { display:flex; align-items:center; gap: 12px; }
+      .so-card .num {
+        width: 38px; height: 38px;
+        border-radius: 8px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .so-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 24px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .so-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .so-card .det code {
+        font-family: var(--mono);
+        font-size: 16px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .so-card.a { --card-accent: var(--accent-warn); border-color: rgba(247, 129, 102, 0.55); }
+      .so-card.b { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .so-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .so-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .so-card.a .num { color: var(--accent-warn); background: rgba(247, 129, 102, 0.18); }
+      .so-card.b .num { color: var(--accent-1);    background: rgba(88, 166, 255, 0.18);  }
+      .so-card.c .num { color: var(--accent-3);    background: rgba(163, 113, 247, 0.18); }
+      .so-card.d .num { color: var(--accent-4);    background: rgba(63, 185, 80, 0.18);   }
+    </style>
+
+    <div id="scene-stats-opener-content">
+      <div class="header-block">
+        <div class="vbadge"   id="so-vbadge">v2.1.126</div>
+        <div class="overline" id="so-overline">WHAT SHIPPED</div>
+        <div class="headline" id="so-headline">One update. Thirty seven changes.</div>
+      </div>
+
+      <div id="so-phase-stack">
+        <!-- Phase 1: stat pills -->
+        <div id="so-phase1">
+          <div class="so-pill cyan" id="so-pill-1">
+            <div class="stat-num">7</div>
+            <div class="stat-label">features</div>
+          </div>
+          <div class="so-pill purple" id="so-pill-2">
+            <div class="stat-num">25</div>
+            <div class="stat-label">fixes</div>
+          </div>
+          <div class="so-pill green" id="so-pill-3">
+            <div class="stat-num">7</div>
+            <div class="stat-label">improved</div>
+          </div>
+        </div>
+
+        <!-- Phase 2: auth & sessions detail -->
+        <div id="so-phase2">
+          <div class="so-card a" id="so-card-1">
+            <div class="row"><div class="num">01</div></div>
+            <div class="ttl">OAuth paste in terminal</div>
+            <div class="det">WSL2, SSH, and devcontainer users can paste the auth code directly when the browser can&rsquo;t reach localhost.</div>
+          </div>
+          <div class="so-card b" id="so-card-2">
+            <div class="row"><div class="num">02</div></div>
+            <div class="ttl">OAuth timeout — fixed</div>
+            <div class="det">Slow connections, IPv6-only environments, and proxied setups all work now.</div>
+          </div>
+          <div class="so-card c" id="so-card-3">
+            <div class="row"><div class="num">03</div></div>
+            <div class="ttl">Mac sleep — no timeout</div>
+            <div class="det">Stream idle timeout after waking from sleep is patched. Mid-request sleep no longer kills the session.</div>
+          </div>
+          <div class="so-card d" id="so-card-4">
+            <div class="row"><div class="num">04</div></div>
+            <div class="ttl">Remote sessions stable</div>
+            <div class="det">Background and remote sessions no longer falsely abort during long model thinking pauses.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // cloned-voice timing. scene_t = root_t (data-start 0). Slot 38.78s.
+      // Narration (global == scene_t, data-start 0):
+      //   "Seven new features."              scene_t  0.06  (#0 Seven)
+      //   "Twenty-five bug fixes."           scene_t  1.16  (#3 Twenty)
+      //   "Seven improvements."              scene_t  3.36  (#7 Seven)
+      //   "The biggest cluster: auth..."     scene_t  4.57  (#9 The) → phase pivot
+      //   "First: WSL2, SSH..."              scene_t  9.67  (#20 First:) → card 1
+      //   "Second: OAuth timeouts..."        scene_t 21.13  (#44 Second:) → card 2
+      //   "Third: stream idle timeout..."    scene_t 27.38  (#56 Third:) → card 3
+      //   "And fourth: background..."        scene_t 33.22  (#68 And) → card 4
+      //   "long thinking pauses."            scene_t 37.30  (#80 pauses.) → flash
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#so-vbadge",   { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#so-overline", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.15);
+      tl.fromTo("#so-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.30);
+
+      tl.fromTo("#so-pill-1", { scale: 0.85, opacity: 0 },
+                              { scale: 1,    opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, 0.06);
+      tl.fromTo("#so-pill-2", { scale: 0.85, opacity: 0 },
+                              { scale: 1,    opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, 1.16);
+      tl.fromTo("#so-pill-3", { scale: 0.85, opacity: 0 },
+                              { scale: 1,    opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, 3.36);
+
+      // PHASE PIVOT @ "The biggest cluster" 4.57
+      tl.to("#so-phase1", { opacity: 0, scale: 0.92, duration: 0.6, ease: "power2.in" }, 4.57);
+      tl.to("#so-headline", { color: "#F78166", duration: 0.4, ease: "sine.inOut" }, 4.57);
+      tl.set("#so-headline", { textContent: "Auth & sessions — four coordinated fixes" }, 5.03);
+      tl.fromTo("#so-headline", { y: -10, opacity: 0.4 },
+                                { y: 0,   opacity: 1, duration: 0.4, ease: "power2.out" }, 5.03);
+      tl.to("#so-phase2", { opacity: 1, duration: 0.5, ease: "power2.out" }, 5.03);
+
+      const cards = [
+        { sel: "#so-card-1", num: "#so-card-1 .num", at:  9.67 },
+        { sel: "#so-card-2", num: "#so-card-2 .num", at: 21.13 },
+        { sel: "#so-card-3", num: "#so-card-3 .num", at: 27.38 },
+        { sel: "#so-card-4", num: "#so-card-4 .num", at: 33.22 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 37.30;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 24, opacity: 0, scale: 0.95 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 3.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.6);
+        }
+      });
+
+      // "pauses" @ 37.30 → green-flash all 4 cards
+      tl.to("#so-phase2 .so-card",
+        { boxShadow: "0 14px 40px rgba(0, 0, 0, 0.45), 0 0 0 3px var(--accent-4)",
+          duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut", stagger: 0.06 },
+        37.30);
+
+      tl.set({}, {}, 38.78);
+      window.__timelines["scene-stats-opener"] = tl;
+    </script>
+  </div>
+</template>

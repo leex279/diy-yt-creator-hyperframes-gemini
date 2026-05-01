@@ -1,0 +1,51 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/long-form/claude-code-version/tokens/long-form.css
+   Long-form (1920x1080) Claude Code GitHub-dark palette + spacing + typography.
+
+   Forked from templates/long-form/standard/tokens/long-form.css. The 6
+   accent vars are overridden to the Claude Code palette
+   (source: diy-yt-creator/src/ClaudeCodeV21112-118/constants/colors.ts).
+   All other tokens (surface, text, spacing, typography) inherit standard
+   values verbatim — variant difference is palette-only, not layout.
+
+   Scoped to :root (NOT #root) so every sub-composition wired via
+   data-composition-src inherits these vars without needing a wrapper.
+
+   USAGE:
+     - Linked once from index.html <head>:
+         <link rel="stylesheet" href="tokens/long-form.css">
+     - Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #0D1117;  /* GitHub-dark surface (was #0B0F1A standard navy) */
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-surface:     rgba(255, 255, 255, 0.08);
+  --border:         rgba(255, 255, 255, 0.10);
+  --border-bright:  rgba(255, 255, 255, 0.18);
+
+  /* ── Accents — Claude Code palette (4-tier rotation) ── */
+  --accent-1:       #58A6FF;  /* Claude Code cyan-blue — primary lead */
+  --accent-2:       #06B6D4;  /* cyan — secondary (kept from standard for color separation) */
+  --accent-3:       #A371F7;  /* Claude Code purple — tertiary */
+  --accent-4:       #3FB950;  /* Claude Code green — success */
+  --accent-warn:    #F78166;  /* Claude Code orange — caution */
+  --accent-stat:    #F78166;  /* Claude Code orange — hero stats (matches warn; brand uses one orange) */
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #F1F3F4;
+  --text-secondary: #9AA0A6;
+  --text-muted:     #64748B;
+
+  /* ── Spacing (1920x1080 safe-zone) ─────────────────── */
+  /* Long-form has no mobile UI overlay, so top/bottom padding is
+     ~80px (clears the 60px wordmark + 6px progress bar with breath). */
+  --pad-top:        80px;
+  --pad-x:          100px;
+  --pad-bottom:     80px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

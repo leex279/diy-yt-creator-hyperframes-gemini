@@ -1,0 +1,89 @@
+[SCENE: stats-opener]
+Seven new features. Twenty five bug fixes. Seven improvements.
+
+The biggest cluster: auth and sessions — four fixes landing together.
+
+First: WSL two, SSH, and devcontainer users can now paste the OAuth code directly in the terminal when the browser callback cannot reach localhost.
+
+Second: OAuth timeouts on slow and IPv six only connections — fixed.
+
+Third: stream idle timeout after waking your Mac from sleep — patched.
+
+And fourth: background and remote sessions no longer abort on long thinking pauses.
+
+[SCENE: feature-cards]
+Six changes that matter across this release.
+
+Run claude project purge to wipe all project state — transcripts, tasks, file history — with a dry run flag to preview first.
+
+The dangerously skip permissions flag now bypasses dot claude, dot git, dot vscode, and shell config writes without interruption.
+
+OAuth works in the terminal now — no browser redirect required.
+
+The slash model picker lists every model your gateway exposes via slash v one slash models.
+
+On Windows, Claude now treats PowerShell as the primary shell when the PowerShell tool is enabled.
+
+And images larger than two thousand pixels are downscaled on paste — no more session crashes.
+
+[SCENE: detail-headless]
+Enterprise and SDK.
+
+If you are on a custom gateway, the slash model picker reads your models list automatically from slash v one slash models.
+
+Host managed deployments on Bedrock, Vertex, and Foundry no longer auto disable analytics when provider managed by host is set.
+
+The domain allowlist security policy now enforces correctly even when a higher priority settings source lacks a sandbox block.
+
+And the Agent SDK no longer hangs when the model emits a malformed tool name in a parallel tool call batch. Ship it.
+
+[SCENE: detail-performance]
+More on auth.
+
+A race condition that could clear a valid OAuth refresh token during concurrent credential writes — patched.
+
+The login screen for organization OAuth errors now shows guidance to contact your admin instead of a dead end.
+
+Deferred tools — WebSearch, WebFetch — now load correctly for skills with context fork on their first turn.
+
+And the API retry countdown no longer sticks at zero seconds between retries.
+
+[SCENE: detail-plugin-system]
+MCP and remote control.
+
+Claude dot ai MCP connectors were being suppressed by manual servers stuck in needs auth state — that is fixed.
+
+Remote control retries now show their result on each attempt instead of freezing on connecting.
+
+Remote control failure notifications now include the actual error reason for the initial connection failure.
+
+And plan mode tools are now available in interactive sessions launched with the channels flag.
+
+[SCENE: detail-terminal-ui]
+Terminal and Windows.
+
+Overly fast trackpad scrolling in Cursor and VS Code versions one point nine two through one point one zero four — fixed.
+
+Japanese, Korean, and Chinese text rendering as garbled characters on Windows in no flicker mode — also fixed.
+
+Control L now redraws the screen instead of clearing your prompt — matching readline behavior.
+
+And Windows clipboard writes no longer leak copied content into process arguments visible to security tooling. Selections above twenty two kilobytes also now reach the clipboard.
+
+[SCENE: detail-network]
+A few more quality of life changes.
+
+In auto mode, the spinner now turns red when a permission check stalls — so you know Claude is waiting, not running.
+
+The file modified reminder is now bounded when a linter touches many files at once.
+
+Slash plugin uninstall now correctly reports Uninstalled instead of Enabled.
+
+And in PowerShell, a bare double dash — like in git diff dash dash file — is no longer mis-flagged as a stop parsing token.
+
+[SCENE: cta]
+To pull every fix from this release — run claude update.
+
+That is it. Drop a like, comment which fix you needed most, and subscribe for the next version.
+
+Which one made your day? Tell me below.

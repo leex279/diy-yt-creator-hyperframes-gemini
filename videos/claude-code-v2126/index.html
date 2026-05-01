@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code v2.1.126 — What's New</title>
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080 dark stage, Claude Code palette.
+     Forked from templates/long-form/standard/index.html.
+     Variant deltas:
+       - VersionBranding overlay (top-right logos + bottom-right URL line)
+       - Scene mix: stats-opener, feature-cards, terminal in place of
+         source-cards, architecture-stack, image-hero
+       - <title> updated; ambient gradient retuned for #0D1117 surface
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient wash — slow breath under all scenes. Tints retuned for
+     Claude Code accent triad (cyan-blue / purple / green). */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 20%, rgba(88, 166, 255, 0.08), transparent 55%),
+      radial-gradient(circle at 78% 78%, rgba(163, 113, 247, 0.06), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(63, 185, 80, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — 14 deterministic shapes scattered at ~3.8% opacity
+     (15% more transparent than the original 4.5%). Shapes also re-randomise
+     their position at every scene boundary — see repositionShapesPerScene(). */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.038;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay — fractal noise via SVG feTurbulence. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — persistent banner across all scenes.
+     The variant ships with VersionBranding overlay
+     enabled. Per DESIGN.md "Variant-specific surfaces",
+     the operator picks ONE of:
+       (a) keep #top-banner centered + accept VersionBranding
+           top-right as a secondary brand cue, OR
+       (b) hide #top-banner-logo per video and let
+           VersionBranding own the top brand zone.
+     Default ships (a). To switch, set
+     #top-banner-logo { display:none; } per video.
+     ────────────────────────────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 1920px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* VersionBranding overlay — persistent, full-duration, no class="clip".
+     Source: diy-yt-creator/src/ClaudeCodeV21112-118/components/VersionBranding.tsx
+     Sits inside #root but outside any scene wrapper so it renders for the
+     full duration regardless of which scene is active. */
+  #version-branding {
+    position: absolute;
+    inset: 0;
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 9;
+  }
+  #version-branding .vb-logos {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  #version-branding .vb-logos img {
+    width: 240px;
+    height: auto;
+  }
+  #version-branding .vb-version {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+  }
+
+  /* Slim progress bar — bottom edge */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.55);
+  }
+
+  /* Sub-composition wrappers — each scene's container div.
+     Initially invisible; the root timeline crossfades them in/out.
+     The first scene starts visible (no incoming crossfade needed). */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-stats-opener-wrap          { z-index: 1; opacity: 1; }
+  #scene-feature-cards-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-headless-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-performance-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-plugin-system-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-terminal-ui-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-network-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap                   { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Captions wrapper sits above scenes, below noise overlay */
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="252"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Ambient + shape backdrop — sit behind scenes -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Top banner — DISABLED in the Claude Code variant.
+       Per DESIGN.md "Variant-specific surfaces", VersionBranding is the
+       single brand surface for this variant (top-right logo stack
+       claims the same safe zone as a centered wordmark, and ships
+       hard-blocked the duplicate-media-discovery-risk lint warning).
+       To re-enable a centered wordmark per video, drop a different logo
+       (e.g. assets/claude-logo-light.svg) into assets/ and uncomment:
+         div id="top-banner"
+           img id="top-banner-logo" src="assets/<your-wordmark>.svg" alt="Brand"
+         /div
+       Then re-enable the matching tl.from() call below. -->
+  <div id="top-banner" style="display:none;">
+    <span id="top-banner-logo"></span>
+  </div>
+
+  <!-- VersionBranding overlay — Anthropic + Claude Code logos top-right;
+       version string + repo URL bottom-right. Renders for full duration. -->
+  <div id="version-branding">
+    <div class="vb-logos">
+      <img src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      <img src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+    </div>
+    <div class="vb-version" id="vb-version-string">github.com/anthropics/claude-code/releases  |  v2.1.126</div>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — canonical 8-scene Claude Code release structure.
+       Mirrors diy-yt-creator/src/ClaudeCodeV21112-118 reference Remotion
+       project (Scene01McpOauth → Scene08Cta). Each release video gets:
+
+         1. stats-opener         — 3 huge stats + lead-detail dive
+         2. feature-cards        — 6-card highlights overview
+         3. detail-headless      — Headless & SDK category dive
+         4. detail-performance   — Performance & Safety category dive
+         5. detail-plugin-system — Plugin System category dive
+         6. detail-terminal-ui   — Terminal UI category dive
+         7. detail-network       — Network & Proxy category dive
+         8. cta                  — `$ claude update` close-out
+
+       Data-start values below are placeholders for a typical 3-minute
+       release video (~187s narration). Operators MUST replace them per
+       release using transcript.json word-level timestamps after running
+       `npx hyperframes tts` + `npx hyperframes transcribe`.
+
+       data-track-index="1" (scene layer); NO data-duration — each
+       sub-comp's internal timeline anchors its slot length via
+       `tl.set({}, {}, slot_seconds)`.
+
+       The unused scene-hook, scene-side-by-side, scene-stat-pill-row,
+       scene-video-embed, and scene-terminal sub-comp files remain on
+       disk under compositions/ for variants that need them — they are
+       intentionally not wired here. The release-update format opens
+       cold with the stats opener (no hook intro).
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-stats-opener-wrap" class="scene-wrapper"
+       data-composition-id="scene-stats-opener"
+       data-composition-src="compositions/scene-stats-opener.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-feature-cards-wrap" class="scene-wrapper"
+       data-composition-id="scene-feature-cards"
+       data-composition-src="compositions/scene-feature-cards.html"
+       data-start="38.78"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-headless-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-headless"
+       data-composition-src="compositions/scene-detail-headless.html"
+       data-start="82.05"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-performance-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-performance"
+       data-composition-src="compositions/scene-detail-performance.html"
+       data-start="115.82"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-plugin-system-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-plugin-system"
+       data-composition-src="compositions/scene-detail-plugin-system.html"
+       data-start="143.96"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-terminal-ui-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-terminal-ui"
+       data-composition-src="compositions/scene-detail-terminal-ui.html"
+       data-start="174.67"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-network-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-network"
+       data-composition-src="compositions/scene-detail-network.html"
+       data-start="209.48"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="238.01"
+       data-track-index="1"></div>
+
+  <!-- Captions sub-composition — populated by `npx hyperframes transcribe`.
+       Sits on track 9, above scenes but below the noise overlay z-index. -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="252"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX: cinematic-whoosh on every scene transition (track 3, sequential — no overlap) -->
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="38.38"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="81.65"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="115.42" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="143.56" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="174.27" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="209.08" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="237.61" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- SFX: spring-pop on first card entrance in each scene (track 4, sequential — no overlap) -->
+  <audio id="sfx-pop-so"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="0.06"   data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-fc"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="41.95"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dh"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="83.92"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dp"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="117.18" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dpl" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="146.27" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dt"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="176.19" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dn"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="211.95" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-cta" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="239.88" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 14 shapes.
+  // Mirrors templates/long-form/standard/index.html spawnShapes() exactly;
+  // seed prefix changed to keep shape positions distinct from standard.
+  // No Math.random / Date.now — uses xmur3-style hash.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Re-randomise shape positions at every scene boundary. Each scene gets a
+  // fresh deterministic placement (overlap-aware, mirrors spawnShapes); the
+  // tween animates over the crossfade window so it reads as part of the
+  // scene transition rather than independent drift.
+  function repositionShapesPerScene(tl, container, seedPrefix, sceneStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !sceneStartTimes.length) return;
+    const w = 1920, h = 1080, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    sceneStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      // Compute all target positions for this scene up-front, then emit ONE
+      // tween targeting every img via function-based values. This ensures GSAP
+      // treats all 14 shapes as a single animation unit rather than 14
+      // separate tweens at the same timeline position.
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  // atTime MUST be a numeric absolute time (seconds). Label-relative strings
+  // like "label-=0.4" cannot be passed because string + number concatenation
+  // (atTime + 0.3) collapses to a malformed position; GSAP then parses each
+  // sub-tween at the same time, breaking the staggered crossfade.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  spawnShapes('long-form-claude-code-version', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 252;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath across full duration (slow sine yoyo). 252s / 30s ≈ 8.4 cycles.
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 8 },
+    0);
+
+  // Reposition shapes at each scene change. Skip t=0 — initial spawn covers it.
+  repositionShapesPerScene(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'long-form-claude-code-version',
+    [38.78, 82.05, 115.82, 143.96, 174.67, 209.48, 238.01]
+  );
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#version-branding", { opacity: 0, duration: 0.8, ease: "power2.out" }, 0.4);
+
+  // ─── Scene labels (v2.1.126) ───
+  tl.addLabel("stats-opener",           0)
+    .addLabel("feature-cards",         38.78)
+    .addLabel("detail-headless",       82.05)
+    .addLabel("detail-performance",   115.82)
+    .addLabel("detail-plugin-system", 143.96)
+    .addLabel("detail-terminal-ui",   174.67)
+    .addLabel("detail-network",       209.48)
+    .addLabel("cta",                  238.01);
+
+  // ─── Crossfades between adjacent scenes ───
+  crossfadeScenes(tl, "#scene-stats-opener-wrap",          "#scene-feature-cards-wrap",          38.38);
+  crossfadeScenes(tl, "#scene-feature-cards-wrap",         "#scene-detail-headless-wrap",        81.65);
+  crossfadeScenes(tl, "#scene-detail-headless-wrap",       "#scene-detail-performance-wrap",    115.42);
+  crossfadeScenes(tl, "#scene-detail-performance-wrap",    "#scene-detail-plugin-system-wrap",  143.56);
+  crossfadeScenes(tl, "#scene-detail-plugin-system-wrap",  "#scene-detail-terminal-ui-wrap",    174.27);
+  crossfadeScenes(tl, "#scene-detail-terminal-ui-wrap",    "#scene-detail-network-wrap",        209.08);
+  crossfadeScenes(tl, "#scene-detail-network-wrap",        "#scene-cta-wrap",                   237.61);
+
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -22,9 +22,11 @@ Trigger when the user says any of:
 - "/diy-yt-creator:new-long-form-standard …"
 - "new claude code version update video" / "claude code release video"
 - "/diy-yt-creator:claude-code-version v2.1.NN" — orchestration command for Claude Code releases
+- "new claude code version short" / "claude code release short" / "short cut of claude code v2.1.NN"
 - Anything that asks to scaffold a video from a template in this repo
 - "capture / screenshot <url> for video <slug>" → uses `capture-asset`
 - "QA / check / verify the preview for <slug>" → uses `qa-composition`
+- "use my voice" / "migrate to my voice" / "switch to cloned voice" / "regenerate narration with my voice" → uses `use-cloned-voice`
 
 ## Available commands
 
@@ -37,8 +39,10 @@ Trigger when the user says any of:
 | [new-archon-short.md](./new-archon-short.md) | `templates/shorts/archon/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-60s) in the Archon dark-blue / cyan-magenta aesthetic |
 | [new-long-form-standard.md](./new-long-form-standard.md) | `templates/long-form/standard/` | User wants a horizontal YouTube long-form (1920x1080, 30fps, 4-15 min) in the dark-navy + 4-accent baseline aesthetic |
 | [new-claude-code-version-longform.md](./new-claude-code-version-longform.md) | `templates/long-form/claude-code-version/` | User wants a horizontal Claude Code release-update video (1920x1080, 30fps, 3-5 min) with VersionBranding overlay + terminal scene + stats opener. For full automation from a release tag, prefer the [/diy-yt-creator:claude-code-version](../../commands/diy-yt-creator/claude-code-version.md) slash command. |
+| [new-claude-code-version-short.md](./new-claude-code-version-short.md) | `templates/shorts/claude-code-version/` | User wants a vertical Claude Code release-update Short (1080x1920, 30fps, ≤3 min — target 70-130s) with VersionBranding overlay + version slam + 3-pill stats opener + numbered highlight cards + `$ claude update` terminal CTA. **Reuses an existing long-form video's content brief if one already exists for the same release** (avoids duplicate WebFetch and keeps stats / highlights consistent across cuts). |
 | [capture-asset.md](./capture-asset.md) | n/a (uses `agent-browser`) | Per-video screenshot/asset from a public URL into `videos/<slug>/assets/` |
 | [qa-composition.md](./qa-composition.md) | n/a (uses `agent-browser`) | Visually QA a running `hyperframes preview` — snapshot each phase, report issues |
+| [use-cloned-voice.md](./use-cloned-voice.md) | n/a (uses `scripts/elevenlabs-tts.py`) | Migrate an existing video (or new video) from a stock voice to the user's ElevenLabs cloned voice: update `.env`, regenerate narration, rebuild `transcript.json`, re-wire all scene `data-start` values + SFX timing, re-render |
 
 > **Adding a new template?** Follow the "Building New Templates" workflow in the project's [CLAUDE.md](../../../CLAUDE.md). Each new template MUST ship a matching playbook in this directory and a row in the table above.
 

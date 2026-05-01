@@ -344,10 +344,21 @@
            data-track-index="3"
            data-volume="0.12"
 
-  Per-cue SFX (optional). Track-index 4+. Volume cap 0.25 hard
-  (sonic-logo at 0.45 is the only documented exception). Sync the
-  files into assets/sfx/ via:
-    bash scripts/sync-video-sfx.sh videos/<slug>
+  SFX — MANDATORY for every release video. Wire AFTER timing is final.
+  Run: bash scripts/sync-video-sfx.sh videos/<slug> cinematic-whoosh spring-pop
+  Then add these elements (replace placeholder times with computed values):
+
+  Whoosh timing: data-start = scene_data_start - 0.40  (fires at crossfade start)
+  Pop timing:    data-start = scene_data_start + card-1_internal_at  (from transcript.json)
+  Volume cap 0.25 hard; use 0.11 for both cues. Track 3 = whooshes, 4 = pops (sequential, no overlap).
+
+    audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="REPLACE" data-duration="1.5" data-track-index="3" data-volume="0.11"
+    ... one per scene transition (7 total for the 8-scene format) ...
+
+    audio id="sfx-pop-so"  class="clip" src="assets/sfx/spring-pop.mp3"
+           data-start="0.06"    data-duration="0.4" data-track-index="4" data-volume="0.11"
+    ... one per scene (8 total), timed to first card/element entrance ...
        ═══════════════════════════════════════════════════════ -->
 
   <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
@@ -422,10 +433,10 @@
   // tween animates over the crossfade window so it reads as part of the
   // scene transition rather than independent drift.
   function repositionShapesPerScene(tl, container, seedPrefix, sceneStartTimes) {
-    const imgs = container.querySelectorAll('img');
+    const imgs = Array.from(container.querySelectorAll('img'));
     if (!imgs.length || !sceneStartTimes.length) return;
     const w = 1920, h = 1080, minDist = 360, MAX_TRIES = 80;
-    const anchors = Array.from(imgs).map(img => ({
+    const anchors = imgs.map(img => ({
       left: parseFloat(img.style.left),
       top:  parseFloat(img.style.top),
       size: parseFloat(img.style.width),
@@ -433,7 +444,11 @@
     sceneStartTimes.forEach((sceneT, sceneIdx) => {
       const placed = [];
       let attempt = 0;
-      imgs.forEach((img, i) => {
+      // Compute all target positions for this scene up-front, then emit ONE
+      // tween targeting every img via function-based values. This ensures GSAP
+      // treats all 14 shapes as a single animation unit rather than 14
+      // separate tweens at the same timeline position.
+      const positions = imgs.map((img, i) => {
         const size = anchors[i].size;
         let best = null, bestScore = -1;
         for (let t = 0; t < MAX_TRIES; t++) {
@@ -451,13 +466,19 @@
           if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
         }
         placed.push({ cx: best.cx, cy: best.cy });
-        const targetX = (best.cx - size / 2) - anchors[i].left;
-        const targetY = (best.cy - size / 2) - anchors[i].top;
-        tl.to(img, {
-          x: targetX, y: targetY, rotation: best.rot,
-          duration: 1.4, ease: 'power2.inOut'
-        }, sceneT - 0.4);
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
       });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
     });
   }
 

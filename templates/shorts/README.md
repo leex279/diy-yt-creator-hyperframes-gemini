@@ -2,7 +2,7 @@
 
 Reusable HyperFrames project templates for **vertical YouTube Shorts** (1080x1920, 30fps, typically 24-180s).
 
-> **Status:** 3 templates available — [`standard/`](./standard/) is the canonical brand-neutral baseline; [`anthropic/`](./anthropic/) and [`archon/`](./archon/) are brand-specific variants.
+> **Status:** 4 templates available — [`standard/`](./standard/) is the canonical brand-neutral baseline; [`anthropic/`](./anthropic/), [`archon/`](./archon/), and [`claude-code-version/`](./claude-code-version/) are brand-specific variants.
 
 ## Available templates
 
@@ -11,6 +11,7 @@ Reusable HyperFrames project templates for **vertical YouTube Shorts** (1080x192
 | [`standard/`](./standard/) | Dark navy + 4-accent rotation (blue/cyan/purple/green) | **Default pick for any topic.** Brand-neutral, topic-agnostic baseline. 4 phase archetypes (hero hook + stat row + numbered step cards + CTA). Use this for general explainers, how-tos, news, opinion, comparisons, tips. |
 | [`anthropic/`](./anthropic/) | Dark stage + Claude orange + warm off-white | Anthropic / Claude product launches, postmortems, dev-tool reveals. Ships with the Anthropic shape backdrop and dated timeline cards (Mar 4 / Mar 26 / Apr 16). |
 | [`archon/`](./archon/) | Dark blue + cyan-magenta gradient | Archon workflow showcases. Ships with the Archon brand gradient (cyan→magenta shield). |
+| [`claude-code-version/`](./claude-code-version/) | GitHub-dark `#0D1117` + Claude Code accent triad (cyan-blue / purple / green) + orange Subscribe pulse | **Claude Code release-update Shorts** (≤3 min — target 70-130s). Ships with VersionBranding overlay (Anthropic + Claude Code logos top-right + bottom-center URL line), version-slam hero, 3-pill stats opener (features / fixes / improved), numbered highlight cards (`01/02/03`), and a `$ claude update` macOS terminal CTA. Sister of the long-form variant at [`templates/long-form/claude-code-version/`](../long-form/claude-code-version/). |
 
 ## What a shorts template looks like
 

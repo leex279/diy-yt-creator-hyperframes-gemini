@@ -62,10 +62,21 @@
         opacity: 0;
       }
 
-      /* Phase 1 — pills row */
+      /* Phase stack — phase 1 and phase 2 share the same flex slot below
+         the header so the layout stays vertically centered on the canvas
+         when phase 1 fades out (otherwise phase 2 anchored to bottom looks
+         pressed against the canvas edge). */
+      #so-phase-stack {
+        position: relative;
+        width: 1700px;
+        height: 500px;
+      }
+
+      /* Phase 1 — pills row, centered inside the stack */
       #so-phase1 {
+        position: absolute; inset: 0;
         display:flex; flex-direction:row;
-        align-items:stretch; justify-content:center;
+        align-items:center; justify-content:center;
         gap: 36px;
       }
       .so-pill {
@@ -118,14 +129,10 @@
         text-align: center;
       }
 
-      /* Phase 2 — 2x2 detail grid */
+      /* Phase 2 — 2x2 detail grid, fills the same stack slot as phase 1 */
       #so-phase2 {
-        position: absolute;
-        left: 50%;
-        bottom: 90px;
-        transform: translateX(-50%);
+        position: absolute; inset: 0;
         opacity: 0;
-        width: 1700px;
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
@@ -203,44 +210,49 @@
         <div class="headline" id="so-headline">Three releases. The receipts.</div>
       </div>
 
-      <!-- Phase 1: stat pills -->
-      <div id="so-phase1">
-        <div class="so-pill cyan" id="so-pill-1">
-          <div class="stat-num">27</div>
-          <div class="stat-label">features</div>
+      <!-- Phase stack: phase 1 + phase 2 share the same flex slot below
+           the header so the layout stays vertically centered through the
+           pivot crossfade. -->
+      <div id="so-phase-stack">
+        <!-- Phase 1: stat pills -->
+        <div id="so-phase1">
+          <div class="so-pill cyan" id="so-pill-1">
+            <div class="stat-num">27</div>
+            <div class="stat-label">features</div>
+          </div>
+          <div class="so-pill purple" id="so-pill-2">
+            <div class="stat-num">56</div>
+            <div class="stat-label">fixes</div>
+          </div>
+          <div class="so-pill green" id="so-pill-3">
+            <div class="stat-num">11</div>
+            <div class="stat-label">improved</div>
+          </div>
         </div>
-        <div class="so-pill purple" id="so-pill-2">
-          <div class="stat-num">56</div>
-          <div class="stat-label">fixes</div>
-        </div>
-        <div class="so-pill green" id="so-pill-3">
-          <div class="stat-num">11</div>
-          <div class="stat-label">improved</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Phase 2: 2x2 slash-commands & settings detail -->
-    <div id="so-phase2">
-      <div class="so-card a" id="so-card-1">
-        <div class="row"><div class="num">01</div></div>
-        <div class="ttl">/config persists for real</div>
-        <div class="det">Project, local, and policy precedence honored on restart.</div>
-      </div>
-      <div class="so-card b" id="so-card-2">
-        <div class="row"><div class="num">02</div></div>
-        <div class="ttl">Slash picker stops jumping</div>
-        <div class="det">The slash command picker no longer scrolls mid-search.</div>
-      </div>
-      <div class="so-card c" id="so-card-3">
-        <div class="row"><div class="num">03</div></div>
-        <div class="ttl">Vim mode &mdash; no Esc rewind</div>
-        <div class="det">Esc no longer pulls queued messages back into the prompt.</div>
-      </div>
-      <div class="so-card d" id="so-card-4">
-        <div class="row"><div class="num">04</div></div>
-        <div class="ttl">Settings &mdash; legacy enums OK</div>
-        <div class="det">Old enum values stop invalidating an otherwise valid settings file.</div>
+        <!-- Phase 2: 2x2 slash-commands & settings detail -->
+        <div id="so-phase2">
+          <div class="so-card a" id="so-card-1">
+            <div class="row"><div class="num">01</div></div>
+            <div class="ttl">/config persists for real</div>
+            <div class="det">Project, local, and policy precedence honored on restart.</div>
+          </div>
+          <div class="so-card b" id="so-card-2">
+            <div class="row"><div class="num">02</div></div>
+            <div class="ttl">Slash picker stops jumping</div>
+            <div class="det">The slash command picker no longer scrolls mid-search.</div>
+          </div>
+          <div class="so-card c" id="so-card-3">
+            <div class="row"><div class="num">03</div></div>
+            <div class="ttl">Vim mode &mdash; no Esc rewind</div>
+            <div class="det">Esc no longer pulls queued messages back into the prompt.</div>
+          </div>
+          <div class="so-card d" id="so-card-4">
+            <div class="row"><div class="num">04</div></div>
+            <div class="ttl">Settings &mdash; legacy enums OK</div>
+            <div class="det">Old enum values stop invalidating an otherwise valid settings file.</div>
+          </div>
+        </div>
       </div>
     </div>
 

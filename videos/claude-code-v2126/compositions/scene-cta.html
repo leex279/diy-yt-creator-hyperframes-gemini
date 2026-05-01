@@ -1,0 +1,200 @@
+<!--
+  scene-cta.html — Closing CTA archetype, Claude Code variant.
+
+  3-phase content (sequential reveals on a single timeline):
+    1. FitHeadline debate question (40-72px Inter 900) at t=0 — expo.out rise
+    2. Comment-prompt pill + subscribe pill at t=2.0 — back.out(1.4)
+    3. Terminal block showing `$ claude update` at t=4.0 — scale + fade
+
+  HARD RULE: subscribe pulse uses a FINITE repeat (yoyo:true, repeat:N) — never
+  repeat:-1. The framework requires deterministic timelines.
+
+  Forked from templates/long-form/standard/compositions/scene-cta.html. Swap:
+  the next-video thumbnail card is replaced by an inline terminal-window
+  block (CSS duplicated from scene-terminal.html — single-use, no shared CSS).
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-cta-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-cta-content .debate {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 64px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1500px;
+        opacity: 0;
+      }
+      #scene-cta-content .pills,
+      #cta-terminal { opacity: 0; }
+      #scene-cta-content .pills {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 24px;
+      }
+      .cta-pill {
+        padding: 18px 32px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: var(--text);
+        display:inline-flex; align-items:center;
+        gap: 12px;
+      }
+      .cta-pill.comment .icon { color: var(--accent-2); }
+      .cta-pill.subscribe {
+        background: linear-gradient(135deg,
+                      rgba(247, 129, 102, 0.18) 0%,
+                      rgba(247, 129, 102, 0.05) 100%);
+        border-color: rgba(247, 129, 102, 0.55);
+      }
+      .cta-pill.subscribe .arrow {
+        color: var(--accent-warn);
+        font-weight: 900;
+      }
+
+      /* Terminal block — duplicated from scene-terminal.html for single-use. */
+      #cta-terminal {
+        margin-top: 12px;
+        width: 1100px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(28, 33, 40, 0.95);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55),
+                    0 0 0 1.5px rgba(88, 166, 255, 0.4);
+      }
+      #cta-terminal .term-titlebar {
+        height: 36px;
+        display: flex; align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        background: #21262D;
+        position: relative;
+      }
+      #cta-terminal .term-titlebar .dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+      }
+      #cta-terminal .term-titlebar .dot.red    { background: #FF5F56; }
+      #cta-terminal .term-titlebar .dot.yellow { background: #FFBD2E; }
+      #cta-terminal .term-titlebar .dot.green  { background: #27C93F; }
+      #cta-terminal .term-titlebar .title {
+        position: absolute;
+        left: 50%; transform: translateX(-50%);
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 16px;
+        color: var(--text-secondary);
+      }
+      #cta-terminal .term-content {
+        padding: 28px 36px;
+        font-family: var(--mono);
+        font-size: 28px;
+        line-height: 1.5;
+        color: var(--text);
+      }
+      #cta-terminal .term-content .prompt { color: var(--accent-4); }
+      #cta-terminal .term-content .flag   { color: var(--accent-1); }
+    </style>
+
+    <div id="scene-cta-content">
+      <div class="debate" id="cta-debate">Which fix did you actually need &mdash; tell me below.</div>
+
+      <div class="pills">
+        <div class="cta-pill comment" id="cta-comment">
+          <span class="icon">&#x270F;</span>
+          <span>Drop your take in the comments</span>
+        </div>
+        <div class="cta-pill subscribe" id="cta-subscribe">
+          <span>Subscribe</span>
+          <span class="arrow">&rarr;</span>
+        </div>
+      </div>
+
+      <div id="cta-terminal">
+        <div class="term-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="title">~/project</span>
+        </div>
+        <div class="term-content">
+          <span class="prompt">$</span> claude <span class="flag">update</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // cloned-voice timing. scene_t = root_t - 238.01 (data-start 238.01). Slot 13.99s.
+      // Narration (internal = global - 238.01):
+      //   "To pull every fix from this release..."  scene_t  0.00  (#579 To, global 238.012)
+      //   "run claude update."                      scene_t  1.87  (#587 run, global 239.881)
+      //   "That is it."                             scene_t  3.76  (#590 That, global 241.774)
+      //   "Drop a like, comment..."                 scene_t  5.26  (#593 Drop, global 243.272)
+      //   "subscribe for the next version."         scene_t  8.23  (#603 subscribe, global 246.244)
+      //   "Which one made your day?"                scene_t 10.59  (#608 Which, global 248.600)
+      //   "Tell me below."                          scene_t 11.87  (#613 Tell, global 249.877)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#cta-debate",
+        { y: 40, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.55, ease: "expo.out" },
+        0);
+
+      tl.fromTo("#cta-terminal",
+        { y: 24, scale: 0.96, opacity: 0 },
+        { y: 0,  scale: 1,    opacity: 1, duration: 0.5, ease: "back.out(1.4)" },
+        1.87);
+      tl.to("#cta-terminal", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 3.76);
+
+      tl.fromTo(".pills", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 5.26);
+      tl.fromTo("#cta-comment", { y: 24, opacity: 0 },
+                                { y: 0,  opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 5.26);
+      tl.to("#cta-comment", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 6.04);
+
+      tl.fromTo("#cta-subscribe", { y: 24, opacity: 0 },
+                                  { y: 0,  opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 8.23);
+      tl.to("#cta-subscribe", {
+        boxShadow: "0 0 0 6px rgba(247, 129, 102, 0.40)",
+        duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 4
+      }, 8.49);
+
+      tl.to("#cta-terminal", {
+        boxShadow: "0 25px 60px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(88, 166, 255, 0.7)",
+        duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 4
+      }, 3.80);
+
+      tl.to("#cta-debate", { color: "#58A6FF", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 10.59);
+      tl.to("#cta-debate", { scale: 1.03, duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 10.65);
+
+      tl.to("#cta-debate", { color: "#3FB950", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 11.87);
+      tl.to("#cta-terminal", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 12.03);
+
+      tl.set({}, {}, 13.99);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

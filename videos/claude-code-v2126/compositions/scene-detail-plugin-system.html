@@ -1,0 +1,212 @@
+<!--
+  scene-detail-plugin-system.html — 4-card 2x2 detail scene for "MCP & Remote Control".
+
+  v2.1.126 repurposed: claude.ai MCP connectors, remote control retries,
+  remote control failure notification, plan-mode tools in --channels sessions.
+  Closer: "Pipe it. Script it. Ship it." replaced with MCP-themed.
+-->
+<template id="scene-detail-plugin-system-template">
+  <div data-composition-id="scene-detail-plugin-system"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-detail-plugin-system-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 90px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-detail-plugin-system-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align:center;
+      }
+      #scene-detail-plugin-system-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+        opacity: 0;
+      }
+      #scene-detail-plugin-system-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .dpl-grid {
+        width: 1700px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .dpl-card {
+        position: relative;
+        padding: 28px 32px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 12px;
+        min-height: 220px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .dpl-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-3)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .dpl-card .row { display:flex; align-items:center; gap: 14px; margin-bottom: 4px; }
+      .dpl-card .num {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .dpl-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .dpl-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .dpl-card .det code {
+        font-family: var(--mono);
+        font-size: 18px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .dpl-card.a { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .dpl-card.b { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .dpl-card.c { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .dpl-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .dpl-card.a .num { color: var(--accent-3); background: rgba(163, 113, 247, 0.18); }
+      .dpl-card.b .num { color: var(--accent-1); background: rgba(88, 166, 255, 0.18);  }
+      .dpl-card.c .num { color: var(--accent-2); background: rgba(6, 182, 212, 0.18);   }
+      .dpl-card.d .num { color: var(--accent-4); background: rgba(63, 185, 80, 0.18);   }
+
+      #dpl-close {
+        position: absolute;
+        left: 50%; bottom: 42px;
+        opacity: 0;
+        background: rgba(163, 113, 247, 0.16);
+        border: 2px solid var(--accent-3);
+        border-radius: 14px;
+        padding: 10px 28px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--accent-3);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 28px rgba(163, 113, 247, 0.4);
+      }
+    </style>
+
+    <div id="scene-detail-plugin-system-content">
+      <div class="header-block">
+        <div class="overline" id="dpl-overline">MCP &amp; REMOTE</div>
+        <div class="headline" id="dpl-headline">MCP and remote control &mdash; all fixed.</div>
+      </div>
+
+      <div class="dpl-grid">
+        <div class="dpl-card a" id="dpl-card-1">
+          <div class="row"><div class="num">01</div></div>
+          <div class="ttl">claude.ai MCP connectors</div>
+          <div class="det">Connectors were being suppressed by manual servers stuck in needs-auth state &mdash; that is fixed.</div>
+        </div>
+        <div class="dpl-card b" id="dpl-card-2">
+          <div class="row"><div class="num">02</div></div>
+          <div class="ttl">Remote control retries</div>
+          <div class="det">Each retry attempt now shows its result instead of freezing on &ldquo;connecting&hellip;&rdquo;</div>
+        </div>
+        <div class="dpl-card c" id="dpl-card-3">
+          <div class="row"><div class="num">03</div></div>
+          <div class="ttl">Failure notification</div>
+          <div class="det">Remote control failure notifications now include the actual error reason for the initial connection failure.</div>
+        </div>
+        <div class="dpl-card d" id="dpl-card-4">
+          <div class="row"><div class="num">04</div></div>
+          <div class="ttl">Plan mode in <code>--channels</code></div>
+          <div class="det">Plan-mode tools are now available in interactive sessions launched with the <code>--channels</code> flag.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dpl-close">&#10003; Control the remote. Control the output.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // cloned-voice timing. scene_t = root_t - 143.96 (data-start 143.96). Slot 30.71s.
+      // Narration (internal = global - 143.96):
+      //   "MCP and remote control."          scene_t  0.00  (#346 MCP, global 143.961)
+      //   "Claude .ai MCP connectors..."     scene_t  2.31  (#350 Claude, global 146.272)
+      //   "Remote control retries..."        scene_t 10.58  (#370 Remote, global 154.538)
+      //   "Remote control failure..."        scene_t 16.96  (#385 Remote, global 160.923)
+      //   "And plan mode tools..."           scene_t 24.57  (#400 And, global 168.527)
+      //   "flag."                            scene_t 29.40  (#414 flag., global 173.357)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#dpl-overline", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#dpl-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      const cards = [
+        { sel: "#dpl-card-1", num: "#dpl-card-1 .num", at:  2.31 },
+        { sel: "#dpl-card-2", num: "#dpl-card-2 .num", at: 10.58 },
+        { sel: "#dpl-card-3", num: "#dpl-card-3 .num", at: 16.96 },
+        { sel: "#dpl-card-4", num: "#dpl-card-4 .num", at: 24.57 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 29.40;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 28, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 3.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.6);
+        }
+      });
+
+      tl.fromTo("#dpl-close",
+        { xPercent: -50, scale: 0.85, opacity: 0 },
+        { xPercent: -50, scale: 1,    opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+        29.40);
+
+      tl.set({}, {}, 30.71);
+      window.__timelines["scene-detail-plugin-system"] = tl;
+    </script>
+  </div>
+</template>

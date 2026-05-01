@@ -32,6 +32,7 @@ CSS variable sets (`:root { --bg: ...; --orange: ...; }`). Copy the `.css` file 
 | File | Description | Tags |
 |---|---|---|
 | anthropic-dark.css | Anthropic dark-stage palette, spacing, and typography vars (`--bg`, `--orange`, `--purple`, etc.) | dark-stage, anthropic, palette, tokens |
+| claude-code-dark.css | Claude Code release-Short palette (1080x1920): GitHub-dark `#0D1117` + Claude Code accent triad (cyan-blue / purple / green) + orange (warn + Subscribe pulse). Includes legacy `--orange/--purple/--blue/--green` aliases for shared/lib block compat. | dark-stage, claude-code, github-dark, short, palette, tokens, release |
 | dynamous-modern.css | Dynamous midroll v3 modern-gradient palette (slate + purple + pink + cyan with red 10% OFF accent) | dark-stage, dynamous, palette, tokens, gradient |
 | long-form-standard.css | Generic long-form (1920x1080) palette: dark navy + 4-accent rotation (blue/cyan/purple/green) + orange/yellow warn-stat | dark-stage, long-form, palette, tokens, navy |
 | standard-short.css | Warm paper editorial standard short (1080x1920) palette: cream canvas + 5-accent rotation (terracotta/indigo/sage/sunset-gold/warm-rose) + serif/sans/mono triad. Brand-neutral baseline for vertical Shorts. | warm-paper, short, palette, tokens, editorial, baseline, light |
@@ -85,6 +86,7 @@ Named-style fragments — palette + typography + motion signature + suggested li
 | File | Description | Tags |
 |---|---|---|
 | anthropic-dark.md | Dark-stage Anthropic / Claude postmortem aesthetic (Inter 900 hero, Claude orange, back.out springs) | dark-stage, anthropic, premium, tech |
+| claude-code-dark.md | GitHub-dark Claude Code release-update aesthetic for Shorts and long-form: `#0D1117` canvas + cyan-blue/purple/green triad + orange Subscribe pulse + VersionBranding overlay + `$ claude update` terminal CTA. | dark-stage, claude-code, github-dark, release, short, long-form, terminal |
 | long-form-standard.md | Generic long-form (1920x1080) dark-navy stage with 4-accent rotation; canonical baseline for horizontal videos and the parent of future long-form variants | dark-stage, long-form, navy, documentary, baseline |
 | standard-short.md | Warm paper editorial standard short (1080x1920): cream canvas, 5-accent rotation (terracotta/indigo/sage/sunset-gold/warm-rose), Playfair serif + Inter sans + JetBrains Mono. Sub-composition architecture with 9 scene archetypes. Canonical brand-neutral baseline for vertical Shorts. | warm-paper, short, editorial, baseline, light, sub-compositions |
 <!-- LIB:VISUAL-STYLES:END -->

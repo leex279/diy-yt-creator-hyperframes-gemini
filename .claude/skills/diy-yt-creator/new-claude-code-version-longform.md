@@ -119,7 +119,8 @@ Write `videos/<slug>/research/content-brief.md` with sections: Version, Stats (3
 Output: `videos/<slug>/script.txt` (single flat file for `npx hyperframes tts`).
 
 **TTS rules** (apply during writing, not post-pass):
-- Spell out version numbers: "version two point one point one one eight" (not "v2.1.118")
+- **NEVER open with the version number** — do NOT write "Version two point one point one two six shipped today." or any variant. Viewers already know the version from the thumbnail and title. Start `[SCENE: stats-opener]` directly with the stats: "Seven new features. Twenty five bug fixes. Seven improvements." Jump to the content immediately.
+- Spell out any other version numbers that appear in the body: "version two point one point one one eight" (not "v2.1.118")
 - Phonetic command names: "claude update" reads fine; "/plan" → "the plan command"
 - Sentences ≤ 18 words for natural prosody
 - One blank line between scenes — TTS preserves these as breath breaks
@@ -128,12 +129,14 @@ Output: `videos/<slug>/script.txt` (single flat file for `npx hyperframes tts`).
 Sub-section the script per scene boundary:
 
 ```
-[SCENE: hook]
-…hook narration…
-
 [SCENE: stats-opener]
-…stats narration…
+<N> new features. <N> bug fixes. <N> improvements.
+
+The biggest cluster: <lead category> — <N> fixes landing together.
+…
 ```
+
+Note: the format opens **cold** on the stats scene — no hook intro, no version announcement, no preamble. The first spoken word the viewer hears is a number.
 
 Script style mirrors the standard long-form rules — read [`.claude/references/script-library.md`](../../references/script-library.md) for the gold-standard examples.
 
@@ -211,6 +214,39 @@ Placeholder text in the bare template is deliberately bland — replace ALL of i
 
 #### d. `meta.json`
 Already updated in step 3. Re-check.
+
+### 11b. Wire SFX (MANDATORY — every release video)
+
+**Run after `index.html` timing is final** (data-starts and TOTAL_DURATION set).
+
+**Step 1 — sync cue files:**
+```bash
+bash scripts/sync-video-sfx.sh videos/<slug> cinematic-whoosh spring-pop
+```
+
+**Step 2 — add audio elements to `index.html`** immediately after `<audio id="narration">`, before the film-grain SVG. Standard pattern for this 8-scene format:
+
+```html
+<!-- SFX: cinematic-whoosh on every scene transition (track 3, sequential) -->
+<audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+       data-start="<feature-cards data-start - 0.40>"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+<audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+       data-start="<detail-headless data-start - 0.40>"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+<!-- … repeat for each remaining transition … -->
+
+<!-- SFX: spring-pop on first card entrance in each scene (track 4, sequential) -->
+<audio id="sfx-pop-so"  class="clip" src="assets/sfx/spring-pop.mp3"
+       data-start="0.06"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+<audio id="sfx-pop-fc"  class="clip" src="assets/sfx/spring-pop.mp3"
+       data-start="<feature-cards data-start + card-1 internal time>"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+<!-- … repeat for each scene … -->
+```
+
+**Whoosh timing rule**: `data-start = scene_data_start - 0.40` (fires at crossfade start, 400ms before scene fades in).
+
+**Pop timing rule**: `data-start = scene_data_start + card-1_internal_at` (exact word onset of the first card entrance in each scene, looked up from `transcript.json`).
+
+**Track rules**: all whooshes share track 3 (sequential — no overlap). All pops share track 4 (sequential — no overlap). Volume hard cap 0.25; use 0.11 for both cues.
 
 ### 12. Lint + inspect + validate
 

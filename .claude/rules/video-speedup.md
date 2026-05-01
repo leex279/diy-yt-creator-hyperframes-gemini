@@ -10,10 +10,10 @@ ffmpeg -y -i videos/<slug>/out/<slug>.mp4 \
   -map "[v]" -map "[a]" \
   -c:v libx264 -preset slow -crf 18 \
   -c:a aac -b:a 192k -movflags +faststart \
-  videos/<slug>/out/<slug>_<N>x.mp4
+  videos/<slug>/out/<slug>-<N>x.mp4
 ```
 
-Then `mv videos/<slug>/out/<slug>_<N>x.mp4 videos/<slug>/out/<slug>.mp4` so the slug-named MP4 stays the canonical deliverable.
+The sped output keeps the speed as a postfix: `<slug>-1.08x.mp4`, `<slug>-1.12x.mp4`, etc. The base render `<slug>.mp4` stays untouched as the 1.0× source — never overwrite it. The deliverable for upload is the postfixed file.
 
 `atempo=<N>` preserves audio pitch. `setpts=PTS/<N>` adjusts video timing. They must use the same `<N>` so audio and video stay in sync. For factors above 2.0, chain atempo: `atempo=2.0,atempo=1.25` for 2.5×.
 

@@ -1,0 +1,276 @@
+<!--
+  scene-feature-cards.html — Six highlights overview for v2.1.126.
+
+  Phase 1 (0..3s):   centered "Six changes that matter" intro title
+  Phase 2 (3..44s):  intro fades out; six cards enter one-by-one at narration cues.
+
+  Cards:
+    01 — claude project purge           (enters t≈ 3s)
+    02 — --dangerously-skip-permissions (enters t≈11.4s)
+    03 — OAuth paste in terminal        (enters t≈20s)
+    04 — Gateway model picker           (enters t≈24.4s)
+    05 — Windows PowerShell primary     (enters t≈30.6s)
+    06 — Image paste fix                (enters t≈37.2s)
+    CLOSE — "No more session crashes."  (enters t≈41.6s)
+-->
+<template id="scene-feature-cards-template">
+  <div data-composition-id="scene-feature-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #fc-phase1 {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 18px;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        text-align: center;
+        box-sizing: border-box;
+        opacity: 1;
+      }
+      #fc-phase1 .p1-title {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 96px;
+        line-height: 1.02;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      #fc-phase1 .p1-sub {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+
+      #fc-phase2 {
+        position: absolute; inset: 0;
+        padding: 60px var(--pad-x) 90px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: flex-start;
+        gap: 28px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      #fc-phase2 .p2-header {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 48px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-3);
+        text-align: center;
+        opacity: 0;
+      }
+      .feature-cards {
+        width: 1700px;
+        display:flex; flex-wrap: wrap;
+        align-content: flex-start;
+        justify-content: center;
+        gap: 22px;
+      }
+      .feature-cards .feat-card { flex: 1 1 calc(33.333% - 16px); max-width: calc(33.333% - 16px); }
+
+      .feat-card {
+        position: relative;
+        padding: 22px 26px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 10px;
+        min-height: 220px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .feat-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-1)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .feat-card .row {
+        display:flex; flex-direction:row;
+        align-items:center; gap: 12px;
+        margin-bottom: 6px;
+      }
+      .feat-card .num {
+        width: 38px; height: 38px;
+        border-radius: 8px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: 1px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .feat-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 24px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .feat-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .feat-card .det code {
+        font-family: var(--mono);
+        font-size: 16px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .feat-card.a { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .feat-card.b { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .feat-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .feat-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .feat-card.e { --card-accent: var(--accent-warn); border-color: rgba(247, 129, 102, 0.55); }
+      .feat-card.f { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+
+      .feat-card.a .num { color: var(--accent-1);    background: rgba(88, 166, 255, 0.18);  }
+      .feat-card.b .num { color: var(--accent-2);    background: rgba(6, 182, 212, 0.18);   }
+      .feat-card.c .num { color: var(--accent-3);    background: rgba(163, 113, 247, 0.18); }
+      .feat-card.d .num { color: var(--accent-4);    background: rgba(63, 185, 80, 0.18);   }
+      .feat-card.e .num { color: var(--accent-warn); background: rgba(247, 129, 102, 0.18); }
+      .feat-card.f .num { color: var(--accent-1);    background: rgba(88, 166, 255, 0.18);  }
+
+      #fc-close {
+        position: absolute;
+        left: 50%; bottom: 70px;
+        opacity: 0;
+        background: rgba(63, 185, 80, 0.16);
+        border: 2px solid var(--accent-4);
+        border-radius: 14px;
+        padding: 12px 30px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        color: var(--accent-4);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 28px rgba(63, 185, 80, 0.4);
+      }
+    </style>
+
+    <div id="fc-phase1">
+      <div class="p1-title" id="fc-p1-title">Six changes that matter</div>
+      <div class="p1-sub"   id="fc-p1-sub">Before we dig into the details</div>
+    </div>
+
+    <div id="fc-phase2">
+      <div class="p2-header" id="fc-header">Six changes that matter</div>
+      <div class="feature-cards" id="fc-grid">
+        <div class="feat-card a" id="fc-card-1">
+          <div class="row"><div class="num">01</div></div>
+          <div class="ttl"><code>claude project purge</code></div>
+          <div class="det">Delete all project state &mdash; transcripts, tasks, file history &mdash; with <code>--dry-run</code> to preview first.</div>
+        </div>
+        <div class="feat-card b" id="fc-card-2">
+          <div class="row"><div class="num">02</div></div>
+          <div class="ttl"><code>--dangerously-skip-permissions</code></div>
+          <div class="det">Now bypasses write prompts for <code>.claude/</code>, <code>.git/</code>, <code>.vscode/</code>, and shell config files without interruption.</div>
+        </div>
+        <div class="feat-card c" id="fc-card-3">
+          <div class="row"><div class="num">03</div></div>
+          <div class="ttl">OAuth paste in terminal</div>
+          <div class="det"><code>claude auth login</code> accepts the code typed in-terminal. No browser redirect required for WSL2, SSH, or devcontainers.</div>
+        </div>
+        <div class="feat-card d" id="fc-card-4">
+          <div class="row"><div class="num">04</div></div>
+          <div class="ttl">Gateway model picker</div>
+          <div class="det">The <code>/model</code> picker lists every model from your <code>ANTHROPIC_BASE_URL</code> gateway&rsquo;s <code>/v1/models</code> endpoint.</div>
+        </div>
+        <div class="feat-card e" id="fc-card-5">
+          <div class="row"><div class="num">05</div></div>
+          <div class="ttl">Windows: PowerShell first</div>
+          <div class="det">When the PowerShell tool is enabled, Claude now treats it as the primary shell instead of defaulting to Bash.</div>
+        </div>
+        <div class="feat-card f" id="fc-card-6">
+          <div class="row"><div class="num">06</div></div>
+          <div class="ttl">Image paste fix</div>
+          <div class="det">Files larger than 2000&nbsp;px are downscaled on paste. Session no longer crashes on oversized images.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="fc-close">&#10003; Those are the headlines. Now the details.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // cloned-voice timing. scene_t = root_t - 38.78 (data-start 38.78). Slot 43.27s.
+      // Narration (internal = global - 38.78):
+      //   "Six changes that matter..."       scene_t  0.00  (#81 Six, global 38.776)
+      //   "Run claude project purge..."      scene_t  3.17  (#88 Run, global 41.946)
+      //   "The dangerously skip..."          scene_t 12.36  (#111 The, global 51.141)
+      //   "OAuth works in the terminal..."   scene_t 20.66  (#130 OAuth, global 59.442)
+      //   "The slash model picker..."        scene_t 25.18  (#141 The, global 63.959)
+      //   "On Windows..."                    scene_t 31.19  (#157 On, global 69.972)
+      //   "And images larger than..."        scene_t 36.86  (#173 And, global 75.637)
+      //   "no more crashes."                 scene_t 41.17  (#185 no, global 79.945)
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#fc-p1-title",
+        { y: 30, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.55, ease: "power3.out" },
+        0.0);
+      tl.fromTo("#fc-p1-sub",
+        { y: 20, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.45, ease: "power3.out" },
+        0.25);
+
+      // Phase 1 → Phase 2 crossfade before "Run claude project purge" @ 3.17
+      tl.to("#fc-phase1", { opacity: 0, duration: 0.4, ease: "power2.in" }, 2.67);
+      tl.to("#fc-phase2", { opacity: 1, duration: 0.4, ease: "power2.out" }, 2.67);
+      tl.fromTo("#fc-header",
+        { y: 24, opacity: 0 },
+        { y: 0,  opacity: 1, duration: 0.35, ease: "power3.out" },
+        2.87);
+
+      const cardTriggers = [
+        { sel: "#fc-card-1", num: "#fc-card-1 .num", at:  3.17 },
+        { sel: "#fc-card-2", num: "#fc-card-2 .num", at: 12.36 },
+        { sel: "#fc-card-3", num: "#fc-card-3 .num", at: 20.66 },
+        { sel: "#fc-card-4", num: "#fc-card-4 .num", at: 25.18 },
+        { sel: "#fc-card-5", num: "#fc-card-5 .num", at: 31.19 },
+        { sel: "#fc-card-6", num: "#fc-card-6 .num", at: 36.86 },
+      ];
+      cardTriggers.forEach(({ sel, num, at }, i) => {
+        const next = cardTriggers[i + 1] ? cardTriggers[i + 1].at : 41.17;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 30, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" },
+          at);
+        if (dwell > 2.0) {
+          tl.to(num, { scale: 1.20, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 1.2);
+        }
+      });
+
+      // Closing banner on "no more crashes" @ 41.17
+      tl.fromTo("#fc-close",
+        { xPercent: -50, scale: 0.85, opacity: 0 },
+        { xPercent: -50, scale: 1,    opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+        41.17);
+
+      tl.set({}, {}, 43.27);
+      window.__timelines["scene-feature-cards"] = tl;
+    </script>
+  </div>
+</template>
