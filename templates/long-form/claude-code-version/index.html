@@ -195,7 +195,9 @@
     opacity: 0.55;
     filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
   }
-  #dynamous-badge-mark { width: 32px; height: 32px; display: block; }
+  /* Logo source is 771x1161 (portrait, ratio ~0.66) — anchor on height,
+     auto width preserves the original aspect ratio. */
+  #dynamous-badge-mark { height: 38px; width: auto; display: block; }
   #dynamous-badge-url {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 600;

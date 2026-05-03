@@ -1,0 +1,60 @@
+[SCENE: cold-open]
+It's 2026, and an AI agent can write the code for an entire video in under a minute. Two open-source frameworks are fighting over how it does it. And yes — you don't have to know how to code to use either of them.
+
+[SCENE: title-card]
+Remotion. Versus HyperFrames. React versus HTML. One of them is built explicitly for agents.
+
+[SCENE: why-video-as-code]
+Traditional video production hits a wall the moment you try to scale. A human editor manually adjusting keyframes can't produce ten thousand personalized videos for a marketing campaign — not without an army. That's the gap programmatic video fills. You write code. The code becomes the video. It lives in Git, parameters come from a database, it deploys via CI/CD. By 2026, even the writing of that code has shifted to AI agents. So if you're a beginner who has never touched JSX or webpack, you're not the audience that has to write this anymore — your AI coding agent is. Remotion and HyperFrames are the two dominant ways to do it.
+
+[SCENE: meet-contenders]
+Remotion launched in 2021. Created by Jonny Burger in Zurich. It's the established standard with about forty-five thousand GitHub stars and five years of enterprise traction. You — or your agent — write the video as React components. JSX, TypeScript, hooks like useCurrentFrame — every developer tool you'd expect.
+
+HyperFrames went open-source on April seventeenth, 2026. Built by HeyGen — the AI video company that, according to industry reports, hit a hundred million in annual revenue last October. Fourteen thousand stars in the first weeks. The video is plain HTML. No JSX, no build step, no React. The split is philosophical. Remotion bets on React. HyperFrames bets on the language LLMs already speak fluently.
+
+[SCENE: same-square]
+Here's a moving square. In Remotion, the agent imports useCurrentFrame and interpolate, returns some JSX, and you're done. Clean. Type-safe. But it requires React knowledge under the hood, a build step through Webpack or Bun, and a node_modules folder with hundreds of packages.
+
+In HyperFrames, the same animation is a CSS keyframe inside a div with three data attributes. data-start, data-duration, data-track-index. The browser plays it natively. Same square. One needs a build step. The other is just HTML.
+
+[SCENE: frame-adapter]
+Both tools drive headless Chromium. Both are deterministic. The technical innovation in HyperFrames is something HeyGen calls the Frame Adapter. It hijacks the browser's internal clock with the beginFrame API, forces animation libraries like GSAP to abandon real-time execution, and steps through every frame manually.
+
+There's a real test in HeyGen's own docs — a four-second GSAP animation rendered with Remotion compresses to about one second of motion plus three seconds of black, because GSAP runs on wall-clock and Remotion's per-frame evaluator misaligns with it. HyperFrames handles it natively. Same HTML, every time, produces the same MP4.
+
+[SCENE: setup-remotion]
+Let's bootstrap each one. For Remotion, the entry command is npx create-video at latest. It opens an interactive picker — nineteen templates ranging from Blank, Hello World, all the way to Three Fiber and Audiogram. You arrow-key down, hit enter, then it asks for a project name. Then comes npm install. That's where it gets heavy — hundreds of packages because of React, Webpack, the Remotion CLI, the studio, the bundler. Once it's done, your agent edits the composition file, registers it in Root.tsx, sets the framerate in remotion.config.ts. Then npm start launches Remotion Studio at localhost three thousand. You get a full GUI with a scrubbable timeline. It's polished. It's powerful. It's also a few minutes of setup.
+
+[SCENE: setup-hyperframes]
+For HyperFrames, the canonical command is npx hyperframes init my-video. It opens a small interactive picker with nine templates — Blank for empty scaffolding, plus named starters like Swiss Grid, Vignelli, and NYT Graph. Pick one, hit enter. Six files appear. AGENTS.md, CLAUDE.md, hyperframes.json, an index.html under sixty lines, meta.json, and a package.json that's basically a thin wrapper around the hyperframes CLI. No npm install step. The post-init message tells you exactly what to do next. Install the agent skill. Open the project with Claude Code or Cursor. Write a prompt in plain English. Render. The whole thing is built around the assumption that an AI agent will be doing the work — so even if you've never written a line of JavaScript, you describe what you want, the agent writes the code, you watch the result.
+
+[SCENE: usage]
+Now let's actually use them. You ask the agent to make the title bounce in.
+
+In Remotion, it edits Composition.tsx, swaps interpolate for spring with damping config, saves. Webpack rebuilds. The studio refreshes. You scrub the timeline. Then you run npx remotion render to get the MP4. The render bundles the code, loads it in headless Chromium, walks the React reconciler at every frame, captures pixel buffers, encodes through FFmpeg.
+
+Same task in HyperFrames. The agent edits a CSS keyframe in composition.html. Save. Browser auto-reloads. No rebuild, no studio restart. To render, npx hyperframes render against the project directory. Headless Chromium boots. The Frame Adapter pauses time. Frames step deterministically. FFmpeg encodes. Same output. Different number of moving parts. And in both cases — you didn't write a single line of code yourself.
+
+[SCENE: real-numbers]
+Here are real numbers from a clean machine. We cloned Remotion's official Hello World template, ran npm install — thirty-three seconds, two hundred seventy-eight megabytes, two hundred and five top-level packages — then rendered the default five-second clip in sixteen seconds. We then ran HyperFrames init in a different folder, which finished instantly with no install at all, and rendered a five-second clip in seven seconds with a warm cache. Time to first video from a fresh project: Remotion fifty seconds, HyperFrames seven. The render itself is comparable. The setup tax is where they diverge.
+
+[SCENE: matrix]
+Head to head, here's where they actually differ. Authoring: Remotion is React JSX. HyperFrames is plain HTML with data attributes. Build step: Remotion requires Webpack, Bun, or Vite. HyperFrames has no build step at all. Animation clock: Remotion evaluates frames mathematically. HyperFrames uses a seekable library clock. Distributed render: Remotion has remotion-lambda, the only production-proven distributed renderer in this space. HyperFrames runs single-machine in 2026. Best fit: React engineers building deep video pipelines lean Remotion. AI agents and prompt-driven workflows lean HyperFrames.
+
+[SCENE: pricing]
+The licensing split is the most concrete difference. Remotion is free for individuals and companies up to three employees. Above that, you're on a paid tier. The Creators plan is twenty-five dollars per seat per month. The Automators plan, designed for SaaS pipelines that render videos for end users, is one cent per render with a hundred dollar per month minimum. Enterprise starts at five hundred. From version 5.0 forward, the Automators tier will require call-home telemetry through the remotion-licensing package. HyperFrames is unconditionally Apache 2.0. Zero per-render fees. Zero seat caps. Zero telemetry. HeyGen monetizes the avatars and translation APIs, not the rendering engine. They commoditize the engine and sell the AI on top.
+
+[SCENE: popularity]
+By cumulative metrics, Remotion is bigger. About forty-five thousand stars over five years. Three thousand forks. A thriving Discord. Trusted by enterprise customers including major tech companies. By new-adoption velocity, HyperFrames is moving faster. Fourteen thousand stars in weeks since launch. Backed by HeyGen, which independent reports place at eighty-five thousand customers and a five hundred million dollar valuation.
+
+[SCENE: who-uses-what]
+So who should use what.
+
+Use Remotion if you're a React or TypeScript engineer with existing component libraries — or if your agent is. If you need distributed rendering on Lambda for batch jobs. If you're building a video SaaS product where the type-safe component model is worth the setup tax.
+
+Use HyperFrames if you're working primarily with AI coding agents — beginners welcome, no JavaScript required. If you want zero setup friction. If you need the Apache 2.0 license for unconditional commercial use. Or if you want to paste arbitrary HTML — landing page snippets, design system components — directly into a video.
+
+Both are excellent. They're solving the same problem from opposite ends. The right answer depends on whether you're more comfortable in React or in HTML — and whether the human or the agent is doing the writing.
+
+[SCENE: cta]
+If you want more videos like this — agentic coding deep-dives, framework comparisons, real numbers from real machines — drop a comment below and subscribe. And tell me: React or HTML? Which side are you on? Links to both repositories and to every source for the numbers in this video are in the description. Thanks for watching.

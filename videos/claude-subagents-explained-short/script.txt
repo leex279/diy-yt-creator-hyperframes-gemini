@@ -1,0 +1,19 @@
+Claude just read fifty files for one question. Why is your context window dead? Sub-agents fix this.
+
+A sub-agent runs in its own context window, completely isolated from your main conversation. Verbose work stays there. Only the summary returns.
+
+Claude Code ships three built-in sub-agents.
+
+Explore runs on Haiku. Read-only and fast. Perfect for searching codebases.
+
+Plan is for research during plan mode. Read-only.
+
+General-purpose has all tools. Multi-step complex tasks.
+
+Custom agents add tool restrictions and model choice. Want a code reviewer with Read, Grep, and Glob only? You can define that.
+
+Persistent memory lets a sub-agent remember patterns across sessions. Knowledge accumulates over time.
+
+Five routing decisions. Explore the codebase? Use Explore on Haiku. Read-only PR review? Custom agent with Read plus Grep plus Glob. Long parallel research? General-purpose in the background. Cost-sensitive grunt work? Route to Haiku. Validate database queries? Custom agent with a PreToolUse hook.
+
+Watch the 13 minute breakdown for the rest of Claude Code's customization system.

@@ -1,0 +1,15 @@
+Skills are request-driven. Hooks are event-driven. The difference is everything.
+
+A hook fires automatically on lifecycle events. There are over thirty event types in Claude Code.
+
+PreToolUse fires before a tool runs. Block destructive commands before they execute.
+
+PostToolUse fires after a tool succeeds. React to file edits, log results, run validators.
+
+SessionStart and Stop hook into the session lifecycle. Inject environment state on start. Block bad responses before Claude returns.
+
+Prompt and agent hooks let an LLM make the decision. Send context to a fast model, get a yes-or-no answer.
+
+Five hook recipes. Block rm dash r f? PreToolUse on Bash. Auto-format on save? PostToolUse on Edit and Write. Inject environment on session start? SessionStart. Validate every SQL query? PreToolUse with a prompt-based hook. Refuse risky responses? Stop hook.
+
+Watch the 13 minute deep dive for the full Claude Code customization system.

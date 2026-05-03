@@ -26,6 +26,34 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 <!-- ASSETS:BEGIN -->
 | File | Category | Use for |
 |---|---|---|
+| audio/sfx/cinematic-whoosh.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/glitch-zap.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/impact-slam.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/pop.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/scale-slam.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/screen-shake.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/sonic-logo.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/spring-pop.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/sfx/strike-cross.mp3 |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/dynamous-endcard/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/dynamous-module-interstitial/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/stat-pill-row/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/timeline-cards/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/url-cta/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/ambient-radial/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/dynamous-badge/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/dynamous-data/dynamous-modules.json |  | _TBD_ (added by sync — please fill) |
+| lib/components/dynamous-discount-bubble/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/progress-bar/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/top-banner-wordmark/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/effects/hero-slam-shake.js |  | _TBD_ (added by sync — please fill) |
+| lib/effects/phase-crossfade.js |  | _TBD_ (added by sync — please fill) |
+| lib/effects/stat-pill-pop.js |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/anthropic-dark.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/claude-code-dark.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/dynamous-modern.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/long-form-standard.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/standard-short.css |  | _TBD_ (added by sync — please fill) |
 | logos/aider-logo.png | AI coding | Aider — terminal-based AI pair programmer |
 | logos/aisi-logo.svg | AI safety | _TBD_ (UK AI Safety Institute? — please confirm) |
 | logos/amd-logo.svg | Hardware | AMD — chipmaker (CPUs, GPUs) |
@@ -59,6 +87,8 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/discord-logo.svg | Communication | Discord |
 | logos/docker-logo-inverted.png | DevOps | Docker — inverted variant |
 | logos/docker-logo.png | DevOps | Docker — default variant |
+| logos/dynamous-ai-mastery-white.svg |  | _TBD_ (added by sync — please fill) |
+| logos/dynamous-logo.png |  | _TBD_ (added by sync — please fill) |
 | logos/earendil-logo.png | Project | _TBD_ (Eärendil — please confirm) |
 | logos/flask-logo.png | Web framework | Flask — Python web microframework |
 | logos/gemini-logo.svg | AI product | Google Gemini |
@@ -84,6 +114,7 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/multica-logo.svg | Project | _TBD_ (Multica — vector — please confirm) |
 | logos/n8n-logo-fallback.png | Automation | n8n — workflow automation (fallback variant) |
 | logos/n8n-logo.png | Automation | n8n — workflow automation |
+| logos/nec-logo.png |  | _TBD_ (added by sync — please fill) |
 | logos/netflix-logo.png | Brand | Netflix |
 | logos/nvidia-logo.png | Hardware | Nvidia — GPUs / CUDA |
 | logos/ollama-logo.png | AI infrastructure | Ollama — local LLM runner |

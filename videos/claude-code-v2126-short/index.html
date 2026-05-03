@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code v2.1.126 — Short</title>
+<link rel="stylesheet" href="tokens/claude-code-dark.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 GitHub-dark stage tuned for the
+     Claude Code release-update Short. Forked from
+     templates/shorts/anthropic/index.html. Variant
+     deltas:
+       - tokens linked from tokens/claude-code-dark.css
+         (GitHub-dark surface + Claude Code accent triad)
+       - VersionBranding overlay (top-right Anthropic +
+         Claude Code logos, bottom-right vX.Y.Z URL line)
+       - centered top-banner DISABLED — VersionBranding
+         owns the brand zone
+       - phase 1 hero is the version slam (e.g. v2.1.118)
+       - phase 2 is 3 stat pills (features / fixes /
+         improved) instead of 2
+       - phase 3 highlight cards use numbered badges
+         (01/02/03) — no dates
+       - phase 4 CTA is a `$ claude update` terminal block
+         instead of a URL pill
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient — slow breath under all phases. Tints retuned for the
+     Claude Code accent triad (cyan-blue / purple / green). */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(88, 166, 255, 0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(163, 113, 247, 0.07), transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(63, 185, 80, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — 14 deterministic Claude Code shapes scattered at 5% opacity.
+     Same xmur3-seeded scatter as the anthropic shorts template; seed prefix
+     differs so positions don't collide visually if both are rendered together. */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay — fractal noise via SVG feTurbulence */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — DISABLED on this variant.
+     VersionBranding owns the top brand zone (mirrors
+     the long-form claude-code-version variant default).
+     To re-enable a centered wordmark per video, drop a
+     non-Anthropic logo (e.g. assets/claude-logo-light.svg)
+     into assets/ and uncomment the #top-banner block + its
+     entrance tween below.
+     ────────────────────────────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 720px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* VersionBranding overlay — persistent, full-duration, no class="clip".
+     Source: templates/long-form/claude-code-version/index.html (#version-branding),
+     scaled for the vertical canvas (logos 200px wide vs 240px on long-form;
+     bottom URL line nudged up to clear the progress bar). */
+  #version-branding {
+    position: absolute;
+    inset: 0;
+    opacity: 1.0;
+    pointer-events: none;
+    z-index: 9;
+  }
+  #version-branding .vb-logos {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-end;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.55));
+  }
+  #version-branding .vb-logos img {
+    width: 340px;
+    height: auto;
+  }
+  #version-branding .vb-version {
+    position: absolute;
+    bottom: 24px;
+    left: 30px;
+    right: 30px;
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  /* Slim progress bar — bottom edge */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.55);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — full-bleed, layered. Phase 1 visible by
+     default; phases 2-4 start at opacity 0. Crossfades
+     handle the scene change.
+     ────────────────────────────────────────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Mono overline — every phase opens with one of these */
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 52px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — VERSION SLAM
+     Pattern: overline → "Version" pre-line → BIG version
+     slam (e.g. "v2.1.118") → caption pill ("What's new").
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p1-overline { color: var(--accent-warn); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 88px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 220px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--accent-1);
+    text-shadow: 0 0 80px rgba(88,166,255,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p1-caption {
+    margin-top: 24px;
+    padding: 16px 32px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 44px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — STATS OPENER (3 pills)
+     Pattern: overline → headline → 3 huge stat pills
+     (cyan / purple / green) for features / fixes / improved.
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 40px;
+  }
+  #p2-overline { color: var(--accent-warn); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .stat-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    width: 920px;
+    padding: 32px 40px;
+    border-radius: 28px;
+  }
+  .stat-pill.cyan {
+    background: linear-gradient(135deg, rgba(88,166,255,0.20), rgba(88,166,255,0.05));
+    border: 2px solid rgba(88,166,255,0.45);
+    box-shadow: 0 14px 36px rgba(88,166,255,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.20), rgba(163,113,247,0.05));
+    border: 2px solid rgba(163,113,247,0.45);
+    box-shadow: 0 14px 36px rgba(163,113,247,0.20);
+  }
+  .stat-pill.green {
+    background: linear-gradient(135deg, rgba(63,185,80,0.20), rgba(63,185,80,0.05));
+    border: 2px solid rgba(63,185,80,0.45);
+    box-shadow: 0 14px 36px rgba(63,185,80,0.20);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 155px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+    min-width: 240px;
+    text-align: right;
+  }
+  .stat-pill.cyan   .stat-num { color: var(--accent-1); text-shadow: 0 0 60px rgba(88,166,255,0.45); }
+  .stat-pill.purple .stat-num { color: var(--accent-3); text-shadow: 0 0 60px rgba(163,113,247,0.45); }
+  .stat-pill.green  .stat-num { color: var(--accent-4); text-shadow: 0 0 60px rgba(63,185,80,0.45); }
+  .stat-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 48px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text);
+    text-align: left;
+    flex: 1;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — HIGHLIGHT CARDS (numbered)
+     Pattern: overline → 3 numbered cards (01/02/03),
+     accent rotation cyan → purple → green.
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p3-overline { color: var(--text); }
+  .highlight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 940px;
+  }
+  .hl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 26px 32px;
+    border-radius: 20px;
+  }
+  .hl-card.cyan {
+    background: linear-gradient(135deg, rgba(88,166,255,0.16), rgba(88,166,255,0.05));
+    border: 2px solid rgba(88,166,255,0.45);
+    box-shadow: 0 10px 30px rgba(88,166,255,0.20);
+  }
+  .hl-card.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.16), rgba(163,113,247,0.05));
+    border: 2px solid rgba(163,113,247,0.45);
+    box-shadow: 0 10px 30px rgba(163,113,247,0.20);
+  }
+  .hl-card.green {
+    background: linear-gradient(135deg, rgba(63,185,80,0.16), rgba(63,185,80,0.05));
+    border: 2px solid rgba(63,185,80,0.45);
+    box-shadow: 0 10px 30px rgba(63,185,80,0.20);
+  }
+  .hl-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 104px;
+    height: 104px;
+    border-radius: 20px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 60px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .hl-card.cyan   .hl-num { background: var(--accent-1); }
+  .hl-card.purple .hl-num { background: var(--accent-3); }
+  .hl-card.green  .hl-num { background: var(--accent-4); }
+  .hl-body { display: flex; flex-direction: column; gap: 8px; flex: 1; text-align: left; }
+  .hl-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .hl-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 36px;
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+  .hl-card.cyan   .hl-sub { color: var(--accent-1); }
+  .hl-card.purple .hl-sub { color: var(--accent-3); }
+  .hl-card.green  .hl-sub { color: var(--accent-4); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — CTA / `$ claude update` terminal block
+     Pattern: overline → terminal block → subscribe pill.
+     Terminal CSS duplicated from
+     templates/long-form/claude-code-version/compositions/scene-cta.html
+     (single-use; no shared CSS file).
+     ────────────────────────────────────────────────── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 40px;
+  }
+  #p4-overline { color: var(--accent-4); }
+  #p4-terminal {
+    width: 920px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(28, 33, 40, 0.95);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55),
+                0 0 0 1.5px rgba(88, 166, 255, 0.4);
+  }
+  #p4-terminal .term-titlebar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px;
+    background: #21262D;
+    position: relative;
+  }
+  #p4-terminal .term-titlebar .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+  }
+  #p4-terminal .term-titlebar .dot.red    { background: #FF5F56; }
+  #p4-terminal .term-titlebar .dot.yellow { background: #FFBD2E; }
+  #p4-terminal .term-titlebar .dot.green  { background: #27C93F; }
+  #p4-terminal .term-titlebar .title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 20px;
+    color: var(--text-secondary);
+  }
+  #p4-terminal .term-content {
+    padding: 36px 44px;
+    font-family: var(--mono);
+    font-size: 48px;
+    line-height: 1.5;
+    color: var(--text);
+    text-align: left;
+  }
+  #p4-terminal .term-content .prompt { color: var(--accent-4); }
+  #p4-terminal .term-content .flag   { color: var(--accent-1); }
+  #p4-subscribe {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 44px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(247,129,102,0.18), rgba(247,129,102,0.05));
+    border: 1.5px solid rgba(247,129,102,0.55);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 48px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p4-subscribe .arrow {
+    color: var(--accent-warn);
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 60px;
+    line-height: 0.7;
+  }
+
+  /* ── Orange highlight card (card 4) ─────────────────── */
+  .hl-card.orange {
+    background: linear-gradient(135deg, rgba(247,129,102,0.16), rgba(247,129,102,0.05));
+    border: 2px solid rgba(247,129,102,0.45);
+    box-shadow: 0 10px 30px rgba(247,129,102,0.20);
+  }
+  .hl-card.orange .hl-num { background: var(--accent-warn); }
+  .hl-card.orange .hl-sub { color: var(--accent-warn); }
+
+  /* ── Dynamous overlays ────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 460px;
+    left: 60px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 20px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+    pointer-events: none;
+  }
+  /* Logo source is 771x1161 (portrait, ratio ~0.66) — anchor on height,
+     auto width preserves the original aspect ratio. */
+  #dynamous-badge-mark { height: 56px; width: auto; display: block; }
+  #dynamous-badge-url {
+    font-family: var(--sans);
+    font-size: 40px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  #dynamous-discount-bubble {
+    position: absolute;
+    bottom: 200px;
+    right: 30px;
+    padding: 14px 22px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,180,0,0.22), rgba(255,140,0,0.08));
+    border: 1.5px solid rgba(255,180,0,0.60);
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  #ddb-mark {
+    width: 36px;
+    height: 36px;
+    background: url('assets/dynamous-logo.png') center / contain no-repeat;
+    margin-bottom: 4px;
+  }
+  #ddb-discount {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 36px;
+    color: rgba(255,200,0,1);
+    line-height: 1;
+  }
+  #ddb-url {
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--text-secondary);
+  }
+
+  /* ── Dynamous endcard mount — full-frame overlay during the last 5s ─── */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<script src="video.config.js"></script>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="105.0"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient warm wash -->
+  <div id="ambient"></div>
+
+  <!-- Shape backdrop — 14 deterministic shapes, populated by spawnShapes() -->
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner — DISABLED in this variant.
+       Per DESIGN.md "Variant-specific surfaces", VersionBranding is the
+       single brand surface (top-right logo stack). To re-enable a
+       centered wordmark per video, drop a different logo (e.g.
+       assets/claude-logo-light.svg) into assets/ and uncomment:
+         div id="top-banner"
+           img id="top-banner-logo" src="assets/your-wordmark.svg" alt="Brand"
+         /div
+       Then re-enable the matching tl.from() call below. -->
+  <div id="top-banner" style="display:none;">
+    <span id="top-banner-logo"></span>
+  </div>
+
+  <!-- VersionBranding overlay — Anthropic + Claude Code logos top-right;
+       version string + repo URL bottom-center. Renders for full duration. -->
+  <div id="version-branding">
+    <div class="vb-logos">
+      <img src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      <img src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+    </div>
+    <div class="vb-version" id="vb-version-string">github.com/anthropics/claude-code/releases  |  v2.1.126</div>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Dynamous persistent brand badge — bottom-left, no class="clip" -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Dynamous 10% OFF bubble — CTA phase only, data-start set by guard script -->
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="0"
+       data-duration="0"
+       data-track-index="9">
+    <span id="ddb-mark"></span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-url">dynamous.ai</span>
+  </div>
+
+  <!-- Dynamous endcard — last 5s full-frame outro (100.0–105.0s) -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="100.0"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — VERSION SLAM (0-6s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Claude Code Update</div>
+      <div id="p1-pre">Version</div>
+      <div id="p1-hero">v2.1.126</div>
+      <div id="p1-caption">37 changes — auth heavy</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — STATS OPENER (6-12s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">What shipped</div>
+      <div id="p2-headline">The receipts.</div>
+      <div id="p2-pills">
+        <div class="stat-pill cyan" id="p2-pill-1">
+          <div class="stat-num">7</div>
+          <div class="stat-label">features</div>
+        </div>
+        <div class="stat-pill purple" id="p2-pill-2">
+          <div class="stat-num">25</div>
+          <div class="stat-label">fixes</div>
+        </div>
+        <div class="stat-pill green" id="p2-pill-3">
+          <div class="stat-num">7</div>
+          <div class="stat-label">improved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — HIGHLIGHT CARDS (12-18s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">Top changes</div>
+      <div class="highlight-list">
+        <div class="hl-card cyan" id="p3-card-1">
+          <div class="hl-num">01</div>
+          <div class="hl-body">
+            <div class="hl-title">claude project purge</div>
+            <div class="hl-sub">wipes state. dry-run first.</div>
+          </div>
+        </div>
+        <div class="hl-card purple" id="p3-card-2">
+          <div class="hl-num">02</div>
+          <div class="hl-body">
+            <div class="hl-title">--dangerously-skip-permissions</div>
+            <div class="hl-sub">CI &amp; headless. zero prompts.</div>
+          </div>
+        </div>
+        <div class="hl-card green" id="p3-card-3">
+          <div class="hl-num">03</div>
+          <div class="hl-body">
+            <div class="hl-title">OAuth in terminal</div>
+            <div class="hl-sub">WSL2. SSH. devcontainers.</div>
+          </div>
+        </div>
+        <div class="hl-card orange" id="p3-card-4">
+          <div class="hl-num">04</div>
+          <div class="hl-body">
+            <div class="hl-title">Auth &amp; session overhaul</div>
+            <div class="hl-sub">login state. token refresh. IDs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — CTA / `$ claude update` (18-24s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Pull every fix</div>
+      <div id="p4-terminal">
+        <div class="term-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="title">~/project</span>
+        </div>
+        <div class="term-content">
+          <span class="prompt">$</span> claude <span class="flag">update</span>
+        </div>
+      </div>
+      <div id="p4-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+    </div>
+  </div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="99.29"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — Track 3: impact-slam at version slam, cinematic-whoosh at each phase transition -->
+  <audio id="sfx-impact"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="2.15"
+         data-duration="0.6"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-1"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="6.0"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="19.3"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="87.3"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- SFX — Track 4: screen-shake layers with impact-slam; stat slam, card spring, CTA pop -->
+  <audio id="sfx-shake"
+         class="clip"
+         src="assets/sfx/screen-shake.mp3"
+         data-start="2.15"
+         data-duration="0.3"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+  <audio id="sfx-scale"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="6.85"
+         data-duration="0.6"
+         data-track-index="4"
+         data-volume="0.15"></audio>
+  <audio id="sfx-spring"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="88.20"
+         data-duration="0.4"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="95.81"
+         data-duration="0.4"
+         data-track-index="4"
+         data-volume="0.10"></audio>
+
+  <!-- Guard — wires Dynamous overlays before HyperFrames DOM scan -->
+  <script>
+    (function () {
+      var d = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+      if (!d.badge) { var b = document.getElementById('dynamous-badge'); if (b) b.remove(); }
+      if (!d.discountBubble) {
+        var db = document.getElementById('dynamous-discount-bubble'); if (db) db.remove();
+      } else {
+        var db = document.getElementById('dynamous-discount-bubble');
+        if (db) {
+          db.dataset.start = String(d.discountBubblePhase4Start || 0);
+          db.dataset.duration = String(d.discountBubbleDuration || 12);
+        }
+      }
+    })();
+  </script>
+
+  <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 14 shapes.
+  // Mirrors templates/shorts/anthropic/index.html spawnShapes() exactly;
+  // only the seed prefix differs so positions don't visually clump if both
+  // templates appear together. xmur3-style hash, no Math.random / Date.now.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 50;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 50;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 7;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  spawnShapes('claude-code-short', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'claude-code-short', 105.0);
+
+  // Backdrop container slow oscillating pan — single yoyo across the full duration,
+  // layered on top of per-shape drift for a two-speed parallax feel.
+  tl.fromTo('#shape-backdrop',
+    { x: -20, y: -12, rotation: -1 },
+    { x: 20, y: 12, rotation: 1, duration: 52.5, ease: 'sine.inOut', yoyo: true, repeat: 1 },
+    0);
+
+  // Ambient: slow breath across full duration
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 52.5, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar fills linearly
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: 105.0, ease: "none" },
+    0);
+
+  // VersionBranding fades in once at 0.4s, then static
+  tl.from("#version-branding", { opacity: 0, duration: 0.8, ease: "power2.out" }, 0.4);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Version slam (0-6s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.9);
+  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, 1.45);
+  // Inline shake on the slam frame ("release" word) — 4 short ticks ±5px, then settle
+  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.15);
+  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 2.20);
+  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.25);
+  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.30);
+  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.6);
+
+  // ─── Transition phase1 → phase2 at 6.0s ("Auth and sessions" tail → "Seven new features") ───
+  const T1 = 6.0;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Stats opener (6-12s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  const P2 = 6.4;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.2);
+  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, P2 + 0.45);
+  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, P2 + 2.40);
+  tl.from("#p2-pill-3",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, P2 + 3.63);
+
+  // ─── Transition phase2 → phase3 at 19.3s (after "All fixed together" → "Run claude project purge") ───
+  const T2 = 19.3;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Highlight cards (12-18s) : progressive reveal
+  // ═══════════════════════════════════════════════════════
+  const P3 = 19.7;
+  // Force all cards hidden right as phase 3 fades in, then reveal each as narrated.
+  tl.set(['#p3-card-1','#p3-card-2','#p3-card-3','#p3-card-4'], { opacity: 0, x: -40, scale: 0.95 }, T2 + 0.3);
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.to('#p3-card-1', { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: 'back.out(1.5)' }, P3 + 0.31);   // "Run claude project purge" @ 20.01
+  tl.to('#p3-card-2', { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: 'back.out(1.5)' }, P3 + 18.12);  // "The dangerously skip..." @ 37.82
+  tl.to('#p3-card-3', { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: 'back.out(1.5)' }, P3 + 38.21);  // "OAuth now works..." @ 57.91
+  tl.to('#p3-card-4', { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: 'back.out(1.5)' }, P3 + 55.74);  // "Auth and session stability..." @ 75.44
+
+  // ─── Transition phase3 → phase4 at 87.3s (after "...update cycles" → "Run claude update") ───
+  const T3 = 87.3;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — `$ claude update` CTA (18-24s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  const P4 = 87.7;
+  tl.set('#p4-terminal', { opacity: 0, y: 24, scale: 0.96 }, T3 + 0.3);
+  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.to('#p4-terminal',   { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.4)' }, P4 + 0.50);   // "claude update" @ 88.20
+  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 8.11);              // "Drop a comment below" @ 95.81
+  tl.to("#p4-subscribe", {
+    boxShadow: "0 0 0 6px rgba(247, 129, 102, 0.40)",
+    duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 2
+  }, P4 + 8.39);
+
+  // Dynamous overlays
+  var _dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+  if (_dyn.badge) {
+    tl.from('#dynamous-badge', { opacity: 0, x: -12, duration: 0.6, ease: 'power2.out' }, 3.0);
+  }
+  if (_dyn.discountBubble) {
+    var _p4Start = _dyn.discountBubblePhase4Start || P4;
+    var _bubDur  = _dyn.discountBubbleDuration || 12;
+    tl.from('#dynamous-discount-bubble', { y: 16, opacity: 0, duration: 0.5, ease: 'power2.out' }, _p4Start);
+    tl.to('#dynamous-discount-bubble', { opacity: 0, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, _p4Start + _bubDur - 0.4);
+  }
+
+  // ─── Endcard handoff at 99.5s ─── fade out everything competing with the
+  // Dynamous endcard (starts at 100.0) so it owns the last 5 seconds cleanly.
+  tl.to('#phase4',                     { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, 99.5);
+  tl.to('#dynamous-badge',             { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, 99.5);
+  tl.to('#dynamous-discount-bubble',   { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, 99.5);
+  tl.to('#version-branding',           { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, 99.5);
+  tl.to('#progress-track',             { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, 99.5);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

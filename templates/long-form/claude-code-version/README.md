@@ -57,7 +57,7 @@ Steps the command performs:
 7. `cp -r templates/long-form/claude-code-version videos/<slug>` and apply per-release edits (placeholder text → real text in `compositions/scene-*.html`; `#vb-version-string` to the actual `vX.Y.Z`; scene wrapper `data-start` values to transcript word offsets).
 8. `npx hyperframes lint`, `inspect`, `validate` — must pass before render.
 9. Output a YouTube description at `videos/<slug>/youtube-description.md` (chapters + SEO).
-10. Render: `npx hyperframes render videos/<slug> --quality high --workers 4 -o videos/<slug>/out/long-form.mp4`.
+10. Render: `npx hyperframes render videos/<slug> --quality high --workers 4 -o out/<slug>.mp4`.
 
 The full step-by-step lives in `.claude/commands/diy-yt-creator/claude-code-version.md`. Per-video manual edits are limited to text replacements + scene timing — no compositional rewrites.
 
@@ -105,7 +105,7 @@ npx hyperframes inspect videos/$SLUG      # layout overflow check
 npx hyperframes preview videos/$SLUG
 
 # 9. Render
-npx hyperframes render videos/$SLUG --quality high --workers 4 -o videos/$SLUG/out/long-form.mp4
+npx hyperframes render videos/$SLUG --quality high --workers 4 -o out/$SLUG.mp4
 ```
 
 PowerShell equivalent for step 2: `Copy-Item -Recurse templates/long-form/claude-code-version videos/$SLUG`.

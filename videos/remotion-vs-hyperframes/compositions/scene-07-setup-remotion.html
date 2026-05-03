@@ -1,0 +1,146 @@
+<template id="scene-07-setup-remotion-template">
+  <div data-composition-id="scene-07-setup-remotion"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s07-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono); font-size: 22px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--remotion);
+      }
+      #s07-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--remotion); margin-right: 14px; box-shadow: 0 0 12px var(--remotion-glow); }
+      #s07-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--display);
+        font-weight: 400;
+        font-size: 64px;
+        letter-spacing: .005em;
+        line-height: .98;
+      }
+      #s07-h2 em { font-family: var(--serif); font-style: italic; color: var(--ink-3); letter-spacing: -.02em; font-weight: 400; }
+
+      #s07-term {
+        position:absolute; left: 96px; right: 96px; top: 320px; bottom: 96px;
+        background: #07090d;
+        border: 1px solid var(--rule-2);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0,0,0,.55), 0 0 60px rgba(0,229,212,.06);
+      }
+      #s07-titlebar {
+        height: 44px; background: #0c0f15;
+        border-bottom: 1px solid var(--rule);
+        display:flex; align-items:center; padding: 0 14px; gap: 8px;
+      }
+      .s07-dot { width: 11px; height: 11px; border-radius: 50%; }
+      .s07-dot.r { background: #ff5f57; } .s07-dot.y { background: #febc2e; } .s07-dot.g { background: #28c840; }
+      #s07-tb-name { flex: 1; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+      #s07-body {
+        padding: 22px 26px;
+        font-family: var(--mono); font-size: 19px; line-height: 1.55;
+        color: #d8d4c8;
+      }
+      .s07-line { display: block; }
+      .s07-pu  { color: var(--accent); }
+      .s07-ph  { color: #c084fc; }
+      .s07-arrow { color: var(--remotion); font-weight: 600; }
+      .s07-info { color: var(--remotion); }
+      .s07-warn { color: #ffd24a; }
+      .s07-ok   { color: #00ff9d; }
+      .s07-dim  { color: var(--ink-3); }
+      .s07-you  { color: var(--ink); }
+
+      .s07-picker {
+        background: #0a0c11;
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 8px 0;
+        max-width: 760px;
+      }
+      .s07-picker .row { display:block; padding: 2px 0; }
+      .s07-picker .row.sel { color: var(--remotion); font-weight: 600; }
+      .s07-picker .row.sel::before { content: '> '; color: var(--remotion); }
+      .s07-picker .row:not(.sel) { color: var(--ink-2); padding-left: 16px; }
+      .s07-picker .more { color: var(--ink-3); padding-left: 16px; padding-top: 6px; font-size: 18px; }
+    </style>
+
+    <div id="s07-eyebrow"><span class="dot"></span>SCENARIO 1 · BOOTSTRAP REMOTION</div>
+    <h2 id="s07-h2">npx create-video at latest <em>— and 19 templates to pick from.</em></h2>
+
+    <div id="s07-term">
+      <div id="s07-titlebar">
+        <span class="s07-dot r"></span><span class="s07-dot y"></span><span class="s07-dot g"></span>
+        <span id="s07-tb-name">claude-code · ~/projects/launch-vid</span>
+      </div>
+      <div id="s07-body">
+        <span class="s07-line" id="s07-l1"><span class="s07-pu">user</span><span class="s07-dim">@</span><span class="s07-ph">launch-vid</span><span class="s07-dim">$ </span><span class="s07-you">npx create-video@latest</span></span>
+        <span class="s07-line" id="s07-l2"><span class="s07-dim">Welcome to Remotion!</span></span>
+        <span class="s07-line" id="s07-l3"><span class="s07-info">?</span> Choose a template: <span class="s07-dim">- Use arrow-keys. Return to submit.</span></span>
+        <div class="s07-picker" id="s07-picker">
+          <span class="row sel">Blank — Nothing except an empty canvas</span>
+          <span class="row">Hello World — A playground with a simple animation</span>
+          <span class="row">Next.js SaaS — Full SaaS template</span>
+          <span class="row">React Three Fiber — 3D starter</span>
+          <span class="row">Audiogram — Waveform visualization</span>
+          <span class="more">↓ 14 more templates · arrow-key to navigate</span>
+        </div>
+        <span class="s07-line" id="s07-l4">&nbsp;</span>
+        <span class="s07-line" id="s07-l5"><span class="s07-pu">user</span><span class="s07-dim">@</span><span class="s07-ph">launch-vid</span><span class="s07-dim">$ </span><span class="s07-you">npm install</span></span>
+        <span class="s07-line" id="s07-l6"><span class="s07-dim">resolving dependencies… </span><span class="s07-warn">(react · webpack · @remotion/cli · @remotion/studio)</span></span>
+        <span class="s07-line" id="s07-l7"><span class="s07-ok">✓</span> 205 top-level packages · <span class="s07-warn">278 MB</span> in node_modules · <span class="s07-warn">32.78s</span></span>
+        <span class="s07-line" id="s07-l8">&nbsp;</span>
+        <span class="s07-line" id="s07-l9"><span class="s07-pu">user</span><span class="s07-dim">@</span><span class="s07-ph">launch-vid</span><span class="s07-dim">$ </span><span class="s07-you">npm start</span> <span class="s07-dim"># launches Remotion Studio</span></span>
+        <span class="s07-line" id="s07-l10"><span class="s07-info">→</span> Studio at <span class="s07-warn">http://localhost:3000</span></span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s07-eyebrow", { opacity: 0 }, 0);
+      tl.set("#s07-h2",      { y: 30, opacity: 0 }, 0);
+      tl.set("#s07-term",    { y: 30, opacity: 0 }, 0);
+      const lines = ["#s07-l1","#s07-l2","#s07-l3","#s07-picker","#s07-l4","#s07-l5","#s07-l6","#s07-l7","#s07-l8","#s07-l9","#s07-l10"];
+      lines.forEach(s => tl.set(s, { y: 8, opacity: 0 }, 0));
+
+      tl.to("#s07-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s07-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s07-term",    { y: 0, opacity: 1, duration: 0.7 }, 1.0);
+
+      // Scene ~50.8s. Lines paced to narration:
+      // "the entry command is npx create-video at latest" ~5s → l1
+      // "interactive picker — nineteen templates ranging from Blank, Hello World..." ~9s → l3+picker
+      // "Then comes npm install. That's where it gets heavy" ~22s → l5+l6
+      // "hundreds of packages... 278 MB / 32.78s" ~26s → l7
+      // "npm start launches Remotion Studio" ~38s → l9+l10
+      tl.to("#s07-l1",     { y: 0, opacity: 1, duration: 0.5 }, 4.5);
+      tl.to("#s07-l2",     { y: 0, opacity: 1, duration: 0.5 }, 5.5);
+      tl.to("#s07-l3",     { y: 0, opacity: 1, duration: 0.5 }, 8.0);
+      tl.to("#s07-picker", { y: 0, opacity: 1, duration: 0.6 }, 9.0);
+      tl.to("#s07-l4",     { y: 0, opacity: 1, duration: 0.3 }, 18.0);
+      tl.to("#s07-l5",     { y: 0, opacity: 1, duration: 0.5 }, 21.5);
+      tl.to("#s07-l6",     { y: 0, opacity: 1, duration: 0.5 }, 23.5);
+      tl.to("#s07-l7",     { y: 0, opacity: 1, duration: 0.5 }, 27.0);
+      tl.to("#s07-l8",     { y: 0, opacity: 1, duration: 0.3 }, 36.0);
+      tl.to("#s07-l9",     { y: 0, opacity: 1, duration: 0.5 }, 38.5);
+      tl.to("#s07-l10",    { y: 0, opacity: 1, duration: 0.5 }, 41.5);
+
+      // Mid-beats — selected-row pulse in picker, install warning flicker, URL pulse
+      tl.to("#s07-picker .sel", { backgroundColor: "rgba(0,229,212,.18)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 5 }, 11.0);
+      tl.to("#s07-l7 .s07-warn", { color: "#fff", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 3 }, 28.0);
+      tl.to("#s07-l10 .s07-warn", { textShadow: "0 0 20px rgba(0,229,212,.6)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 3 }, 43.0);
+      tl.to("#s07-term", { boxShadow: "0 40px 100px rgba(0,0,0,.55), 0 0 80px rgba(0,229,212,.12)", duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 8 }, 4.0);
+      tl.to("#s07-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 24 }, 1.0);
+
+      window.__timelines["scene-07-setup-remotion"] = tl;
+    </script>
+  </div>
+</template>

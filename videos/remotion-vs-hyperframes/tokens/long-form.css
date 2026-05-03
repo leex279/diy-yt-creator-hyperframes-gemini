@@ -1,0 +1,113 @@
+/* ──────────────────────────────────────────────────────────────────────
+   videos/remotion-vs-hyperframes/tokens/long-form.css
+   Cyber-neon dark palette ported from the comparison-video design system.
+   Brand split: cyan (Remotion) vs orange (HyperFrames) with lime accent.
+   Editorial typography: Space Grotesk + Instrument Serif + JetBrains Mono
+   + Bebas Neue.
+   ────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Bebas+Neue&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #050608;
+  --bg-2:           #0a0c11;
+  --bg-3:           #11141b;
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-surface:     rgba(255, 255, 255, 0.08);
+  --border:         rgba(255, 255, 255, 0.10);
+  --border-bright:  rgba(255, 255, 255, 0.18);
+  --rule:           #1a1d26;
+  --rule-2:         #262a36;
+
+  /* ── Brand split — neon ───────────────────────────── */
+  --remotion:       #00e5d4;             /* electric cyan */
+  --remotion-glow:  rgba(0, 229, 212, 0.8);
+  --remotion-deep:  #003832;
+  --hyper:          #ff4d1a;             /* hot orange */
+  --hyper-glow:     rgba(255, 77, 26, 0.8);
+  --hyper-deep:     #2e0d04;
+
+  /* ── Accents (compat with template's accent-N) ───── */
+  --accent:         #c4ff3e;             /* electric lime */
+  --accent-1:       #00e5d4;              /* alias to remotion for ambient */
+  --accent-2:       #ff4d1a;              /* alias to hyper for ambient */
+  --accent-3:       #c4ff3e;              /* alias to lime for ambient */
+  --accent-4:       #00ff9d;
+  --accent-warn:    #ff4d1a;
+  --accent-stat:    #c4ff3e;
+  --danger:         #ff2d6d;
+  --good:           #00ff9d;
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #ffffff;
+  --ink:            #ffffff;
+  --ink-2:          #b9bcc8;   /* lifted from #a8abb8 (10.4:1) */
+  --ink-3:          #8a8e9c;   /* lifted from #5a5e6e (was 3.09:1) → 6.5:1 AA */
+  --text-secondary: #b9bcc8;
+  --text-muted:     #8a8e9c;
+
+  /* ── Spacing (1920x1080 safe-zone) ─────────────────── */
+  --pad-top:        80px;
+  --pad-x:          96px;
+  --pad-bottom:     80px;
+  --pad:            96px;
+  --gap:            32px;
+  --r-sm:           6px;
+  --r-md:           14px;
+  --r-lg:           24px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Space Grotesk', system-ui, sans-serif;
+  --serif:          'Instrument Serif', Georgia, serif;
+  --display:        'Bebas Neue', 'Space Grotesk', sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+
+  /* Type scale (1920x1080) */
+  --t-mega:         220px;
+  --t-hero:         148px;
+  --t-display:      96px;
+  --t-title:        64px;
+  --t-h1:           48px;
+  --t-h2:           36px;
+  --t-body:         28px;
+  --t-small:        22px;
+  --t-mono:         26px;
+
+  /* Motion */
+  --ease-out:       cubic-bezier(.2,.7,.2,1);
+  --ease-in:        cubic-bezier(.6,0,.8,.2);
+  --ease-io:        cubic-bezier(.7,0,.2,1);
+}
+
+/* ── Helper classes ports ─────────────────────────────── */
+.serif       { font-family: var(--serif); letter-spacing: -.01em; font-weight: 400; }
+.sans        { font-family: var(--sans); }
+.mono        { font-family: var(--mono); }
+.display     { font-family: var(--display); letter-spacing: .005em; }
+.t-remotion  { color: var(--remotion); }
+.t-hyper     { color: var(--hyper); }
+.t-accent    { color: var(--accent); }
+.glow-remotion { color: var(--remotion); text-shadow: 0 0 28px var(--remotion-glow); }
+.glow-hyper    { color: var(--hyper);    text-shadow: 0 0 28px var(--hyper-glow); }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.eyebrow .dot {
+  display: inline-block;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  margin-right: 16px;
+  vertical-align: middle;
+  transform: translateY(-2px);
+}
+
+.muted { color: var(--ink-2); }
+.dim   { color: var(--ink-3); }
+.tnum  { font-variant-numeric: tabular-nums; }
+.divider { height: 1px; background: var(--rule); width: 100%; }

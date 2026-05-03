@@ -1,0 +1,139 @@
+<template id="scene-01-cold-open-template">
+  <div data-composition-id="scene-01-cold-open"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s01-content {
+        width:100%; height:100%;
+        padding: 96px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:48px;
+        box-sizing:border-box;
+      }
+      #s01-kicker {
+        display:inline-block;
+        padding: 12px 28px;
+        border: 1px solid var(--rule-2);
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-size: 22px;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        background: rgba(255,255,255,.025);
+      }
+      #s01-headline {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 132px;
+        line-height: 1.02;
+        letter-spacing: -.02em;
+        color: var(--ink);
+        max-width: 1600px;
+      }
+      #s01-headline .accent {
+        color: var(--accent);
+        font-style: italic;
+      }
+      #s01-faceoff {
+        display:flex; gap:64px; align-items:center; margin-top: 24px;
+      }
+      .s01-logo {
+        display:inline-flex; align-items:center; gap:20px;
+        padding: 22px 32px;
+        border: 1px solid var(--rule-2);
+        border-radius: 14px;
+        background: rgba(255,255,255,.02);
+        font-family: var(--mono);
+        font-size: 28px;
+      }
+      .s01-mark {
+        width: 56px; height: 56px;
+        border-radius: 12px;
+        display: grid; place-items: center;
+        padding: 6px;
+      }
+      .s01-mark img { width: 100%; height: 100%; object-fit: contain; }
+      .s01-logo.remotion .s01-mark { background: rgba(0, 229, 212, .12); border: 1px solid rgba(0, 229, 212, .35); }
+      .s01-logo.hyper    .s01-mark { background: rgba(255, 77, 26, .12); border: 1px solid rgba(255, 77, 26, .35); }
+      #s01-vs {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 64px;
+        color: var(--ink-3);
+      }
+      #s01-tagline {
+        margin-top: 30px;
+        font-family: var(--mono);
+        font-size: 28px;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+    </style>
+
+    <div id="s01-content">
+      <div id="s01-kicker">VIDEO-AS-CODE · 2026</div>
+
+      <h1 id="s01-headline">
+        <span id="s01-line1">Your AI agent</span>
+        <span id="s01-line2">just wrote a <span class="accent" id="s01-accent">video</span>.</span>
+      </h1>
+
+      <div id="s01-faceoff">
+        <div class="s01-logo remotion" id="s01-logo-r">
+          <div class="s01-mark"><img src="../assets/logos/remotion.png" alt="Remotion logo" /></div>
+          <span>Remotion</span>
+        </div>
+        <div id="s01-vs">vs</div>
+        <div class="s01-logo hyper" id="s01-logo-h">
+          <div class="s01-mark"><img src="../assets/logos/hyperframes.png" alt="HyperFrames logo" /></div>
+          <span>HyperFrames</span>
+        </div>
+      </div>
+      <div id="s01-tagline">No coding required.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s01-kicker",   { y: 18, opacity: 0 }, 0);
+      tl.set("#s01-line1",    { y: 36, opacity: 0 }, 0);
+      tl.set("#s01-line2",    { y: 36, opacity: 0 }, 0);
+      tl.set("#s01-accent",   { filter: "blur(28px)", opacity: 0 }, 0);
+      tl.set("#s01-logo-r",   { x: -80, opacity: 0 }, 0);
+      tl.set("#s01-logo-h",   { x:  80, opacity: 0 }, 0);
+      tl.set("#s01-vs",       { scale: 0.6, opacity: 0 }, 0);
+      tl.set("#s01-tagline",  { y: 16, opacity: 0 }, 0);
+
+      tl.to("#s01-kicker",  { y: 0, opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s01-line1",   { y: 0, opacity: 1, duration: 0.7 }, 0.5);
+      tl.to("#s01-line2",   { y: 0, opacity: 1, duration: 0.7 }, 0.9);
+      tl.to("#s01-accent",  { filter: "blur(0)", opacity: 1, duration: 0.7 }, 1.4);
+      tl.to("#s01-logo-r",  { x: 0, opacity: 1, duration: 0.6 }, 2.0);
+      tl.to("#s01-vs",      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 2.3);
+      tl.to("#s01-logo-h",  { x: 0, opacity: 1, duration: 0.6 }, 2.0);
+      // "No coding required" tagline drops in around the narrator's "you don't have to know how to code"
+      tl.to("#s01-tagline", { y: 0, opacity: 1, duration: 0.7 }, 10.5);
+
+      // Mid-beats — keep something moving through the 15s slot
+      tl.to("#s01-accent", { textShadow: "0 0 40px rgba(196,255,62,.6)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 10 }, 3.0);
+      tl.to("#s01-vs",     { rotation: 180, duration: 5.0, ease: "power2.inOut" }, 4.5);
+      tl.to("#s01-vs",     { rotation: 360, duration: 4.0, ease: "power2.inOut" }, 10.0);
+      tl.to("#s01-logo-r", { y: -6, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 5 }, 4.0);
+      tl.to("#s01-logo-h", { y:  6, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 5 }, 4.0);
+      tl.to("#s01-kicker", { letterSpacing: ".26em", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 4 }, 4.0);
+      // Tagline pulse after entrance
+      tl.to("#s01-tagline", { textShadow: "0 0 28px rgba(196,255,62,.6)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 2 }, 11.5);
+
+      window.__timelines["scene-01-cold-open"] = tl;
+    </script>
+  </div>
+</template>

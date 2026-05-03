@@ -1,0 +1,17 @@
+Half the community swapped MCP for Skills. Here's when to pick each.
+
+MCP is the Model Context Protocol. An open standard for connecting Claude Code to external tools and data.
+
+Hundreds of servers exist. GitHub, Sentry, Postgres, Slack, Jira, Figma, and more.
+
+Installation is one command. Type claude mcp add and the server name plus URL.
+
+Three transports are supported. HTTP for remote servers. SSE for legacy. Standard input output for local processes.
+
+Context cost can balloon when you connect many servers. Tool Search dynamically loads tools on demand to mitigate it.
+
+Five decision examples. External SaaS API like GitHub? MCP. Custom team workflow? Skill. Database queries? MCP. Coding standards check? Skill. Third-party data fetch? MCP.
+
+The rule. External tools and data go through MCP. Custom procedures and team standards become Skills.
+
+Watch the 13 minute deep dive for the full Claude Code customization system.

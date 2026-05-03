@@ -1,0 +1,179 @@
+<template id="scene-05-same-square-template">
+  <div data-composition-id="scene-05-same-square"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s05-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono);
+        font-size: 22px;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      #s05-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--accent); margin-right: 14px; }
+      #s05-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 72px;
+        letter-spacing: -.025em;
+      }
+      #s05-h2 em { color: var(--ink-3); font-style: italic; }
+
+      .s05-editor {
+        position:absolute;
+        border: 1px solid var(--rule-2);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #0b0d12;
+        box-shadow: 0 40px 100px rgba(0,0,0,.6);
+      }
+      .s05-editor.left  { left: 96px;  top: 360px; width: 820px; height: 560px; }
+      .s05-editor.right { right: 96px; top: 360px; width: 820px; height: 560px; }
+
+      .s05-titlebar {
+        height: 40px;
+        background: #0f1218;
+        border-bottom: 1px solid var(--rule);
+        display:flex; align-items:center; padding: 0 14px;
+        gap: 8px;
+      }
+      .s05-dot { width: 11px; height: 11px; border-radius: 50%; }
+      .s05-dot.r { background: #ff5f57; }
+      .s05-dot.y { background: #febc2e; }
+      .s05-dot.g { background: #28c840; }
+      .s05-tb-name { flex: 1; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--ink-3); letter-spacing: .06em; }
+
+      .s05-badge {
+        position:absolute;
+        left: 96px;
+        top: 320px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-size: 16px; letter-spacing: .18em; text-transform: uppercase;
+        background: rgba(7, 9, 13, 0.92);
+        border: 1px solid var(--rule-2);
+        z-index: 5;
+      }
+      .s05-badge.r { color: var(--remotion); border-color: rgba(0,229,212,.5); box-shadow: 0 0 24px rgba(0,229,212,.18); }
+      .s05-badge.h { color: var(--hyper);    border-color: rgba(255,77,26,.5);  box-shadow: 0 0 24px rgba(255,77,26,.20); }
+      .s05-badge.h-pos { left: auto; right: 96px; }
+
+      .s05-code {
+        padding: 22px 26px;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 19px;
+        line-height: 1.55;
+        color: var(--ink);
+        white-space: pre;
+        overflow: hidden;
+      }
+      .s05-kw { color: #c084fc; }
+      .s05-fn { color: var(--remotion); }
+      .s05-str { color: #f0b072; }
+      .s05-num { color: var(--accent); }
+      .s05-tag { color: var(--hyper); }
+      .s05-at  { color: var(--hyper); }
+      .s05-pn  { color: var(--ink-2); }
+      .s05-cm  { color: var(--ink-3); font-style: italic; }
+
+      #s05-verdict {
+        position:absolute; left: 50%; bottom: 40px; transform: translateX(-50%);
+        font-family: var(--serif); font-style: italic;
+        font-size: 32px; color: var(--ink-2);
+        text-align: center;
+      }
+    </style>
+
+    <div id="s05-eyebrow"><span class="dot"></span>SAME ANIMATION · TWO LANGUAGES</div>
+    <h2 id="s05-h2">One moving square. <em>Different grammar.</em></h2>
+
+    <div class="s05-badge r" id="s05-badge-l">REMOTION · TSX</div>
+    <div class="s05-badge h h-pos" id="s05-badge-r">HYPERFRAMES · HTML</div>
+
+    <div class="s05-editor left" id="s05-edit-l">
+      <div class="s05-titlebar">
+        <span class="s05-dot r"></span><span class="s05-dot y"></span><span class="s05-dot g"></span>
+        <span class="s05-tb-name">Composition.tsx</span>
+      </div>
+      <pre class="s05-code"><span class="s05-kw">import</span> <span class="s05-pn">{</span> <span class="s05-fn">useCurrentFrame</span><span class="s05-pn">,</span> <span class="s05-fn">interpolate</span> <span class="s05-pn">}</span> <span class="s05-kw">from</span> <span class="s05-str">"remotion"</span><span class="s05-pn">;</span>
+
+<span class="s05-kw">export const</span> <span class="s05-fn">MyVideo</span> <span class="s05-pn">= () =&gt; {</span>
+  <span class="s05-kw">const</span> frame <span class="s05-pn">=</span> <span class="s05-fn">useCurrentFrame</span><span class="s05-pn">();</span>
+  <span class="s05-kw">const</span> x <span class="s05-pn">=</span> <span class="s05-fn">interpolate</span><span class="s05-pn">(</span>
+    frame<span class="s05-pn">,</span> <span class="s05-pn">[</span><span class="s05-num">0</span><span class="s05-pn">,</span> <span class="s05-num">60</span><span class="s05-pn">],</span> <span class="s05-pn">[</span><span class="s05-num">0</span><span class="s05-pn">,</span> <span class="s05-num">800</span><span class="s05-pn">]</span>
+  <span class="s05-pn">);</span>
+
+  <span class="s05-kw">return</span> <span class="s05-pn">(</span>
+    <span class="s05-pn">&lt;</span><span class="s05-tag">div</span> style<span class="s05-pn">={{</span>
+      transform<span class="s05-pn">:</span> <span class="s05-str">`translateX(${x}px)`</span><span class="s05-pn">,</span>
+      width<span class="s05-pn">:</span> <span class="s05-num">200</span><span class="s05-pn">,</span> height<span class="s05-pn">:</span> <span class="s05-num">200</span><span class="s05-pn">,</span>
+      background<span class="s05-pn">:</span> <span class="s05-str">"#00e5d4"</span><span class="s05-pn">,</span>
+    <span class="s05-pn">}}</span> <span class="s05-pn">/&gt;</span>
+  <span class="s05-pn">);</span>
+<span class="s05-pn">};</span></pre>
+    </div>
+
+    <div class="s05-editor right" id="s05-edit-r">
+      <div class="s05-titlebar">
+        <span class="s05-dot r"></span><span class="s05-dot y"></span><span class="s05-dot g"></span>
+        <span class="s05-tb-name">index.html</span>
+      </div>
+      <pre class="s05-code"><span class="s05-pn">&lt;</span><span class="s05-tag">style</span><span class="s05-pn">&gt;</span>
+  <span class="s05-kw">@keyframes</span> slide <span class="s05-pn">{</span>
+    <span class="s05-kw">to</span> <span class="s05-pn">{</span> transform<span class="s05-pn">:</span> <span class="s05-fn">translateX</span><span class="s05-pn">(</span><span class="s05-num">800px</span><span class="s05-pn">);</span> <span class="s05-pn">}</span>
+  <span class="s05-pn">}</span>
+<span class="s05-pn">&lt;/</span><span class="s05-tag">style</span><span class="s05-pn">&gt;</span>
+
+<span class="s05-pn">&lt;</span><span class="s05-tag">div</span> <span class="s05-cm">class="clip"</span>
+  <span class="s05-at">data-start</span><span class="s05-pn">=</span><span class="s05-str">"0"</span>
+  <span class="s05-at">data-duration</span><span class="s05-pn">=</span><span class="s05-str">"2"</span>
+  <span class="s05-at">data-track-index</span><span class="s05-pn">=</span><span class="s05-str">"1"</span>
+  <span class="s05-at">style</span><span class="s05-pn">=</span><span class="s05-str">"width:200px; height:200px;</span>
+<span class="s05-str">         background:#ff4d1a;</span>
+<span class="s05-str">         animation: slide 2s linear;"</span><span class="s05-pn">&gt;&lt;/</span><span class="s05-tag">div</span><span class="s05-pn">&gt;</span></pre>
+    </div>
+
+    <div id="s05-verdict">Same square. One needs <span class="t-remotion">a build step</span>. The other is <span class="t-hyper">just HTML</span>.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s05-eyebrow",  { opacity: 0 }, 0);
+      tl.set("#s05-h2",       { y: 30, opacity: 0 }, 0);
+      tl.set("#s05-edit-l",   { y: 40, opacity: 0 }, 0);
+      tl.set("#s05-edit-r",   { y: 40, opacity: 0 }, 0);
+      tl.set("#s05-badge-l",  { y: 12, opacity: 0 }, 0);
+      tl.set("#s05-badge-r",  { y: 12, opacity: 0 }, 0);
+      tl.set("#s05-verdict",  { opacity: 0 }, 0);
+
+      tl.to("#s05-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s05-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s05-edit-l",  { y: 0, opacity: 1, duration: 0.7 }, 0.9);
+      tl.to("#s05-badge-l", { y: 0, opacity: 1, duration: 0.5 }, 1.2);
+      tl.to("#s05-edit-r",  { y: 0, opacity: 1, duration: 0.7 }, 17.0);
+      tl.to("#s05-badge-r", { y: 0, opacity: 1, duration: 0.5 }, 17.3);
+      tl.to("#s05-verdict", { opacity: 1, duration: 0.6 }, 28.0);
+
+      // Mid-beats — left editor breathes solo until right enters; both shimmer after
+      tl.to("#s05-edit-l", { boxShadow: "0 40px 100px rgba(0,0,0,.6), 0 0 60px rgba(0,229,212,.18)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 4 }, 2.5);
+      tl.to("#s05-edit-r", { boxShadow: "0 40px 100px rgba(0,0,0,.6), 0 0 60px rgba(255,77,26,.20)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 4 }, 18.0);
+      // Per-line ripple — cycle bright through code lines on each side
+      tl.to("#s05-edit-l .s05-fn", { color: "#7dffec", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 6, stagger: 0.4 }, 5.0);
+      tl.to("#s05-edit-r .s05-at", { color: "#ffaa70", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 4, stagger: 0.4 }, 19.0);
+      tl.to("#s05-h2 em", { color: "#fff", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 3 }, 14.0);
+      tl.to("#s05-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 16 }, 1.0);
+
+      window.__timelines["scene-05-same-square"] = tl;
+    </script>
+  </div>
+</template>

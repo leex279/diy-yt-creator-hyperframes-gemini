@@ -1,0 +1,146 @@
+<template id="scene-14-who-uses-what-template">
+  <div data-composition-id="scene-14-who-uses-what"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s14-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono); font-size: 22px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--ink-3);
+      }
+      #s14-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--accent); margin-right: 14px; }
+      #s14-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 84px;
+        letter-spacing: -.025em;
+      }
+
+      #s14-grid {
+        position:absolute; left: 96px; right: 96px; top: 360px; bottom: 200px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
+      }
+      .s14-col {
+        border: 1px solid var(--rule);
+        border-radius: 24px;
+        padding: 44px 48px;
+        background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0));
+      }
+      .s14-col.r { border-color: rgba(0,229,212,.4); }
+      .s14-col.h { border-color: rgba(255,77,26,.4); background: linear-gradient(180deg, rgba(255,77,26,.08), rgba(0,0,0,0)); }
+      .s14-name { font-family: var(--display); font-size: 64px; letter-spacing: .005em; line-height: .9; }
+      .s14-col.r .s14-name { color: var(--remotion); }
+      .s14-col.h .s14-name { color: var(--hyper); }
+      .s14-tag { font-family: var(--mono); font-size: 18px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); margin-top: 6px; }
+      .s14-name-row { display: flex; align-items: center; gap: 18px; }
+      .s14-logo { width: 64px; height: 64px; border-radius: 12px; padding: 6px; display: grid; place-items: center; flex: none; }
+      .s14-logo img { width: 100%; height: 100%; object-fit: contain; }
+      .s14-col.r .s14-logo { background: rgba(0,229,212,.12); border: 1px solid rgba(0,229,212,.3); }
+      .s14-col.h .s14-logo { background: rgba(255,77,26,.12); border: 1px solid rgba(255,77,26,.3); }
+      .s14-list { margin-top: 36px; display:flex; flex-direction:column; gap: 18px; }
+      .s14-li { font-family: var(--sans); font-size: 24px; color: var(--ink); line-height: 1.35; padding-left: 36px; position: relative; }
+      .s14-li::before {
+        content: ''; position: absolute; left: 0; top: 12px;
+        width: 16px; height: 2px; background: var(--accent);
+      }
+
+      #s14-bottom {
+        position:absolute; left: 96px; right: 96px; bottom: 80px;
+        text-align: center;
+        font-family: var(--serif); font-style: italic; font-size: 30px;
+        color: var(--ink-2);
+      }
+      #s14-bottom em { color: var(--accent); font-style: italic; }
+    </style>
+
+    <div id="s14-eyebrow"><span class="dot"></span>WHO SHOULD USE WHAT</div>
+    <h2 id="s14-h2">Pick the side that matches your hands.</h2>
+
+    <div id="s14-grid">
+      <div class="s14-col r" id="s14-col-r">
+        <div class="s14-name-row">
+          <div class="s14-logo"><img src="../assets/logos/remotion.png" alt="Remotion logo" /></div>
+          <div>
+            <div class="s14-name">Use Remotion</div>
+            <div class="s14-tag">IF YOU CODE IN REACT</div>
+          </div>
+        </div>
+        <div class="s14-list">
+          <div class="s14-li" id="s14-r-li1">React or TypeScript engineer with existing component libraries</div>
+          <div class="s14-li" id="s14-r-li2">Need distributed rendering on Lambda for batch jobs</div>
+          <div class="s14-li" id="s14-r-li3">Building a video SaaS where the type-safe model is worth the setup tax</div>
+        </div>
+      </div>
+      <div class="s14-col h" id="s14-col-h">
+        <div class="s14-name-row">
+          <div class="s14-logo"><img src="../assets/logos/hyperframes.png" alt="HyperFrames logo" /></div>
+          <div>
+            <div class="s14-name">Use HyperFrames</div>
+            <div class="s14-tag">IF AGENTS DO THE WRITING</div>
+          </div>
+        </div>
+        <div class="s14-list">
+          <div class="s14-li" id="s14-h-li1">Working primarily with AI coding agents (Claude Code, Cursor)</div>
+          <div class="s14-li" id="s14-h-li2">Want zero setup friction & Apache 2.0 licensing</div>
+          <div class="s14-li" id="s14-h-li3">Want to paste arbitrary HTML directly into a video</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s14-bottom">Both excellent. <em>Opposite ends of the same problem.</em></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s14-eyebrow", { opacity: 0 }, 0);
+      tl.set("#s14-h2",      { y: 30, opacity: 0 }, 0);
+      tl.set("#s14-col-r",   { x: -50, opacity: 0 }, 0);
+      tl.set("#s14-col-h",   { x:  50, opacity: 0 }, 0);
+      const lis = ["#s14-r-li1","#s14-r-li2","#s14-r-li3","#s14-h-li1","#s14-h-li2","#s14-h-li3"];
+      lis.forEach(s => tl.set(s, { x: -16, opacity: 0 }, 0));
+      tl.set("#s14-bottom", { y: 16, opacity: 0 }, 0);
+
+      tl.to("#s14-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s14-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s14-col-r",   { x: 0, opacity: 1, duration: 0.7 }, 1.0);
+      tl.to("#s14-col-h",   { x: 0, opacity: 1, duration: 0.7 }, 1.0);
+
+      // ── Scene ~55s. Re-anchored to actual narration word positions: ──
+      //   r-li1 "React or TypeScript"   @ scene_t=3.41s
+      //   r-li2 "distributed rendering" @ scene_t=10.70s
+      //   r-li3 "video saas"            @ scene_t=14.97s
+      //   h-li1 "ai coding agents"      @ scene_t=22.51s
+      //   h-li2 "apache 2.0"            @ scene_t=30.19s
+      //   h-li3 "paste arbitrary html"  @ scene_t=35.02s
+      //   bottom "both are excellent"   @ scene_t=42.30s
+      const rTimes = [3.0, 10.2, 14.5];
+      const hTimes = [22.0, 29.7, 34.5];
+      ["#s14-r-li1","#s14-r-li2","#s14-r-li3"].forEach((s, i) => tl.to(s, { x: 0, opacity: 1, duration: 0.5 }, rTimes[i]));
+      ["#s14-h-li1","#s14-h-li2","#s14-h-li3"].forEach((s, i) => tl.to(s, { x: 0, opacity: 1, duration: 0.5 }, hTimes[i]));
+      tl.to("#s14-bottom", { y: 0, opacity: 1, duration: 0.6 }, 41.8);
+
+      // Mid-beats — name + per-line dash pulse, column glow alternating
+      tl.to("#s14-col-r .s14-name", { textShadow: "0 0 36px rgba(0,229,212,.6)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 6 }, 1.5);
+      tl.to("#s14-col-h .s14-name", { textShadow: "0 0 36px rgba(255,77,26,.6)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 6 }, 20.0);
+      // Each list item's leading-dash flashes mid-cycle
+      ["#s14-r-li1","#s14-r-li2","#s14-r-li3"].forEach((s, i) => {
+        tl.to(s + "::before", { duration: 0.5 }, rTimes[i] + 0.6);
+      });
+      tl.to("#s14-bottom em", { color: "#fff", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 4 }, 46.0);
+      tl.to("#s14-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 28 }, 1.0);
+      // Late-scene continued motion to fill the longer slot
+      tl.to("#s14-col-r", { boxShadow: "0 0 60px rgba(0,229,212,.18)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 3 }, 47.0);
+      tl.to("#s14-col-h", { boxShadow: "0 0 60px rgba(255,77,26,.18)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 3 }, 47.7);
+      tl.to("#s14-bottom", { letterSpacing: ".02em", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 2 }, 49.0);
+
+      window.__timelines["scene-14-who-uses-what"] = tl;
+    </script>
+  </div>
+</template>

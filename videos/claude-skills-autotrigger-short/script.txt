@@ -1,0 +1,15 @@
+You don't need a slash command. Claude Code Skills auto-trigger from your request. Here's how.
+
+A Skill is a SKILL dot M D file. It has a description plus instructions Claude follows.
+
+Auto-matching works on the description. Claude reads your request, compares it to all available skills, and activates the ones that match.
+
+Slash commands and Skills are the same thing now. Anthropic merged them. Both create the same command.
+
+Supporting files keep the main skill focused. Templates, scripts, and reference docs live alongside.
+
+Sharing depends on where you save it. Personal in your home directory. Project in the repo. Team gets it via version control.
+
+Five real triggers. Say review this PR — pr-review fires. Say deploy to prod — deploy fires. Say commit my changes — commit fires. Say add a feature — feature-spec fires. Say run the tests — test-runner fires.
+
+Watch the full breakdown for the rest of the customization system.

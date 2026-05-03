@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code Skills — auto-trigger explained</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Full design system
+     in DESIGN.md. Total duration: 95s (1:35).
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOKENS: shared/lib/tokens/anthropic-dark.css */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* COMPONENT: shared/lib/components/ambient-radial/ */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* COMPONENT: shared/lib/components/progress-bar/ */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* shared/lib/components/dynamous-badge — persistent badge bottom-left */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 460px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* Endcard mount — host-side absolute positioning + high z-index */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* PHASES — full-bleed, layered. Crossfades between phases. */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* PHASE 1 — HERO SLAM */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 168px;
+    line-height: 0.92;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+  }
+  #p1-caption {
+    margin-top: 32px;
+    padding: 18px 32px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 960px;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  /* PHASE 2 — FEATURE LIST (5 stacked cards) */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 940px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  /* BLOCK: shared/lib/blocks/feature-list/ (custom — derived from timeline-cards) */
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 940px;
+  }
+  .ft-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 26px;
+    border-radius: 18px;
+  }
+  .ft-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 28px rgba(233,116,88,0.20);
+  }
+  .ft-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 28px rgba(167,139,250,0.20);
+  }
+  .ft-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 28px rgba(107,154,239,0.20);
+  }
+  .ft-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.15), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 10px 28px rgba(125,211,166,0.20);
+  }
+  .ft-card.red {
+    background: linear-gradient(135deg, rgba(209,67,67,0.15), rgba(209,67,67,0.05));
+    border: 2px solid rgba(209,67,67,0.40);
+    box-shadow: 0 10px 28px rgba(209,67,67,0.20);
+  }
+  .ft-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    height: 80px;
+    padding: 0 14px;
+    border-radius: 16px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 44px;
+    letter-spacing: 0;
+    line-height: 1;
+    color: var(--bg);
+  }
+  .ft-card.orange .ft-num { background: var(--orange); }
+  .ft-card.purple .ft-num { background: var(--purple); }
+  .ft-card.blue   .ft-num { background: var(--blue); }
+  .ft-card.green  .ft-num { background: var(--green); }
+  .ft-card.red    .ft-num { background: var(--red); }
+  .ft-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    text-align: left;
+  }
+  .ft-name {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+  }
+  .ft-role {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 1px;
+  }
+  .ft-card.orange .ft-role { color: var(--orange); }
+  .ft-card.purple .ft-role { color: var(--purple); }
+  .ft-card.blue   .ft-role { color: var(--blue); }
+  .ft-card.green  .ft-role { color: var(--green); }
+  .ft-card.red    .ft-role { color: var(--red); }
+
+  /* PHASE 3 — DECISION MATRIX (5 question→answer rows) */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p3-overline { color: var(--purple); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 940px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .matrix-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 940px;
+  }
+  .mx-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 24px;
+    border-radius: 16px;
+    background: rgba(22,27,38,0.65);
+    border: 1.5px solid rgba(245,241,235,0.10);
+    text-align: left;
+  }
+  .mx-q {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 38px;
+    color: var(--text-dim);
+    line-height: 1.25;
+  }
+  .mx-q b {
+    color: var(--text);
+    font-weight: 800;
+  }
+  .mx-a {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 46px;
+    letter-spacing: 1px;
+    line-height: 1.0;
+  }
+  .mx-row.orange .mx-a { color: var(--orange); }
+  .mx-row.purple .mx-a { color: var(--purple); }
+  .mx-row.blue   .mx-a { color: var(--blue); }
+  .mx-row.green  .mx-a { color: var(--green); }
+  .mx-row.red    .mx-a { color: var(--red); }
+
+  /* PHASE 4 — short CTA before endcard takeover */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-pre {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 920px;
+  }
+  #p4-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 48px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.25);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 50px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p4-pill .arrow {
+    color: var(--green);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 60px;
+    line-height: 0.7;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="66.24"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Persistent Dynamous badge — fades in at t=3.0s, fades out 0.5s before endcard. -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO SLAM (0-13s)
+       Hook: "5 ways to customize Claude Code. Most devs use 1."
+       Source: src/_archived/ClaudeSkillsVsAll/scripts/full-script.md
+               Scene 01 ("Claude Code actually gives you five distinct
+               customization features ... most developers are only
+               using one of them.")
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Claude Code Skills</div>
+      <div id="p1-pre">No slash command needed.</div>
+      <div id="p1-hero">AUTO.<br/>TRIGGERED.</div>
+      <div id="p1-caption">Claude reads · matches the description · runs the skill.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — THE 5 FEATURES (13-48s)
+       Each card: name + 1-line role.
+       Roles validated against code.claude.com/docs/en/ on 2026-05-03.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">How it works</div>
+      <div id="p2-headline">5 things to know about Skills.</div>
+      <div class="feature-list">
+        <div class="ft-card orange" id="p2-card-1">
+          <div class="ft-num">01</div>
+          <div class="ft-body">
+            <div class="ft-name">SKILL.md</div>
+            <div class="ft-role">Description + instructions</div>
+          </div>
+        </div>
+        <div class="ft-card purple" id="p2-card-2">
+          <div class="ft-num">02</div>
+          <div class="ft-body">
+            <div class="ft-name">Auto-matching</div>
+            <div class="ft-role">Description-driven activation</div>
+          </div>
+        </div>
+        <div class="ft-card blue" id="p2-card-3">
+          <div class="ft-num">03</div>
+          <div class="ft-body">
+            <div class="ft-name">Slash = Skills</div>
+            <div class="ft-role">Anthropic merged them</div>
+          </div>
+        </div>
+        <div class="ft-card green" id="p2-card-4">
+          <div class="ft-num">04</div>
+          <div class="ft-body">
+            <div class="ft-name">Supporting files</div>
+            <div class="ft-role">Templates · scripts · docs</div>
+          </div>
+        </div>
+        <div class="ft-card red" id="p2-card-5">
+          <div class="ft-num">05</div>
+          <div class="ft-body">
+            <div class="ft-name">Sharing</div>
+            <div class="ft-role">Personal · Project · Team</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — DECISION MATRIX (48-84s)
+       5 question→answer rows. Source: full-script.md Scene 09
+       ("5 questions. One answer each.").
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">Skills in action</div>
+      <div id="p3-headline">5 things you say. 5 skills triggered.</div>
+      <div class="matrix-list">
+        <div class="mx-row orange" id="p3-row-1">
+          <div class="mx-q">"<b>review this PR</b>"</div>
+          <div class="mx-a">→ /pr-review</div>
+        </div>
+        <div class="mx-row purple" id="p3-row-2">
+          <div class="mx-q">"<b>deploy to prod</b>"</div>
+          <div class="mx-a">→ /deploy</div>
+        </div>
+        <div class="mx-row blue" id="p3-row-3">
+          <div class="mx-q">"<b>commit my changes</b>"</div>
+          <div class="mx-a">→ /commit</div>
+        </div>
+        <div class="mx-row green" id="p3-row-4">
+          <div class="mx-q">"<b>add a feature</b>"</div>
+          <div class="mx-a">→ /feature-spec</div>
+        </div>
+        <div class="mx-row red" id="p3-row-5">
+          <div class="mx-q">"<b>run the tests</b>"</div>
+          <div class="mx-a">→ /test-runner</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — CTA bridge (84-89.5s)
+       Brief CTA pointing to the full breakdown video.
+       Endcard takes over at t=90.0s.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Full breakdown</div>
+      <div id="p4-pre">Watch the<br/>13-min deep dive.</div>
+      <div id="p4-pill">Subscribe<span class="arrow">&rarr;</span></div>
+    </div>
+  </div>
+
+  <!-- Dynamous endcard sub-composition mount — last 5s overlay (t=90-95s) -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="61.24"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SFX — aligned to visual triggers per .claude/rules/audio-design.md.
+       Volumes: impact-slam 0.15, screen-shake 0.11, cinematic-whoosh 0.11,
+                spring-pop 0.11, pop 0.10. Hard cap 0.25.
+       Track 3 = primary SFX (sequential, no overlap). Track 4 = layered
+       cue at hero slam only. SFX timings will be re-aligned to transcript
+       word-anchors when TTS lands (alignment audit per audio-design.md).
+       ═══════════════════════════════════════════════════════ -->
+
+
+  <!-- Narration — single ElevenLabs track on track 2 -->
+  <audio id="narration" class="clip" src="audio/narration.wav"
+         data-start="0" data-duration="60.74" data-track-index="2" data-volume="1"></audio>
+  <!-- Phase 1 hero slam — layered impact + screen-shake at t≈1.7s -->
+  <audio id="sfx-impact"  class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="2.08" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
+  <audio id="sfx-shake"   class="clip" src="assets/sfx/screen-shake.mp3"
+         data-start="2.08" data-duration="0.6" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Phase transition whooshes -->
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="5.28" data-duration="0.6" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="41.79" data-duration="0.6" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="56.69" data-duration="0.6" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 2 card entrances — spring-pop on each of 5 cards -->
+  <audio id="sfx-card-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="5.99" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-card-2" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="12.27" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-card-3" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="20.13" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-card-4" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="26.87" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-card-5" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="33.55" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 3 row entrances — softer pop on each of 5 rows -->
+  <audio id="sfx-row-1" class="clip" src="assets/sfx/pop.mp3"
+         data-start="43.78" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-row-2" class="clip" src="assets/sfx/pop.mp3"
+         data-start="47.07" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-row-3" class="clip" src="assets/sfx/pop.mp3"
+         data-start="49.3" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-row-4" class="clip" src="assets/sfx/pop.mp3"
+         data-start="52.37" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-row-5" class="clip" src="assets/sfx/pop.mp3"
+         data-start="54.67" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+
+  <!-- Phase 4 CTA pill -->
+  <audio id="sfx-cta-pill" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="58.18" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Re-randomise shape positions at every phase transition. Each phase gets a
+  // fresh deterministic placement (overlap-aware, mirrors spawnShapes); the
+  // tween animates over the crossfade window so it reads as part of the
+  // transition rather than independent drift.
+  // Mirrors templates/long-form/claude-code-version/index.html, adapted for
+  // the 1080x1920 shorts canvas.
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      // ONE tween targeting all imgs via function-based values — GSAP treats
+      // them as a single animation unit, in lock-step at the same time. Tween
+      // starts 0.4s before the phase transition so the reposition reads as
+      // part of the crossfade rather than landing after.
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('claude-skills-autotrigger-short', document.getElementById('shape-backdrop'));
+
+  const TOTAL = 66.24;
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient warm breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL / 2, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar fills linearly across composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Dynamous badge entrance — STRATEGY DOC RULE: never fire before t=3.0s
+  tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero slam (0-13s) : entrances only
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.0);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.0);
+  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 2.08);
+  // Inline shake on the slam frame
+  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.33);
+  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 2.38);
+  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.43);
+  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.48);
+  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.6, ease: "power2.out" }, 3.42);
+
+  // ─── Transition phase1 → phase2 at 12.4s ───
+  const T1 = 5.28;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Feature list (13-48s) : enumerated reveal
+  // Cards enter one at a time, ~5.5s apart, paced to narration cadence.
+  // Per .claude/rules/step-by-step-reveal.md — never reveal all bullets at once.
+  // PATTERN: explicit tl.set() at t=0 hides cards from frame 0, then tl.to()
+  // animates each card visible at its reveal time. This is the bullet-proof
+  // pattern for step-by-step reveals on long compositions — tl.from() with
+  // immediateRender:false leaves elements visible until their tween fires.
+  // Placeholder timings will be retimed to transcript word-anchors when TTS lands.
+  // ═══════════════════════════════════════════════════════
+  const P2 = 5.88;
+
+  // Hide all 5 cards (and the headline+overline) from frame 0
+  tl.set("#p2-overline", { y: 20, opacity: 0 }, 0);
+  tl.set("#p2-headline", { y: 30, opacity: 0 }, 0);
+  tl.set("#p2-card-1", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-2", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-3", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-4", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-5", { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+  // Reveal at the staggered entrance times
+  tl.to("#p2-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.to("#p2-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P2 + 0.1);
+  tl.to("#p2-card-1",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 0.11);
+  tl.to("#p2-card-2",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 6.39);
+  tl.to("#p2-card-3",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + -5.47);
+  tl.to("#p2-card-4",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 20.99);
+  tl.to("#p2-card-5",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 27.67);
+
+  // ─── Transition phase2 → phase3 at 47.4s ───
+  const T2 = 41.79;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Decision matrix (48-84s) : enumerated reveal
+  // Rows enter one at a time, ~5s apart, paced to narration cadence.
+  // Per .claude/rules/step-by-step-reveal.md — never reveal all bullets at once.
+  // PATTERN: explicit tl.set() at t=0 hides rows from frame 0, then tl.to()
+  // animates each row visible at its reveal time.
+  // ═══════════════════════════════════════════════════════
+  const P3 = 42.39;
+
+  tl.set("#p3-overline", { y: 20, opacity: 0 }, 0);
+  tl.set("#p3-headline", { y: 30, opacity: 0 }, 0);
+  tl.set("#p3-row-1", { x: -32, opacity: 0 }, 0);
+  tl.set("#p3-row-2", { x: -32, opacity: 0 }, 0);
+  tl.set("#p3-row-3", { x: -32, opacity: 0 }, 0);
+  tl.set("#p3-row-4", { x: -32, opacity: 0 }, 0);
+  tl.set("#p3-row-5", { x: -32, opacity: 0 }, 0);
+
+  tl.to("#p3-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.to("#p3-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P3 + 0.1);
+  tl.to("#p3-row-1",    { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 1.39);
+  tl.to("#p3-row-2",    { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 4.68);
+  tl.to("#p3-row-3",    { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 6.91);
+  tl.to("#p3-row-4",    { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 9.98);
+  tl.to("#p3-row-5",    { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 12.28);
+
+  // ─── Transition phase3 → phase4 at 83.4s ───
+  const T3 = 56.69;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Brief CTA bridge (84-89.5s)
+  // Same explicit set+to pattern for safety.
+  // ═══════════════════════════════════════════════════════
+  const P4 = 57.29;
+
+  tl.set("#p4-overline", { y: 20, opacity: 0 }, 0);
+  tl.set("#p4-pre",      { y: 30, opacity: 0 }, 0);
+  tl.set("#p4-pill",     { scale: 0.85, opacity: 0 }, 0);
+
+  tl.to("#p4-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.to("#p4-pre",      { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P4 + 0.3);
+  tl.to("#p4-pill",     { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, P4 + 0.89);
+
+  // Dynamous endcard takeover — fade phase4 + badge 0.5s before endcard fires.
+  // Per videos/_template-wiring-snippet.md Step 2.6.
+  tl.to("#phase4",          { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL - 5.5);
+  tl.to("#dynamous-badge",  { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL - 5.5);
+
+
+  // Reposition shapes at each phase transition (paired with cinematic-whoosh SFX).
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-skills-autotrigger-short',
+    [T1, T2, T3]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

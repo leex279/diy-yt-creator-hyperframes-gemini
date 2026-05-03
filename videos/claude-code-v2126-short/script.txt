@@ -1,0 +1,13 @@
+Claude Code just shipped a new release. Thirty-seven changes packed in. Auth and sessions dominate the diff.
+
+Seven new features. Twenty-five bug fixes. Seven improvements. Four of those fixes ship as a coordinated auth cluster. One release. Four related breaks. All fixed together.
+
+Run claude project purge to wipe all your project transcripts, tasks, and file history in one command. Use the dry run flag first. It lists exactly what gets deleted before anything is removed. You review the list, then decide. Nothing happens until you confirm.
+
+The dangerously skip permissions flag bypasses every permission prompt in Claude Code. Writes to dot claude, dot git, dot vscode, and shell config files all go through without a pause. Built for CI pipelines and headless automation where any interruption breaks the flow. Zero prompts. Zero friction.
+
+OAuth now works directly in the terminal. If you are on WSL 2, SSH, or inside a devcontainer, the browser callback cannot reach localhost. Now you skip the redirect entirely. Paste the OAuth code at the terminal prompt and you are in. No browser workarounds needed.
+
+Auth and session stability got a coordinated overhaul. Login state now survives reconnects. Token refresh no longer races on startup. Session IDs persist correctly through update cycles.
+
+Run claude update to pull every one of these fixes. The auth cluster alone might be what you have been waiting for. Drop a comment below with which one you actually needed most.

@@ -2,7 +2,7 @@
 
 Reusable HyperFrames project templates for **vertical YouTube Shorts** (1080x1920, 30fps, typically 24-180s).
 
-> **Status:** 4 templates available — [`standard/`](./standard/) is the canonical brand-neutral baseline; [`anthropic/`](./anthropic/), [`archon/`](./archon/), and [`claude-code-version/`](./claude-code-version/) are brand-specific variants.
+> **Status:** 5 templates available — [`standard/`](./standard/) is the canonical brand-neutral baseline; [`anthropic/`](./anthropic/), [`archon/`](./archon/), [`claude-code-version/`](./claude-code-version/), and [`google/`](./google/) are brand-specific variants.
 
 ## Available templates
 
@@ -12,6 +12,7 @@ Reusable HyperFrames project templates for **vertical YouTube Shorts** (1080x192
 | [`anthropic/`](./anthropic/) | Dark stage + Claude orange + warm off-white | Anthropic / Claude product launches, postmortems, dev-tool reveals. Ships with the Anthropic shape backdrop and dated timeline cards (Mar 4 / Mar 26 / Apr 16). |
 | [`archon/`](./archon/) | Dark blue + cyan-magenta gradient | Archon workflow showcases. Ships with the Archon brand gradient (cyan→magenta shield). |
 | [`claude-code-version/`](./claude-code-version/) | GitHub-dark `#0D1117` + Claude Code accent triad (cyan-blue / purple / green) + orange Subscribe pulse | **Claude Code release-update Shorts** (≤3 min — target 70-130s). Ships with VersionBranding overlay (Anthropic + Claude Code logos top-right + bottom-center URL line), version-slam hero, 3-pill stats opener (features / fixes / improved), numbered highlight cards (`01/02/03`), and a `$ claude update` macOS terminal CTA. Sister of the long-form variant at [`templates/long-form/claude-code-version/`](../long-form/claude-code-version/). |
+| [`google/`](./google/) | Cinematic deep-navy + canonical Google four-color rotation (blue/red/yellow/green) + Plus Jakarta Sans + JetBrains Mono | **Google-branded content** (Gemini, Workspace, Cloud, Android, Chrome, Google AI). Ships with the Google logo top-center, accent-tinted `@handle` top-right, 5-dot SETUP→PUBLISH progress rail, and three theme variants (`cinematic` / `spotlight` / `editorial`). Phase archetypes: hero (xl headline) → terminal (CLI moment) → 2x2 chip grid (4-color signals) → optional light "shift" surface + accent-bordered quote + CTA pill. **Dynamous promotion ON by default** — badge + module interstitial + 10% OFF discount bubble all enabled in `video.config.js`. |
 
 ## What a shorts template looks like
 

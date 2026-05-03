@@ -87,8 +87,8 @@ npx hyperframes inspect  videos/$SLUG     # 0 layout overflow required
 # 8. Preview
 npx hyperframes preview videos/$SLUG
 
-# 9. Render — output filename MUST match the slug
-npx hyperframes render videos/$SLUG -o videos/$SLUG/out/$SLUG.mp4
+# 9. Render — output goes to repo-root out/, filename matches the slug
+npx hyperframes render videos/$SLUG -o out/$SLUG.mp4
 ```
 
 PowerShell equivalent for step 2: `Copy-Item -Recurse templates/shorts/standard videos/$SLUG`.

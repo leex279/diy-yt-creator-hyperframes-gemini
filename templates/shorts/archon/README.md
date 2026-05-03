@@ -70,7 +70,7 @@ pnpm exec hyperframes inspect videos/$SLUG      # checks for layout overflow
 pnpm exec hyperframes preview videos/$SLUG
 
 # 7. Render
-pnpm exec hyperframes render videos/$SLUG -o videos/$SLUG/out/$SLUG.mp4
+pnpm exec hyperframes render videos/$SLUG -o out/$SLUG.mp4
 ```
 
 PowerShell equivalent for step 2: `Copy-Item -Recurse templates/shorts/archon videos/$SLUG`.

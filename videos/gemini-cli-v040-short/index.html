@@ -1,0 +1,1749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Gemini CLI v0.40.0: Tiered Memory & Local Gemma</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="tokens/google-cinematic.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 Google brand stage.
+     Translated from the supplied Google Short design
+     (cinematic dark theme + 4-color accent rotation +
+     progress rail + particles). Phase mutex layout
+     mirrors templates/shorts/anthropic — only one
+     phase visible per frame; blur+crossfade between.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ──────────────────────────────────────────────────
+     THEME BACKGROUNDS (cinematic / spotlight / editorial)
+     Set the theme by changing the class on #root
+     (theme-cinematic | theme-spotlight | theme-editorial).
+     ────────────────────────────────────────────────── */
+  #root.theme-cinematic {
+    background:
+      radial-gradient(circle at 20% 18%, rgba(66,133,244,0.22) 0%, transparent 38%),
+      radial-gradient(circle at 82% 32%, rgba(234,67,53,0.16) 0%, transparent 36%),
+      radial-gradient(circle at 50% 75%, rgba(52,168,83,0.18) 0%, transparent 42%),
+      radial-gradient(circle at 90% 90%, rgba(251,188,5,0.12) 0%, transparent 36%),
+      linear-gradient(180deg, #06080F 0%, #0A0F1F 50%, #06080F 100%);
+  }
+  #root.theme-spotlight {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, var(--accent-glow) 0%, transparent 60%),
+      radial-gradient(ellipse 120% 50% at 50% 110%, rgba(255,255,255,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #07090F 0%, #050810 100%);
+  }
+  #root.theme-editorial {
+    background: linear-gradient(180deg, #0A0E1A 0%, #060912 100%);
+  }
+  #root.theme-editorial::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Cinematic vignette + floor */
+  #root.theme-cinematic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 90% 30% at 50% 100%, rgba(52,168,83,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Inner safe-area card stroke */
+  #slide-frame {
+    position: absolute;
+    inset: 32px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Top accent line — Google green→yellow ramp at top-left */
+  #top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    width: 18%;
+    background: linear-gradient(90deg, var(--g-green), var(--g-yellow));
+    z-index: 4;
+  }
+
+  /* Particle field — 60 dots, deterministic seeded scatter.
+     Each particle drifts on its own GSAP yoyo (see script tag),
+     plus a global breathing scale. Bigger radii (3-9px) read at
+     1080x1920 better than the original 1-4px. */
+  #particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+  }
+  #particles circle { will-change: transform, opacity; }
+
+  /* Google logo (top-center) */
+  #glogo {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: none;
+  }
+  #glogo img {
+    height: 120px;
+    width: auto;
+    filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.45));
+  }
+
+  /* Footer @handle (top-right corner) */
+  #footer-handle {
+    position: absolute;
+    top: 56px;
+    right: 64px;
+    z-index: 5;
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-40);
+    pointer-events: none;
+    padding-bottom: 6px;
+  }
+  #footer-handle .at {
+    color: var(--accent);
+    display: inline-block;
+    line-height: 1.4;
+  }
+
+  /* Bottom progress rail — 5 Google-color dots
+     Visible by default. Per-video: remove the #progress-rail block
+     to hide, or set display:none on a specific phase wrapper to
+     hide the rail just for that phase. */
+  #progress-rail {
+    position: absolute;
+    bottom: 110px;
+    left: 80px;
+    right: 80px;
+    z-index: 4;
+    pointer-events: none;
+  }
+  #progress-rail .rail-track {
+    position: relative;
+    height: 2px;
+    background: linear-gradient(90deg,
+      rgba(66,133,244,0.45),
+      rgba(234,67,53,0.45),
+      rgba(251,188,5,0.45),
+      rgba(52,168,83,0.45),
+      rgba(66,133,244,0.45));
+    border-radius: 2px;
+  }
+  #progress-rail .rail-dots {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+  }
+  #progress-rail .rail-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+  #progress-rail .rail-dot .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #2A3148;
+    border: 2px solid #3A4360;
+    transition: none;
+  }
+  #progress-rail .rail-dot.active .dot {
+    width: 36px;
+    height: 36px;
+    border-color: transparent;
+    box-shadow: 0 0 24px var(--dot-color, var(--g-blue));
+    background: var(--dot-color, var(--g-blue));
+  }
+  #progress-rail .rail-dot[data-color="blue"]   { --dot-color: var(--g-blue); }
+  #progress-rail .rail-dot[data-color="red"]    { --dot-color: var(--g-red); }
+  #progress-rail .rail-dot[data-color="yellow"] { --dot-color: var(--g-yellow); }
+  #progress-rail .rail-dot[data-color="green"]  { --dot-color: var(--g-green); }
+  #progress-rail .rail-dot .label {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ink-40);
+    position: absolute;
+    top: 44px;
+    white-space: nowrap;
+  }
+  #progress-rail .rail-dot.active .label {
+    color: var(--dot-color, var(--g-blue));
+  }
+
+  /* Slim progress bar — bottom edge */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — full-bleed, layered. Phase 1 visible by
+     default; phases 2-4 start at opacity 0.
+     ────────────────────────────────────────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+
+  .phase-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Eyebrow / headline / subhead common blocks */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--accent);
+    margin-bottom: 32px;
+  }
+  .headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -2px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 32px;
+  }
+  .headline.xl { font-size: 148px; }
+  .headline.l  { font-size: 128px; }
+  .headline.m  { font-size: 104px; }
+  .headline.s  { font-size: 88px;  }
+  .subhead {
+    font-family: var(--sans);
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-60);
+    margin: 0 0 60px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — HERO (eyebrow + xl headline + subhead)
+     Pattern: scroll-stop hook, no rail, accent on eyebrow.
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — TERMINAL / CLI moment (eyebrow + m headline + 2 terminal blocks)
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  .terminal {
+    position: relative;
+    width: 920px;
+    background: #0A0E18;
+    border: 1px solid var(--border-bright);
+    border-radius: 18px;
+    padding: 36px 40px;
+    font-family: var(--mono);
+    font-size: 38px;
+    line-height: 1.5;
+    color: var(--ink-80);
+    overflow: hidden;
+    text-align: left;
+  }
+  .terminal.with-rim::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+  }
+  .terminal .prompt { color: var(--ink-40); margin-right: 12px; }
+  .terminal .cmd    { color: var(--g-green); }
+  .terminal .arg    { color: var(--ink-100); }
+  .terminal .flag   { color: var(--g-yellow); }
+  .terminal .kw     { color: var(--g-blue); }
+  .terminal .str    { color: #FFB66E; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — INFO GRID (eyebrow + m headline + 2x2 chip grid)
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  .chip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    width: 920px;
+  }
+  .chip {
+    position: relative;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    padding: 28px 32px;
+    background: var(--card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    text-align: left;
+  }
+  .chip::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 18px; bottom: 18px;
+    width: 4px;
+    background: var(--chip-color, var(--g-blue));
+    border-radius: 0 4px 4px 0;
+  }
+  .chip[data-color="blue"]   { --chip-color: var(--g-blue); }
+  .chip[data-color="red"]    { --chip-color: var(--g-red); }
+  .chip[data-color="yellow"] { --chip-color: var(--g-yellow); }
+  .chip[data-color="green"]  { --chip-color: var(--g-green); }
+  .chip .chip-label {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--chip-color, var(--g-blue));
+    margin-bottom: 8px;
+  }
+  .chip .chip-value {
+    font-family: var(--sans);
+    font-size: 50px;
+    font-weight: 700;
+    color: var(--ink-100);
+    line-height: 1.05;
+  }
+
+  /* Big stat (alternate Phase 3 archetype) */
+  .bigstat {
+    text-align: center;
+  }
+  .bigstat .num {
+    font-family: var(--sans);
+    font-size: 360px;
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -10px;
+    background: linear-gradient(135deg, var(--g-blue) 0%, var(--g-green) 50%, var(--g-yellow) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(66,133,244,0.25));
+  }
+  .bigstat .num-suffix {
+    font-size: 140px;
+    font-weight: 700;
+  }
+  .bigstat .label {
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 34px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — SHIFT / CTA (light theme variant + quote + CTA pill)
+     Toggle: add class theme-light on #phase4 to use the bright
+     "the shift" surface, or leave default for cinematic dark.
+     ────────────────────────────────────────────────── */
+  #phase4.phase {
+    background: transparent;
+  }
+  #phase4.theme-light {
+    background:
+      radial-gradient(circle at 25% 20%, rgba(66,133,244,0.10) 0%, transparent 35%),
+      radial-gradient(circle at 80% 30%, rgba(234,67,53,0.07) 0%, transparent 35%),
+      radial-gradient(circle at 50% 80%, rgba(52,168,83,0.10) 0%, transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(251,188,5,0.08) 0%, transparent 35%),
+      linear-gradient(180deg, #F4F6FB 0%, #EAEEF7 100%);
+  }
+  #phase4.theme-light .headline { color: var(--ink-on-light); }
+  #phase4.theme-light .subhead  { color: #4A536C; }
+
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  .quote {
+    position: relative;
+    padding: 6px 0 6px 24px;
+    border-left: 4px solid var(--accent);
+    text-align: left;
+    width: 920px;
+  }
+  .quote .q-mark {
+    font-family: var(--sans);
+    font-size: 200px;
+    font-weight: 800;
+    line-height: 0.5;
+    color: var(--accent);
+    opacity: 0.3;
+  }
+  .quote .q-text {
+    font-family: var(--sans);
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink-100);
+    text-wrap: balance;
+  }
+  #phase4.theme-light .quote .q-text { color: var(--ink-on-light); }
+  #phase4.theme-light .quote .q-mark { color: var(--accent); opacity: 0.4; }
+
+  .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 32px 64px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--accent);
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--ink-100);
+    box-shadow: 0 0 60px -10px var(--accent);
+  }
+  .cta-pill .cta-label {
+    font-family: var(--mono);
+    font-size: 24px;
+    letter-spacing: 5px;
+    color: var(--ink-40);
+    text-transform: uppercase;
+    display: block;
+  }
+  .cta-pill .cta-value { color: var(--ink-100); font-size: 40px; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 hero figure — featured tweet screenshot.
+     Card with Google 4-color top rim + caption strip.
+     ────────────────────────────────────────────────── */
+  .hero-figure {
+    position: relative;
+    width: 920px;
+    margin: 16px auto 0;
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 28px 100px -20px rgba(66,133,244,0.45),
+      0 0 80px rgba(66,133,244,0.18);
+    background: var(--card-bright);
+  }
+  .hero-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .hero-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .hero-figure figcaption {
+    font-family: var(--mono);
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+    padding: 16px 28px 18px;
+    text-align: left;
+    border-top: 1px solid var(--border);
+    background: rgba(10,14,26,0.85);
+  }
+  .hero-figure figcaption .src-handle { color: var(--accent); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 sub-slides — terminals → settings screenshot.
+     ────────────────────────────────────────────────── */
+  .p2-stage { position: relative; padding: 0; }
+  .p2-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p2-slide.is-default-visible { opacity: 1; visibility: visible; }
+  .p2-slide .p2-b-eyebrow { color: var(--g-blue); }
+  .inline-mono {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--g-blue);
+    background: rgba(66,133,244,0.12);
+    padding: 2px 12px;
+    border-radius: 8px;
+  }
+  .settings-figure {
+    position: relative;
+    width: 880px;
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 24px 80px -20px rgba(66,133,244,0.45),
+      0 0 60px rgba(66,133,244,0.18);
+    background: var(--card-bright);
+  }
+  .settings-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .settings-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .settings-figure figcaption {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink-100);
+    padding: 22px 32px 24px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: rgba(10,14,26,0.9);
+  }
+  .settings-figure figcaption .inline-mono { font-size: 30px; }
+
+  /* Sub-slide 2C — Gemma explainer card (mirrors P3 bullet style) */
+  .p2-c-headline {
+    font-family: var(--sans);
+    font-size: 88px;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -1.5px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 12px;
+  }
+  .p2-c-bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    max-width: 900px;
+  }
+  .p2-c-bullets li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 28px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--g-blue);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    will-change: opacity, transform;
+  }
+  .p2-c-bullets .bullet-tag {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--g-blue);
+    min-width: 130px;
+  }
+  .p2-c-bullets .bullet-detail {
+    flex: 1;
+    font-family: var(--sans);
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--ink-100);
+    line-height: 1.25;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 sub-slides — 5 sequential cards, narration-synced.
+     Stack absolutely so transitions crossfade in place.
+     ────────────────────────────────────────────────── */
+  .p3-stage {
+    position: relative;
+    padding: 0;
+  }
+  .p3-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p3-slide.is-default-visible { opacity: 1; visibility: visible; }
+  .p3-slide-intro { gap: 32px; }
+
+  .p3-slide[data-color="blue"]   { --slot-color: var(--g-blue);   --slot-glow: rgba(66,133,244,0.45); }
+  .p3-slide[data-color="yellow"] { --slot-color: var(--g-yellow); --slot-glow: rgba(251,188,5,0.45); }
+  .p3-slide[data-color="green"]  { --slot-color: var(--g-green);  --slot-glow: rgba(52,168,83,0.45); }
+  .p3-slide[data-color="red"]    { --slot-color: var(--g-red);    --slot-glow: rgba(234,67,53,0.45); }
+
+  .p3-slot-num {
+    font-family: var(--mono);
+    font-size: 96px;
+    font-weight: 800;
+    color: var(--slot-color, var(--accent));
+    line-height: 1;
+    letter-spacing: -2px;
+    text-shadow: 0 0 50px var(--slot-glow, var(--accent-glow));
+    margin-bottom: -8px;
+  }
+  .p3-slide .p3-eyebrow {
+    color: var(--slot-color, var(--accent));
+    margin-bottom: 12px;
+  }
+  .p3-slide .p3-headline {
+    font-family: var(--sans);
+    font-size: 92px;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -1.5px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 12px;
+  }
+  .p3-bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    max-width: 880px;
+  }
+  .p3-bullets li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 28px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--slot-color, var(--accent));
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    will-change: opacity, transform;
+  }
+  .p3-bullets .bullet-tag {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--slot-color, var(--accent));
+    min-width: 140px;
+  }
+  .p3-bullets .bullet-detail {
+    flex: 1;
+    font-family: var(--sans);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--ink-100);
+    line-height: 1.25;
+  }
+  .p3-bullets code {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink-80);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 sub-slides — perf/security pill list → CTA close.
+     ────────────────────────────────────────────────── */
+  .p4-stage { position: relative; padding: 0; }
+  .p4-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p4-slide.is-default-visible { opacity: 1; visibility: visible; }
+  .p4-perf-eyebrow {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--g-blue);
+  }
+  .p4-perf-headline {
+    font-family: var(--sans);
+    font-size: 88px;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -1.5px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 8px;
+  }
+  .p4-pills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 880px;
+  }
+  .p4-pills li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 16px 26px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--pill-color, var(--accent));
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    will-change: opacity, transform;
+  }
+  .p4-pills li[data-color="blue"]   { --pill-color: var(--g-blue); }
+  .p4-pills li[data-color="yellow"] { --pill-color: var(--g-yellow); }
+  .p4-pills li[data-color="green"]  { --pill-color: var(--g-green); }
+  .p4-pills li[data-color="red"]    { --pill-color: var(--g-red); }
+  .p4-pills .pill-tag {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--pill-color, var(--accent));
+    min-width: 180px;
+  }
+  .p4-pills .pill-detail {
+    flex: 1;
+    font-family: var(--sans);
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--ink-100);
+    line-height: 1.2;
+  }
+
+  /* ──────────────────────────────────────────────────
+     VIDEO_CONFIG opt-in overlays (Dynamous promotion).
+     Mirrors templates/long-form/claude-code-version pattern,
+     repositioned for vertical 1080x1920 canvas. The guard
+     script removes elements when disabled in video.config.js.
+     ────────────────────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    top: 56px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 22px 12px 14px;
+    background: rgba(15, 23, 42, 0.78);
+    border: 1.5px solid rgba(168, 85, 247, 0.35);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0.92;
+    box-shadow:
+      0 6px 22px rgba(0, 0, 0, 0.55),
+      0 0 28px rgba(168, 85, 247, 0.20);
+  }
+  #dynamous-badge-mark { height: 56px; width: auto; display: block; }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.6px;
+    color: #f1f5f9;
+  }
+
+  #dynamous-discount-bubble {
+    position: absolute;
+    bottom: 220px;
+    left: 60px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 28px;
+    height: 28px;
+    display: block;
+    background-image: url('assets/dynamous-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #ddb-url      { font-weight: 700; font-size: 22px; color: #e2e8f0; letter-spacing: 0.3px; }
+  #ddb-discount {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 20px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer  { font-weight: 600; font-size: 20px; color: #94a3b8; }
+
+  /* Dynamous endcard mount — full-frame overlay during the last 5s. */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<script src="video.config.js"></script>
+<div id="root"
+     class="theme-cinematic"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="177"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Particle dust layer (deterministic 60-dot seeded scatter, animated drift) -->
+  <svg id="particles"
+       width="100%" height="100%"
+       preserveAspectRatio="none"
+       data-layout-allow-overflow="true"
+       xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <!-- Inner safe-area card stroke -->
+  <div id="slide-frame"></div>
+
+  <!-- Top accent line (Google green→yellow ramp) -->
+  <div id="top-line"></div>
+
+  <!-- Persistent Google logo (top-center) -->
+  <div id="glogo">
+    <img src="assets/google-logo.png" alt="Google" />
+  </div>
+
+  <!-- @handle in top-right corner. Edit text per video. -->
+  <div id="footer-handle"><span class="at" data-layout-allow-overflow="true">@</span>googlegemma</div>
+
+  <!-- Slim progress bar at the very bottom -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Bottom progress rail — 5 Google-color dots
+       Per-phase activation handled in JS. To hide globally,
+       set display:none here. To hide per-phase, the phase JS
+       toggles class on the rail container. -->
+  <div id="progress-rail">
+    <div class="rail-track"></div>
+    <div class="rail-dots">
+      <div class="rail-dot" data-color="blue"   data-step="0"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">SETUP</div></div>
+      <div class="rail-dot" data-color="red"    data-step="1"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">CREATE</div></div>
+      <div class="rail-dot" data-color="yellow" data-step="2"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">EVAL</div></div>
+      <div class="rail-dot" data-color="green"  data-step="3"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">DEPLOY</div></div>
+      <div class="rail-dot" data-color="blue"   data-step="4"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">PUBLISH</div></div>
+    </div>
+  </div>
+
+  <!-- ── VIDEO_CONFIG opt-in Dynamous overlays ────────────────
+       Removed by the guard script when disabled in video.config.js. -->
+
+  <!-- Dynamous badge — persistent, no class="clip" (full duration) -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Dynamous discount bubble — time-bounded to CTA scene (timing set by guard) -->
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="0"
+       data-duration="6"
+       data-track-index="10">
+    <span id="ddb-mark"></span>
+    <span id="ddb-url">Dynamous.ai</span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-pointer">in the link &darr;</span>
+  </div>
+
+  <!-- Dynamous module interstitial — 3s sub-composition at first scene transition -->
+  <div id="dynamous-module-interstitial-wrap"
+       data-composition-id="dynamous-module-interstitial"
+       data-composition-src="compositions/dynamous-module-interstitial.html"
+       data-start="22.72"
+       data-track-index="11"></div>
+
+  <!-- Dynamous endcard — last 5s contextual community CTA. Guard auto-wires
+       data-start to (root data-duration - 5) unless overridden. -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="172"
+       data-duration="5"
+       data-track-index="12"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO (0-6s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="eyebrow" id="p1-eyebrow">GEMINI CLI · V0.40</div>
+      <h1 class="headline l" id="p1-headline">Local Gemma is here.</h1>
+      <figure class="hero-figure" id="p1-figure">
+        <img src="assets/google-gemma-tweet.png" alt="@googlegemma announcing Gemma in Gemini CLI v0.40.0" />
+        <figcaption><span class="src-handle">@googlegemma</span> · APR 30 · 78.7K VIEWS</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — TERMINAL (6-12s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content p2-stage">
+
+      <!-- Sub-slide 2A — Terminal commands (visible 23.12 → 44.30) -->
+      <div id="p2-slide-a" class="p2-slide is-default-visible">
+        <div class="eyebrow" id="p2-eyebrow">ONE COMMAND</div>
+        <h2 class="headline m" id="p2-headline">Setup is a single line.</h2>
+        <div class="terminal with-rim" id="p2-term-1">
+          <span class="prompt">$</span>
+          <span class="cmd">gemini</span>
+          <span class="arg"> gemma</span>
+          <span class="flag"> setup</span>
+        </div>
+        <div class="terminal" id="p2-term-2">
+          <span class="prompt">$</span>
+          <span class="kw">/gemma</span>
+        </div>
+      </div>
+
+      <!-- Sub-slide 2B — /settings UI screenshot (visible 44.30 → 52.80) -->
+      <div id="p2-slide-b" class="p2-slide" data-color="blue">
+        <div class="eyebrow p2-b-eyebrow">ENABLE THE ROUTER</div>
+        <h2 class="headline m p2-b-headline">Toggle in <code class="inline-mono">/settings</code>.</h2>
+        <figure class="settings-figure" id="p2-settings-figure">
+          <img src="assets/gemini-settings-gemma-router.png" alt="Gemini CLI /settings showing Enable Gemma Model Router toggled on" />
+          <figcaption><code class="inline-mono">experimental.gemma: true</code></figcaption>
+        </figure>
+      </div>
+
+      <!-- Sub-slide 2C — Gemma explainer (visible 52.80 → 75.23) -->
+      <div id="p2-slide-c" class="p2-slide" data-color="blue">
+        <div class="eyebrow p2-b-eyebrow">WHAT GEMMA DOES</div>
+        <h2 class="p2-c-headline">Local routing today. Full local soon.</h2>
+        <ul class="p2-c-bullets">
+          <li id="p2c-b1"><span class="bullet-tag">SIZE</span><span class="bullet-detail">1B parameters · GPU-custom build</span></li>
+          <li id="p2c-b2"><span class="bullet-tag">RUNTIME</span><span class="bullet-detail">LiteRT-LM · runs on your hardware</span></li>
+          <li id="p2c-b3"><span class="bullet-tag">TODAY</span><span class="bullet-detail">Decides which model handles each prompt</span></li>
+          <li id="p2c-b4"><span class="bullet-tag">NEXT</span><span class="bullet-detail">Full local model execution on the roadmap</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — INFO GRID (12-18s)
+       Alternate archetype: replace the .chip-grid block with
+       <div class="bigstat"><div class="num">3<span class="num-suffix">x</span></div><div class="label">…</div></div>
+       to use the big-stat pattern instead.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content p3-stage">
+
+      <!-- Sub-slide 0 — intro hero (visible 56.57 → 59.82) -->
+      <div id="p3-intro" class="p3-slide p3-slide-intro is-default-visible">
+        <div class="eyebrow" id="p3-eyebrow">WHAT'S NEW</div>
+        <h2 class="headline m" id="p3-headline">Five upgrades. One release.</h2>
+      </div>
+
+      <!-- Sub-slide A — TIERED MEMORY (50.21 → 65.88) -->
+      <div id="p3-slide-a" class="p3-slide" data-color="blue">
+        <div class="p3-slot-num">01</div>
+        <div class="eyebrow p3-eyebrow">TIERED MEMORY</div>
+        <h2 class="p3-headline">Four memory layers.</h2>
+        <ul class="p3-bullets">
+          <li id="p3a-b1"><span class="bullet-tag">PROJECT</span><span class="bullet-detail"><code>./GEMINI.md</code> — team rules</span></li>
+          <li id="p3a-b2"><span class="bullet-tag">SUBDIR</span><span class="bullet-detail"><code>./src/GEMINI.md</code> — scoped</span></li>
+          <li id="p3a-b3"><span class="bullet-tag">PRIVATE</span><span class="bullet-detail"><code>MEMORY.md</code> — local notes</span></li>
+          <li id="p3a-b4"><span class="bullet-tag">GLOBAL</span><span class="bullet-detail"><code>~/.gemini/GEMINI.md</code></span></li>
+        </ul>
+      </div>
+
+      <!-- Sub-slide B — AUTO MEMORY (65.88 → 69.84) -->
+      <div id="p3-slide-b" class="p3-slide" data-color="yellow">
+        <div class="p3-slot-num">02</div>
+        <div class="eyebrow p3-eyebrow">AUTO MEMORY</div>
+        <h2 class="p3-headline">Skills extracted automatically.</h2>
+        <ul class="p3-bullets">
+          <li><span class="bullet-detail">Drafts <code>SKILL.md</code> from idle sessions</span></li>
+          <li><span class="bullet-detail"><code>/memory inbox</code> — review and promote</span></li>
+        </ul>
+      </div>
+
+      <!-- Sub-slide C — COMPACT TOOL OUTPUT (93.03 → 102.77) -->
+      <div id="p3-slide-c" class="p3-slide" data-color="green">
+        <div class="p3-slot-num">03</div>
+        <div class="eyebrow p3-eyebrow">COMPACT OUTPUT</div>
+        <h2 class="p3-headline">No more tool-call spam.</h2>
+        <ul class="p3-bullets">
+          <li><span class="bullet-detail">File reads render compactly</span></li>
+          <li><span class="bullet-detail">Search + directory lists clean</span></li>
+        </ul>
+      </div>
+
+      <!-- Sub-slide D — TOPIC NARRATIONS (102.77 → 108.74) -->
+      <div id="p3-slide-d" class="p3-slide" data-color="yellow">
+        <div class="p3-slot-num">04</div>
+        <div class="eyebrow p3-eyebrow">TOPIC NARRATIONS</div>
+        <h2 class="p3-headline">Descriptive section headers.</h2>
+        <ul class="p3-bullets">
+          <li><span class="bullet-detail">"Researching Memory: how it works"</span></li>
+          <li><span class="bullet-detail">Across every agent in the CLI</span></li>
+        </ul>
+      </div>
+
+      <!-- Sub-slide E — TASK TRACKER (108.74 → 113.47) -->
+      <div id="p3-slide-e" class="p3-slide" data-color="red">
+        <div class="p3-slot-num">05</div>
+        <div class="eyebrow p3-eyebrow">TASK TRACKER</div>
+        <h2 class="p3-headline">Persistent objective list.</h2>
+        <ul class="p3-bullets">
+          <li><span class="bullet-detail">Tracks complex objectives</span></li>
+          <li><span class="bullet-detail"><code>experimental.taskTracker: true</code></span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — SHIFT / CTA (18-24s)
+       Toggle the "shift" light theme by adding theme-light on
+       this wrapper div (mirrors the SlideQuote light variant
+       in the source design's lightShift tweak). Default below
+       is dark cinematic to match the rest of the composition.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content p4-stage">
+
+      <!-- Sub-slide 4A — Performance + Security wins (visible 113.87 → ~143.5) -->
+      <div id="p4-slide-perf" class="p4-slide is-default-visible">
+        <div class="eyebrow p4-perf-eyebrow">PERF + SECURITY</div>
+        <h2 class="p4-perf-headline">Smaller wins, bigger CLI.</h2>
+        <ul class="p4-pills">
+          <li id="p4-pill-1" data-color="blue">  <span class="pill-tag">RIPGREP</span>  <span class="pill-detail">bundled · offline search</span></li>
+          <li id="p4-pill-2" data-color="yellow"><span class="pill-tag">MEMORY</span>   <span class="pill-detail">DevTools + streams optimized</span></li>
+          <li id="p4-pill-3" data-color="green"> <span class="pill-tag">SANDBOX</span>  <span class="pill-detail">Docker + macOS Seatbelt</span></li>
+          <li id="p4-pill-4" data-color="red">   <span class="pill-tag">SHELL</span>    <span class="pill-detail">stricter validation, no injection</span></li>
+          <li id="p4-pill-5" data-color="blue">  <span class="pill-tag">/new</span>     <span class="pill-detail">fresh session alias</span></li>
+          <li id="p4-pill-6" data-color="yellow"><span class="pill-tag">A11Y</span>     <span class="pill-detail">colorblind-friendly themes</span></li>
+        </ul>
+      </div>
+
+      <!-- Sub-slide 4B — CTA close + engagement question (visible ~162.5 → 170.0) -->
+      <div id="p4-slide-cta" class="p4-slide" data-color="blue">
+        <div class="eyebrow" id="p4-eyebrow">YOUR MOVE</div>
+        <h2 class="headline m" id="p4-headline">Update + try Gemma.</h2>
+        <div class="quote" id="p4-quote">
+          <div class="q-text">Tried Gemini CLI already, or sticking with Claude Code or Codex?</div>
+        </div>
+        <div class="cta-pill" id="p4-cta">
+          <div>
+            <div class="cta-label">TRY</div>
+            <div class="cta-value">GEMMA</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX — operator wires when narration is in audio/.
+       Rules:        .claude/rules/audio-design.md
+       Cue catalog:  shared/audio/MANIFEST.md
+       Sync into this project (after you copy this template):
+         bash scripts/sync-video-sfx.sh videos/<slug> impact-slam scale-slam spring-pop
+       Then uncomment the blocks below and tune the data-* values per scene.
+
+  Narration — single track, replaces this comment in real videos.
+
+    audio id="narration"
+           class="clip"
+           src="audio/narration.wav"
+           data-start="0"
+           data-duration="0"
+           data-track-index="2"
+           data-volume="1"
+
+  Per-cue SFX — one element per beat. data-track-index 3+ for SFX; bump per
+  concurrent cue. data-volume per .claude/rules/audio-design.md (≤ 0.25).
+
+    audio id="sfx-impact"
+           class="clip"
+           src="assets/sfx/impact-slam.mp3"
+           data-start="1.55"
+           data-duration="0.6"
+           data-track-index="3"
+           data-volume="0.15"
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- ── Narration + SFX ──────────────────────────────────── -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="171"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Phase 1 hero headline reveal -->
+  <audio id="sfx-impact"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="1.2"
+         data-duration="0.7"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <!-- T1 phase transition (P1 → P2) -->
+  <audio id="sfx-whoosh-1"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="22.72"
+         data-duration="0.9"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Phase 2 first terminal entrance synced to "setup" -->
+  <audio id="sfx-scale"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="29.14"
+         data-duration="0.7"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <!-- Phase 2 sub-slide B (settings screenshot) entrance -->
+  <audio id="sfx-pop-settings"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="44.30"
+         data-duration="0.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Phase 2 sub-slide C (Gemma explainer) entrance -->
+  <audio id="sfx-pop-explainer"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="52.80"
+         data-duration="0.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- T2 phase transition (P2 → P3) -->
+  <audio id="sfx-whoosh-2"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="75.23"
+         data-duration="0.9"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Phase 3 sub-slide entrances — synced to narration anchors -->
+  <audio id="sfx-slide-a"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="79.01"
+         data-duration="0.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-slide-b"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="98.63"
+         data-duration="0.4"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-slide-c"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="112.64"
+         data-duration="0.4"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-slide-d"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="122.00"
+         data-duration="0.4"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-slide-e"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="127.77"
+         data-duration="0.4"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+
+  <!-- T3 phase transition (P3 → P4) -->
+  <audio id="sfx-whoosh-3"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="132.56"
+         data-duration="0.9"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Phase 4 CTA close entrance -->
+  <audio id="sfx-pop-cta"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="163.20"
+         data-duration="0.5"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+
+  <!-- VIDEO_CONFIG guard — runs synchronously before HyperFrames scans
+       the DOM. Removes disabled overlay elements so they never appear
+       in the clip list or sub-composition queue. Auto-wires the
+       discount bubble's data-start to the CTA phase boundary. -->
+  <script>
+  (function () {
+    var d = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+    if (!d.badge) {
+      var e = document.getElementById('dynamous-badge');
+      if (e) e.remove();
+    }
+    if (!d.moduleInterstitial) {
+      var e = document.getElementById('dynamous-module-interstitial-wrap');
+      if (e) e.remove();
+    }
+    if (!d.discountBubble) {
+      var e = document.getElementById('dynamous-discount-bubble');
+      if (e) e.remove();
+    } else {
+      var bubble = document.getElementById('dynamous-discount-bubble');
+      var ctaStart = d.discountBubbleStart != null ? d.discountBubbleStart : 18.4;
+      if (bubble) {
+        bubble.dataset.start    = String(ctaStart);
+        bubble.dataset.duration = String(d.discountBubbleDuration || 6);
+      }
+    }
+    if (!d.endcard) {
+      var e = document.getElementById('dynamous-endcard-mount');
+      if (e) e.remove();
+    } else {
+      var mount = document.getElementById('dynamous-endcard-mount');
+      var root  = document.getElementById('root');
+      var total = parseFloat((root && root.getAttribute('data-duration')) || '24');
+      var ecStart = d.endcardStart != null ? d.endcardStart : Math.max(0, total - 5);
+      if (mount) {
+        mount.dataset.start = String(ecStart);
+      }
+    }
+  })();
+  </script>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Particles — 60 deterministic dots in 4 Google colors.
+  // xmur3-style hash, no Math.random / Date.now.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnParticles(seedPrefix, container, count) {
+    const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853'];
+    const ns = 'http://www.w3.org/2000/svg';
+    const nodes = [];
+    for (let i = 0; i < count; i++) {
+      const x = seedHash(seedPrefix + '-x-' + i) * 100;
+      const y = seedHash(seedPrefix + '-y-' + i) * 100;
+      // Bigger radius range: 3-9px (was 1-4px) so particles read at 1080x1920
+      const r = 3 + seedHash(seedPrefix + '-r-' + i) * 6;
+      const op = 0.25 + seedHash(seedPrefix + '-o-' + i) * 0.55;
+      const ci = Math.floor(seedHash(seedPrefix + '-c-' + i) * colors.length);
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('cx', x + '%');
+      c.setAttribute('cy', y + '%');
+      c.setAttribute('r', String(r));
+      c.setAttribute('fill', colors[ci]);
+      c.setAttribute('opacity', String(op));
+      // Per-particle deterministic drift seeds — read by GSAP block below
+      c.dataset.dx  = String((seedHash(seedPrefix + '-dx-' + i) - 0.5) * 80);
+      c.dataset.dy  = String((seedHash(seedPrefix + '-dy-' + i) - 0.5) * 80);
+      c.dataset.dur = String(8 + seedHash(seedPrefix + '-dt-' + i) * 8);
+      c.dataset.del = String(seedHash(seedPrefix + '-de-' + i) * 4);
+      container.appendChild(c);
+      nodes.push(c);
+    }
+    return nodes;
+  }
+  const PARTICLE_NODES = spawnParticles('google-short', document.getElementById('particles'), 60);
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 177;
+  const tl = gsap.timeline({ paused: true });
+
+  // Particle drift — global breathing yoyo on the whole field
+  tl.fromTo("#particles",
+    { opacity: 0.55, scale: 1.0, transformOrigin: "50% 50%" },
+    { opacity: 0.75, scale: 1.04, duration: 88.5, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Per-particle drift — each circle yoyos a deterministic dx/dy over its
+  // own duration. Finite repeat count derived from TOTAL_DURATION so no
+  // particle uses repeat:-1.
+  PARTICLE_NODES.forEach(function (c) {
+    var dx  = parseFloat(c.dataset.dx);
+    var dy  = parseFloat(c.dataset.dy);
+    var dur = parseFloat(c.dataset.dur);
+    var del = parseFloat(c.dataset.del);
+    var cycles = Math.max(1, Math.floor((TOTAL_DURATION - del) / dur));
+    if (cycles % 2 === 1) cycles += 1;
+    tl.to(c, {
+      x: dx, y: dy,
+      duration: dur,
+      ease: "sine.inOut",
+      yoyo: true, repeat: cycles
+    }, del);
+  });
+
+  // Progress bar fills linearly across full duration
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top-line + Google logo entrance
+  tl.from("#top-line", { scaleX: 0, transformOrigin: "0 50%", duration: 0.7, ease: "power3.out" }, 0.2);
+  tl.from("#glogo",    { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.3);
+  tl.from("#footer-handle", { opacity: 0, duration: 0.6, ease: "power2.out" }, 0.6);
+  tl.from("#progress-rail", { opacity: 0, duration: 0.6, ease: "power2.out" }, 0.8);
+
+  // Helper — activate a rail dot at a given absolute time, deactivating others.
+  // Uses tl.set() so the change is deterministic and reversible.
+  function activateRailDot(atTime, stepIndex) {
+    tl.set("#progress-rail .rail-dot", { className: "rail-dot" }, atTime);
+    if (stepIndex >= 0) {
+      tl.set("#progress-rail .rail-dot:nth-child(" + (stepIndex + 1) + ")",
+        { className: "rail-dot active" }, atTime);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero (0-6s): no rail dot active
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.9);
+  tl.from("#p1-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, 1.2);
+  tl.from("#p1-figure",   { y: 40, scale: 0.94, opacity: 0, duration: 0.8, ease: "power3.out" }, 1.7);
+  // Subtle figure float — Ken-Burns-lite for the long hero hold (~22s)
+  tl.fromTo("#p1-figure", { scale: 1.0 }, { scale: 1.03, duration: 20, ease: "sine.inOut" }, 2.5);
+
+  // ─── Transition phase1 → phase2 at 22.72s (after "next." phase 1 close) ───
+  const T1 = 22.72;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Terminal (6-12s): rail dot 0 (SETUP)
+  // ═══════════════════════════════════════════════════════
+  const P2 = 23.12;
+  activateRailDot(P2, 0);
+  // Hide all P2A + P2B + P2C content at t=0 to prevent flash
+  tl.set("#p2-eyebrow",         { y: 20, opacity: 0 }, 0);
+  tl.set("#p2-headline",        { y: 30, opacity: 0 }, 0);
+  tl.set("#p2-term-1",          { y: 30, scale: 0.97, opacity: 0 }, 0);
+  tl.set("#p2-term-2",          { y: 30, scale: 0.97, opacity: 0 }, 0);
+  tl.set("#p2-slide-b .p2-b-eyebrow",  { y: 16, opacity: 0 }, 0);
+  tl.set("#p2-slide-b .p2-b-headline", { y: 24, opacity: 0 }, 0);
+  tl.set("#p2-settings-figure",        { y: 30, scale: 0.96, opacity: 0 }, 0);
+  tl.set("#p2-slide-c .p2-b-eyebrow",  { y: 16, opacity: 0 }, 0);
+  tl.set("#p2-slide-c .p2-c-headline", { y: 28, opacity: 0 }, 0);
+  tl.set("#p2c-b1", { x: -28, opacity: 0 }, 0);
+  tl.set("#p2c-b2", { x: -28, opacity: 0 }, 0);
+  tl.set("#p2c-b3", { x: -28, opacity: 0 }, 0);
+  tl.set("#p2c-b4", { x: -28, opacity: 0 }, 0);
+
+  // ─── 2A: terminals (P2 → ~44.30) ───
+  tl.to("#p2-eyebrow",   { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.to("#p2-headline",  { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  // Term 1 reveal synced with narration "setup" at 29.14s
+  tl.to("#p2-term-1",    { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 29.14);
+  // Term 2 reveal synced with narration "slash gemma command" at 41.04s
+  tl.to("#p2-term-2",    { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 41.04);
+
+  // ─── 2B crossfade — 2A → 2B at 44.30s (anchor "settings" 44.80) ───
+  const P2B = 44.30;
+  tl.to("#p2-slide-a", { opacity: 0, scale: 0.96, filter: "blur(12px)", duration: 0.4, ease: "power2.in" }, P2B - 0.30);
+  tl.set("#p2-slide-a", { visibility: "hidden" }, P2B + 0.10);
+  tl.set("#p2-slide-b", { visibility: "visible", opacity: 0, scale: 0.97, filter: "blur(12px)" }, P2B - 0.10);
+  tl.to("#p2-slide-b", { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, P2B - 0.10);
+  tl.to("#p2-slide-b .p2-b-eyebrow",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P2B + 0.10);
+  tl.to("#p2-slide-b .p2-b-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P2B + 0.30);
+  tl.to("#p2-settings-figure",        { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.3)" }, P2B + 0.55);
+  // Subtle Ken-Burns on the screenshot during its ~7s hold
+  tl.fromTo("#p2-settings-figure", { scale: 1.0 }, { scale: 1.025, duration: 6, ease: "sine.inOut", overwrite: "auto" }, P2B + 1.2);
+
+  // ─── 2C crossfade — 2B → 2C at 52.80s (anchor "So what is Gemma" 53.12) ───
+  const P2C = 52.80;
+  tl.to("#p2-slide-b", { opacity: 0, scale: 0.96, filter: "blur(12px)", duration: 0.4, ease: "power2.in" }, P2C - 0.30);
+  tl.set("#p2-slide-b", { visibility: "hidden" }, P2C + 0.10);
+  tl.set("#p2-slide-c", { visibility: "visible", opacity: 0, scale: 0.97, filter: "blur(12px)" }, P2C - 0.10);
+  tl.to("#p2-slide-c", { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, P2C - 0.10);
+  tl.to("#p2-slide-c .p2-b-eyebrow",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P2C + 0.10);
+  tl.to("#p2-slide-c .p2-c-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P2C + 0.40);
+  // Per-bullet reveals synced to narration
+  tl.to("#p2c-b1", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 56.42);   // "billion"
+  tl.to("#p2c-b2", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 61.17);   // "hardware"
+  tl.to("#p2c-b3", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 64.10);   // "Today"
+  tl.to("#p2c-b4", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 70.49);   // "Full"
+
+  // ─── Transition phase2 → phase3 at 75.23s (after "foothold." phase 2 close) ───
+  const T2 = 75.23;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Info grid (12-18s): rail dot 1 (CREATE)
+  // ═══════════════════════════════════════════════════════
+  const P3 = 75.63;
+  activateRailDot(P3, 1);
+
+  // ── Hide all Phase 3 sub-slide content at t=0 (set + to pattern; no
+  //    immediateRender:false flicker). Slides A-E start hidden via CSS;
+  //    intro is the only one with .is-default-visible.
+  tl.set("#p3-intro .eyebrow",  { y: 20, opacity: 0 }, 0);
+  tl.set("#p3-intro .headline", { y: 30, opacity: 0 }, 0);
+  // Slide A (Tiered Memory)
+  tl.set("#p3-slide-a .p3-slot-num", { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p3-slide-a .p3-eyebrow",  { y: 16, opacity: 0 }, 0);
+  tl.set("#p3-slide-a .p3-headline", { y: 28, opacity: 0 }, 0);
+  tl.set("#p3a-b1", { x: -28, opacity: 0 }, 0);
+  tl.set("#p3a-b2", { x: -28, opacity: 0 }, 0);
+  tl.set("#p3a-b3", { x: -28, opacity: 0 }, 0);
+  tl.set("#p3a-b4", { x: -28, opacity: 0 }, 0);
+  // Slides B/C/D/E
+  ["b", "c", "d", "e"].forEach(function (k) {
+    tl.set("#p3-slide-" + k + " .p3-slot-num", { scale: 0.7, opacity: 0 }, 0);
+    tl.set("#p3-slide-" + k + " .p3-eyebrow",  { y: 16, opacity: 0 }, 0);
+    tl.set("#p3-slide-" + k + " .p3-headline", { y: 28, opacity: 0 }, 0);
+    tl.set("#p3-slide-" + k + " .p3-bullets li", { x: -20, opacity: 0 }, 0);
+  });
+
+  function p3Crossfade(outSel, inSel, at) {
+    tl.to(outSel,  { opacity: 0, scale: 0.96, filter: "blur(12px)", duration: 0.4, ease: "power2.in" }, at - 0.30);
+    tl.set(outSel, { visibility: "hidden" }, at + 0.10);
+    tl.set(inSel,  { visibility: "visible", opacity: 0, scale: 0.97, filter: "blur(12px)" }, at - 0.10);
+    tl.to(inSel,   { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, at - 0.10);
+  }
+  function p3SlideEntrance(slideId, at) {
+    tl.to(slideId + " .p3-slot-num", { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.7)" }, at);
+    tl.to(slideId + " .p3-eyebrow",  { y: 0, opacity: 1, duration: 0.5,  ease: "power2.out"  }, at + 0.20);
+    tl.to(slideId + " .p3-headline", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out"  }, at + 0.40);
+  }
+
+  // ── 0) Phase 3 intro hero (P3 75.63 → 79.01) ──
+  tl.to("#p3-intro .eyebrow",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.to("#p3-intro .headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P3 + 0.3);
+
+  // ── A) TIERED MEMORY (79.01 → 98.63) ──
+  p3Crossfade("#p3-intro", "#p3-slide-a", 79.01);
+  p3SlideEntrance("#p3-slide-a", 79.01);
+  // 4 detail bullets revealed as narrator names each layer
+  tl.to("#p3a-b1", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 83.32);   // Project
+  tl.to("#p3a-b2", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 87.67);   // Subdirectory
+  tl.to("#p3a-b3", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 91.17);   // Private
+  tl.to("#p3a-b4", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 94.93);   // Global
+
+  // ── B) AUTO MEMORY (98.63 → 112.64) ──
+  p3Crossfade("#p3-slide-a", "#p3-slide-b", 98.63);
+  p3SlideEntrance("#p3-slide-b", 98.63);
+  tl.to("#p3-slide-b .p3-bullets li", { x: 0, opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.30 }, 100.10);
+
+  // ── C) COMPACT OUTPUT (112.64 → 122.00) ──
+  p3Crossfade("#p3-slide-b", "#p3-slide-c", 112.64);
+  p3SlideEntrance("#p3-slide-c", 112.64);
+  tl.to("#p3-slide-c .p3-bullets li", { x: 0, opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.35 }, 114.00);
+
+  // ── D) TOPIC NARRATIONS (122.00 → 127.77) ──
+  p3Crossfade("#p3-slide-c", "#p3-slide-d", 122.00);
+  p3SlideEntrance("#p3-slide-d", 122.00);
+  tl.to("#p3-slide-d .p3-bullets li", { x: 0, opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.30 }, 123.20);
+
+  // ── E) TASK TRACKER (127.77 → 132.56) ──
+  p3Crossfade("#p3-slide-d", "#p3-slide-e", 127.77);
+  p3SlideEntrance("#p3-slide-e", 127.77);
+  tl.to("#p3-slide-e .p3-bullets li", { x: 0, opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.30 }, 128.95);
+
+  // ─── Transition phase3 → phase4 at 132.56s (after "goals." phase 3 close) ───
+  const T3 = 132.56;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Shift / CTA (18-24s): rail dot 4 (PUBLISH)
+  // ═══════════════════════════════════════════════════════
+  const P4 = 132.96;
+  activateRailDot(P4, 4);
+
+  // Hide all Phase 4 content at t=0 (set + to pattern; no flicker)
+  tl.set("#p4-slide-perf .p4-perf-eyebrow",  { y: 16, opacity: 0 }, 0);
+  tl.set("#p4-slide-perf .p4-perf-headline", { y: 28, opacity: 0 }, 0);
+  tl.set("#p4-slide-perf .p4-pills li",      { x: -22, opacity: 0 }, 0);
+  tl.set("#p4-eyebrow",  { y: 20, opacity: 0 }, 0);
+  tl.set("#p4-headline", { y: 30, opacity: 0 }, 0);
+  tl.set("#p4-quote",    { y: 24, opacity: 0 }, 0);
+  tl.set("#p4-cta",      { y: 24, opacity: 0 }, 0);
+
+  // ── 4A) PERF + SECURITY pills (P4 132.96 → ~162.20) ──
+  // Per-pill reveals synced to narration mention of each item.
+  tl.to("#p4-slide-perf .p4-perf-eyebrow",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.to("#p4-slide-perf .p4-perf-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P4 + 0.3);
+  tl.to("#p4-pill-1", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 137.19);   // "Ripgrep"
+  tl.to("#p4-pill-2", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 141.78);   // "Memory"
+  tl.to("#p4-pill-3", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 146.11);   // "Sandboxing"
+  tl.to("#p4-pill-4", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 150.01);   // "Shell"
+  tl.to("#p4-pill-5", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 154.71);   // "new"
+  tl.to("#p4-pill-6", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 157.88);   // "colorblind"
+
+  // ── 4B) CTA close + question (162.20 → 170.05) ──
+  // "shift." word ends ~163s; transition just before so 4B is on screen at "Update"
+  const P4B = 162.20;
+  tl.to("#p4-slide-perf", { opacity: 0, scale: 0.96, filter: "blur(12px)", duration: 0.4, ease: "power2.in" }, P4B - 0.30);
+  tl.set("#p4-slide-perf", { visibility: "hidden" }, P4B + 0.10);
+  tl.set("#p4-slide-cta",  { visibility: "visible", opacity: 0, scale: 0.97, filter: "blur(12px)" }, P4B - 0.10);
+  tl.to("#p4-slide-cta",   { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, P4B - 0.10);
+  tl.to("#p4-eyebrow",     { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P4B + 0.10);
+  tl.to("#p4-headline",    { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P4B + 0.40);
+  // CTA pill enters before the question (during "Update Gemini CLI today")
+  tl.to("#p4-cta",         { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P4B + 1.00);
+  // The question quote drops in synced to "Tried" word at 166.68
+  tl.to("#p4-quote",       { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 166.68);
+  // CTA pulse — 5 yoyo cycles spanning the close
+  tl.to("#p4-cta", {
+    boxShadow: "0 0 0 6px var(--accent-glow)",
+    duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 5
+  }, P4B + 1.50);
+
+  // ─── VIDEO_CONFIG opt-in GSAP wiring ───
+  var _dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+  if (_dyn.badge) {
+    tl.from('#dynamous-badge', { opacity: 0, x: -12, duration: 0.6, ease: 'power2.out' }, 3.0);
+  }
+  if (_dyn.discountBubble) {
+    var _ctaStart = _dyn.discountBubbleStart != null ? _dyn.discountBubbleStart : 18.4;
+    var _bubDur   = _dyn.discountBubbleDuration || 6;
+    tl.from('#dynamous-discount-bubble', { y: 16, opacity: 0, duration: 0.5, ease: 'power2.out' }, _ctaStart);
+    tl.to(  '#dynamous-discount-bubble', { opacity: 0, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, _ctaStart + _bubDur - 0.4);
+  }
+  if (_dyn.endcard) {
+    // Endcard takes over the last 5s. Fade competing chrome 0.5s before it
+    // fires so the endcard owns the frame cleanly.
+    var _ecStart = _dyn.endcardStart != null ? _dyn.endcardStart : Math.max(0, TOTAL_DURATION - 5);
+    var _fadeAt  = Math.max(0, _ecStart - 0.5);
+    tl.to('#phase4',         { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#dynamous-badge', { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#progress-rail',  { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#footer-handle',  { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#glogo',          { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+  }
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!--
+  shared/lib/components/support-banner/component.html
+  Animated "support the channel" call-to-action banner for long-form
+  (1920x1080) videos. Flat horizontal strip showing three support
+  options — Join (YouTube channel membership), Super Thanks, Buy Me a
+  Coffee — with a profile, headline + tagline, and a trailing BMC URL
+  panel. Each pill staggers in with a spring; icons settle into a
+  subtle idle pulse; the whole banner flies in/out.
+
+  Total on-screen lifetime: ~8 seconds. Host typically wires this near a
+  CTA moment ("if you want to support the channel…").
+
+  SOURCE:
+    diy-yt-creator/src/shared/components/SupportBanner.tsx:1-444
+      (frame-based Remotion impl translated to seconds + GSAP timeline)
+    shared/lib/components/subscribe-banner/component.html (sister
+    component — identical fly-in / fly-out lifecycle, profile-leex.png
+    asset, paste-in section ordering)
+
+  ──────────────────────────────────────────────────────────────────────
+  IMPORTANT — PROFILE IMAGE MUST BE A LOCAL COPY
+  ──────────────────────────────────────────────────────────────────────
+  Same constraint as subscribe-banner:
+
+    1. Copy profile-leex.png into videos/<slug>/assets/profile-leex.png
+       (already done if subscribe-banner is also wired in this video)
+    2. Set src="assets/profile-leex.png"
+-->
+
+<!-- 1) HTML — paste inside your composition's root <div>. The wrapper has
+        NO class="clip"; the JS function below drives all visibility. -->
+
+<div id="sup-banner">
+  <div class="sup-card">
+
+    <div class="sup-profile">
+      <img class="sup-profile-img"
+           src="assets/profile-leex.png"
+           alt="Channel avatar"
+           crossorigin="anonymous" />
+    </div>
+
+    <div class="sup-info">
+      <div class="sup-headline" id="sup-headline">Support the Channel</div>
+      <div class="sup-tagline" id="sup-tagline">Every bit keeps the videos coming</div>
+    </div>
+
+    <div class="sup-separator"></div>
+
+    <div class="sup-pills">
+
+      <div class="sup-pill sup-pill-join">
+        <div class="sup-pill-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="currentColor" />
+          </svg>
+        </div>
+        <span class="sup-pill-label">Join</span>
+      </div>
+
+      <div class="sup-pill sup-pill-thanks">
+        <div class="sup-pill-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.94 8.22L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L9.06 8.22L12 2Z" fill="currentColor" />
+          </svg>
+        </div>
+        <span class="sup-pill-label">Super Thanks</span>
+      </div>
+
+      <div class="sup-pill sup-pill-coffee">
+        <div class="sup-pill-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M4 19H18V21H4V19ZM20 3H6V13C6 15.21 7.79 17 10 17H14C16.21 17 18 15.21 18 13V10H20C21.1 10 22 9.1 22 8V5C22 3.9 21.1 3 20 3ZM20 8H18V5H20V8ZM8.5 6C8.78 6 9 6.22 9 6.5V7.5C9 8.33 9.67 9 10.5 9C11.33 9 12 8.33 12 7.5V6.5C12 6.22 12.22 6 12.5 6C12.78 6 13 6.22 13 6.5V7.5C13 8.88 11.88 10 10.5 10C9.12 10 8 8.88 8 7.5V6.5C8 6.22 8.22 6 8.5 6Z" fill="currentColor" />
+          </svg>
+        </div>
+        <span class="sup-pill-label">Buy Coffee</span>
+      </div>
+
+    </div>
+
+    <div class="sup-bmc">
+      <div class="sup-bmc-overline">or tip via</div>
+      <div class="sup-bmc-handle" id="sup-bmc-url">buymeacoffee.com/diy_smartcode</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 2) CSS — merge into your composition's <style> block. -->
+
+<style>
+  /* shared/lib/components/support-banner — keep this comment block */
+  #sup-banner {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    /* NOTE: NO `transform: translateX(-50%)` here — GSAP would overwrite it
+       when it animates y on this element. The animator instead sets
+       `xPercent: -50` once in tl.set() so GSAP owns the full transform. */
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0;
+    /* JS animator reveals on entrance — start hidden so seek-to-frame-0
+       doesn't flash the banner. */
+  }
+
+  .sup-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    padding: 14px 24px;
+    border-radius: 18px;
+    border: 4px solid #1e293b;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    position: relative;
+  }
+
+  .sup-profile {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3.5px solid #ec4899;
+  }
+  .sup-profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .sup-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .sup-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.4px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .sup-tagline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: 0.1px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .sup-separator {
+    width: 2px;
+    height: 56px;
+    background: rgba(15, 23, 42, 0.14);
+    flex-shrink: 0;
+  }
+
+  .sup-pills {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .sup-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 22px;
+    border-radius: 999px;
+    border-width: 2.5px;
+    border-style: solid;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    justify-content: center;
+  }
+  .sup-pill-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    line-height: 0;
+  }
+  .sup-pill-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Per-pill palettes */
+  .sup-pill-join {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    border-color: #7f1d1d;
+    color: #ffffff;
+  }
+  .sup-pill-thanks {
+    background: linear-gradient(135deg, #db2777, #9d174d);
+    border-color: #831843;
+    color: #ffffff;
+  }
+  .sup-pill-coffee {
+    background: linear-gradient(135deg, #fde047, #facc15);
+    border-color: #a16207;
+    color: #422006;
+  }
+
+  .sup-bmc {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    flex-shrink: 0;
+    padding-left: 14px;
+    margin-left: 6px;
+    border-left: 1px solid rgba(15, 23, 42, 0.14);
+  }
+  .sup-bmc-overline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .sup-bmc-handle {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+</style>
+
+<!-- 3) JS — call from the host root timeline. Hides everything at t=0 then
+        reveals on the schedule below. Pass the absolute start time in
+        seconds; banner exits ~7s later. -->
+
+<script>
+  /**
+   * addSupportBanner(tl, t, opts?)
+   *   tl   — host paused timeline (gsap.timeline({paused: true}))
+   *   t    — absolute time (seconds) at which the banner enters
+   *   opts — { headline?: string, tagline?: string, bmcUrl?: string,
+   *            showProfile?: boolean }
+   *          Defaults: "Support the Channel" / "Every bit keeps the videos
+   *          coming" / "buymeacoffee.com/diy_smartcode" / true.
+   *
+   * Lifetime: t .. t + 8.0s (banner exits at t + 7.0s, exit takes ~0.6s).
+   */
+  function addSupportBanner(tl, t, opts) {
+    opts = opts || {};
+    if (typeof opts.headline === 'string') {
+      var h = document.getElementById('sup-headline');
+      if (h) h.textContent = opts.headline;
+    }
+    if (typeof opts.tagline === 'string') {
+      var tg = document.getElementById('sup-tagline');
+      if (tg) tg.textContent = opts.tagline;
+    }
+    if (typeof opts.bmcUrl === 'string') {
+      var u = document.getElementById('sup-bmc-url');
+      if (u) u.textContent = opts.bmcUrl;
+    }
+    if (opts.showProfile === false) {
+      var p = document.querySelector('#sup-banner .sup-profile');
+      if (p) p.style.display = 'none';
+    }
+
+    // ── Hide everything at t=0 — bullet-proof seek-to-frame-0 ──
+    // xPercent: -50 replaces the translateX(-50%) centering that used to
+    // live in CSS — GSAP now owns the full transform on #sup-banner.
+    tl.set('#sup-banner', { opacity: 0, y: 80, xPercent: -50 }, 0);
+    tl.set('.sup-profile', { opacity: 0, scale: 0.4 }, 0);
+    tl.set('.sup-headline', { opacity: 0, x: -28 }, 0);
+    tl.set('.sup-tagline', { opacity: 0, x: -28 }, 0);
+    tl.set('.sup-pill-join', { opacity: 0, y: 28, scale: 0.7 }, 0);
+    tl.set('.sup-pill-thanks', { opacity: 0, y: 28, scale: 0.7 }, 0);
+    tl.set('.sup-pill-coffee', { opacity: 0, y: 28, scale: 0.7 }, 0);
+    tl.set('.sup-pill-join .sup-pill-icon', { scale: 1 }, 0);
+    tl.set('.sup-pill-thanks .sup-pill-icon', { scale: 1 }, 0);
+    tl.set('.sup-pill-coffee .sup-pill-icon', { scale: 1 }, 0);
+    tl.set('.sup-bmc', { opacity: 0 }, 0);
+
+    // ── Banner spring-in (frame 0) ──
+    tl.to('#sup-banner', { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.4)', overwrite: 'auto' }, t);
+
+    // ── Profile pop (frame 8 ≈ 0.27s) ──
+    tl.to('.sup-profile', { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)', overwrite: 'auto' }, t + 0.27);
+
+    // ── Headline slide (frame 14 ≈ 0.47s) ──
+    tl.to('.sup-headline', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 0.47);
+
+    // ── Tagline slide (frame 18 ≈ 0.6s) ──
+    tl.to('.sup-tagline', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 0.6);
+
+    // ── Pills stagger in (frames 26 / 36 / 46) ──
+    tl.to('.sup-pill-join',   { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' }, t + 0.87);
+    tl.to('.sup-pill-thanks', { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' }, t + 1.20);
+    tl.to('.sup-pill-coffee', { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' }, t + 1.53);
+
+    // ── Idle icon pulse (frame 70+ ≈ 2.33s onward, staggered per pill) ──
+    // Each pill's icon breathes between scale 1 and 1.06 over a 1.3s half-cycle.
+    // Three yoyos = 6 half-cycles = ~7.8s, comfortably covering banner lifetime.
+    var pulseDur = 1.3;
+    var pulseRepeats = 3;
+    var pulseEase = 'sine.inOut';
+
+    var icon1 = gsap.timeline();
+    icon1.fromTo('.sup-pill-join .sup-pill-icon', { scale: 1 },
+      { scale: 1.06, duration: pulseDur, ease: pulseEase, yoyo: true, repeat: pulseRepeats });
+    tl.add(icon1, t + 2.33);
+
+    var icon2 = gsap.timeline();
+    icon2.fromTo('.sup-pill-thanks .sup-pill-icon', { scale: 1 },
+      { scale: 1.06, duration: pulseDur, ease: pulseEase, yoyo: true, repeat: pulseRepeats });
+    tl.add(icon2, t + 2.53);
+
+    var icon3 = gsap.timeline();
+    icon3.fromTo('.sup-pill-coffee .sup-pill-icon', { scale: 1 },
+      { scale: 1.06, duration: pulseDur, ease: pulseEase, yoyo: true, repeat: pulseRepeats });
+    tl.add(icon3, t + 2.73);
+
+    // ── BMC URL panel fade-in (frame 80 ≈ 2.67s) ──
+    tl.to('.sup-bmc', { opacity: 1, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 2.67);
+
+    // ── Banner fly out (frame 210 ≈ 7.0s) ──
+    tl.to('#sup-banner', { opacity: 0, y: 120, duration: 0.6, ease: 'back.in(1.0)', overwrite: 'auto' }, t + 7.0);
+  }
+  // Usage:
+  //   addSupportBanner(tl, 28.0);
+  //   addSupportBanner(tl, 28.0, { headline: "Support the work", showProfile: false });
+</script>
+
+<!--
+  ASSET COPY CHECKLIST (do this BEFORE wiring):
+    cp ../diy-yt-creator/public/images/profile-leex.png \
+       videos/<slug>/assets/profile-leex.png
+    # PowerShell:
+    # Copy-Item ../diy-yt-creator/public/images/profile-leex.png \
+    #   videos/<slug>/assets/profile-leex.png
+
+  This component is OPT-IN per video. Pair with a spring-pop SFX on banner-in
+  (data-volume="0.11") if desired. No click SFX needed (no mouse animation).
+
+  POSITIONING:
+    Default: bottom-center, 80px from bottom edge.
+    To relocate, override #sup-banner in your composition's <style>:
+      #sup-banner { bottom: auto; top: 80px; }
+
+  SIZING:
+    Designed at native 1920x1080 long-form. The card is a flat horizontal
+    strip; on Shorts (1080x1920) it would need a vertically-stacked variant
+    (not yet built — see new-format component when needed).
+-->

@@ -51,16 +51,19 @@ If `videos/<slug>/` does not exist, create it (`mkdir -p videos/<slug>/research`
 
 Determine what `$ARGUMENTS` refers to and classify it:
 
-| Input Pattern                       | Classification     | Pre-Fetch Action                       |
-| ----------------------------------- | ------------------ | -------------------------------------- |
-| URL (http/https)                    | infer from page    | Fetch URL content for all agents       |
-| Product/tool name                   | `PRODUCT_TOOL`     | Search for official site               |
-| Abstract concept                    | `CONCEPT`          | No pre-fetch, agents search            |
-| Article/video response              | `ARTICLE_RESPONSE` | Fetch article URL                      |
-| "X vs Y" or comparison              | `COMPARISON`       | Search both subjects                   |
-| Brief template (contains `**Topic**:`) | `STRUCTURED_BRIEF` | Parse fields, fetch links            |
+| Input Pattern                                                            | Classification     | Pre-Fetch Action                                                |
+| ------------------------------------------------------------------------ | ------------------ | --------------------------------------------------------------- |
+| YouTube URL (`youtube.com/watch`, `youtu.be/`, `youtube.com/playlist`, `youtube.com/@handle`) | `YOUTUBE_SOURCE`   | Fetch transcript via `youtube-transcript` skill (see Step 0C.5) |
+| URL (http/https, non-YouTube)                                            | infer from page    | Fetch URL content for all agents                                |
+| Product/tool name                                                        | `PRODUCT_TOOL`     | Search for official site                                        |
+| Abstract concept                                                         | `CONCEPT`          | No pre-fetch, agents search                                     |
+| Article/video response                                                   | `ARTICLE_RESPONSE` | Fetch article URL                                               |
+| "X vs Y" or comparison                                                   | `COMPARISON`       | Search both subjects                                            |
+| Brief template (contains `**Topic**:`)                                   | `STRUCTURED_BRIEF` | Parse fields, fetch links (YouTube links route through 0C.5)    |
 
 Store as `TOPIC_TYPE` for agent prompts.
+
+`YOUTUBE_SOURCE` behaves like `ARTICLE_RESPONSE` for fact-check scope (the transcript is the source of truth) — see the memory rule "Fact-check ARTICLE_RESPONSE against the source only." When phase 2b runs, point it at `videos/<slug>/research/source-transcript.json` as the canonical source.
 
 ### Step 0B: Determine Research Depth
 
@@ -76,7 +79,47 @@ Default to `STANDARD` if duration is unknown.
 
 ### Step 0C: Pre-Fetch Primary URL (if applicable)
 
-If a URL was provided, fetch the page content now via `WebFetch`. Include this content in ALL agent prompts so they share the same primary source without redundant fetches.
+If a URL was provided AND `TOPIC_TYPE` is **not** `YOUTUBE_SOURCE`, fetch the page content now via `WebFetch`. Include this content in ALL agent prompts so they share the same primary source without redundant fetches.
+
+For `YOUTUBE_SOURCE`, skip `WebFetch` entirely — the YouTube watch page has no usable text content. Use Step 0C.5 instead.
+
+### Step 0C.5: Pre-Fetch YouTube Transcript (YOUTUBE_SOURCE only)
+
+When `TOPIC_TYPE == YOUTUBE_SOURCE`, fetch the transcript via the installed `youtube-transcript` skill before spawning Wave 1 agents. The skill is a stdlib-only Python script at `~/.claude/skills/youtube-transcript/scripts/youtube_transcript.py` and reads `TRANSCRIPT_API_KEY` from the project `.env`.
+
+Pick the right subcommand based on the URL pattern:
+
+| URL pattern                          | Subcommand                              |
+| ------------------------------------ | --------------------------------------- |
+| `youtube.com/watch?v=...` or `youtu.be/...` | `video <url>`                    |
+| `youtube.com/playlist?list=...`      | `playlist <url>`                        |
+| `youtube.com/@handle` or `/channel/UC...` | `channel <handle> --count 5` (default 5; raise to 10-15 if the topic is "latest from this channel") |
+
+Run from the repo root, writing both JSON (with timestamps, for downstream phases) and a plain-text copy (for agent prompts):
+
+```bash
+mkdir -p videos/<slug>/research
+
+# JSON with word-level timestamps + metadata — canonical source for fact-check
+python ~/.claude/skills/youtube-transcript/scripts/youtube_transcript.py \
+  video "<URL>" --metadata --format json \
+  -o videos/<slug>/research/source-transcript.json
+
+# Plain-text copy — pasted into Wave 1 agent prompts
+python ~/.claude/skills/youtube-transcript/scripts/youtube_transcript.py \
+  video "<URL>" --metadata --format text --no-timestamps \
+  -o videos/<slug>/research/source-transcript.txt
+```
+
+PowerShell variant (Windows): replace `~` with `$env:USERPROFILE` and the line continuations with backticks. The script itself works identically.
+
+**Failure handling**:
+- Exit code 1 with "Invalid API key" → STOP and tell the user to set `TRANSCRIPT_API_KEY` in `.env` (get a key at https://transcriptapi.com).
+- Exit code 1 with "No credits remaining" → STOP and tell the user to top up.
+- Exit code 1 with "Not found (404)" → the video may be private, region-locked, or have no captions. STOP and ask the user for an alternative source URL.
+- Any other failure → fall back to `WebFetch` on the watch page (will yield only metadata) and warn in the brief that no transcript was available.
+
+After the fetch succeeds, read `source-transcript.txt` and include the full text inline in **every** Wave 1 agent prompt (under a `PRE-FETCHED YOUTUBE TRANSCRIPT` heading) so all four agents work from the same source without redundant API calls. Also include the video title + channel from the metadata header so agents can attribute claims correctly.
 
 ### Step 0D: Interactive Scoping (standalone execution only)
 
@@ -547,7 +590,7 @@ The content brief uses this enriched template (ALL sections are mandatory unless
 - **Voice Profile**: `voice_profile: <tutorial | news-explainer | comparison>` — picked in Step 0E (see Voice Profile heuristic). Determines which `brand-voice-*.md` file Phase 2 reads. Default: `news-explainer`.
 - **Target Audience**: <primary and secondary>
 - **Key Angle**: <the ONE thing viewers should remember>
-- **Topic Type**: <PRODUCT_TOOL | CONCEPT | ARTICLE_RESPONSE | COMPARISON>
+- **Topic Type**: <PRODUCT_TOOL | CONCEPT | ARTICLE_RESPONSE | COMPARISON | YOUTUBE_SOURCE>
 - **Research Depth**: <LIGHT | STANDARD | DEEP>
 
 ---

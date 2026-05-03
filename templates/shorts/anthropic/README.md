@@ -60,7 +60,7 @@ npx hyperframes inspect videos/$SLUG      # checks for layout overflow
 npx hyperframes preview videos/$SLUG
 
 # 7. Render
-npx hyperframes render videos/$SLUG -o videos/$SLUG/out/$SLUG.mp4
+npx hyperframes render videos/$SLUG -o out/$SLUG.mp4
 ```
 
 PowerShell equivalent for step 2: `Copy-Item -Recurse templates/shorts/anthropic videos/$SLUG`.

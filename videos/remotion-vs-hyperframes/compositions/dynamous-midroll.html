@@ -1,0 +1,1025 @@
+<!--
+  shared/lib/blocks/dynamous-midroll/block.html
+  Long-form (1920x1080) Dynamous AI Mastery midroll break — 6-phase, ~31s
+  promotional sub-composition mirroring the legacy Remotion DynamousMidrollV2.
+  Designed to drop into the middle of a long-form video at a natural narration
+  pause. Plays its own narration track + transition-in/out SFX wired at the
+  HOST level (sub-compositions don't host audio — see audio-design.md).
+
+  Phase layout (visual; audio narration words noted in parentheses):
+    1. Community           0.0–9.4s   (Over a thousand builders. … Three full courses.)
+    2. Agentic Coding      9.4–16.0s  (The Agentic Coding course, eighteen modules…)
+    3. Agent Mastery      16.0–21.4s  (The AI Agent Mastery course, build production agents…)
+    4. Second Brain       21.4–27.3s  (And the Second Brain Bootcamp, eight modules…)
+    5. CTA                27.3–30.2s  (Link in description, ten percent off.)
+    6. Outro              30.2–31.5s  (Back to the video.) — fades to transparent
+
+  SOURCE:
+    diy-yt-creator/src/shared/components/DynamousMidrollV2.tsx:1-1304
+      (frame-based Remotion impl translated to seconds + GSAP timeline;
+       audio playbackRate 1.1x replaced with native 1.0x — phase boundaries
+       re-anchored to dynamous-midroll-v2-sync.json word ends in 1.0x time)
+    shared/lib/blocks/dynamous-endcard/block.html (sub-composition pattern,
+    paused timeline, scoped CSS, self-registration)
+
+  REQUIRED HOST TOKENS:
+    None. The block inlines all colors and the Inter font. The dark-stage
+    surface uses the Dynamous midroll v3 palette (slate + purple + pink +
+    cyan + red).
+
+  ASSET COPY (do BEFORE wiring — bundler rejects parent-of-project paths).
+  See ./recipe.md for full host wiring; the short list:
+    cp ../diy-yt-creator/public/assets/dynamous-logo.png \
+       videos/<slug>/assets/dynamous-logo.png
+    cp ../diy-yt-creator/public/images/dynamous/cole-medin.webp \
+       videos/<slug>/assets/dynamous-cole-medin.webp
+    cp ../diy-yt-creator/public/images/dynamous/events.png \
+       videos/<slug>/assets/dynamous-events.png
+    cp ../diy-yt-creator/public/images/dynamous/feed.png \
+       videos/<slug>/assets/dynamous-feed.png
+    cp ../diy-yt-creator/public/images/dynamous/social-proof/community-01.png \
+       videos/<slug>/assets/dynamous-community-01.png
+    cp ../diy-yt-creator/public/images/dynamous/social-proof/workshop-01.png \
+       videos/<slug>/assets/dynamous-workshop-01.png
+    cp ../diy-yt-creator/public/audio/shared/dynamous-midroll-v2.mp3 \
+       videos/<slug>/audio/dynamous-midroll-v2.mp3
+    cp ../diy-yt-creator/public/audio/shared/midroll-transition-in.mp3 \
+       videos/<slug>/audio/midroll-transition-in.mp3
+    cp ../diy-yt-creator/public/audio/shared/midroll-transition-out.mp3 \
+       videos/<slug>/audio/midroll-transition-out.mp3
+-->
+<template id="dynamous-midroll-template">
+  <div class="dm-root" data-composition-id="dynamous-midroll" data-start="0" data-duration="31.5" data-width="1920" data-height="1080">
+
+    <!-- ─────────── BACKGROUND LAYERS ─────────── -->
+    <div class="dm-bg-base"></div>
+    <div class="dm-orb dm-orb-1"></div>
+    <div class="dm-orb dm-orb-2"></div>
+    <div class="dm-orb dm-orb-3"></div>
+    <div class="dm-noise"></div>
+
+    <!-- ─────────── PERSISTENT CHROME ─────────── -->
+    <div class="dm-werbung">Werbung</div>
+
+    <div class="dm-brand">
+      <img class="dm-brand-logo" src="../assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+      <div class="dm-brand-label">Dynamous <span class="dm-brand-accent">AI Mastery</span></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 1 — Community
+         ═══════════════════════════════════════════════════════ -->
+    <div class="dm-phase dm-phase-1" id="dm-phase-1">
+
+      <!-- Ambient floating community screenshots -->
+      <div class="dm-floats">
+        <img class="dm-float dm-float-1" src="../assets/dynamous-events.png" alt="" crossorigin="anonymous" />
+        <img class="dm-float dm-float-2" src="../assets/dynamous-workshop-01.png" alt="" crossorigin="anonymous" />
+        <img class="dm-float dm-float-3" src="../assets/dynamous-feed.png" alt="" crossorigin="anonymous" />
+        <img class="dm-float dm-float-4" src="../assets/dynamous-community-01.png" alt="" crossorigin="anonymous" />
+      </div>
+
+      <!-- Foreground content -->
+      <div class="dm-fg dm-fg-community">
+
+        <div class="dm-stat-block">
+          <div class="dm-stat-num" id="dm-stat-num">0+</div>
+          <div class="dm-stat-label">Builders</div>
+          <div class="dm-stat-tagline" id="dm-stat-tagline">Three Full Courses</div>
+        </div>
+
+        <div class="dm-events">
+          <div class="dm-event" id="dm-event-1">
+            <div class="dm-event-row">
+              <div class="dm-event-dot dm-event-dot-purple"></div>
+              <div class="dm-event-name">Daily Hangouts</div>
+            </div>
+          </div>
+          <div class="dm-event" id="dm-event-2">
+            <div class="dm-event-row">
+              <div class="dm-event-dot dm-event-dot-cyan"></div>
+              <div class="dm-event-name">Debug Together</div>
+              <div class="dm-event-badge dm-event-badge-cyan">LIVE</div>
+            </div>
+          </div>
+          <div class="dm-event" id="dm-event-3">
+            <div class="dm-event-row">
+              <div class="dm-event-dot dm-event-dot-orange"></div>
+              <div class="dm-event-name">Weekly Workshops</div>
+              <div class="dm-event-badge dm-event-badge-orange">FEATURED</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 2 — Agentic Coding (18 modules scrolling list)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="dm-phase dm-phase-2" id="dm-phase-2">
+      <div class="dm-fg dm-fg-course">
+
+        <div class="dm-course-card" id="dm-course-card-2">
+          <div class="dm-course-label" style="color: #06b6d4;">AGENTIC CODING COURSE</div>
+          <div class="dm-course-title">Master AI Coding</div>
+          <div class="dm-course-stat" style="background: linear-gradient(135deg, #06b6d4, #ffffff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">18<span class="dm-course-stat-suffix"> modules</span></div>
+          <div class="dm-course-desc">From your first command to shipping<br/>multi-agent systems</div>
+        </div>
+
+        <div class="dm-list-wrap" id="dm-list-agentic">
+          <div class="dm-list-header">Course Content • 4 batches • 18 modules</div>
+          <div class="dm-list-clip">
+            <div class="dm-list-track" id="dm-track-agentic">
+              <!-- 18 modules — populated below -->
+            </div>
+            <div class="dm-list-fade-bottom"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 3 — Agent Mastery (5 highlight cards)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="dm-phase dm-phase-3" id="dm-phase-3">
+      <div class="dm-fg dm-fg-course">
+
+        <div class="dm-course-card" id="dm-course-card-3">
+          <div class="dm-course-label" style="color: #8b5cf6;">AI AGENT MASTERY COURSE</div>
+          <div class="dm-course-title">Build AI Agents</div>
+          <div class="dm-course-stat" style="background: linear-gradient(135deg, #8b5cf6, #ffffff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">n8n<span class="dm-course-stat-suffix"> + Python</span></div>
+          <div class="dm-course-desc">From beginner to deploying<br/>production AI agents</div>
+        </div>
+
+        <div class="dm-highlights">
+          <div class="dm-highlight" data-color="#a855f7">
+            <div class="dm-highlight-icon" style="background: rgba(168,85,247,0.20); color: #a855f7;">🤖</div>
+            <div class="dm-highlight-text">What AI agents are &amp; how to use them</div>
+          </div>
+          <div class="dm-highlight" data-color="#06b6d4">
+            <div class="dm-highlight-icon" style="background: rgba(6,182,212,0.20); color: #06b6d4;">🛠</div>
+            <div class="dm-highlight-text">Build with n8n (no-code) &amp; Python</div>
+          </div>
+          <div class="dm-highlight" data-color="#f97316">
+            <div class="dm-highlight-icon" style="background: rgba(249,115,22,0.20); color: #f97316;">📐</div>
+            <div class="dm-highlight-text">Complete agent blueprints</div>
+          </div>
+          <div class="dm-highlight" data-color="#22c55e">
+            <div class="dm-highlight-icon" style="background: rgba(34,197,94,0.20); color: #22c55e;">🚀</div>
+            <div class="dm-highlight-text">Deploy agents in production</div>
+          </div>
+          <div class="dm-highlight" data-color="#6366f1">
+            <div class="dm-highlight-icon" style="background: rgba(99,102,241,0.20); color: #6366f1;">💻</div>
+            <div class="dm-highlight-text">Run everything locally</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 4 — Second Brain (8 modules scrolling list)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="dm-phase dm-phase-4" id="dm-phase-4">
+      <div class="dm-fg dm-fg-course">
+
+        <div class="dm-course-card" id="dm-course-card-4">
+          <div class="dm-course-label" style="color: #22c55e;">SECOND BRAIN BOOTCAMP</div>
+          <div class="dm-course-title">Your Personal AI</div>
+          <div class="dm-course-stat" style="background: linear-gradient(135deg, #22c55e, #ffffff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">8<span class="dm-course-stat-suffix"> modules</span></div>
+          <div class="dm-course-desc">Build your own personal AI system<br/>from scratch</div>
+        </div>
+
+        <div class="dm-list-wrap" id="dm-list-sb">
+          <div class="dm-list-header">Course Content • 1 section • 8 lessons • 3 hr 2 min</div>
+          <div class="dm-list-clip dm-list-clip-sb">
+            <div class="dm-list-track" id="dm-track-sb">
+              <!-- 8 modules — populated below -->
+            </div>
+            <div class="dm-list-fade-bottom"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 5 — CTA (Cole + Link + 10% OFF + URL)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="dm-phase dm-phase-5" id="dm-phase-5">
+      <div class="dm-cta-card">
+
+        <div class="dm-cta-cole">
+          <div class="dm-cta-cole-ring">
+            <img class="dm-cta-cole-img" src="../assets/dynamous-cole-medin.webp" alt="Cole Medin" crossorigin="anonymous" />
+          </div>
+          <div class="dm-cta-cole-name">Cole Medin</div>
+          <div class="dm-cta-cole-role">Your Guide</div>
+        </div>
+
+        <div class="dm-cta-divider"></div>
+
+        <div class="dm-cta-actions">
+          <div class="dm-cta-headline">Join the Community</div>
+          <div class="dm-cta-button" id="dm-cta-button">
+            <span>Link in Description</span>
+            <span class="dm-cta-arrow" id="dm-cta-arrow">↓</span>
+          </div>
+          <div class="dm-cta-discount" id="dm-cta-discount">10% OFF</div>
+          <div class="dm-cta-url">dynamous.ai</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         OUTRO — "Back to the video."
+         ═══════════════════════════════════════════════════════ -->
+    <div class="dm-phase dm-phase-outro" id="dm-phase-outro">
+      <div class="dm-outro-text" id="dm-outro-text">Back to the video.</div>
+    </div>
+
+    <!-- Transition flash overlays — driven by JS -->
+    <div class="dm-flash" id="dm-flash"></div>
+
+    <!-- ─────────── SCOPED STYLES ─────────── -->
+    <style>
+      .dm-root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: #000000;
+        font-family: 'Inter', system-ui, sans-serif;
+        overflow: hidden;
+        opacity: 0;
+        /* Hidden by default — JS reveals via the windowed container fade-in. */
+      }
+
+      /* ─── BACKGROUND LAYERS ─── */
+      .dm-bg-base {
+        position: absolute;
+        inset: 20px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0f172a 0%, #16213e 50%, #0f172a 100%);
+        overflow: hidden;
+        z-index: 0;
+      }
+      .dm-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.4;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .dm-orb-1 {
+        left: -100px;
+        top: -100px;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(168,85,247,0.18), rgba(236,72,153,0.06));
+      }
+      .dm-orb-2 {
+        right: -120px;
+        bottom: -120px;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(99,102,241,0.15), rgba(139,92,246,0.05));
+      }
+      .dm-orb-3 {
+        left: 30%;
+        bottom: 10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(6,182,212,0.12), rgba(6,182,212,0.04));
+      }
+      .dm-noise {
+        position: absolute;
+        inset: 20px;
+        border-radius: 16px;
+        background-image:
+          radial-gradient(circle at 20% 30%, rgba(255,255,255,0.02) 1px, transparent 1.5px),
+          radial-gradient(circle at 75% 70%, rgba(255,255,255,0.02) 1px, transparent 1.5px),
+          radial-gradient(circle at 45% 90%, rgba(255,255,255,0.02) 1px, transparent 1.5px);
+        background-size: 80px 80px, 120px 120px, 100px 100px;
+        opacity: 0.04;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* ─── PERSISTENT CHROME ─── */
+      .dm-werbung {
+        position: absolute;
+        top: 48px;
+        left: 48px;
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: #94a3b8;
+        font-size: 18px;
+        font-weight: 700;
+        padding: 8px 18px;
+        border-radius: 10px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        opacity: 0;
+        z-index: 100;
+      }
+      .dm-brand {
+        position: absolute;
+        top: 44px;
+        right: 44px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 14px 26px;
+        border-radius: 16px;
+        opacity: 0;
+        z-index: 100;
+      }
+      .dm-brand-logo {
+        height: 56px;
+        width: auto;
+        display: block;
+      }
+      .dm-brand-label {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+      }
+      .dm-brand-accent { color: #3b82f6; }
+
+      /* ─── PHASE WRAPPERS ─── */
+      .dm-phase {
+        position: absolute;
+        inset: 20px;
+        border-radius: 16px;
+        z-index: 5;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .dm-fg {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 100px;
+        z-index: 6;
+      }
+      .dm-fg-community { gap: 100px; }
+      .dm-fg-course { gap: 70px; }
+
+      /* ─── PHASE 1 — Community ─── */
+      .dm-floats {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .dm-float {
+        position: absolute;
+        border-radius: 14px;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.55);
+        opacity: 0;
+      }
+      .dm-float-1 { left: 60px;  top: 200px;    width: 380px; transform: rotate(-3deg); }
+      .dm-float-2 { right: 60px; bottom: 110px; width: 420px; transform: rotate(2deg); }
+      .dm-float-3 { left: 80px;  bottom: 90px;  width: 360px; transform: rotate(1.5deg); }
+      .dm-float-4 { right: 80px; top: 220px;    width: 360px; transform: rotate(-1.5deg); }
+
+      .dm-stat-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+      }
+      .dm-stat-num {
+        font-size: 140px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #06b6d4, #a855f7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+        letter-spacing: -2px;
+      }
+      .dm-stat-label {
+        font-size: 38px;
+        font-weight: 700;
+        color: #e2e8f0;
+        opacity: 0;
+      }
+      .dm-stat-tagline {
+        font-size: 26px;
+        font-weight: 600;
+        color: #94a3b8;
+        opacity: 0;
+      }
+
+      .dm-events {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .dm-event {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.10);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 20px 28px;
+        border-radius: 18px;
+        box-shadow: 0 6px 28px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        width: 380px;
+        opacity: 0;
+      }
+      .dm-event-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .dm-event-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .dm-event-dot-purple { background: #a855f7; box-shadow: 0 0 14px #a855f7; }
+      .dm-event-dot-cyan   { background: #06b6d4; box-shadow: 0 0 14px #06b6d4; }
+      .dm-event-dot-orange { background: #f97316; box-shadow: 0 0 14px #f97316; }
+      .dm-event-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ffffff;
+        flex: 1;
+      }
+      .dm-event-badge {
+        font-size: 14px;
+        font-weight: 800;
+        color: #ffffff;
+        padding: 4px 10px;
+        border-radius: 6px;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+      }
+      .dm-event-badge-cyan   { background: #06b6d4; }
+      .dm-event-badge-orange { background: #f97316; }
+
+      /* ─── COURSE CARDS (phases 2 / 3 / 4) ─── */
+      .dm-course-card {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 520px;
+        opacity: 0;
+      }
+      .dm-course-label {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .dm-course-title {
+        font-size: 56px;
+        font-weight: 900;
+        color: #ffffff;
+        line-height: 1.05;
+      }
+      .dm-course-stat {
+        font-size: 96px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+      .dm-course-stat-suffix {
+        font-size: 36px;
+        font-weight: 700;
+      }
+      .dm-course-desc {
+        font-size: 24px;
+        font-weight: 600;
+        color: #94a3b8;
+        line-height: 1.4;
+      }
+
+      /* ─── SCROLLING LIST (phases 2 / 4) ─── */
+      .dm-list-wrap {
+        display: flex;
+        flex-direction: column;
+        width: 540px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #0a1220;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 12px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+        opacity: 0;
+      }
+      .dm-list-header {
+        padding: 14px 22px;
+        background: #0d1829;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-size: 14px;
+        font-weight: 700;
+        color: #475569;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+      .dm-list-clip {
+        height: 460px;
+        overflow: hidden;
+        position: relative;
+      }
+      .dm-list-clip-sb { height: 480px; }
+      .dm-list-track { will-change: transform; }
+      .dm-list-row {
+        height: 60px;
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.035);
+        border-left: 3px solid transparent;
+        background: #0a1220;
+      }
+      .dm-list-row.dm-row-alt { background: #0d1829; }
+      .dm-list-row.dm-row-active {
+        border-left-color: var(--row-color);
+        background: linear-gradient(90deg, rgba(255,255,255,0.04), transparent);
+      }
+      .dm-row-num {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 900;
+        background: var(--row-color-faded);
+        color: rgba(255,255,255,0.5);
+      }
+      .dm-list-row.dm-row-active .dm-row-num {
+        background: var(--row-color);
+        color: #ffffff;
+      }
+      .dm-row-title {
+        flex: 1;
+        font-size: 16px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.55);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .dm-list-row.dm-row-active .dm-row-title {
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .dm-row-time {
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(100,116,139,0.6);
+      }
+      .dm-list-row.dm-row-active .dm-row-time { color: #94a3b8; }
+      .dm-row-check {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+      }
+      .dm-list-fade-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(to top, #0a1220, transparent);
+        pointer-events: none;
+      }
+
+      /* ─── PHASE 3 — highlight cards ─── */
+      .dm-highlights {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        opacity: 0;
+      }
+      .dm-highlight {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 16px 24px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+        border-width: 1px;
+        border-style: solid;
+        border-color: rgba(255,255,255,0.10);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+        width: 520px;
+        opacity: 0;
+      }
+      .dm-highlight-icon {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+      }
+      .dm-highlight-text {
+        font-size: 22px;
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+
+      /* ─── PHASE 5 — CTA ─── */
+      .dm-cta-card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        gap: 56px;
+        padding: 48px 64px;
+        border-radius: 28px;
+        background: rgba(15,23,42,0.85);
+        border: 1px solid rgba(255,255,255,0.10);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+        z-index: 7;
+      }
+      .dm-cta-cole {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .dm-cta-cole-ring {
+        width: 168px;
+        height: 168px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #06b6d4, #a855f7);
+        padding: 4px;
+        box-shadow: 0 0 32px rgba(6,182,212,0.35);
+      }
+      .dm-cta-cole-img {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+      }
+      .dm-cta-cole-name {
+        font-size: 28px;
+        font-weight: 800;
+        color: #ffffff;
+      }
+      .dm-cta-cole-role {
+        font-size: 16px;
+        font-weight: 600;
+        color: #06b6d4;
+      }
+      .dm-cta-divider {
+        width: 1px;
+        height: 240px;
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.08), rgba(6,182,212,0.30), rgba(255,255,255,0.08), transparent);
+      }
+      .dm-cta-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+      }
+      .dm-cta-headline {
+        font-size: 44px;
+        font-weight: 900;
+        color: #ffffff;
+        text-align: center;
+      }
+      .dm-cta-button {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 52px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #a855f7, #ec4899, #a855f7);
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+        box-shadow: 0 6px 28px rgba(168,85,247,0.40), 0 0 60px rgba(236,72,153,0.18);
+        font-size: 30px;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+      }
+      .dm-cta-arrow {
+        font-size: 32px;
+        line-height: 0.7;
+      }
+      .dm-cta-discount {
+        padding: 10px 26px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+        box-shadow: 0 6px 18px rgba(220,38,38,0.42);
+        font-size: 32px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1px;
+      }
+      .dm-cta-url {
+        font-size: 20px;
+        font-weight: 600;
+        color: #94a3b8;
+        letter-spacing: 2.5px;
+      }
+
+      /* ─── OUTRO ─── */
+      .dm-phase-outro {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .dm-outro-text {
+        font-size: 56px;
+        font-weight: 700;
+        color: #ffffff;
+        text-align: center;
+        opacity: 0;
+      }
+
+      /* ─── TRANSITION FLASH ─── */
+      .dm-flash {
+        position: absolute;
+        inset: 20px;
+        border-radius: 16px;
+        background: #ffffff;
+        opacity: 0;
+        z-index: 50;
+        pointer-events: none;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function () {
+
+        // ──────────────────────────────────────────────────────────
+        // POPULATE LIST ROWS — done synchronously before timeline build
+        // ──────────────────────────────────────────────────────────
+        var AGENTIC_MODULES = [
+          { num: 1,  title: 'Course Introduction',     color: '#22c55e' },
+          { num: 2,  title: 'The PIV Loop',            color: '#3b82f6' },
+          { num: 3,  title: 'Global Rules',            color: '#8b5cf6' },
+          { num: 4,  title: 'Reusable Prompts',        color: '#f59e0b' },
+          { num: 5,  title: 'Systems for Planning',    color: '#ef4444' },
+          { num: 6,  title: 'Systems for Implementing',color: '#06b6d4' },
+          { num: 7,  title: 'Systems for Validating',  color: '#a855f7' },
+          { num: 8,  title: 'Agentic Coding in GitHub',color: '#10b981' },
+          { num: 9,  title: 'Dynamous Remote System',  color: '#f97316' },
+          { num: 10, title: 'MCP Servers + Skills',    color: '#ec4899' },
+          { num: 11, title: 'Subagents',               color: '#14b8a6' },
+          { num: 12, title: 'Parallel Agentic Coding', color: '#64748b' },
+          { num: 13, title: 'PRP Framework',           color: '#6366f1' },
+          { num: 14, title: 'BMAD Method',             color: '#eab308' },
+          { num: 15, title: 'GitHub Spec Kit',         color: '#0ea5e9' },
+          { num: 16, title: 'Advanced Prompt Eng.',    color: '#d946ef' },
+          { num: 17, title: 'Production Workflows',    color: '#f43f5e' },
+          { num: 18, title: 'Capstone Project',        color: '#22d3ee' }
+        ];
+        var SECOND_BRAIN_MODULES = [
+          { num: 1, title: 'Intro to Second Brain',    time: '29:18', color: '#22c55e' },
+          { num: 2, title: 'Architecture Overview',    time: '18:32', color: '#3b82f6' },
+          { num: 3, title: 'Generating Your PRD',      time: '17:30', color: '#8b5cf6' },
+          { num: 4, title: 'Building the Memory Layer',time: '25:20', color: '#f59e0b' },
+          { num: 5, title: 'Hooks and Memory Search',  time: '23:52', color: '#ef4444' },
+          { num: 6, title: 'Integrations and Skills',  time: '27:28', color: '#06b6d4' },
+          { num: 7, title: 'Reflection & Heartbeat',   time: '18:48', color: '#a855f7' },
+          { num: 8, title: 'Security Hardening',       time: '21:54', color: '#10b981' }
+        ];
+        function hexFade(hex) { return hex + '40'; /* 25% alpha — close enough to the original tint */ }
+        function buildRow(mod, i, withTime) {
+          var alt = (i % 2 === 1) ? ' dm-row-alt' : '';
+          var timeHTML = withTime ? '<div class="dm-row-time">' + mod.time + '</div>' : '';
+          var titleText = withTime ? (mod.num + '. ' + mod.title) : mod.title;
+          return '<div class="dm-list-row' + alt + '" '
+               + 'style="--row-color: ' + mod.color + '; --row-color-faded: ' + hexFade(mod.color) + ';">'
+               + '<div class="dm-row-num">' + mod.num + '</div>'
+               + '<div class="dm-row-title">' + titleText + '</div>'
+               + timeHTML
+               + '<svg class="dm-row-check" viewBox="0 0 14 14" fill="none">'
+               +   '<circle cx="7" cy="7" r="7" fill="' + mod.color + '" fill-opacity="0.20" />'
+               +   '<circle cx="7" cy="7" r="6" stroke="' + mod.color + '" stroke-width="1.5" fill="none" />'
+               +   '<path d="M4 7l2 2 4-4" stroke="' + mod.color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />'
+               + '</svg>'
+               + '</div>';
+        }
+        var trackA = document.getElementById('dm-track-agentic');
+        var trackB = document.getElementById('dm-track-sb');
+        if (trackA) trackA.innerHTML = AGENTIC_MODULES.map(function (m, i) { return buildRow(m, i, false); }).join('');
+        if (trackB) trackB.innerHTML = SECOND_BRAIN_MODULES.map(function (m, i) { return buildRow(m, i, true); }).join('');
+
+        // Mark the active row in each list (the row whose color the course
+        // card uses) — just for visual emphasis. We use a single fixed active
+        // row per phase since the list scrolls past it.
+        // (Optional refinement: cycle the active row during the scroll.)
+
+        // ──────────────────────────────────────────────────────────
+        // PHASE TIMING (seconds, native 1.0x audio)
+        // Anchored to dynamous-midroll-v2-sync.json word ends with 0.3s
+        // audio-offset (transition-in occupies 0.3s before "Over a thousand…").
+        // ──────────────────────────────────────────────────────────
+        var P1_END = 9.4;   // "courses." ends 9.137 + 0.3 = 9.437 → round to 9.4
+        var P2_END = 16.0;  // "repeatable." ends 15.708 + 0.3 = 16.008 → 16.0
+        var P3_END = 21.4;  // "Python." ends 21.142 + 0.3 = 21.442 → 21.4
+        var P4_END = 27.3;  // "scratch." ends 27.016 + 0.3 = 27.316 → 27.3
+        var P5_END = 30.2;  // "off." ends 29.861 + 0.3 = 30.161 → 30.2
+        var DUR    = 31.5;  // composition end — leaves ~1.3s for outro fade
+
+        var tl = gsap.timeline({ paused: true });
+
+        // ──────────────────────────────────────────────────────────
+        // GLOBAL FADE-IN (windowed container appears with a soft zoom)
+        // ──────────────────────────────────────────────────────────
+        tl.set('.dm-root', { opacity: 0, scale: 1.05 }, 0);
+        tl.to('.dm-root',
+          { opacity: 1, scale: 1, duration: 0.55, ease: 'power2.out', overwrite: 'auto' }, 0);
+
+        // Persistent chrome — fade in shortly after the container
+        tl.to('.dm-werbung', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.3);
+        tl.to('.dm-brand',   { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.3);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 1 — Community  (0.0 → 9.4s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#dm-phase-1', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.4);
+
+        // Floating screenshots fade in low-opacity (ambient) — staggered
+        tl.to('.dm-float-1', { opacity: 0.25, duration: 0.7, ease: 'power2.out' }, 0.6);
+        tl.to('.dm-float-2', { opacity: 0.22, duration: 0.7, ease: 'power2.out' }, 0.7);
+        tl.to('.dm-float-3', { opacity: 0.18, duration: 0.7, ease: 'power2.out' }, 0.8);
+        tl.to('.dm-float-4', { opacity: 0.20, duration: 0.7, ease: 'power2.out' }, 0.9);
+
+        // "1000+" counting number — anchored to "thousand" word at audio time 0.4s
+        // (with 0.3s offset → visual time 0.7s). Count for 1.2s up to 1000.
+        tl.to({}, {
+          duration: 1.2,
+          ease: 'power2.out',
+          onUpdate: function () {
+            var t = this.progress();
+            var n = Math.round(t * 1000);
+            var el = document.getElementById('dm-stat-num');
+            if (el) el.textContent = n.toLocaleString() + '+';
+          },
+          onComplete: function () {
+            var el = document.getElementById('dm-stat-num');
+            if (el) el.textContent = '1,000+';
+          }
+        }, 0.7);
+        tl.to('.dm-stat-label', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 1.2);
+
+        // "Three Full Courses" tagline — anchored to "Three" word at audio 7.221s + 0.3 = 7.5s
+        tl.to('#dm-stat-tagline', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 7.5);
+
+        // Event cards — anchored to "hangouts" / "workshops" words
+        // hangouts: audio 2.543s + 0.3 = 2.84s
+        // workshops: audio 3.657s + 0.3 = 3.96s
+        tl.fromTo('#dm-event-1', { opacity: 0, x: 80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.4)' }, 2.84);
+        tl.fromTo('#dm-event-2', { opacity: 0, x: 80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.4)' }, 3.20);
+        tl.fromTo('#dm-event-3', { opacity: 0, x: 80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.4)' }, 3.96);
+
+        // Phase 1 → Phase 2 transition (white glitch flash + crossfade)
+        tl.to('#dm-flash', { opacity: 0.7, duration: 0.08, ease: 'power1.out', overwrite: 'auto' }, P1_END - 0.08);
+        tl.to('#dm-flash', { opacity: 0,   duration: 0.20, ease: 'power1.in',  overwrite: 'auto' }, P1_END);
+        tl.to('#dm-phase-1', { opacity: 0, duration: 0.30, ease: 'power2.in',  overwrite: 'auto' }, P1_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 2 — Agentic Coding  (9.4 → 16.0s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#dm-phase-2', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P1_END);
+
+        tl.fromTo('#dm-course-card-2', { opacity: 0, x: -80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.3)' }, P1_END + 0.10);
+
+        tl.fromTo('#dm-list-agentic', { opacity: 0, x: 80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.3)' }, P1_END + 0.25);
+
+        // Scroll the 18-row track upward over the phase body. With row height
+        // 60px and visible window 460px, total scroll distance = 18*60 - 460 = 620px.
+        var P2_SCROLL_START = P1_END + 0.6;
+        var P2_SCROLL_END   = P2_END - 0.4;
+        tl.fromTo('#dm-track-agentic', { y: 0 },
+          { y: -620, duration: P2_SCROLL_END - P2_SCROLL_START, ease: 'none' }, P2_SCROLL_START);
+
+        // Phase 2 → Phase 3 transition (cross-dissolve, dark)
+        tl.to('#dm-phase-2', { opacity: 0, duration: 0.30, ease: 'power2.in', overwrite: 'auto' }, P2_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 3 — Agent Mastery  (16.0 → 21.4s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#dm-phase-3', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P2_END);
+
+        tl.fromTo('#dm-course-card-3', { opacity: 0, x: -80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.3)' }, P2_END + 0.10);
+
+        // Highlights — staggered entrance, 5 cards over ~2.5s. Anchored just
+        // after the Mastery word (audio 16.544 + 0.3 = 16.84s)
+        tl.set('.dm-phase-3 .dm-highlights', { opacity: 1 }, P2_END + 0.20);
+        var P3_HL_START = 16.84;
+        ['.dm-highlight:nth-child(1)',
+         '.dm-highlight:nth-child(2)',
+         '.dm-highlight:nth-child(3)',
+         '.dm-highlight:nth-child(4)',
+         '.dm-highlight:nth-child(5)'].forEach(function (sel, i) {
+          tl.fromTo('.dm-phase-3 ' + sel, { opacity: 0, y: 24 },
+            { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.5)' }, P3_HL_START + i * 0.34);
+        });
+
+        // Phase 3 → Phase 4 transition
+        tl.to('#dm-phase-3', { opacity: 0, duration: 0.30, ease: 'power2.in', overwrite: 'auto' }, P3_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 4 — Second Brain  (21.4 → 27.3s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#dm-phase-4', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P3_END);
+
+        tl.fromTo('#dm-course-card-4', { opacity: 0, x: -80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.3)' }, P3_END + 0.10);
+
+        tl.fromTo('#dm-list-sb', { opacity: 0, x: 80 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'back.out(1.3)' }, P3_END + 0.25);
+
+        // Scroll 8 rows × 64px (row 60 + 4 spacing) — using 60px — minus visible 480px:
+        // total = 8*60 - 480 = 0  → there's no scroll needed; only fade.
+        // Bump row height implicitly to 70px in CSS would help; instead we
+        // gently scroll a few rows to hint at "more". Use small 80px shift.
+        var P4_SCROLL_START = P3_END + 0.6;
+        var P4_SCROLL_END   = P4_END - 0.4;
+        tl.fromTo('#dm-track-sb', { y: 0 },
+          { y: -100, duration: P4_SCROLL_END - P4_SCROLL_START, ease: 'none' }, P4_SCROLL_START);
+
+        // Phase 4 → Phase 5 transition (white flash for the CTA hit)
+        tl.to('#dm-flash', { opacity: 0.6, duration: 0.06, ease: 'power1.out', overwrite: 'auto' }, P4_END - 0.06);
+        tl.to('#dm-flash', { opacity: 0,   duration: 0.18, ease: 'power1.in',  overwrite: 'auto' }, P4_END);
+        tl.to('#dm-phase-4', { opacity: 0, duration: 0.25, ease: 'power2.in',  overwrite: 'auto' }, P4_END - 0.08);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 5 — CTA  (27.3 → 30.2s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#dm-phase-5', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P4_END);
+
+        tl.fromTo('.dm-cta-card', { opacity: 0, scale: 0.92 },
+          { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.4)' }, P4_END + 0.05);
+
+        // CTA shimmer — gentle background-position drift on the gradient pill
+        tl.to('#dm-cta-button',
+          { backgroundPosition: '200% 0%', duration: 2.2, ease: 'none' }, P4_END + 0.4);
+
+        // Arrow bounce on the CTA pill
+        tl.to('#dm-cta-arrow', { y: 6, duration: 0.4, ease: 'sine.inOut', yoyo: true, repeat: 5 }, P4_END + 0.4);
+
+        // "Link" word anchor: audio 27.016 + 0.3 = 27.316s. The CTA pill should
+        // already be visible by then (it appears at P4_END + 0.05 = 27.35s, a hair late
+        // — match by entering 0.3s earlier so it's settled by the spoken word):
+        // (handled above by the 0.05s offset which lands ~27.35s, within 50ms of the word.)
+
+        // "ten percent off" anchor: audio 28.456 + 0.3 = 28.76s. Discount badge pop:
+        tl.fromTo('#dm-cta-discount', { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.8)' }, 28.76);
+
+        // Phase 5 → Outro transition
+        tl.to('#dm-phase-5', { opacity: 0, duration: 0.30, ease: 'power2.in', overwrite: 'auto' }, P5_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // OUTRO — "Back to the video."  (30.2 → 31.5s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#dm-phase-outro', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P5_END);
+
+        // "Back" word anchor: audio 29.861 + 0.3 = 30.16s
+        tl.fromTo('#dm-outro-text', { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 30.2);
+
+        // Final fade-out — composition handoff back to the host video
+        tl.to('.dm-root', { opacity: 0, duration: 0.7, ease: 'power2.in' }, DUR - 0.7);
+
+        window.__timelines['dynamous-midroll'] = tl;
+      })();
+    </script>
+
+  </div>
+</template>

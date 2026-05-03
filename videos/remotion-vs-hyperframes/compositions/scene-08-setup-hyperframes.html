@@ -1,0 +1,262 @@
+<template id="scene-08-setup-hyperframes-template">
+  <div data-composition-id="scene-08-setup-hyperframes"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s08-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono); font-size: 22px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--hyper);
+      }
+      #s08-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--hyper); margin-right: 14px; box-shadow: 0 0 12px var(--hyper-glow); }
+      #s08-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--display);
+        font-weight: 400;
+        font-size: 60px;
+        letter-spacing: .005em;
+        line-height: .98;
+      }
+      #s08-h2 em { font-family: var(--serif); font-style: italic; color: var(--ink-3); letter-spacing: -.02em; font-weight: 400; }
+
+      #s08-term {
+        position:absolute; left: 96px; right: 96px; top: 320px; bottom: 96px;
+        background: #07090d;
+        border: 1px solid var(--rule-2);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0,0,0,.55), 0 0 60px rgba(255,77,26,.10);
+      }
+      #s08-titlebar {
+        height: 44px; background: #0c0f15;
+        border-bottom: 1px solid var(--rule);
+        display:flex; align-items:center; padding: 0 14px; gap: 8px;
+      }
+      .s08-dot { width: 11px; height: 11px; border-radius: 50%; }
+      .s08-dot.r { background: #ff5f57; } .s08-dot.y { background: #febc2e; } .s08-dot.g { background: #28c840; }
+      #s08-tb-name { flex: 1; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+      .s08-phase {
+        position:absolute; inset: 44px 0 0 0;
+        padding: 22px 28px;
+        font-family: var(--mono);
+        line-height: 1.5;
+        color: #d8d4c8;
+      }
+
+      /* Phase 1 — interactive picker */
+      #s08-phase1 .banner {
+        font-family: var(--mono);
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #ffffff, #00e5d4 60%, #00b3a5);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: .04em;
+        margin-bottom: 18px;
+      }
+      #s08-phase1 .prompt-row { color: var(--ink-2); font-size: 19px; margin-bottom: 4px; }
+      #s08-phase1 .pick-header { color: var(--ink); font-size: 21px; font-weight: 600; margin: 14px 0 10px; }
+      #s08-phase1 .opt {
+        display: flex; align-items: center; gap: 10px;
+        padding: 4px 6px;
+        font-size: 19px; color: var(--ink-2);
+      }
+      #s08-phase1 .opt .arrow { width: 18px; color: var(--hyper); font-weight: 700; opacity: 0; }
+      #s08-phase1 .opt.selected { color: var(--ink); font-weight: 600; }
+      #s08-phase1 .opt.selected .arrow { opacity: 1; }
+      #s08-phase1 .opt .desc { color: var(--ink-3); font-size: 16px; }
+      #s08-phase1 .typed { color: var(--accent); }
+      #s08-phase1 .cursor {
+        display:inline-block; width: 10px; height: 19px;
+        background: var(--accent); margin-left: 2px; vertical-align: middle;
+      }
+
+      /* Phase 2 — post-init output */
+      #s08-phase2 { font-size: 19px; }
+      #s08-phase2 .ln { display:block; }
+      .s08-pu  { color: var(--accent); }
+      .s08-ph  { color: #c084fc; }
+      .s08-info { color: var(--hyper); }
+      .s08-warn { color: #ffd24a; }
+      .s08-ok   { color: #00ff9d; }
+      .s08-dim  { color: var(--ink-3); }
+      .s08-you  { color: var(--ink); }
+      .s08-list { padding-left: 24px; color: var(--ink-2); }
+
+      #s08-stamp {
+        position:absolute; right: 130px; top: 120px;
+        font-family: var(--display);
+        font-size: 110px;
+        color: var(--hyper);
+        letter-spacing: .04em;
+        line-height: .9;
+        text-align: right;
+        opacity: 0;
+      }
+      #s08-stamp .small {
+        font-family: var(--mono); font-size: 16px;
+        color: var(--ink-3); letter-spacing: .25em;
+        display: block; margin-bottom: 6px;
+      }
+    </style>
+
+    <div id="s08-eyebrow"><span class="dot"></span>SCENARIO 2 · BOOTSTRAP HYPERFRAMES</div>
+    <h2 id="s08-h2">npx hyperframes init <em>— pick a template, no install.</em></h2>
+
+    <div id="s08-term">
+      <div id="s08-titlebar">
+        <span class="s08-dot r"></span><span class="s08-dot y"></span><span class="s08-dot g"></span>
+        <span id="s08-tb-name">cmd · ~/projects/launch-vid</span>
+      </div>
+
+      <!-- Phase 1: interactive picker (mirrors actual `npx hyperframes init` UI) -->
+      <div class="s08-phase" id="s08-phase1">
+        <div class="prompt-row" id="s08-p1-cmd"><span class="s08-pu">user</span><span class="s08-dim">@</span><span class="s08-ph">launch-vid</span><span class="s08-dim">&gt; </span><span class="typed">npx hyperframes init my-video</span><span class="cursor"></span></div>
+        <div class="banner" id="s08-p1-banner">HYPERFRAMES</div>
+        <div class="pick-header" id="s08-p1-title">T  Create a new HyperFrames project</div>
+        <div class="pick-header" id="s08-p1-pick">*  Pick an example</div>
+        <div class="opt selected" id="s08-p1-opt-0"><span class="arrow">&gt;</span><span>Blank</span><span class="desc">(Empty composition — just the scaffolding)</span></div>
+        <div class="opt"          id="s08-p1-opt-1"><span class="arrow">&gt;</span><span>Warm Grain</span></div>
+        <div class="opt"          id="s08-p1-opt-2"><span class="arrow">&gt;</span><span>Play Mode</span></div>
+        <div class="opt"          id="s08-p1-opt-3"><span class="arrow">&gt;</span><span>Swiss Grid</span></div>
+        <div class="opt"          id="s08-p1-opt-4"><span class="arrow">&gt;</span><span>Vignelli</span></div>
+        <div class="opt"          id="s08-p1-opt-5"><span class="arrow">&gt;</span><span>Decision Tree</span></div>
+        <div class="opt"          id="s08-p1-opt-6"><span class="arrow">&gt;</span><span>Kinetic Type</span></div>
+        <div class="opt"          id="s08-p1-opt-7"><span class="arrow">&gt;</span><span>Product Promo</span></div>
+        <div class="opt"          id="s08-p1-opt-8"><span class="arrow">&gt;</span><span>NYT Graph</span></div>
+      </div>
+
+      <!-- Phase 2: post-init output -->
+      <div class="s08-phase" id="s08-phase2" style="opacity:0;">
+        <span class="ln" id="s08-l1"><span class="s08-pu">user</span><span class="s08-dim">@</span><span class="s08-ph">launch-vid</span><span class="s08-dim">&gt; </span><span class="s08-you">npx hyperframes init my-video</span> <span class="s08-dim">(picked Blank)</span></span>
+        <span class="ln" id="s08-l2">Created <span class="s08-warn">my-video/</span></span>
+        <span class="ln s08-list" id="s08-l3">&nbsp;&nbsp;AGENTS.md</span>
+        <span class="ln s08-list" id="s08-l4">&nbsp;&nbsp;CLAUDE.md</span>
+        <span class="ln s08-list" id="s08-l5">&nbsp;&nbsp;hyperframes.json</span>
+        <span class="ln s08-list" id="s08-l6">&nbsp;&nbsp;index.html</span>
+        <span class="ln s08-list" id="s08-l7">&nbsp;&nbsp;meta.json</span>
+        <span class="ln s08-list" id="s08-l8">&nbsp;&nbsp;package.json</span>
+        <span class="ln" id="s08-l9">&nbsp;</span>
+        <span class="ln" id="s08-l10"><span class="s08-dim">Get started:</span></span>
+        <span class="ln" id="s08-l11"><span class="s08-info">  1.</span> Install AI coding skills <span class="s08-dim">(one-time):</span> <span class="s08-warn">npx skills add heygen-com/hyperframes</span></span>
+        <span class="ln" id="s08-l12"><span class="s08-info">  2.</span> Open with Claude Code, Cursor, or your agent</span>
+        <span class="ln" id="s08-l13"><span class="s08-info">  3.</span> Try a prompt: <span class="s08-dim">"Using /hyperframes, create a 15-second intro…"</span></span>
+        <span class="ln" id="s08-l14"><span class="s08-info">  4.</span> Preview: <span class="s08-warn">npm run dev</span></span>
+        <span class="ln" id="s08-l15"><span class="s08-info">  5.</span> Check: <span class="s08-warn">npm run check</span></span>
+        <span class="ln" id="s08-l16"><span class="s08-info">  6.</span> Render: <span class="s08-warn">npm run render</span></span>
+      </div>
+    </div>
+
+    <div id="s08-stamp">
+      <span class="small">TOTAL</span>
+      0 INSTALLS
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      // ── Initial state ──
+      tl.set("#s08-eyebrow", { opacity: 0 }, 0);
+      tl.set("#s08-h2",      { y: 30, opacity: 0 }, 0);
+      tl.set("#s08-term",    { y: 30, opacity: 0 }, 0);
+
+      // Phase 1 elements hidden at frame 0
+      tl.set("#s08-p1-cmd",    { y: 8, opacity: 0 }, 0);
+      tl.set("#s08-p1-banner", { y: 8, opacity: 0 }, 0);
+      tl.set("#s08-p1-title",  { y: 8, opacity: 0 }, 0);
+      tl.set("#s08-p1-pick",   { y: 8, opacity: 0 }, 0);
+      const opts = ["#s08-p1-opt-0","#s08-p1-opt-1","#s08-p1-opt-2","#s08-p1-opt-3","#s08-p1-opt-4","#s08-p1-opt-5","#s08-p1-opt-6","#s08-p1-opt-7","#s08-p1-opt-8"];
+      opts.forEach(s => tl.set(s, { x: -8, opacity: 0 }, 0));
+
+      // Phase 2 elements hidden at frame 0
+      tl.set("#s08-phase2", { opacity: 0 }, 0);
+      const lines = ["#s08-l1","#s08-l2","#s08-l3","#s08-l4","#s08-l5","#s08-l6","#s08-l7","#s08-l8","#s08-l9","#s08-l10","#s08-l11","#s08-l12","#s08-l13","#s08-l14","#s08-l15","#s08-l16"];
+      lines.forEach(s => tl.set(s, { y: 8, opacity: 0 }, 0));
+      tl.set("#s08-stamp", { scale: 0.4, opacity: 0 }, 0);
+
+      // ── Header reveals (0-1.5s) ──
+      tl.to("#s08-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s08-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s08-term",    { y: 0, opacity: 1, duration: 0.7 }, 1.0);
+
+      // ── PHASE 1: interactive picker — anchored to actual narration words: ──
+      //   "canonical command" @ scene_t=0.93s
+      //   "interactive picker" @ scene_t=5.90s
+      //   "nine templates"     @ scene_t=7.11s
+      //   "Blank for empty"    @ scene_t=8.46s
+      //   "Swiss Grid"         @ scene_t=11.35s
+      //   "Vignelli"           @ scene_t=12.25s
+      //   "NYT Graph"          @ scene_t=13.27s
+      //   "Pick one, hit enter" @ scene_t=15.08s
+      tl.to("#s08-p1-cmd",    { y: 0, opacity: 1, duration: 0.5 }, 1.8);
+      tl.to("#s08-p1-banner", { y: 0, opacity: 1, duration: 0.6 }, 4.5);
+      tl.to("#s08-p1-title",  { y: 0, opacity: 1, duration: 0.4 }, 5.5);
+      tl.to("#s08-p1-pick",   { y: 0, opacity: 1, duration: 0.4 }, 6.0);
+      // Reveal options one at a time, paced to narration: Blank @ 8.46, Swiss Grid @ 11.35, Vignelli @ 12.25, NYT Graph @ 13.27
+      const optTimes = [7.5, 8.4, 9.4, 10.3, 11.3, 12.2, 13.0, 13.7, 14.4];
+      opts.forEach((s, i) => tl.to(s, { x: 0, opacity: 1, duration: 0.3 }, optTimes[i]));
+      // Cursor sits on Blank (already selected via .selected class) — emphasize selection just before "Pick one, hit enter"
+      tl.to("#s08-p1-opt-0", { backgroundColor: "rgba(0,229,212,.08)", duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3 }, 14.6);
+      tl.to("#s08-p1-opt-0 .arrow", { scale: 1.4, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 3 }, 14.6);
+
+      // ── PHASE 1 → PHASE 2 transition (~15.0s — anchored to "Pick one, hit enter" @ 15.08) ──
+      tl.to("#s08-phase1", { opacity: 0, duration: 0.6, ease: "power1.inOut" }, 15.2);
+      tl.set("#s08-phase1", { display: "none" }, 15.9);
+      tl.set("#s08-phase2", { display: "block" }, 15.9);
+      tl.to("#s08-phase2", { opacity: 1, duration: 0.5 }, 15.9);
+
+      // ── PHASE 2: file list + get-started — anchored to narration ──
+      //   "Six files appear" @ scene_t=16.52s   → l1, l2 reveals
+      //   File list (AGENTS.md @ 18.03 → package.json @ 25.16) → l3-l8 paced ~1.4s apart
+      //   "No npm install"   @ scene_t=30.59s   → stamp "0 INSTALLS" reveals
+      //   "post-init message" @ scene_t=32.23s  → l10 "Get started:"
+      //   "install the agent skill" @ 35.77    → l11 step 1
+      //   "open the project" @ 37.49           → l12 step 2
+      //   "write a prompt"   @ 41.13           → l13 step 3
+      //   "Render"           @ 42.76           → l16 step 6 (l14, l15 are filler in between)
+      tl.to("#s08-l1", { y: 0, opacity: 1, duration: 0.4 }, 16.2);
+      tl.to("#s08-l2", { y: 0, opacity: 1, duration: 0.4 }, 17.0);
+      const fileTimes = [18.0, 19.3, 20.6, 21.9, 23.5, 25.0];  // AGENTS.md → package.json
+      [3,4,5,6,7,8].forEach((idx, i) => {
+        tl.to("#s08-l" + idx, { y: 0, opacity: 1, duration: 0.35 }, fileTimes[i]);
+      });
+      tl.to("#s08-l9",  { y: 0, opacity: 1, duration: 0.3 }, 26.5);
+
+      // Stamp anchored to "no npm install" @ 30.59s
+      tl.to("#s08-stamp", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 30.3);
+
+      // Get-started reveals
+      tl.to("#s08-l10", { y: 0, opacity: 1, duration: 0.4 }, 31.8);
+      tl.to("#s08-l11", { y: 0, opacity: 1, duration: 0.4 }, 35.3);
+      tl.to("#s08-l12", { y: 0, opacity: 1, duration: 0.4 }, 37.1);
+      tl.to("#s08-l13", { y: 0, opacity: 1, duration: 0.4 }, 40.7);
+      tl.to("#s08-l14", { y: 0, opacity: 1, duration: 0.35 }, 41.4);
+      tl.to("#s08-l15", { y: 0, opacity: 1, duration: 0.35 }, 42.0);
+      tl.to("#s08-l16", { y: 0, opacity: 1, duration: 0.4 }, 42.5);
+
+      // ── Mid-beats (continuous activity through full ~57s slot) ──
+      // Picker banner glow
+      tl.to("#s08-p1-banner", { textShadow: "0 0 32px rgba(0,229,212,.5)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 4 }, 5.0);
+      // Stamp pulse after entrance — through "even if you've never written" @ 49.43 to scene end
+      tl.to("#s08-stamp", { scale: 1.06, color: "#fff", duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 11 }, 31.5);
+      // Step lines glow as narrator hits each
+      tl.to("#s08-l11 .s08-warn", { textShadow: "0 0 18px rgba(255,77,26,.7)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 35.8);
+      tl.to("#s08-l16 .s08-warn", { color: "#ffaa70", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 42.8);
+      // Terminal subtle glow throughout
+      tl.to("#s08-term", { boxShadow: "0 40px 100px rgba(0,0,0,.55), 0 0 80px rgba(255,77,26,.18)", duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 14 }, 4.0);
+      tl.to("#s08-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 28 }, 1.0);
+      // Late-scene callout: emphasize "0 INSTALLS" stamp during "even if you've never written" (49.43-54s)
+      tl.to("#s08-stamp", { textShadow: "0 0 36px rgba(255,77,26,.6)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 3 }, 49.0);
+
+      window.__timelines["scene-08-setup-hyperframes"] = tl;
+    </script>
+  </div>
+</template>

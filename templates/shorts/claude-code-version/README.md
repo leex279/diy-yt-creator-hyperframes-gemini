@@ -73,7 +73,7 @@ npx hyperframes inspect videos/$SLUG
 npx hyperframes preview videos/$SLUG
 
 # 8. Render
-npx hyperframes render videos/$SLUG -o videos/$SLUG/out/$SLUG.mp4
+npx hyperframes render videos/$SLUG -o out/$SLUG.mp4
 ```
 
 PowerShell equivalent for step 2: `Copy-Item -Recurse templates/shorts/claude-code-version videos/$SLUG`.

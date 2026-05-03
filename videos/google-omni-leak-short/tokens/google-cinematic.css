@@ -1,0 +1,74 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/google/tokens/google-cinematic.css
+   Vertical Shorts (1080x1920) Google brand stage with the four-color
+   accent rotation (blue / red / yellow / green) on a deep-navy canvas.
+
+   Translated from the supplied "Google Short Design.zip" (styles.css)
+   into HyperFrames token shape — single :root block, var-only, no
+   build step. Keeps the original variable names where they don't
+   collide with the lib's --orange / --purple / --blue / --green
+   legacy aliases that downstream blocks reference.
+
+   Linked once from index.html <head>:
+     <link rel="stylesheet" href="tokens/google-cinematic.css">
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Google brand accents (canonical hex) ─────────────── */
+  --g-blue:         #4285F4;
+  --g-red:          #EA4335;
+  --g-yellow:       #FBBC05;
+  --g-green:        #34A853;
+
+  /* ── Surface ──────────────────────────────────────────── */
+  --bg-deep:        #06080F;
+  --bg-mid:         #0B1020;
+  --bg-soft:        #11182C;
+  --bg:             #06080F;        /* alias — matches anthropic shorts naming */
+  --card:           rgba(10, 14, 26, 0.55);
+  --card-bright:    rgba(10, 14, 26, 0.85);
+  --border:         rgba(255, 255, 255, 0.07);   /* hairline */
+  --border-bright:  rgba(255, 255, 255, 0.18);   /* hairline-strong */
+
+  /* Light-shift surface (Phase 4 / "the shift" moment, optional) */
+  --bg-light:       #F4F6FB;
+  --bg-light-mid:   #EAEEF7;
+  --ink-on-light:   #0A0E1A;
+
+  /* ── Text ─────────────────────────────────────────────── */
+  --text:           #FFFFFF;
+  --ink-100:        #FFFFFF;
+  --ink-80:         #E8ECF5;
+  --text-secondary: #A7B0C5;
+  --ink-60:         #A7B0C5;
+  --text-muted:     #6A7390;
+  --ink-40:         #6A7390;
+  --ink-20:         #3A4360;
+  --text-dim:       #A7B0C5;        /* alias */
+
+  /* ── Accent role tokens (re-mapped per video via tweaks) ─ */
+  /* Default lead = Google blue. Per-video override via inline style on
+     #root:  style="--accent: var(--g-red); --accent-glow: rgba(234,67,53,0.35);"  */
+  --accent:         var(--g-blue);
+  --accent-glow:    rgba(66, 133, 244, 0.35);
+
+  /* Legacy short-template aliases — let lib blocks pull through cleanly */
+  --orange:         #FF8F1F;        /* string literals in terminal — no Google equivalent */
+  --purple:         #A371F7;
+  --blue:           var(--g-blue);
+  --green:          var(--g-green);
+  --red:            var(--g-red);
+  --yellow:         var(--g-yellow);
+
+  --pill-bg:        rgba(10, 14, 26, 0.7);
+  --pill-border:    rgba(255, 255, 255, 0.18);
+
+  /* ── Spacing (1080x1920 safe-zone, mobile UI overlay) ── */
+  --pad-top:        240px;          /* clears top wordmark + mobile UI header */
+  --pad-x:          60px;
+  --pad-bottom:     240px;          /* clears mobile UI footer + progress bar */
+
+  /* ── Type ─────────────────────────────────────────────── */
+  --sans:           'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}

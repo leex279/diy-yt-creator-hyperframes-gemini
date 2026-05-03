@@ -22,7 +22,7 @@ This repo holds **multiple videos**. Every CLI command takes a project directory
 
 ```bash
 npx hyperframes preview videos/<slug>           # preview in browser (studio editor)
-npx hyperframes render  videos/<slug> -o videos/<slug>/out/<slug>.mp4   # render to MP4 — always name the output after the slug, never short.mp4
+npx hyperframes render  videos/<slug> -o out/<slug>.mp4                # render to MP4 — output goes to repo-root out/, named after the slug
 npx hyperframes lint    videos/<slug>           # validate compositions (errors + warnings)
 npx hyperframes inspect videos/<slug>           # check rendered layout for overflow
 npx hyperframes validate videos/<slug>          # lint + WCAG contrast audit
@@ -118,6 +118,8 @@ Fix all errors before presenting the result. Warnings are informational and usua
 6. Only deterministic logic — no `Date.now()`, no `Math.random()`, no network fetches
 7. **Speedup is always ffmpeg post-process on the rendered MP4** — see [`.claude/rules/video-speedup.md`](.claude/rules/video-speedup.md). Never edit `ELEVENLABS_SPEED` in `.env`, never regenerate narration, never re-render to change pacing.
 8. **YouTube descriptions follow [`.claude/rules/youtube-metadata.md`](.claude/rules/youtube-metadata.md)** — every video MUST ship a `videos/<slug>/youtube-description.md`. Mandatory: vidIQ keyword research before drafting, keyword-front-loaded first 200 chars, SEO chapter titles, the Dynamous CTA block in `----` separators, validated URLs, a debate-sparking engagement question, 15-25 hashtags. Chapter timestamps are `data-start ÷ speed_factor` when the MP4 was ffmpeg-sped.
+9. **Enumerated lists reveal step-by-step — never all bullets at once** — see [`.claude/rules/step-by-step-reveal.md`](.claude/rules/step-by-step-reveal.md). Each card / row / item in a list enters on its own beat, paced to when narration would name it (~5s apart in a 30s+ phase). Quick `+0.7s` staggers belong on hero "cast" reveals, not on enumerated explanations. Without TTS yet, use placeholder spacing — retime to transcript word-anchors when narration lands. **Hidden-until-reveal pattern is REQUIRED**: use explicit `tl.set()` at `t=0` + `tl.to()` at the reveal time, NOT `tl.from()` (which leaves elements visible until the tween fires).
+10. **Shorts typography minimums** — see [`.claude/rules/shorts-typography.md`](.claude/rules/shorts-typography.md). On 1080×1920 canvas, body text < 32px renders at ≤11px on phone (unreadable). Min sizes: list-item primary 48px, descriptor 30px, decision-matrix question 36px, answer 42px, hero slam 140px+, CTA pill 44px+. Long-form (1920×1080) is NOT covered.
 
 ## Building New Templates — Consistent Workflow
 

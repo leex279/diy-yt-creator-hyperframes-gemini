@@ -1,0 +1,399 @@
+<!--
+  shared/lib/components/subscribe-banner/component.html
+  Animated YouTube "subscribe" call-to-action banner for long-form (1920x1080)
+  videos. Slides in from the bottom, profile pic pops in, channel + creator
+  name slide in, then the red SUBSCRIBE pill flies in from the right with an
+  idle-swinging notification bell. After ~3s a mouse cursor fades in and
+  travels toward the SUBSCRIBE button — the click depresses the pill, fires
+  a double ripple, and triggers a rapid bell-burst vibration. The whole
+  banner flies out around the 7s mark.
+
+  Total on-screen lifetime: ~8 seconds. Host typically wires this around a
+  CTA moment in the script ("hit subscribe…").
+
+  SOURCE:
+    diy-yt-creator/src/shared/components/SubscribeBanner.tsx:1-401
+      (frame-based Remotion impl translated to seconds + GSAP timeline)
+    shared/lib/components/dynamous-badge/component.html (paste-in pattern,
+    section ordering, asset-copy comment block)
+
+  ──────────────────────────────────────────────────────────────────────
+  IMPORTANT — PROFILE IMAGE MUST BE A LOCAL COPY
+  ──────────────────────────────────────────────────────────────────────
+  HyperFrames' bundler/preview server REJECTS paths outside the project
+  directory. Always:
+
+    1. Copy profile-leex.png from the legacy repo into
+       videos/<slug>/assets/profile-leex.png
+    2. Set src="assets/profile-leex.png"
+
+  ASSET COPY (do BEFORE wiring):
+    cp ../diy-yt-creator/public/images/profile-leex.png \
+       videos/<slug>/assets/profile-leex.png
+    # PowerShell:
+    # Copy-Item ../diy-yt-creator/public/images/profile-leex.png \
+    #   videos/<slug>/assets/profile-leex.png
+-->
+
+<!-- 1) HTML — paste inside your composition's root <div>. NOTE: the banner
+        wrapper has NO class="clip" because the JS function below drives all
+        visibility through tl.set() / tl.to(). The host doesn't need to
+        time-bound the markup. -->
+
+<div id="sb-banner">
+  <div class="sb-card">
+
+    <div class="sb-profile">
+      <img class="sb-profile-img"
+           src="assets/profile-leex.png"
+           alt="Channel avatar"
+           crossorigin="anonymous" />
+    </div>
+
+    <div class="sb-info">
+      <div class="sb-channel" id="sb-channel">DIY SMART CODE</div>
+      <div class="sb-creator" id="sb-creator">Thomas</div>
+    </div>
+
+    <div class="sb-actions">
+      <div class="sb-button">
+        <span class="sb-button-label">Subscribe</span>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-bell">
+        <div class="sb-bell-rotor">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C10.34 2 9 3.34 9 5V5.29C6.6 6.16 5 8.43 5 11V17L3 19V20H21V19L19 17V11C19 8.43 17.4 6.16 15 5.29V5C15 3.34 13.66 2 12 2Z" fill="white" />
+            <path d="M12 23C13.1 23 14 22.1 14 21H10C10 22.1 10.9 23 12 23Z" fill="white" />
+          </svg>
+        </div>
+        <div class="sb-notif-dot"></div>
+      </div>
+
+      <!-- Click ripples — anchored to the bell area, fired at click time -->
+      <div class="sb-ripple sb-ripple-ring"></div>
+      <div class="sb-ripple sb-ripple-fill"></div>
+    </div>
+
+    <!-- Mouse cursor (SVG) — animates from idle position toward the subscribe
+         button, lands the click, then fades out. -->
+    <svg class="sb-cursor" width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 2L5 19L9.5 14.5L13.5 23L16 22L12 13L18 13L5 2Z"
+            fill="white" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+    </svg>
+
+  </div>
+</div>
+
+<!-- 2) CSS — merge into your composition's <style> block. NOTE: position
+        absolute, z-index 30 (above scenes/captions, below endcards). The
+        default placement is bottom-center; override the four positioning
+        properties on #sb-banner to relocate. -->
+
+<style>
+  /* shared/lib/components/subscribe-banner — keep this comment block */
+  #sb-banner {
+    position: absolute;
+    bottom: 96px;
+    left: 50%;
+    /* NOTE: NO `transform: translateX(-50%)` here — GSAP would overwrite it
+       when it animates y/scale on this element. The animator instead sets
+       `xPercent: -50` once in tl.set() so GSAP owns the full transform. */
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0;
+    /* The JS animator sets opacity to 1 on entrance.
+       We start hidden so seek-to-frame-0 doesn't flash the card. */
+  }
+
+  .sb-card {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    padding: 16px 26px;
+    border-radius: 22px;
+    border: 4px solid #1e293b;
+    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.28);
+    position: relative;
+    min-width: 580px;
+  }
+
+  .sb-profile {
+    flex-shrink: 0;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid #dc2626;
+  }
+  .sb-profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .sb-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .sb-channel {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .sb-creator {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 19px;
+    font-weight: 500;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .sb-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .sb-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    padding: 16px 32px;
+    border-radius: 16px 0 0 16px;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2);
+    transform-origin: center center;
+  }
+  .sb-button-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sb-divider {
+    width: 2px;
+    align-self: stretch;
+    background: #dc2626;
+  }
+
+  .sb-bell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    padding: 16px 22px;
+    border-radius: 0 16px 16px 0;
+    position: relative;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2);
+  }
+  .sb-bell-rotor {
+    transform-origin: center top;
+    color: #ffffff;
+    line-height: 0;
+  }
+  .sb-notif-dot {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fbbf24;
+    border: 2.5px solid #dc2626;
+  }
+
+  /* Click ripples — anchored to the bell center; sized to roughly cover it */
+  .sb-ripple {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    margin-top: -32px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: center center;
+  }
+  .sb-ripple-ring {
+    border: 4px solid rgba(239, 68, 68, 0.7);
+    background: transparent;
+  }
+  .sb-ripple-fill {
+    background: rgba(239, 68, 68, 0.25);
+  }
+
+  /* Mouse cursor — anchored bottom-right of the actions group, idle off-screen
+     to the right; the JS animator fades + slides it in to land on the button. */
+  .sb-cursor {
+    position: absolute;
+    /* Right-of-bell starting position, slightly below baseline */
+    right: 36px;
+    bottom: -12px;
+    opacity: 0;
+    filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.4));
+    pointer-events: none;
+    z-index: 5;
+    /* NOTE: NO `transform` here — GSAP owns the cursor's x/y/scale and
+       seeds initial values via tl.set(). */
+    transform-origin: top left;
+  }
+</style>
+
+<!-- 3) JS — call from the host root timeline. Hides everything at t=0 then
+        re-reveals on the schedule below. Pass the absolute start time in
+        seconds (where you want the banner to enter); banner exits ~7s later. -->
+
+<script>
+  /**
+   * addSubscribeBanner(tl, t, opts?)
+   *   tl   — host paused timeline (gsap.timeline({paused: true}))
+   *   t    — absolute time (seconds) at which the banner enters
+   *   opts — { channelName?: string, creatorName?: string,
+   *            showMouseAnimation?: boolean }
+   *          Defaults: "DIY SMART CODE" / "Thomas" / true.
+   *
+   * Lifetime: t .. t + 8.0s (banner exits at t + 6.83s, exit takes ~0.6s).
+   *
+   * Track-index for any companion SFX (spring-pop on banner-in, bell-notification
+   * on click) is the host's responsibility — see audio-design.md.
+   */
+  function addSubscribeBanner(tl, t, opts) {
+    opts = opts || {};
+    if (typeof opts.channelName === 'string') {
+      var ch = document.getElementById('sb-channel');
+      if (ch) ch.textContent = opts.channelName;
+    }
+    if (typeof opts.creatorName === 'string') {
+      var cr = document.getElementById('sb-creator');
+      if (cr) cr.textContent = opts.creatorName;
+    }
+    var showMouse = opts.showMouseAnimation !== false;
+
+    // ── Hide everything at t=0 — bullet-proof seek-to-frame-0 ──
+    // xPercent: -50 replaces the translateX(-50%) centering that used to
+    // live in CSS — GSAP now owns the full transform on #sb-banner.
+    tl.set('#sb-banner', { opacity: 0, y: 80, xPercent: -50 }, 0);
+    tl.set('.sb-profile', { opacity: 0, scale: 0.4 }, 0);
+    tl.set('.sb-channel', { opacity: 0, x: -30 }, 0);
+    tl.set('.sb-creator', { opacity: 0, x: -30 }, 0);
+    tl.set('.sb-actions', { opacity: 0, x: 60 }, 0);
+    tl.set('.sb-button', { scale: 1 }, 0);
+    tl.set('.sb-bell-rotor', { rotation: 0 }, 0);
+    tl.set('.sb-notif-dot', { scale: 1 }, 0);
+    tl.set('.sb-ripple-ring', { opacity: 0, scale: 0.4 }, 0);
+    tl.set('.sb-ripple-fill', { opacity: 0, scale: 0.3 }, 0);
+    tl.set('.sb-cursor', { opacity: 0, x: 80, y: 60, scale: 1 }, 0);
+
+    // ── Banner spring-in (frame 0) ──
+    tl.to('#sb-banner', { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.4)', overwrite: 'auto' }, t);
+
+    // ── Profile pop (frame 8 ≈ 0.27s) ──
+    tl.to('.sb-profile', { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)', overwrite: 'auto' }, t + 0.27);
+
+    // ── Channel name slide (frame 14 ≈ 0.47s) ──
+    tl.to('.sb-channel', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 0.47);
+
+    // ── Creator slide (frame 18 ≈ 0.6s) ──
+    tl.to('.sb-creator', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 0.6);
+
+    // ── Subscribe pill + bell fly in (frame 28 ≈ 0.93s) ──
+    tl.to('.sb-actions', { opacity: 1, x: 0, duration: 0.55, ease: 'back.out(1.3)', overwrite: 'auto' }, t + 0.93);
+
+    // ── Idle bell swing (frame 40 ≈ 1.33s onward, ~3.6s of gentle swing) ──
+    // Period ~0.95s → half-cycle 0.475s. 8 half-cycles cover ~3.8s of swing.
+    var idleBell = gsap.timeline();
+    idleBell.fromTo('.sb-bell-rotor',
+      { rotation: -14 },
+      { rotation: 14, duration: 0.475, ease: 'sine.inOut', yoyo: true, repeat: 7 });
+    tl.add(idleBell, t + 1.33);
+
+    // ── Mouse cursor (frame 90 ≈ 3.0s) ──
+    if (showMouse) {
+      tl.to('.sb-cursor', { opacity: 1, duration: 0.4, ease: 'power1.out', overwrite: 'auto' }, t + 3.0);
+      // Travel from idle (80, 60) to button-center (0, 0) over 1.23s
+      tl.to('.sb-cursor', { x: 0, y: 0, duration: 1.23, ease: 'power2.inOut', overwrite: 'auto' }, t + 3.5);
+      // Click — cursor compresses
+      tl.to('.sb-cursor', { scale: 0.82, duration: 0.05, overwrite: 'auto' }, t + 5.0);
+      tl.to('.sb-cursor', { scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }, t + 5.05);
+      // Fade out cursor 0.5s after click
+      tl.to('.sb-cursor', { opacity: 0, duration: 0.33, ease: 'power1.in', overwrite: 'auto' }, t + 5.53);
+    }
+
+    // ── Click effect (frame 150 ≈ 5.0s) ──
+    // Button depression
+    tl.to('.sb-button', { scale: 0.96, duration: 0.05, overwrite: 'auto' }, t + 5.0);
+    tl.to('.sb-button', { scale: 1, duration: 0.4, ease: 'back.out(1.5)', overwrite: 'auto' }, t + 5.05);
+
+    // Outer ring ripple — fast expand, fade out (~0.7s)
+    tl.set('.sb-ripple-ring', { opacity: 1, scale: 0.4 }, t + 5.0);
+    tl.to('.sb-ripple-ring',
+      { opacity: 0, scale: 2.2, duration: 0.7, ease: 'power1.out', overwrite: 'auto' },
+      t + 5.0);
+
+    // Inner fill ripple — slightly slower fade (~0.47s)
+    tl.set('.sb-ripple-fill', { opacity: 0.9, scale: 0.3 }, t + 5.0);
+    tl.to('.sb-ripple-fill',
+      { opacity: 0, scale: 1.6, duration: 0.47, ease: 'power1.out', overwrite: 'auto' },
+      t + 5.0);
+
+    // ── Bell burst (frame 150–185 ≈ 5.0–6.17s) ──
+    // Rapid swing at ~3.3 Hz (period 0.30s) for ~1.17s = ~4 oscillations.
+    // Amplitude eases in from 0 to 28°, settles to 22°, then back to 0.
+    var burstBell = gsap.timeline();
+    burstBell.fromTo('.sb-bell-rotor',
+      { rotation: -22 },
+      { rotation: 22, duration: 0.15, ease: 'sine.inOut', yoyo: true, repeat: 7 });
+    burstBell.to('.sb-bell-rotor', { rotation: 0, duration: 0.1, ease: 'sine.out' });
+    tl.add(burstBell, t + 5.0);
+
+    // Notification dot scale pulse during burst
+    tl.to('.sb-notif-dot', { scale: 1.25, duration: 0.2, ease: 'power2.out', overwrite: 'auto' }, t + 5.0);
+    tl.to('.sb-notif-dot', { scale: 1, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, t + 5.4);
+
+    // ── Banner fly out (frame 205 ≈ 6.83s) ──
+    tl.to('#sb-banner', { opacity: 0, y: 120, duration: 0.6, ease: 'back.in(1.0)', overwrite: 'auto' }, t + 6.83);
+  }
+  // Usage:
+  //   addSubscribeBanner(tl, 12.4);                       // default labels
+  //   addSubscribeBanner(tl, 12.4, { channelName: "MyChannel", creatorName: "Me" });
+  //   addSubscribeBanner(tl, 12.4, { showMouseAnimation: false });
+</script>
+
+<!--
+  ASSET COPY CHECKLIST (do this BEFORE wiring):
+    cp ../diy-yt-creator/public/images/profile-leex.png \
+       videos/<slug>/assets/profile-leex.png
+    # PowerShell:
+    # Copy-Item ../diy-yt-creator/public/images/profile-leex.png \
+    #   videos/<slug>/assets/profile-leex.png
+
+  This component is OPT-IN per video. Pair with a spring-pop SFX on banner-in
+  (data-volume="0.11") and an optional bell-notification SFX at the click
+  moment (t + 5.0). Per audio-design.md the SFX volume cap is 0.25.
+
+  POSITIONING:
+    Default: bottom-center, 96px from bottom edge.
+    To relocate, override #sb-banner in your composition's <style>:
+      #sb-banner { bottom: auto; top: 80px; left: 80px; transform: none; }
+
+  SIZING:
+    Designed at native 1920x1080 long-form. The card minWidth is 580px and
+    the type sizes (28px channel / 19px creator / 22px subscribe) read at
+    ~1m viewing distance. For Shorts (1080x1920) the card needs to be ~1.6x
+    larger — defer to a per-format component (not yet built).
+-->

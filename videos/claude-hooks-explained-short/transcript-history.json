@@ -1,0 +1,155 @@
+{
+  "voice_id": "7kXNOCqiaLdszL0OEXks",
+  "model_id": "eleven_multilingual_v2",
+  "voice_settings": {
+    "stability": 0.65,
+    "similarity_boost": 0.65,
+    "style": 0.0,
+    "speed": 1.13,
+    "use_speaker_boost": true
+  },
+  "pronunciation_dictionary_locators": [
+    {
+      "pronunciation_dictionary_id": "AhK3J8mZDRoShxfoJLk6",
+      "version_id": "pFvyQBbxEBKyF7C3IHpy"
+    }
+  ],
+  "inter_chunk_silence_ms": 650,
+  "chunks": [
+    {
+      "index": 0,
+      "text": "Skills are request-driven. Hooks are event-driven.",
+      "checksum": "sha256:3342d43574fbdb26a3c15e9122ac59805aed529d5e41d1b1cc2ebd97dec00646",
+      "wav": "chunk-00.wav",
+      "duration": 2.8792743764172335,
+      "word_count": 6,
+      "words_offset": 0
+    },
+    {
+      "index": 1,
+      "text": "The difference is everything. A hook fires automatically on lifecycle events.",
+      "checksum": "sha256:964fe0ac2c6ae92004dad3ea9ccd955c13653d351abf09af1b70752f043c4d65",
+      "wav": "chunk-01.wav",
+      "duration": 4.2260317460317465,
+      "word_count": 11,
+      "words_offset": 6
+    },
+    {
+      "index": 2,
+      "text": "There are over thirty event types in Claude Code.",
+      "checksum": "sha256:0f659309252b2b1530b4b055e951d694631d549e544c10a5b2f30cdd3519da92",
+      "wav": "chunk-02.wav",
+      "duration": 2.6006349206349206,
+      "word_count": 9,
+      "words_offset": 17
+    },
+    {
+      "index": 3,
+      "text": "PreToolUse fires before a tool runs. Block destructive commands before they execute.",
+      "checksum": "sha256:e72cfcc10a2a232c846800bbc58ceaccd37f1208713d64bea45319b968900fd1",
+      "wav": "chunk-03.wav",
+      "duration": 5.015510204081632,
+      "word_count": 12,
+      "words_offset": 26
+    },
+    {
+      "index": 4,
+      "text": "PostToolUse fires after a tool succeeds.",
+      "checksum": "sha256:63fa1abe6979b3c338cf25f425bf25e612dcc2c644c150c9b2cc6c860425f6eb",
+      "wav": "chunk-04.wav",
+      "duration": 2.3219954648526078,
+      "word_count": 6,
+      "words_offset": 38
+    },
+    {
+      "index": 5,
+      "text": "React to file edits, log results, run validators.",
+      "checksum": "sha256:3035cf7ea832a545c5e27930c3a9f13c045f959ade684d74ae9a0c0ac172ef55",
+      "wav": "chunk-05.wav",
+      "duration": 3.1579138321995464,
+      "word_count": 8,
+      "words_offset": 44
+    },
+    {
+      "index": 6,
+      "text": "SessionStart and Stop hook into the session lifecycle.",
+      "checksum": "sha256:d22f4751e318fcdfe58753a1a5cb5d5dc5dbae1347b8ad10409944fd2b4c36db",
+      "wav": "chunk-06.wav",
+      "duration": 2.8792743764172335,
+      "word_count": 8,
+      "words_offset": 52
+    },
+    {
+      "index": 7,
+      "text": "Inject environment state on start. Block bad responses before Claude returns.",
+      "checksum": "sha256:6d57f6dee5c46cb292bb5270547d3d7594b55640193cec7b796ab1c75edc32fa",
+      "wav": "chunk-07.wav",
+      "duration": 4.690430839002268,
+      "word_count": 11,
+      "words_offset": 60
+    },
+    {
+      "index": 8,
+      "text": "Prompt and agent hooks let an LLM make the decision.",
+      "checksum": "sha256:053b5c877ec546c91eabe9c07ae9e0f8933827eecbc87bc0cd358d1aac4321f8",
+      "wav": "chunk-08.wav",
+      "duration": 3.01859410430839,
+      "word_count": 10,
+      "words_offset": 71
+    },
+    {
+      "index": 9,
+      "text": "Send context to a fast model, get a yes-or-no answer.",
+      "checksum": "sha256:fc047e8f58424e8464d9674b4166511eeea60670544d18dfca21d9f9b054f730",
+      "wav": "chunk-09.wav",
+      "duration": 3.250793650793651,
+      "word_count": 10,
+      "words_offset": 81
+    },
+    {
+      "index": 10,
+      "text": "Five hook recipes. Block rm dash r f? PreToolUse on Bash.",
+      "checksum": "sha256:d5b85f0e8fd8267d8dad26e36a183f0b77600823b2d3a806b64bafab25423ad1",
+      "wav": "chunk-10.wav",
+      "duration": 4.133151927437642,
+      "word_count": 11,
+      "words_offset": 91
+    },
+    {
+      "index": 11,
+      "text": "Auto-format on save? PostToolUse on Edit and Write.",
+      "checksum": "sha256:1ffaa8c2eb04c02ce6c00f85c34e1d334f90c5d62cb4c7f96a8b51105621d424",
+      "wav": "chunk-11.wav",
+      "duration": 3.250793650793651,
+      "word_count": 8,
+      "words_offset": 102
+    },
+    {
+      "index": 12,
+      "text": "Inject environment on session start? SessionStart.",
+      "checksum": "sha256:f9074398038ed6c2860fb22d20bf3059f7beed7c67aab51224b59fd86d03b4dc",
+      "wav": "chunk-12.wav",
+      "duration": 3.111473922902494,
+      "word_count": 6,
+      "words_offset": 110
+    },
+    {
+      "index": 13,
+      "text": "Validate every SQL query? PreToolUse with a prompt-based hook.",
+      "checksum": "sha256:ef138138c0e0a6cfdbc4ec845d2400438d913aecd69b2eccfc44ca72ff72c498",
+      "wav": "chunk-13.wav",
+      "duration": 4.08671201814059,
+      "word_count": 9,
+      "words_offset": 116
+    },
+    {
+      "index": 14,
+      "text": "Refuse risky responses? Stop hook. Watch the 13 minute deep dive for the full Claude Code customization system.",
+      "checksum": "sha256:81be93d5516c10af1a9ab2a3981c2e8e93f364dccff3df5087ebe651b5a60e77",
+      "wav": "chunk-14.wav",
+      "duration": 6.548027210884354,
+      "word_count": 18,
+      "words_offset": 125
+    }
+  ]
+}

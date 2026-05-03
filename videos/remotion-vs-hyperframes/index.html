@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Remotion vs HyperFrames</title>
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Ambient base wash — slow breath via root timeline ── */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 20% 25%, rgba(0, 229, 212, 0.085), transparent 55%),
+      radial-gradient(circle at 80% 75%, rgba(255, 77, 26, 0.077), transparent 55%),
+      radial-gradient(circle at 50% 50%, rgba(196, 255, 62, 0.034), transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layer 1: dot-grid (code-editor aesthetic) ──
+     32px square dot grid that slowly drifts diagonally throughout the
+     composition. ~8% opacity — visible but doesn't compete with foreground. */
+  #grid-overlay {
+    position: absolute;
+    inset: -64px;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.425;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.068) 1.2px, transparent 1.2px);
+    background-size: 32px 32px;
+    background-position: 0 0;
+  }
+
+  /* ── Layer 2: floating code symbols ──
+     ~28 code-fragment text nodes scattered with deterministic placement,
+     drifting slowly and rotating gently for the entire composition. */
+  #code-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #code-backdrop .sym {
+    position: absolute;
+    font-family: var(--mono);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.051);
+    user-select: none;
+    white-space: nowrap;
+  }
+  #code-backdrop .sym.r { color: rgba(0, 229, 212, 0.085); }
+  #code-backdrop .sym.h { color: rgba(255, 77, 26, 0.085); }
+  #code-backdrop .sym.a { color: rgba(196, 255, 62, 0.068); }
+
+  /* ── Layer 3: dual "data streams" ──
+     SVG curves on left (cyan, Remotion) and right (orange, HyperFrames)
+     suggesting the two frameworks. Stroke-dasharray animates a flow. */
+  #data-streams {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.425;
+  }
+  #data-streams path {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-dasharray: 18 28;
+  }
+  #data-streams path.cyan { stroke: rgba(0, 229, 212, 0.297); }
+  #data-streams path.orange { stroke: rgba(255, 77, 26, 0.272); }
+
+  /* ── Film-grain + vignette polish layers ── */
+  #noise-overlay {
+    position: absolute; inset: 0;
+    width: 1920px; height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+  }
+  #vignette {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 7;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.55) 100%);
+  }
+
+  /* ── Top wordmark chrome ── */
+  #top-chrome {
+    position: absolute;
+    top: 28px; left: 0; right: 0;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+    font-family: var(--mono);
+    font-size: 16px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  #top-chrome .dot {
+    display:inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 0 14px;
+    vertical-align: middle;
+    box-shadow: 0 0 10px var(--accent);
+  }
+  #top-chrome .t-r { color: var(--remotion); }
+  #top-chrome .t-h { color: var(--hyper); }
+
+  /* ── Slim progress bar ── */
+  #progress-track {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 1920px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0; height: 100%;
+    background: linear-gradient(90deg, var(--remotion), var(--hyper));
+    box-shadow: 0 0 14px rgba(0, 229, 212, 0.5);
+  }
+
+  /* ── Scene wrappers ── */
+  .scene-wrapper {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1920px; height: 1080px;
+    z-index: 1;
+  }
+  #w-01 { z-index: 1; opacity: 1; }
+  #w-02, #w-03, #w-04, #w-05, #w-06, #w-07, #w-08,
+  #w-09, #w-10, #w-11, #w-12, #w-13, #w-14, #w-15 {
+    z-index: 1; opacity: 0; visibility: hidden;
+  }
+
+  #captions-wrap {
+    position: absolute; inset: 0;
+    z-index: 9; pointer-events: none;
+  }
+
+  /* Dynamous midroll mount — overlays everything during its 31.5s window */
+  #dynamous-midroll-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* Support banner mount — bottom-center pill during scene 11 matrix */
+  #support-banner-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* Subscribe banner mount — at end-of-video CTA, click syncs with "subscribe" word */
+  #subscribe-banner-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 31;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="642"
+     data-width="1920"
+     data-height="1080">
+
+  <div id="ambient"></div>
+  <div id="grid-overlay"></div>
+  <div id="code-backdrop"></div>
+  <svg id="data-streams" viewBox="0 0 1920 1080" preserveAspectRatio="none" data-layout-allow-overflow="true">
+    <path class="cyan"   id="ds-c1" data-layout-allow-overflow="true" d="M -100,180  C 250,140 600,260 950,200 1300,140 1700,300 2020,220" />
+    <path class="cyan"   id="ds-c2" data-layout-allow-overflow="true" d="M -100,420  C 280,460 620,360 980,440 1340,520 1680,400 2020,480" />
+    <path class="cyan"   id="ds-c3" data-layout-allow-overflow="true" d="M -100,720  C 260,680 600,800 940,740 1300,680 1680,820 2020,760" />
+    <path class="orange" id="ds-h1" data-layout-allow-overflow="true" d="M -100,260  C 260,300 620,220 980,300 1340,380 1680,260 2020,320" />
+    <path class="orange" id="ds-h2" data-layout-allow-overflow="true" d="M -100,560  C 280,520 620,640 980,580 1340,520 1680,660 2020,600" />
+    <path class="orange" id="ds-h3" data-layout-allow-overflow="true" d="M -100,860  C 260,820 600,940 940,880 1300,820 1680,960 2020,900" />
+  </svg>
+
+  <div id="top-chrome">
+    <span class="t-r">REMOTION</span><span class="dot"></span><span class="t-h">HYPERFRAMES</span>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <div id="w-01" class="scene-wrapper"
+       data-composition-id="scene-01-cold-open"
+       data-composition-src="compositions/scene-01-cold-open.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="w-02" class="scene-wrapper"
+       data-composition-id="scene-02-title-card"
+       data-composition-src="compositions/scene-02-title-card.html"
+       data-start="15.61"
+       data-track-index="1"></div>
+
+  <div id="w-03" class="scene-wrapper"
+       data-composition-id="scene-03-why"
+       data-composition-src="compositions/scene-03-why.html"
+       data-start="23.00"
+       data-track-index="1"></div>
+
+  <div id="w-04" class="scene-wrapper"
+       data-composition-id="scene-04-contenders"
+       data-composition-src="compositions/scene-04-contenders.html"
+       data-start="67.12"
+       data-track-index="1"></div>
+
+  <div id="w-05" class="scene-wrapper"
+       data-composition-id="scene-05-same-square"
+       data-composition-src="compositions/scene-05-same-square.html"
+       data-start="119.17"
+       data-track-index="1"></div>
+
+  <div id="w-06" class="scene-wrapper"
+       data-composition-id="scene-06-frame-adapter"
+       data-composition-src="compositions/scene-06-frame-adapter.html"
+       data-start="155.81"
+       data-track-index="1"></div>
+
+  <div id="w-07" class="scene-wrapper"
+       data-composition-id="scene-07-setup-remotion"
+       data-composition-src="compositions/scene-07-setup-remotion.html"
+       data-start="199.28"
+       data-track-index="1"></div>
+
+  <div id="w-08" class="scene-wrapper"
+       data-composition-id="scene-08-setup-hyperframes"
+       data-composition-src="compositions/scene-08-setup-hyperframes.html"
+       data-start="249.03"
+       data-track-index="1"></div>
+
+  <div id="w-09" class="scene-wrapper"
+       data-composition-id="scene-09-usage"
+       data-composition-src="compositions/scene-09-usage.html"
+       data-start="337.87"
+       data-track-index="1"></div>
+
+  <div id="w-10" class="scene-wrapper"
+       data-composition-id="scene-10-real-numbers"
+       data-composition-src="compositions/scene-10-real-numbers.html"
+       data-start="399.21"
+       data-track-index="1"></div>
+
+  <div id="w-11" class="scene-wrapper"
+       data-composition-id="scene-11-matrix"
+       data-composition-src="compositions/scene-11-matrix.html"
+       data-start="439.20"
+       data-track-index="1"></div>
+
+  <div id="w-12" class="scene-wrapper"
+       data-composition-id="scene-12-pricing"
+       data-composition-src="compositions/scene-12-pricing.html"
+       data-start="482.99"
+       data-track-index="1"></div>
+
+  <div id="w-13" class="scene-wrapper"
+       data-composition-id="scene-13-popularity"
+       data-composition-src="compositions/scene-13-popularity.html"
+       data-start="534.87"
+       data-track-index="1"></div>
+
+  <div id="w-14" class="scene-wrapper"
+       data-composition-id="scene-14-who-uses-what"
+       data-composition-src="compositions/scene-14-who-uses-what.html"
+       data-start="563.61"
+       data-track-index="1"></div>
+
+  <div id="w-15" class="scene-wrapper"
+       data-composition-id="scene-15-cta"
+       data-composition-src="compositions/scene-15-cta.html"
+       data-start="619.18"
+       data-track-index="1"></div>
+
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <audio id="narration"
+         src="audio/narration-with-midroll.wav"
+         data-start="0"
+         data-duration="642"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX: cinematic-whoosh on every scene transition (track 3, sequential — no overlap)
+       Each fires 0.4s before its scene boundary, matching crossfade onset. -->
+  <audio id="sfx-whoosh-02" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="15.21"   data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-03" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="22.60"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-04" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="66.72"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-05" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="118.77" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-06" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="155.41" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-07" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="198.88" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-08" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="248.63" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-09" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="337.47" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-10" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="398.81" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-11" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="438.80" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-12" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="482.59" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-13" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="534.47" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-14" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="563.21" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-15" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="618.78" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- ── Support banner — appears once during the matrix scene as the viewer scans the comparison ──
+       Scene 11 (matrix) starts at 439.20s; banner enters at 447.20s (+8s into scene), exits at 455.20s. -->
+  <div id="support-banner-mount"
+       data-composition-id="support-banner"
+       data-composition-src="compositions/support-banner.html"
+       data-start="447.20"
+       data-duration="8.5"
+       data-track-index="21"
+       data-width="1920"
+       data-height="1080"
+       data-layout-allow-overflow="true"></div>
+
+  <!-- ── Subscribe banner — at end-of-video CTA, click animation lands on the
+       narrator's word "subscribe." (628.48s). Banner enters 5s prior so the
+       click is perfectly synced with the spoken word. -->
+  <div id="subscribe-banner-mount"
+       data-composition-id="subscribe-banner"
+       data-composition-src="compositions/subscribe-banner.html"
+       data-start="623.48"
+       data-duration="8.0"
+       data-track-index="22"
+       data-width="1920"
+       data-height="1080"
+       data-layout-allow-overflow="true"></div>
+
+  <!-- ── Dynamous midroll — drops in at the natural "let's actually use them" pivot ──
+       Scene 8 ends at 306.37s; midroll plays for 31.5s; scene 9 resumes at 337.87s.
+       The host narration has a 31.5s silent gap baked into narration-with-midroll.wav. -->
+  <div id="dynamous-midroll-mount"
+       data-composition-id="dynamous-midroll"
+       data-composition-src="compositions/dynamous-midroll.html"
+       data-start="306.37"
+       data-duration="31.5"
+       data-track-index="20"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <audio id="midroll-sfx-in"
+         src="audio/midroll-transition-in.mp3"
+         data-start="306.37"
+         data-duration="1.5"
+         data-track-index="4"
+         data-volume="0.20"></audio>
+  <audio id="midroll-narration"
+         src="audio/dynamous-midroll-v2.mp3"
+         data-start="306.67"
+         data-duration="31.0"
+         data-track-index="5"
+         data-volume="1.0"></audio>
+  <audio id="midroll-sfx-out"
+         src="audio/midroll-transition-out.mp3"
+         data-start="336.87"
+         data-duration="1.5"
+         data-track-index="4"
+         data-volume="0.15"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+
+  <div id="vignette"></div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Deterministic xmur3-style seeded hash → [0, 1)
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Code-symbol backdrop — 28 floating code fragments at low opacity.
+  // Three colour buckets: white (neutral), cyan (Remotion), orange (HF),
+  // lime (accent). Deterministic placement seeded per-index.
+  // ─────────────────────────────────────────────────────
+  function spawnCodeSymbols(seedPrefix, container) {
+    const symbols = [
+      '</>', '{ }', '( )', ';', '=>', '<div>', '<h1>', '</h1>',
+      'data-start', 'data-duration', 'data-track-index', 'class="clip"',
+      'useCurrentFrame()', 'interpolate()', 'render()', 'gsap.timeline',
+      'frame', '60fps', '1920×1080', 'mp4', 'render', 'composition',
+      '@keyframes', 'spring()', 'beginFrame', 'Puppeteer', 'FFmpeg',
+      'remotion', 'hyperframes', 'React', 'HTML', 'CSS', '#title',
+      'export', 'const', 'import', 'return',
+    ];
+    const buckets = ['', 'r', 'h', 'a', '', '', 'r', 'h']; // bias toward neutral
+    const count = 24, w = 1920, h = 1080;
+    const minDist = 340, MAX_TRIES = 120;
+    const placed = [];
+    for (let i = 0; i < count; i++) {
+      let attempt = 0;
+      let best = null, bestScore = -1;
+      let symIdx = Math.floor(seedHash(seedPrefix + '-sym-' + i) * symbols.length);
+      let bucketIdx = Math.floor(seedHash(seedPrefix + '-bucket-' + i) * buckets.length);
+      let bucket = buckets[bucketIdx];
+      let fontSize = 22 + seedHash(seedPrefix + '-fs-' + i) * 36; // 22-58px
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const cx = seedHash(seed + '-x') * (w - 200) + 100;
+        const cy = seedHash(seed + '-y') * (h - 100) + 50;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 30;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+      }
+      placed.push({ cx: best.cx, cy: best.cy });
+      const el = document.createElement('div');
+      el.className = 'sym' + (bucket ? ' ' + bucket : '');
+      el.textContent = symbols[symIdx];
+      el.setAttribute('data-layout-allow-overflow', 'true');
+      el.style.cssText =
+        'left:' + best.cx + 'px;' +
+        'top:' + best.cy + 'px;' +
+        'font-size:' + fontSize + 'px;' +
+        'transform: translate(-50%, -50%) rotate(' + best.rot + 'deg);';
+      container.appendChild(el);
+    }
+  }
+
+  // Re-randomise code-symbol positions at every scene boundary. Mirrors the
+  // claude-code-v2126 repositionShapesPerScene() pattern, adapted for text
+  // symbols (.sym divs). Each scene gets a fresh deterministic placement
+  // (overlap-aware, mirrors spawnCodeSymbols); the tween animates over the
+  // crossfade window so it reads as part of the scene transition rather than
+  // independent drift.
+  function repositionCodeSymbolsPerScene(tl, container, seedPrefix, sceneStartTimes) {
+    const syms = Array.from(container.querySelectorAll('.sym'));
+    if (!syms.length || !sceneStartTimes.length) return;
+    const w = 1920, h = 1080, minDist = 340, MAX_TRIES = 120;
+    const anchors = syms.map(s => ({
+      left: parseFloat(s.style.left),
+      top:  parseFloat(s.style.top),
+    }));
+    sceneStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = syms.map((s, i) => {
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - 200) + 100;
+          const cy = seedHash(seed + '-y') * (h - 100) + 50;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 30;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: best.cx - anchors[i].left,
+          y: best.cy - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(syms, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+        overwrite: 'auto',
+      }, sceneT - 0.4);
+    });
+  }
+
+  // Symbol twinkle — opacity-only yoyo so it doesn't fight repositionCodeSymbolsPerScene's x/y tweens.
+  function animateSymbolTwinkle(tl, container, seedPrefix, totalDuration) {
+    const syms = container.querySelectorAll('.sym');
+    syms.forEach((el, i) => {
+      const seed = seedPrefix + '-twinkle-' + i;
+      const dur = totalDuration / 12 + seedHash(seed + '-dur') * (totalDuration / 12);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      const opacity = 0.595 + seedHash(seed + '-op') * 0.255;
+      tl.to(el, {
+        opacity: opacity,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount,
+      }, 0);
+    });
+  }
+
+  // Animate the data-stream stroke-dashoffset for continuous flow.
+  function animateDataStreams(tl, totalDuration) {
+    const cyans = ['#ds-c1', '#ds-c2', '#ds-c3'];
+    const oranges = ['#ds-h1', '#ds-h2', '#ds-h3'];
+    cyans.forEach((sel, i) => {
+      tl.fromTo(sel,
+        { strokeDashoffset: 0 },
+        { strokeDashoffset: -200, duration: 8 + i * 0.7, ease: 'none', repeat: Math.ceil(totalDuration / (8 + i * 0.7)) },
+        0);
+    });
+    oranges.forEach((sel, i) => {
+      tl.fromTo(sel,
+        { strokeDashoffset: 0 },
+        { strokeDashoffset: 200, duration: 9 + i * 0.5, ease: 'none', repeat: Math.ceil(totalDuration / (9 + i * 0.5)) },
+        0);
+    });
+  }
+
+  // Slowly drift the entire dot grid to keep it alive.
+  function animateGrid(tl, totalDuration) {
+    tl.fromTo("#grid-overlay",
+      { backgroundPositionX: 0, backgroundPositionY: 0 },
+      { backgroundPositionX: 32, backgroundPositionY: 32, duration: 12, ease: 'none', repeat: Math.ceil(totalDuration / 12) },
+      0);
+    tl.fromTo("#grid-overlay",
+      { opacity: 0.382 },
+      { opacity: 0.467, duration: 6, ease: 'sine.inOut', yoyo: true, repeat: Math.ceil(totalDuration / 6) },
+      0);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Crossfade between scene wrappers
+  // ─────────────────────────────────────────────────────
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Boot
+  // ─────────────────────────────────────────────────────
+  spawnCodeSymbols('rem-vs-hf', document.getElementById('code-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 642;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath — slow yoyo across full duration
+  tl.fromTo("#ambient",
+    { opacity: 0.595, scale: 1.0 },
+    { opacity: 0.85, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 18 },
+    0);
+
+  // Backdrop continuous animations
+  animateSymbolTwinkle(tl, document.getElementById('code-backdrop'), 'rem-vs-hf', TOTAL_DURATION);
+  animateDataStreams(tl, TOTAL_DURATION);
+  animateGrid(tl, TOTAL_DURATION);
+
+  // Reposition code symbols at every scene boundary — animated over the
+  // crossfade window so the backdrop changes WITH the scene change.
+  const SCENE_STARTS = [15.61, 23.00, 67.12, 119.17, 155.81, 199.28, 249.03,
+                        337.87, 399.21, 439.20, 482.99, 534.87, 563.61, 619.18];
+  repositionCodeSymbolsPerScene(tl, document.getElementById('code-backdrop'), 'rem-vs-hf', SCENE_STARTS);
+
+  // Linear progress fill
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top-chrome fade-in
+  tl.from("#top-chrome", { y: -10, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Scene boundary labels
+  tl.addLabel("s01",  0)
+    .addLabel("s02", 15.61)
+    .addLabel("s03", 23.00)
+    .addLabel("s04", 67.12)
+    .addLabel("s05", 119.17)
+    .addLabel("s06", 155.81)
+    .addLabel("s07", 199.28)
+    .addLabel("s08", 249.03)
+    .addLabel("s09", 337.87)
+    .addLabel("s10", 399.21)
+    .addLabel("s11", 439.20)
+    .addLabel("s12", 482.99)
+    .addLabel("s13", 534.87)
+    .addLabel("s14", 563.61)
+    .addLabel("s15", 619.18);
+
+  // Crossfades — fire 0.4s before each boundary
+  crossfadeScenes(tl, "#w-01", "#w-02", 15.61 - 0.4);
+  crossfadeScenes(tl, "#w-02", "#w-03", 23.00 - 0.4);
+  crossfadeScenes(tl, "#w-03", "#w-04", 67.12 - 0.4);
+  crossfadeScenes(tl, "#w-04", "#w-05", 119.17 - 0.4);
+  crossfadeScenes(tl, "#w-05", "#w-06", 155.81 - 0.4);
+  crossfadeScenes(tl, "#w-06", "#w-07", 199.28 - 0.4);
+  crossfadeScenes(tl, "#w-07", "#w-08", 249.03 - 0.4);
+  crossfadeScenes(tl, "#w-08", "#w-09", 337.87 - 0.4);
+  crossfadeScenes(tl, "#w-09", "#w-10", 399.21 - 0.4);
+  crossfadeScenes(tl, "#w-10", "#w-11", 439.20 - 0.4);
+  crossfadeScenes(tl, "#w-11", "#w-12", 482.99 - 0.4);
+  crossfadeScenes(tl, "#w-12", "#w-13", 534.87 - 0.4);
+  crossfadeScenes(tl, "#w-13", "#w-14", 563.61 - 0.4);
+  crossfadeScenes(tl, "#w-14", "#w-15", 619.18 - 0.4);
+
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

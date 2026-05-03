@@ -1,0 +1,172 @@
+<template id="scene-12-pricing-template">
+  <div data-composition-id="scene-12-pricing"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s12-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono); font-size: 22px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--ink-3);
+      }
+      #s12-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--accent); margin-right: 14px; }
+      #s12-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 78px;
+        letter-spacing: -.025em;
+      }
+      #s12-h2 em { color: var(--ink-3); font-style: italic; }
+
+      #s12-grid {
+        position:absolute; left: 96px; right: 96px; top: 280px; bottom: 200px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
+      }
+      .s12-card {
+        position: relative;
+        border-radius: 24px;
+        overflow: visible;
+        padding: 40px 44px;
+        border: 1px solid var(--rule);
+        background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+      }
+      .s12-card.r { border-color: rgba(0,229,212,.4); }
+      .s12-card.h { border-color: rgba(255,77,26,.4); background: linear-gradient(180deg, rgba(255,77,26,.10), rgba(0,0,0,0)); }
+      .s12-head { display:flex; align-items:center; gap: 18px; }
+      .s12-mark { width: 64px; height: 64px; border-radius: 12px; display:grid; place-items:center; padding: 6px; }
+      .s12-mark img { width: 100%; height: 100%; object-fit: contain; }
+      .r .s12-mark { background: rgba(0, 229, 212, .12); border: 1px solid rgba(0, 229, 212, .35); }
+      .h .s12-mark { background: rgba(255, 77, 26, .12); border: 1px solid rgba(255, 77, 26, .35); }
+      .s12-name { font-family: var(--sans); font-size: 50px; font-weight: 600; letter-spacing: -.025em; }
+      .s12-sub { font-family: var(--mono); font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+
+      .s12-price {
+        font-family: var(--sans); font-size: 130px;
+        font-weight: 500; line-height: 1; letter-spacing: -.04em;
+        margin-top: 32px;
+      }
+      .r .s12-price { color: var(--ink); }
+      .r .s12-price em { font-style: italic; color: var(--remotion); font-size: 60px; vertical-align: middle; margin-left: 12px; font-weight: 400; }
+      .h .s12-price {
+        background: linear-gradient(180deg, var(--hyper), var(--accent));
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .s12-price-sub { font-family: var(--mono); font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-top: 6px; }
+
+      .s12-list { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--rule); display:flex; flex-direction:column; gap: 14px; }
+      .s12-li { display:flex; align-items:center; gap: 14px; font-family: var(--sans); font-size: 22px; color: var(--ink-2); }
+      .s12-icon { width: 22px; height: 22px; border-radius: 50%; display:grid; place-items:center; font-size: 12px; font-weight: 700; }
+      .s12-icon.ok { background: rgba(0,255,157,.15); color: var(--good); }
+      .s12-icon.no { background: rgba(255,45,109,.15); color: var(--danger); }
+
+      #s12-verdict {
+        position:absolute; left: 96px; right: 96px; bottom: 80px;
+        padding: 22px 36px;
+        border: 1px solid var(--rule-2);
+        border-radius: 999px;
+        text-align: center;
+        font-family: var(--serif); font-size: 30px; font-style: italic;
+        color: var(--ink);
+        background: rgba(255,255,255,.025);
+      }
+      #s12-verdict .dim { color: var(--ink-3); }
+    </style>
+
+    <div id="s12-eyebrow"><span class="dot"></span>LICENSING & ECONOMICS</div>
+    <h2 id="s12-h2">What does scale <em>actually</em> cost?</h2>
+
+    <div id="s12-grid">
+      <div class="s12-card r" id="s12-card-r">
+        <div class="s12-head">
+          <div class="s12-mark"><img src="../assets/logos/remotion.png" alt="Remotion logo" /></div>
+          <div>
+            <div class="s12-name">Remotion</div>
+            <div class="s12-sub">SOURCE-AVAILABLE · NOT OSI</div>
+          </div>
+        </div>
+        <div class="s12-price">$0.01<em>/render</em></div>
+        <div class="s12-price-sub">+ $100/mo minimum · Automators tier</div>
+        <div class="s12-list">
+          <div class="s12-li" id="s12-r-li1"><span class="s12-icon ok">✓</span>Free for individuals & ≤3-employee teams</div>
+          <div class="s12-li" id="s12-r-li2"><span class="s12-icon ok">✓</span>Creators tier $25/seat · Enterprise from $500</div>
+          <div class="s12-li" id="s12-r-li3"><span class="s12-icon no">✕</span>Per-render fees scale with success</div>
+          <div class="s12-li" id="s12-r-li4"><span class="s12-icon no">!</span>Telemetry mandatory in 5.0+ Automators</div>
+        </div>
+      </div>
+
+      <div class="s12-card h" id="s12-card-h">
+        <div class="s12-head">
+          <div class="s12-mark"><img src="../assets/logos/hyperframes.png" alt="HyperFrames logo" /></div>
+          <div>
+            <div class="s12-name">HyperFrames</div>
+            <div class="s12-sub">APACHE 2.0 · OSI APPROVED</div>
+          </div>
+        </div>
+        <div class="s12-price">FREE</div>
+        <div class="s12-price-sub">at infinite enterprise scale</div>
+        <div class="s12-list">
+          <div class="s12-li" id="s12-h-li1"><span class="s12-icon ok">✓</span>No per-render fees, ever</div>
+          <div class="s12-li" id="s12-h-li2"><span class="s12-icon ok">✓</span>No telemetry, no call-home</div>
+          <div class="s12-li" id="s12-h-li3"><span class="s12-icon ok">✓</span>Commercial SaaS without restriction</div>
+          <div class="s12-li" id="s12-h-li4"><span class="s12-icon no">✕</span>No bundled enterprise SLA</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s12-verdict">HyperFrames <span class="dim">commoditizes the engine.</span> Remotion <span class="dim">monetizes it.</span></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s12-eyebrow", { opacity: 0 }, 0);
+      tl.set("#s12-h2",      { y: 30, opacity: 0 }, 0);
+      tl.set("#s12-card-r",  { x: -50, opacity: 0 }, 0);
+      tl.set("#s12-card-h",  { x:  50, opacity: 0 }, 0);
+      const rLis = ["#s12-r-li1","#s12-r-li2","#s12-r-li3","#s12-r-li4"];
+      const hLis = ["#s12-h-li1","#s12-h-li2","#s12-h-li3","#s12-h-li4"];
+      [...rLis, ...hLis].forEach(s => tl.set(s, { x: -16, opacity: 0 }, 0));
+      tl.set("#s12-verdict", { y: 16, opacity: 0 }, 0);
+
+      tl.to("#s12-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s12-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s12-card-r",  { x: 0, opacity: 1, duration: 0.8 }, 0.9);
+      tl.to("#s12-card-h",  { x: 0, opacity: 1, duration: 0.8 }, 0.9);
+
+      // ── Scene ~52s. Reveals re-anchored to actual narration word positions: ──
+      //   r-li1 "Free for individuals" @ scene_t=4.05s
+      //   r-li2 "Creators plan $25"    @ scene_t=10.62s
+      //   r-li3 "Per-render fees"      @ scene_t=19.56s ("one cent per render")
+      //   r-li4 "Telemetry mandatory"  @ scene_t=29.92s ("call-home telemetry")
+      //   h-li1 "No per-render fees"   @ scene_t=37.94s ("Zero per-render")
+      //   h-li2 "No telemetry"         @ scene_t=40.12s ("Zero telemetry")
+      //   h-li3 "Commercial SaaS"      @ scene_t=44.5s
+      //   h-li4 "No bundled SLA"       @ scene_t=46.5s
+      //   verdict                      @ scene_t=48.0s (matches "commoditize" word)
+      const rLisT = [3.5, 10.0, 18.5, 29.0];
+      const hLisT = [37.3, 39.5, 44.0, 46.5];
+      rLis.forEach((s, i) => tl.to(s, { x: 0, opacity: 1, duration: 0.5 }, rLisT[i]));
+      hLis.forEach((s, i) => tl.to(s, { x: 0, opacity: 1, duration: 0.5 }, hLisT[i]));
+      tl.to("#s12-verdict", { y: 0, opacity: 1, duration: 0.6 }, 48.0);
+
+      // Mid-beats — price flicker, item-icon pulse after entrance, verdict shimmer
+      tl.to("#s12-card-r .s12-price em", { scale: 1.1, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 8 }, 4.0);
+      tl.to("#s12-card-h .s12-price", { scale: 1.04, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 6 }, 35.0);
+      // Per-li icon pulse 0.8s after entrance
+      rLis.forEach((s, i) => tl.to(s + " .s12-icon", { scale: 1.4, duration: 0.5, ease: "back.out(1.4)", yoyo: true, repeat: 1 }, rLisT[i] + 0.8));
+      hLis.forEach((s, i) => tl.to(s + " .s12-icon", { scale: 1.4, duration: 0.5, ease: "back.out(1.4)", yoyo: true, repeat: 1 }, hLisT[i] + 0.8));
+      tl.to("#s12-verdict", { boxShadow: "0 0 40px rgba(196,255,62,.2)", borderColor: "rgba(196,255,62,.4)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 2 }, 49.0);
+      tl.to("#s12-h2 em", { color: "#c4ff3e", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 8 }, 4.0);
+      tl.to("#s12-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 24 }, 1.0);
+
+      window.__timelines["scene-12-pricing"] = tl;
+    </script>
+  </div>
+</template>

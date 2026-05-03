@@ -31,7 +31,8 @@ Parse `$ARGUMENTS`:
 | `--resume <slug>`                 | RESUME    | Skip phases 0-2b, jump to Phase 3.5 (assumes TTS + transcribe finished) |
 | `<topic-text>`                    | FREE-FORM | New pipeline. Derive slug from topic.                                   |
 | `<*.md>` containing `**Topic**:`  | BRIEF     | Parse the brief (per `brief-template.md`); use its `Slug` if present    |
-| `<URL>`                           | URL       | New pipeline. Derive slug from URL/page title.                          |
+| YouTube URL (`youtube.com/watch`, `youtu.be/`, `youtube.com/playlist`, `youtube.com/@handle`) | YOUTUBE | New pipeline. Slug from video/channel title. Phase 0 fetches the transcript via the `youtube-transcript` skill (see `phase0-research.md` Step 0C.5) and feeds it to all four research agents. |
+| `<URL>` (non-YouTube)             | URL       | New pipeline. Derive slug from URL/page title.                          |
 
 If running in RESUME mode, read `videos/<slug>/phase-status.md` and continue from the first row whose status is `pending` (or re-run any `blocked` row after the user fixes the issue). Skip Steps 1.5-5; the template + slug are already locked from the prior run.
 

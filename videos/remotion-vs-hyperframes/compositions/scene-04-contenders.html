@@ -1,0 +1,171 @@
+<template id="scene-04-contenders-template">
+  <div data-composition-id="scene-04-contenders"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s04-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono);
+        font-size: 22px;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      #s04-eyebrow .dot {
+        display:inline-block; width:8px; height:8px; border-radius:50%;
+        background: var(--accent);
+        margin-right: 14px;
+      }
+      #s04-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 78px;
+        letter-spacing: -.025em;
+        line-height: 1.02;
+      }
+      #s04-h2 em { color: var(--ink-3); font-style: italic; }
+
+      #s04-grid {
+        position:absolute; left: 96px; right: 96px; top: 360px; bottom: 96px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
+      }
+      .s04-card {
+        position:relative;
+        border: 1px solid var(--rule);
+        border-radius: 24px;
+        padding: 48px;
+        background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0));
+      }
+      .s04-card.r { border-color: rgba(0, 229, 212, .35); }
+      .s04-card.r::before {
+        content: ''; position:absolute; inset:0;
+        background: radial-gradient(800px 400px at 0% 0%, rgba(0, 229, 212, .12), transparent 60%);
+        pointer-events:none; border-radius: 24px;
+      }
+      .s04-card.h { border-color: rgba(255, 77, 26, .35); }
+      .s04-card.h::before {
+        content: ''; position:absolute; inset:0;
+        background: radial-gradient(800px 400px at 100% 0%, rgba(255, 77, 26, .12), transparent 60%);
+        pointer-events:none; border-radius: 24px;
+      }
+      .s04-head { display:flex; align-items:center; gap: 22px; padding-bottom: 26px; border-bottom: 1px solid var(--rule); }
+      .s04-mark { width: 72px; height: 72px; border-radius: 14px; display:grid; place-items:center; padding: 8px; }
+      .s04-mark img { width: 100%; height: 100%; object-fit: contain; }
+      .r .s04-mark { background: rgba(0, 229, 212, .12); border: 1px solid rgba(0, 229, 212, .35); }
+      .h .s04-mark { background: rgba(255, 77, 26, .12); border: 1px solid rgba(255, 77, 26, .35); }
+      .s04-name { font-family: var(--sans); font-size: 56px; font-weight: 600; letter-spacing: -.025em; }
+      .s04-tag  { font-family: var(--mono); font-size: 18px; letter-spacing: .18em; text-transform:uppercase; margin-top: 4px; }
+      .r .s04-tag { color: var(--remotion); }
+      .h .s04-tag { color: var(--hyper); }
+
+      .s04-stat-row { display:flex; justify-content:space-between; padding: 18px 0; border-bottom: 1px dashed var(--rule); }
+      .s04-stat-row:last-of-type { border-bottom: none; }
+      .s04-stat-label { font-family: var(--mono); font-size: 16px; letter-spacing:.14em; text-transform:uppercase; color: var(--ink-3); }
+      .s04-stat-val { font-family: var(--sans); font-size: 22px; font-weight: 600; color: var(--ink); text-align:right; max-width:60%; }
+
+      .s04-quote { margin-top: 28px; font-family: var(--serif); font-style: italic; font-size: 28px; line-height: 1.35; color: var(--ink); }
+      .s04-quote::before { content: '"'; color: var(--accent); margin-right: 4px; }
+
+      #s04-medallion {
+        position:absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+        width: 110px; height: 110px; border-radius: 50%;
+        background: var(--bg);
+        border: 1px solid var(--rule-2);
+        display: grid; place-items: center;
+        font-family: var(--serif); font-style: italic;
+        font-size: 50px; color: var(--ink-2);
+        box-shadow: 0 0 60px rgba(0,0,0,.7);
+        z-index: 10;
+      }
+    </style>
+
+    <div id="s04-eyebrow"><span class="dot"></span>SIDE-BY-SIDE</div>
+    <h2 id="s04-h2">Same goal. <em>Opposite</em> philosophies.</h2>
+
+    <div id="s04-grid">
+      <div class="s04-card r" id="s04-card-r">
+        <div class="s04-head">
+          <div class="s04-mark"><img src="../assets/logos/remotion.png" alt="Remotion logo" /></div>
+          <div>
+            <div class="s04-name">Remotion</div>
+            <div class="s04-tag">REACT · JSX · BUILD STEP</div>
+          </div>
+        </div>
+        <div class="s04-stat-row" id="s04-r-row1"><span class="s04-stat-label">LAUNCHED</span><span class="s04-stat-val">2021 · Jonny Burger · Zurich</span></div>
+        <div class="s04-stat-row" id="s04-r-row2"><span class="s04-stat-label">PARADIGM</span><span class="s04-stat-val">Components & hooks</span></div>
+        <div class="s04-stat-row" id="s04-r-row3"><span class="s04-stat-label">RENDERING</span><span class="s04-stat-val">Distributed · AWS Lambda</span></div>
+        <div class="s04-stat-row" id="s04-r-row4"><span class="s04-stat-label">★ GITHUB</span><span class="s04-stat-val">~45,000 stars · 5 years</span></div>
+        <div class="s04-quote" id="s04-r-q">A natural extension of standard web development.</div>
+      </div>
+
+      <div class="s04-card h" id="s04-card-h">
+        <div class="s04-head">
+          <div class="s04-mark"><img src="../assets/logos/hyperframes.png" alt="HyperFrames logo" /></div>
+          <div>
+            <div class="s04-name">HyperFrames</div>
+            <div class="s04-tag">HTML · CSS · ZERO BUILD</div>
+          </div>
+        </div>
+        <div class="s04-stat-row" id="s04-h-row1"><span class="s04-stat-label">OPEN-SOURCED</span><span class="s04-stat-val">17 April 2026 · HeyGen</span></div>
+        <div class="s04-stat-row" id="s04-h-row2"><span class="s04-stat-label">PARADIGM</span><span class="s04-stat-val">HTML + data attributes</span></div>
+        <div class="s04-stat-row" id="s04-h-row3"><span class="s04-stat-label">RENDERING</span><span class="s04-stat-val">Headless Chromium → FFmpeg</span></div>
+        <div class="s04-stat-row" id="s04-h-row4"><span class="s04-stat-label">★ GITHUB</span><span class="s04-stat-val">~14,000 stars · in weeks</span></div>
+        <div class="s04-quote" id="s04-h-q">Write HTML. Render video. Built for agents.</div>
+      </div>
+    </div>
+
+    <div id="s04-medallion">vs</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s04-eyebrow",   { opacity: 0 }, 0);
+      tl.set("#s04-h2",        { y: 30, opacity: 0 }, 0);
+      tl.set("#s04-card-r",    { x: -60, opacity: 0 }, 0);
+      tl.set("#s04-card-h",    { x:  60, opacity: 0 }, 0);
+      tl.set("#s04-medallion", { scale: 0.4, opacity: 0 }, 0);
+      // Hide all stat rows + quotes
+      ["#s04-r-row1","#s04-r-row2","#s04-r-row3","#s04-r-row4","#s04-r-q",
+       "#s04-h-row1","#s04-h-row2","#s04-h-row3","#s04-h-row4","#s04-h-q"
+      ].forEach(s => tl.set(s, { opacity: 0, y: 12 }, 0));
+
+      tl.to("#s04-eyebrow",   { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s04-h2",        { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s04-card-r",    { x: 0, opacity: 1, duration: 0.8 }, 0.9);
+      tl.to("#s04-card-h",    { x: 0, opacity: 1, duration: 0.8 }, 0.9);
+      tl.to("#s04-medallion", { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 1.5);
+
+      // Stat rows reveal — Remotion side first ~5s in (narrator says "Remotion launched in 2021…"),
+      // then HyperFrames side ~26s in (narrator says "HyperFrames went open-source on April 17…")
+      // Scene total ~50s.
+      tl.to("#s04-r-row1", { y: 0, opacity: 1, duration: 0.5 }, 6.0);
+      tl.to("#s04-r-row2", { y: 0, opacity: 1, duration: 0.5 }, 9.0);
+      tl.to("#s04-r-row3", { y: 0, opacity: 1, duration: 0.5 }, 12.0);
+      tl.to("#s04-r-row4", { y: 0, opacity: 1, duration: 0.5 }, 15.0);
+      tl.to("#s04-r-q",    { y: 0, opacity: 1, duration: 0.6 }, 18.0);
+
+      tl.to("#s04-h-row1", { y: 0, opacity: 1, duration: 0.5 }, 28.0);
+      tl.to("#s04-h-row2", { y: 0, opacity: 1, duration: 0.5 }, 31.0);
+      tl.to("#s04-h-row3", { y: 0, opacity: 1, duration: 0.5 }, 34.0);
+      tl.to("#s04-h-row4", { y: 0, opacity: 1, duration: 0.5 }, 37.0);
+      tl.to("#s04-h-q",    { y: 0, opacity: 1, duration: 0.6 }, 40.0);
+
+      // Mid-beats — medallion breath, card glow pulse, mark scale, quote emphasis
+      tl.to("#s04-medallion", { scale: 1.08, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 14 }, 2.0);
+      tl.to("#s04-card-r .s04-mark", { scale: 1.1, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 6 }, 6.5);
+      tl.to("#s04-card-h .s04-mark", { scale: 1.1, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 6 }, 28.5);
+      tl.to("#s04-r-q",  { textShadow: "0 0 28px rgba(0,229,212,.4)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 2 }, 19.5);
+      tl.to("#s04-h-q",  { textShadow: "0 0 28px rgba(255,77,26,.4)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 2 }, 41.5);
+      tl.to("#s04-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 24 }, 1.0);
+
+      window.__timelines["scene-04-contenders"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,178 @@
+<template id="scene-09-usage-template">
+  <div data-composition-id="scene-09-usage"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s09-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono); font-size: 22px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--ink-3);
+      }
+      #s09-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--accent); margin-right: 14px; }
+      #s09-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 72px;
+        letter-spacing: -.025em;
+      }
+      #s09-h2 em { color: var(--ink-3); font-style: italic; }
+
+      #s09-grid {
+        position:absolute; left: 96px; right: 96px; top: 320px; bottom: 96px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 36px;
+      }
+      .s09-pane {
+        background: #07090d;
+        border: 1px solid var(--rule-2);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0,0,0,.55);
+        position: relative;
+      }
+      .s09-pane.r { box-shadow: 0 40px 100px rgba(0,0,0,.55), 0 0 60px rgba(0,229,212,.08); }
+      .s09-pane.h { box-shadow: 0 40px 100px rgba(0,0,0,.55), 0 0 60px rgba(255,77,26,.10); }
+      .s09-titlebar { height: 40px; background: #0c0f15; border-bottom: 1px solid var(--rule); display:flex; align-items:center; padding: 0 14px; gap:8px; }
+      .s09-dot { width: 10px; height: 10px; border-radius: 50%; }
+      .s09-dot.r { background: #ff5f57; } .s09-dot.y { background: #febc2e; } .s09-dot.g { background: #28c840; }
+      .s09-tb { flex:1; text-align:center; font-family: var(--mono); font-size: 13px; letter-spacing: .08em; }
+      .s09-pane.r .s09-tb { color: var(--remotion); }
+      .s09-pane.h .s09-tb { color: var(--hyper); }
+
+      .s09-body { padding: 22px 24px; font-family: var(--mono); font-size: 16px; line-height: 1.55; color: #d8d4c8; }
+      .s09-body .ln { display: block; }
+      .s09-pane.r .s09-arrow { color: var(--remotion); }
+      .s09-pane.h .s09-arrow { color: var(--hyper); }
+      .s09-pu { color: var(--accent); }
+      .s09-ph { color: #c084fc; }
+      .s09-info { color: var(--remotion); }
+      .s09-pane.h .s09-info { color: var(--hyper); }
+      .s09-warn { color: #ffd24a; }
+      .s09-ok { color: #00ff9d; }
+      .s09-dim { color: var(--ink-3); }
+      .s09-you { color: var(--ink); }
+      .s09-add { color: #00ff9d; }
+      .s09-rem { color: #ff5f57; }
+
+      #s09-final-callout {
+        position: absolute;
+        left: 50%;
+        bottom: 28px;
+        padding: 18px 36px;
+        border-radius: 999px;
+        background: rgba(7, 9, 13, 0.95);
+        border: 1px solid rgba(196, 255, 62, .5);
+        box-shadow: 0 0 40px rgba(196, 255, 62, .25);
+        font-family: var(--mono);
+        font-size: 22px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      #s09-final-callout .accent { color: var(--accent); font-weight: 700; }
+      #s09-final-callout .ink-3 { color: var(--ink-3); }
+    </style>
+
+    <div id="s09-eyebrow"><span class="dot"></span>"MAKE THE TITLE BOUNCE IN."</div>
+    <h2 id="s09-h2">Same prompt. <em>Different number of moving parts.</em></h2>
+
+    <div id="s09-grid">
+      <div class="s09-pane r" id="s09-pane-r">
+        <div class="s09-titlebar">
+          <span class="s09-dot r"></span><span class="s09-dot y"></span><span class="s09-dot g"></span>
+          <span class="s09-tb">REMOTION · 4 STEPS</span>
+        </div>
+        <div class="s09-body" id="s09-body-r">
+          <span class="ln" id="s09-r-l1"><span class="s09-arrow">&gt;</span> <span class="s09-you">make the title bounce in</span></span>
+          <span class="ln" id="s09-r-l2"><span class="s09-info">⏺</span> Edit <span class="s09-warn">src/Composition.tsx</span></span>
+          <span class="ln" id="s09-r-l3"><span class="s09-rem">- import {interpolate}</span></span>
+          <span class="ln" id="s09-r-l4"><span class="s09-add">+ import {spring, useVideoConfig}</span></span>
+          <span class="ln" id="s09-r-l5"><span class="s09-add">+ const scale = spring({frame, fps,</span></span>
+          <span class="ln" id="s09-r-l6"><span class="s09-add">+   config:{damping:10}});</span></span>
+          <span class="ln" id="s09-r-l7"><span class="s09-info">⏺</span> Bash <span class="s09-dim">npm start</span> <span class="s09-dim">(restart studio)</span></span>
+          <span class="ln" id="s09-r-l8"><span class="s09-dim">  webpack rebuilding...</span></span>
+          <span class="ln" id="s09-r-l9"><span class="s09-info">⏺</span> Bash <span class="s09-dim">npx remotion render</span></span>
+          <span class="ln" id="s09-r-l10"><span class="s09-dim">  bundle · React reconciler · FFmpeg</span></span>
+          <span class="ln" id="s09-r-l11"><span class="s09-ok">✓</span> <span class="s09-warn">out.mp4</span></span>
+        </div>
+      </div>
+
+      <div class="s09-pane h" id="s09-pane-h">
+        <div class="s09-titlebar">
+          <span class="s09-dot r"></span><span class="s09-dot y"></span><span class="s09-dot g"></span>
+          <span class="s09-tb">HYPERFRAMES · 2 STEPS</span>
+        </div>
+        <div class="s09-body" id="s09-body-h">
+          <span class="ln" id="s09-h-l1"><span class="s09-arrow">&gt;</span> <span class="s09-you">make the title bounce in</span></span>
+          <span class="ln" id="s09-h-l2"><span class="s09-info">⏺</span> Edit <span class="s09-warn">composition.html</span></span>
+          <span class="ln" id="s09-h-l3"><span class="s09-rem">- animation: fade 1s both;</span></span>
+          <span class="ln" id="s09-h-l4"><span class="s09-add">+ animation: bounce .9s</span></span>
+          <span class="ln" id="s09-h-l5"><span class="s09-add">+   cubic-bezier(.34,1.56,.64,1) both;</span></span>
+          <span class="ln" id="s09-h-l6"><span class="s09-dim">  file saved · browser auto-reload</span></span>
+          <span class="ln" id="s09-h-l7"><span class="s09-dim">  no rebuild · no studio restart</span></span>
+          <span class="ln" id="s09-h-l8"><span class="s09-info">⏺</span> Bash <span class="s09-dim">npx hyperframes render</span></span>
+          <span class="ln" id="s09-h-l9"><span class="s09-dim">  headless Chromium · Frame Adapter</span></span>
+          <span class="ln" id="s09-h-l10"><span class="s09-ok">✓</span> <span class="s09-warn">out.mp4</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="s09-final-callout"><span class="accent">0</span> <span class="ink-3">·</span> Lines of code <span class="accent">you</span> wrote</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s09-eyebrow", { opacity: 0 }, 0);
+      tl.set("#s09-h2",      { y: 30, opacity: 0 }, 0);
+      tl.set("#s09-pane-r",  { x: -40, opacity: 0 }, 0);
+      tl.set("#s09-pane-h",  { x:  40, opacity: 0 }, 0);
+      tl.set("#s09-final-callout", { xPercent: -50, y: 30, scale: 0.9, opacity: 0 }, 0);
+      const rLines = ["#s09-r-l1","#s09-r-l2","#s09-r-l3","#s09-r-l4","#s09-r-l5","#s09-r-l6","#s09-r-l7","#s09-r-l8","#s09-r-l9","#s09-r-l10","#s09-r-l11"];
+      const hLines = ["#s09-h-l1","#s09-h-l2","#s09-h-l3","#s09-h-l4","#s09-h-l5","#s09-h-l6","#s09-h-l7","#s09-h-l8","#s09-h-l9","#s09-h-l10"];
+      [...rLines, ...hLines].forEach(s => tl.set(s, { y: 6, opacity: 0 }, 0));
+
+      tl.to("#s09-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s09-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+      tl.to("#s09-pane-r",  { x: 0, opacity: 1, duration: 0.7 }, 1.0);
+      tl.to("#s09-pane-h",  { x: 0, opacity: 1, duration: 0.7 }, 1.0);
+
+      // ── Scene ~61.3s. Reveals re-anchored to actual transcript word positions. ──
+      // Remotion side (rLines) — narration reaches each milestone at:
+      //   "make the title bounce in" ~2s, "Composition.tsx" ~5.8s, "spring damping" ~8.5s,
+      //   "Webpack rebuilds" ~11.5s, "studio refreshes" ~13s, "remotion render" ~17.3s,
+      //   "headless Chromium reconciler" ~22-24s, "FFmpeg" ~27.8s.
+      const rTimes = [2.0, 5.8, 7.5, 8.5, 9.5, 10.5, 11.6, 13.0, 17.3, 23.0, 28.0];
+      rLines.forEach((s, i) => tl.to(s, { y: 0, opacity: 1, duration: 0.4 }, rTimes[i]));
+
+      // HyperFrames side (hLines) — narration reaches each milestone at:
+      //   "Same task in HyperFrames" ~29.5s, "composition.html" ~32.5s, "fade→bounce" ~33-35s,
+      //   "browser auto-reloads" ~37s, "no rebuild, no studio restart" ~38s,
+      //   "npx hyperframes render" ~41.3s, "Frame Adapter" ~46.6s, "Same output" ~53s.
+      const hTimes = [29.5, 32.5, 33.5, 34.3, 35.2, 37.0, 38.0, 41.3, 46.6, 53.0];
+      hLines.forEach((s, i) => tl.to(s, { y: 0, opacity: 1, duration: 0.4 }, hTimes[i]));
+
+      // ── Final callout: "0 · Lines of code you wrote" ──
+      // Anchored to "didn't write" at scene_t=57.9s
+      tl.to("#s09-final-callout", { xPercent: -50, y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 57.9);
+      tl.to("#s09-final-callout .accent", { textShadow: "0 0 20px rgba(196,255,62,.7)", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 3 }, 58.5);
+
+      // Mid-beats — pane glow alternates with narration focus, headline em flicker
+      tl.to("#s09-pane-r", { boxShadow: "0 40px 100px rgba(0,0,0,.55), 0 0 80px rgba(0,229,212,.18)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 13 }, 4.0);
+      tl.to("#s09-pane-h", { boxShadow: "0 40px 100px rgba(0,0,0,.55), 0 0 80px rgba(255,77,26,.20)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 11 }, 30.0);
+      // Edit-line emphasis: cycle through added (+) lines on each side
+      tl.to(["#s09-r-l4", "#s09-r-l5", "#s09-r-l6"], { backgroundColor: "rgba(0,255,157,.06)", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.5 }, 11.0);
+      tl.to(["#s09-h-l4", "#s09-h-l5"], { backgroundColor: "rgba(0,255,157,.06)", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.5 }, 35.5);
+      tl.to("#s09-h2 em", { color: "#c4ff3e", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 12 }, 6.0);
+      tl.to("#s09-eyebrow .dot", { scale: 1.5, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 30 }, 1.0);
+
+      window.__timelines["scene-09-usage"] = tl;
+    </script>
+  </div>
+</template>

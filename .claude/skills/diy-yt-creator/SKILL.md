@@ -18,6 +18,8 @@ Trigger when the user says any of:
 - "/diy-yt-creator:new-anthropic-short …"
 - "new archon short about X"
 - "/diy-yt-creator:new-archon-short …"
+- "new google short about X" / "google brand short" / "gemini short" / "workspace short" / "android short" / "google ai short"
+- "/diy-yt-creator:new-google-short …"
 - "new long-form video about X" / "new long-form standard about X"
 - "/diy-yt-creator:new-long-form-standard …"
 - "new claude code version update video" / "claude code release video"
@@ -37,6 +39,7 @@ Trigger when the user says any of:
 | [new-standard-short.md](./new-standard-short.md) | `templates/shorts/standard/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-180s) in the **brand-neutral standard** aesthetic. Default pick for any topic that isn't anchored to a specific brand. Numbered step cards (01/02/03) instead of dated timeline cards. |
 | [new-anthropic-short.md](./new-anthropic-short.md) | `templates/shorts/anthropic/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-60s) in the Anthropic dark-stage aesthetic |
 | [new-archon-short.md](./new-archon-short.md) | `templates/shorts/archon/` | User wants a vertical YouTube Short (1080x1920, 30fps, ~24-60s) in the Archon dark-blue / cyan-magenta aesthetic |
+| [new-google-short.md](./new-google-short.md) | `templates/shorts/google/` | User wants a vertical YouTube Short (1080x1920, 30fps, 70-130s) in the **Google brand cinematic-stage** aesthetic (canonical four-color rotation, Google logo, 5-dot SETUP→PUBLISH progress rail). Three theme variants (`cinematic` / `spotlight` / `editorial`) and four accent options (blue / red / yellow / green) match the source design's tweaks-panel knobs. **Dynamous promotion ON by default** — badge + module interstitial + 10% OFF bubble all enabled in `video.config.js`. |
 | [new-long-form-standard.md](./new-long-form-standard.md) | `templates/long-form/standard/` | User wants a horizontal YouTube long-form (1920x1080, 30fps, 4-15 min) in the dark-navy + 4-accent baseline aesthetic |
 | [new-claude-code-version-longform.md](./new-claude-code-version-longform.md) | `templates/long-form/claude-code-version/` | User wants a horizontal Claude Code release-update video (1920x1080, 30fps, 3-5 min) with VersionBranding overlay + terminal scene + stats opener. For full automation from a release tag, prefer the [/diy-yt-creator:claude-code-version](../../commands/diy-yt-creator/claude-code-version.md) slash command. |
 | [new-claude-code-version-short.md](./new-claude-code-version-short.md) | `templates/shorts/claude-code-version/` | User wants a vertical Claude Code release-update Short (1080x1920, 30fps, ≤3 min — target 70-130s) with VersionBranding overlay + version slam + 3-pill stats opener + numbered highlight cards + `$ claude update` terminal CTA. **Reuses an existing long-form video's content brief if one already exists for the same release** (avoids duplicate WebFetch and keeps stats / highlights consistent across cuts). |

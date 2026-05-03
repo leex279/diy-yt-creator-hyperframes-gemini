@@ -1,6 +1,6 @@
 # Recipe: dynamous-endcard
 
-Last-5s contextual endcard for opted-in Shorts. Mirrors the midroll v3 Phase 6 CTA stack — mastery wordmark, "Join the Community" headline, "Link in Description ↓" gradient pill, red "10% OFF" badge, `https://dynamous.ai/?code=646a60` URL line — ending with a 0.5s fade-to-black for a clean cut.
+Last-5s contextual endcard for opted-in Shorts. Mirrors the midroll v3 Phase 6 CTA stack — mastery wordmark, "Join the Community" headline, **4-item community offerings list** (Agentic Coding Course, AI Second Brain (OpenClaw — you own it), AI Agent Master Course, Daily Events + Friday Workshops), "Link in Description ↓" gradient pill, red "10% OFF" badge, `https://dynamous.ai/?code=646a60` URL line — ending with a 0.5s fade-to-black for a clean cut.
 
 > **OPT-IN.** Do not wire this block unless the author opted in to the Dynamous promotion at spawn time. See `videos/_template-wiring-snippet.md`.
 
@@ -10,11 +10,14 @@ Last-5s contextual endcard for opted-in Shorts. Mirrors the midroll v3 Phase 6 C
 
 ```
    ┌───────────────────────────────────────────┐
-   │                                           │
-   │                                           │
    │       [ Dynamous AI Mastery wordmark ]    │   ← 480px wide, white-on-dark
    │                                           │
    │            Join the Community             │   ← 56px / 900 weight
+   │                                           │
+   │   ✓ Agentic Coding Course                 │   ← 4 community offerings,
+   │   ✓ AI Second Brain (OpenClaw …)          │     30px / 700 weight,
+   │   ✓ AI Agent Master Course                │     gradient check badge
+   │   ✓ Daily Events + Friday Workshops       │     per item
    │                                           │
    │       ┌─────────────────────────────┐     │
    │       │  Link in Description    ↓   │     │   ← purple → pink → purple
@@ -24,20 +27,19 @@ Last-5s contextual endcard for opted-in Shorts. Mirrors the midroll v3 Phase 6 C
    │            │ 10% OFF  │                   │   ← red gradient badge
    │            └──────────┘                   │
    │                                           │
-   │                dynamous.ai                │   ← muted slate, 22px
-   │                                           │
+   │                dynamous.ai                │   ← muted slate, 26px
    │                                           │
    │  [ glass card on slate-900 surface ]      │
    └───────────────────────────────────────────┘
                        ↓
-              fade-to-black at 2.5–3.0s
+              fade-to-black at 4.5–5.0s
 ```
 
 Three-phase animation:
 
 1. **Card scale-in** (0–0.4s) — glass card pops from `scale 0.9 / opacity 0` with `back.out(1.2)` easing.
-2. **Content stagger** (0.4–1.4s) — wordmark → headline → CTA button → 10% OFF badge → URL, each with 0.5s eased entry. Subtle gradient shimmer plays across the CTA button during the hold.
-3. **Fade-to-black** (2.5–3.0s) — full-frame black overlay fades in for the clean cut at composition end.
+2. **Content stagger** (0.4–1.85s) — wordmark → headline → 4 offerings (each 0.08s after the previous) → CTA button → 10% OFF badge → URL, each with eased entry. Subtle gradient shimmer plays across the CTA button during the hold.
+3. **Fade-to-black** (4.5–5.0s) — full-frame black overlay fades in for the clean cut at composition end.
 
 ## Required tokens
 
@@ -113,13 +115,14 @@ None. The block inlines all colors (midroll v3 palette) and the `Inter` font. Op
 
 ## Slots to edit
 
-The endcard ships brand-locked verbatim — there are no per-video slots. Every opted-in Short carries the **same** mastery wordmark, **same** "Join the Community" headline, **same** "Link in Description ↓" CTA, **same** "10% OFF" badge, and **same** `dynamous.ai` URL. This is intentional: brand consistency across the channel is the load-bearing benefit.
+The endcard ships brand-locked verbatim — there are no per-video slots. Every opted-in Short carries the **same** mastery wordmark, **same** "Join the Community" headline, **same** 4 community offerings, **same** "Link in Description ↓" CTA, **same** "10% OFF" badge, and **same** `dynamous.ai` URL. This is intentional: brand consistency across the channel is the load-bearing benefit.
 
-If you genuinely need to vary the headline (e.g. for a special-occasion Short), edit `#dec-headline` directly in the per-video copy of `compositions/dynamous-endcard.html`. Do NOT touch the `.dec-discount` (`10% OFF`) or `.dec-button` (`Link in Description`) text — these are part of the locked CTA stack.
+If you genuinely need to vary the headline (e.g. for a special-occasion Short), edit `#dec-headline` directly in the per-video copy of `compositions/dynamous-endcard.html`. Do NOT touch the `.dec-offerings`, `.dec-discount` (`10% OFF`), or `.dec-button` (`Link in Description`) text — these are part of the locked CTA stack.
 
 | Selector         | Purpose                                | Constraint                                         |
 | ---------------- | -------------------------------------- | -------------------------------------------------- |
 | `#dec-headline`  | Hero CTA headline                      | Default `Join the Community`. Keep ≤ 24 chars.     |
+| `#dec-offerings` | 4-item community offerings list        | DO NOT EDIT. Locked at the 4 community offerings (Agentic Coding Course, AI Second Brain, AI Agent Master Course, Daily Events + Friday Workshops). |
 | `#dec-button`    | Gradient action pill                   | DO NOT EDIT. Locked at `Link in Description ↓`.    |
 | `#dec-discount`  | Red discount badge                     | DO NOT EDIT. Locked at `10% OFF`.                  |
 | `#dec-url`       | Trailing full discount URL             | Locked default `https://dynamous.ai/?code=646a60`. Update only if Cole rotates the discount code (then update `dynamous-modules.json` `joinUrl` and re-sync per-video copies). |

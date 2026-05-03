@@ -1,0 +1,144 @@
+<template id="scene-11-matrix-template">
+  <div data-composition-id="scene-11-matrix"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--ink);">
+
+    <style>
+      #s11-eyebrow {
+        position:absolute; left: 96px; top: 130px;
+        font-family: var(--mono); font-size: 22px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--ink-3);
+      }
+      #s11-eyebrow .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background: var(--accent); margin-right: 14px; }
+      #s11-h2 {
+        position:absolute; left: 96px; right: 96px; top: 168px;
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 84px;
+        letter-spacing: -.025em;
+      }
+
+      #s11-table {
+        position:absolute; left: 96px; right: 96px; top: 320px;
+        border-top: 1px solid var(--rule);
+      }
+      .s11-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr;
+        border-bottom: 1px solid var(--rule);
+        align-items: center;
+        min-height: 78px;
+        padding: 0 24px;
+      }
+      .s11-row.head {
+        border-bottom: 1px solid var(--rule-2);
+        min-height: 88px;
+        background: rgba(255,255,255,.02);
+      }
+      .s11-cell-label { font-family: var(--mono); font-size: 18px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+      .s11-cell-val { font-family: var(--sans); font-size: 22px; color: var(--ink); line-height: 1.3; }
+      .s11-cell-val .sub { display: block; font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+      .s11-r-name { font-family: var(--sans); font-size: 36px; font-weight: 600; letter-spacing: -.02em; color: var(--remotion); }
+      .s11-h-name { font-family: var(--sans); font-size: 36px; font-weight: 600; letter-spacing: -.02em; color: var(--hyper); }
+      .s11-r-tag { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform:uppercase; color: var(--remotion); margin-top: 4px; }
+      .s11-h-tag { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform:uppercase; color: var(--hyper); margin-top: 4px; }
+      .s11-head-cell { display: flex; align-items: center; gap: 14px; }
+      .s11-head-logo { width: 44px; height: 44px; border-radius: 10px; padding: 4px; display: grid; place-items: center; flex: none; }
+      .s11-head-logo img { width: 100%; height: 100%; object-fit: contain; }
+      .s11-head-logo.r { background: rgba(0,229,212,.12); border: 1px solid rgba(0,229,212,.3); }
+      .s11-head-logo.h { background: rgba(255,77,26,.12); border: 1px solid rgba(255,77,26,.3); }
+
+      .s11-check { color: var(--good); margin-right: 8px; }
+      .s11-x     { color: var(--danger); margin-right: 8px; }
+      .s11-tilde { color: var(--accent); margin-right: 8px; }
+    </style>
+
+    <div id="s11-eyebrow"><span class="dot"></span>FEATURE MATRIX · HEAD-TO-HEAD</div>
+    <h2 id="s11-h2">The receipts.</h2>
+
+    <div id="s11-table">
+      <div class="s11-row head">
+        <div class="s11-cell-label">VECTOR</div>
+        <div class="s11-head-cell">
+          <div class="s11-head-logo r"><img src="../assets/logos/remotion.png" alt="Remotion logo" /></div>
+          <div><div class="s11-r-name">Remotion</div><div class="s11-r-tag">REACT · JSX</div></div>
+        </div>
+        <div class="s11-head-cell">
+          <div class="s11-head-logo h"><img src="../assets/logos/hyperframes.png" alt="HyperFrames logo" /></div>
+          <div><div class="s11-h-name">HyperFrames</div><div class="s11-h-tag">HTML · CSS</div></div>
+        </div>
+      </div>
+
+      <div class="s11-row" id="s11-r1">
+        <div class="s11-cell-label">Authoring</div>
+        <div class="s11-cell-val">React components<span class="sub">JSX/TSX + hooks</span></div>
+        <div class="s11-cell-val">Plain HTML<span class="sub">data-attributes + GSAP</span></div>
+      </div>
+      <div class="s11-row" id="s11-r2">
+        <div class="s11-cell-label">Build step</div>
+        <div class="s11-cell-val"><span class="s11-x">✕</span>Required<span class="sub">Webpack · Bun · Vite</span></div>
+        <div class="s11-cell-val"><span class="s11-check">✓</span>Zero<span class="sub">index.html plays natively</span></div>
+      </div>
+      <div class="s11-row" id="s11-r3">
+        <div class="s11-cell-label">Animation clock</div>
+        <div class="s11-cell-val">Wall-clock<span class="sub">frame-evaluated</span></div>
+        <div class="s11-cell-val">Library-clock<span class="sub">seekable · beginFrame</span></div>
+      </div>
+      <div class="s11-row" id="s11-r4">
+        <div class="s11-cell-label">Distributed render</div>
+        <div class="s11-cell-val"><span class="s11-check">✓</span>AWS Lambda<span class="sub">enterprise-scale, mature</span></div>
+        <div class="s11-cell-val"><span class="s11-tilde">~</span>Single machine today<span class="sub">DIY for now</span></div>
+      </div>
+      <div class="s11-row" id="s11-r5">
+        <div class="s11-cell-label">Best fit</div>
+        <div class="s11-cell-val">React engineers<span class="sub">deep video pipelines</span></div>
+        <div class="s11-cell-val">AI agents<span class="sub">prompt-to-MP4 workflows</span></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#s11-eyebrow", { opacity: 0 }, 0);
+      tl.set("#s11-h2",      { y: 30, opacity: 0 }, 0);
+      const rows = ["#s11-r1","#s11-r2","#s11-r3","#s11-r4","#s11-r5"];
+      rows.forEach(s => tl.set(s, { y: 12, opacity: 0 }, 0));
+
+      tl.to("#s11-eyebrow", { opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#s11-h2",      { y: 0, opacity: 1, duration: 0.7 }, 0.4);
+
+      // ── Scene ~44s. 5 rows mapped to the 5 categories the narrator actually names: ──
+      //   r1 Authoring          @ scene_t=3.28s
+      //   r2 Build step         @ scene_t=9.98s
+      //   r3 Animation clock    @ scene_t=16.40s
+      //   r4 Distributed render @ scene_t=24.10s — sustained emphasis 24-34s as narrator
+      //                          describes lambda + single-machine, NO new row reveals
+      //   r5 Best fit           @ scene_t=34.83s
+      const rTimes = [3.0, 9.7, 16.1, 23.8, 34.5];
+      rows.forEach((s, i) => tl.to(s, { y: 0, opacity: 1, duration: 0.5 }, rTimes[i]));
+
+      // Mid-beats — per-row label flash mid-cycle
+      rows.forEach((s, i) => {
+        const t = rTimes[i] + 1.2;
+        tl.to(s + " .s11-cell-label", { color: "#fff", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, t);
+      });
+
+      // Sustained emphasis on Distributed render row during the 10s gap when
+      // narrator describes Lambda + single-machine (no new row reveal in this window)
+      tl.to("#s11-r4 .s11-check", { scale: 1.4, color: "#7dffec", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 5 }, 25.0);
+      tl.to("#s11-r4 .s11-tilde", { scale: 1.3, color: "#ffd24a", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 5 }, 28.5);
+      tl.to("#s11-r4", { backgroundColor: "rgba(255,255,255,.025)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 3 }, 25.5);
+
+      // Header chip breath — keeps the head row alive throughout
+      tl.to(".s11-r-name", { textShadow: "0 0 18px rgba(0,229,212,.5)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 13 }, 0.5);
+      tl.to(".s11-h-name", { textShadow: "0 0 18px rgba(255,77,26,.5)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 13 }, 0.5);
+
+      window.__timelines["scene-11-matrix"] = tl;
+    </script>
+  </div>
+</template>
