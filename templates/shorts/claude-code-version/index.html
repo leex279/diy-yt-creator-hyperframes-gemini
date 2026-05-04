@@ -699,20 +699,53 @@
     }
   }
 
-  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
-    const imgs = container.querySelectorAll('img');
-    imgs.forEach((img, i) => {
-      const seed = seedPrefix + '-drift-' + i;
-      const dx = (seedHash(seed + '-dx') - 0.5) * 50;
-      const dy = (seedHash(seed + '-dy') - 0.5) * 50;
-      const dr = (seedHash(seed + '-dr') - 0.5) * 7;
-      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
-      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
-      tl.to(img, {
-        x: dx, y: dy, rotation: '+=' + dr,
-        duration: dur, ease: 'sine.inOut',
-        yoyo: true, repeat: repeatCount
-      }, 0);
+  // Re-randomise shape positions at every phase transition (paired with cinematic-whoosh
+  // SFX so the field re-scatter reads as part of the whoosh, not an independent event).
+  // DEFAULT for every Claude Code release Short — replaces the older animateShapeDrift
+  // constant-yoyo. Mirrors templates/shorts/anthropic/index.html.
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
     });
   }
 
@@ -720,7 +753,6 @@
 
   window.__timelines = window.__timelines || {};
   const tl = gsap.timeline({ paused: true });
-  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'claude-code-short', 24);
 
   // Ambient: slow breath across full duration
   tl.fromTo("#ambient",
@@ -811,6 +843,15 @@
   }, P4 + 1.8);
 
   // Phase 4 stays fully visible to the end — composition naturally ends at 24s.
+
+  // Re-randomise shape backdrop at every phase transition (paired with cinematic-whoosh SFX).
+  // DEFAULT for every Short. Update [T1, T2, T3] when transition timestamps move.
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-code-short',
+    [T1, T2, T3]
+  );
 
   window.__timelines["main"] = tl;
 </script>

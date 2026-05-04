@@ -204,13 +204,38 @@ See `shared/lib/components/dynamous-discount-bubble/README.md` for the full slot
 
 ## Step 5 — `script.txt` outro line (every opted-in Short)
 
-Append the following line VERBATIM to the end of `videos/<slug>/script.txt` after your existing outro:
+Append an outro line to the end of `videos/<slug>/script.txt` after your existing outro. The wording depends on **the channel author's relationship to Dynamous**.
+
+### Default (channel author is OUTSIDE the Dynamous team)
+
+Append this line VERBATIM:
 
 > "A lot of you asked how I'm learning all this AI stuff — I use Dynamous. It's an awesome community. I actually reached out to them and got a 10% off code for you guys, it's in the pinned comment."
 
 **Why verbatim?** This wording passes the strategy doc's Friend Test — a friend telling you about a discount they got, not a sales pitch. Improvising loses the frame.
 
 **Note on "code"**: The line uses the word "code" even though the discount is automatic via the link, not a typed code. This is fine — a discounted link IS a "code" in the colloquial sense, and the friend-frame language is what carries the conversion. Don't rewrite it.
+
+### Insider exception (channel author is ON the Dynamous team / works with the founder)
+
+When the channel author is an insider — works on the team, builds projects with the founder, helps run workshops or content — the outsider line is **factually wrong**. Saying "I reached out to them" misrepresents the relationship and burns trust the moment a viewer recognises the author.
+
+Use insider framing instead. The Friend Test still passes — an insider saying "join us" is *more* friend-framed than an outsider saying "I got a code", not less. Required ingredients:
+
+- Acknowledge the team affiliation ("I'm on the Dynamous team" / "I build at Dynamous").
+- Optionally name the founder by first name and 1–2 concrete projects you ship together (Archon is the highest-recognition; bolt.diy and local-ai-packaged are also valid).
+- End with the same conversion CTA: "10% off code in the pinned comment if you want to join us."
+
+Reference outro that shipped in `videos/claude-code-source-leak/script.txt`:
+
+> "A lot of you asked how I learn this AI stuff. I'm on the Dynamous team. I work with Cole on workshops, his videos, and our open source projects. There's a 10% off code in the pinned comment if you want to join us."
+
+What stays locked across BOTH variants:
+
+- The pinned-comment first line (Step 6) — verbatim factual statement about the link.
+- The description first line (Step 7) — same.
+- The endcard CTA stack — brand-locked, no per-video text slots.
+- Volume / SFX rules — no audio stinger on the outro line.
 
 ---
 
