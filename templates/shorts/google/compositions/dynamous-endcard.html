@@ -1,5 +1,8 @@
 <div id="dynamous-endcard" class="dec-root" data-composition-id="dynamous-endcard" data-start="0" data-duration="5" data-width="1080" data-height="1920">
 
+    <!-- Werbung disclosure badge — German ad-disclosure compliance -->
+    <div class="dec-werbung">Werbung</div>
+
     <!-- Glass CTA card — mirrors midroll Phase 6 stack -->
     <div class="dec-card">
       <img class="dec-wordmark" src="../assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" crossorigin="anonymous" />
@@ -32,6 +35,22 @@
         background: var(--bg, #0f172a);  /* midroll bgDark */
         font-family: 'Inter', system-ui, sans-serif;
         overflow: hidden;
+      }
+      .dec-werbung {
+        position: absolute;
+        top: 48px;
+        right: 48px;
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #cbd5e1;
+        font-size: 32px;
+        font-weight: 700;
+        padding: 14px 28px;
+        border-radius: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0;
+        z-index: 10;
       }
       .dec-card {
         /* Positioned in the UPPER half of the frame to clear YouTube's
@@ -159,6 +178,11 @@
       window.__timelines = window.__timelines || {};
       (function () {
         var tl = gsap.timeline({ paused: true });
+
+        // Werbung disclosure badge (German ad-disclosure compliance) —
+        // fades in early so it's present before any CTA reveal.
+        tl.to('.dec-werbung',
+          { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.1);
 
         // Phase 1 — card scale-in 0–0.4s (midroll cardSpring analogue)
         tl.from('.dec-card',
