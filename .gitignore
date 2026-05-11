@@ -20,6 +20,10 @@ videos/*/audio/narration-chunks/
 # Workflow run logs (timing/tooling telemetry — local only, see scripts/log-run.py)
 .claude/runs/
 
+# Archon runtime artifacts (state + per-repo env) — NEVER commit
+.archon/state/
+.archon/.env
+
 # OS
 .DS_Store
 Thumbs.db
