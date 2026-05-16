@@ -273,7 +273,27 @@ Edit in this exact order (one Edit per change):
          data-volume="1"></audio>
 ```
 
-14. **Wire SFX from `retention-strategy.md`** (skip if the file has no `sfx_cues` blocks):
+14. **Wire SFX — defaults to transition-whoosh-only** (per `templates/shorts/anthropic/DESIGN.md` § Audio / SFX Cues and `.claude/rules/audio-design.md` § Anthropic Shorts — Default Cue Set):
+
+    **DEFAULT (apply unless the user explicitly asks for more SFX):** wire ONLY `cinematic-whoosh` cues, one per phase transition, AND each whoosh's `data-start` MUST equal `sceneT - 0.4` (the moment `repositionShapesPerPhase()` starts the shape-backdrop reposition). Skip per-element impact-slams, scale-slams, spring-pops, pops, screen-shakes, glitch-zaps, strike-crosses, sonic-logo by default — they read as cluttered against the dark-stage aesthetic and pull attention from narration. Skip the entire retention-strategy `sfx_cues` block in default mode.
+
+    Default wiring (one whoosh per transition):
+
+    ```html
+      <!-- SFX — phase-transition whooshes only.
+           data-start = (T_n - 0.4) so the whoosh fires together with the shape-backdrop
+           reposition (which starts at sceneT - 0.4 inside repositionShapesPerPhase). -->
+      <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+             data-start="<T1 - 0.4>" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+             data-start="<T2 - 0.4>" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+      <!-- ...one per phase boundary T1..Tn... -->
+    ```
+
+    Sync the cue file into the project: `bash scripts/sync-video-sfx.sh videos/<slug> cinematic-whoosh`.
+
+    **OPT-IN (only when the user asks for more SFX, OR the topic explicitly requires a layered audio stack — e.g., a stat-slam moment that loses impact without `scale-slam`):** then run the full retention-strategy-driven SFX wiring below. Document the override decision inline in `videos/<slug>/orchestration-log.md`.
+
     1. Read every `sfx_cues:` YAML block under each scene's "**SFX cues**" heading in `videos/<slug>/retention-strategy.md`.
     2. Build a deduplicated cue list: `cues = unique(all sfx_cues[].cue)`.
     3. Run: `bash scripts/sync-video-sfx.sh videos/<slug> ${cues[@]}` — copies each cue's `.mp3` from `shared/audio/sfx/` into `videos/<slug>/assets/sfx/`. The script errors if any cue is not in the library; resolve before continuing.
@@ -297,6 +317,20 @@ Edit in this exact order (one Edit per change):
        - **Mid-stagger pops** in 3+ card grids (keep first and last card pops, drop the middle ones). Example: a 4-card vertical grid gets 2 spring-pops, not 4.
        - **Secondary-stat slams** when a primary stat already has its slam (e.g., the dimmed `105K` next to a primary `30K` — only the primary needs a `scale-slam`).
        - **Subscribe-pill pops** when an `audio-reactive-glow` is already on the pill (pick one mechanism, not both).
+
+### 8.3.1. Screenshot-anchor markers — NO horizontal-bar overlays on chart screenshots
+
+Per [`.claude/rules/screenshot-anchor-markers.md`](../../rules/screenshot-anchor-markers.md): when a phase's visual anchor is a real screenshot of a bar chart / leaderboard / data viz (e.g., the source article's own carousel images), do NOT add `width:0 → width:N` "marker-highlight" `<span>` overlays that animate horizontal bars on top of the screenshot's existing bars. The screenshot already shows colored bars at the correct proportions — a synthetic translucent rectangle that grows on top reads as a duplicate bar and breaks the source aesthetic.
+
+Use these patterns instead when the anchor is a chart screenshot:
+
+- **Marker-circles** (SVG ellipse stroke around a single data point — different geometry, reads as "look here")
+- **Pill-row entrances** beside or below the screenshot (synthesize stat pills like `27% Health`, `26% Career` and step-by-step reveal them at narration word anchors)
+- **Scale-pulses** on existing pills when the narration repeats their number
+- **Stat-counter rolls** on a separate counter beside the screenshot
+- **Subtle frame-glow** on the entire `.ss-frame` parent of the screenshot
+
+Underline-markers on synthetic text (headlines, stat-pill words OUTSIDE the screenshot frame) are still fine. Marker-circles anywhere are fine. The rule applies only to horizontal-bar overlays drawn over real chart screenshots.
 
 ### 8.4. Trust-signal card (REQUIRED for news / blog / announcement topics)
 
@@ -452,6 +486,16 @@ Sub-playbook: `/diy-yt-creator qa-composition <slug>`. It will use `agent-browse
 
 Do NOT block on this step — it's advisory. Report findings in step 12.
 
+### 11.7. Generate YouTube description (MANDATORY — never skip)
+
+**Canonical rule: [`.claude/rules/youtube-metadata.md`](../../rules/youtube-metadata.md). Follow it end-to-end.** Every Short MUST ship a `videos/<slug>/youtube-description.md` — shipping without one is a defect.
+
+1. **vidIQ keyword research first** — call `mcp__claude_ai_vidiq__vidiq_keyword_research`, `vidiq_outliers`, and `vidiq_trending_videos` for 3-5 topic seeds. Save the snapshot to `videos/<slug>/research/vidiq-keywords.md`.
+2. **Shorts SKIP chapters entirely** — per the rule, vertical Shorts must not include a `Chapters` section (YouTube hides them and they pad the description).
+3. **Write `videos/<slug>/youtube-description.md`** — LEAN structure per the rule: SEO hook paragraph (top 2-3 keywords in first 200 chars; pack any feature inventory inline as comma-separated, NOT bullets) → Dynamous block in `----` separators (**MANDATORY on every Short** — independent of `dynamousPromotion` in `meta.json`, which only gates ON-SCREEN promotion; the description block is unconditional) → Resources: (validated URLs, keyword-rich anchor text) → Hostinger affiliate block in `----` separators (MANDATORY on every Short — `🏠 Self-host your AI agents & projects on Hostinger (10% OFF): 👉 https://hostinger.com/DIYSMARTCODE`) → engagement debate question matching the script's final spoken CTA → 15-25 hashtags. **NO Chapters, NO Key Changes / Key Concepts / Key Stats / Key Facts / "What's in this short" bullet sections** — explicitly cut.
+4. **Validate every URL** with `WebFetch` — replace any 404 with the corrected URL. Drop links that can't be fixed.
+5. **Keep it short** — Shorts descriptions should run ~800-1500 chars total. If you cross 1500, you've over-padded; trim.
+
 ### 12. Report to the user
 
 One concise message containing:
@@ -461,6 +505,7 @@ One concise message containing:
 - **Voice**: `am_michael` (or whichever was used)
 - **Preview URL**: `http://localhost:5173`
 - **Render command** (do NOT run it): `npx hyperframes render videos/<slug> -o videos/<slug>/out/<slug>.mp4`
+- **YouTube description**: `videos/<slug>/youtube-description.md` (paste-ready)
 - **Any inspect findings** that needed manual content tradeoffs (e.g. "shortened slam word from BREAKTHROUGH to MAJOR for fit")
 
 That's it. Stop. Wait for user to iterate or trigger render manually.

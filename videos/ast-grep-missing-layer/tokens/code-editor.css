@@ -1,0 +1,88 @@
+/* ──────────────────────────────────────────────────────────────────────
+   tokens/code-editor.css — Modern code-editor design system.
+
+   VSCode Dark+ / GitHub Dark inspired palette + typography for the
+   ast-grep-missing-layer redesign. Replaces tokens/long-form.css for
+   this video. Scoped to :root so every sub-composition inherits.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Editor surfaces ───────────────────────────────── */
+  --bg-deep:       #0d1117;
+  --bg-editor:     #1e1e1e;
+  --bg-panel:      #252526;
+  --bg-active:     #2d2d30;
+  --bg-gutter:     #1e1e1e;
+  --bg-selection:  rgba(38, 79, 120, 0.5);
+
+  /* ── Borders + dividers ────────────────────────────── */
+  --border-soft:   #2a2d31;
+  --border-strong: #3c3c3c;
+  --accent-line:   #007acc;
+
+  /* ── Foreground / text ─────────────────────────────── */
+  --fg-default:    #d4d4d4;
+  --fg-muted:      #858585;
+  --fg-dim:        #6a737d;
+  --fg-bright:     #f0f6fc;
+
+  /* ── Syntax (VS Code Dark+ aligned) ────────────────── */
+  --syn-keyword:   #c586c0;
+  --syn-string:    #ce9178;
+  --syn-function:  #dcdcaa;
+  --syn-variable:  #9cdcfe;
+  --syn-type:      #4ec9b0;
+  --syn-number:    #b5cea8;
+  --syn-comment:   #6a9955;
+  --syn-operator:  #d4d4d4;
+
+  /* ── Status accents ────────────────────────────────── */
+  --ok:            #4ec9b0;
+  --warn:          #d7ba7d;
+  --err:           #f48771;
+  --highlight-bg:  rgba(247, 129, 102, 0.18);
+
+  /* ── Brand accents ─────────────────────────────────── */
+  --brand-blue:    #4ec9b0;
+  --brand-orange:  #f78166;
+  --hostinger:     #673de6;
+
+  /* ── Compatibility shims for shared sub-comps (captions,
+        hostinger-midroll) that reference legacy long-form vars.
+        Keep names; remap to code-editor palette. ─────── */
+  --bg:             #0d1117;
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-surface:     rgba(255, 255, 255, 0.06);
+  --border:         #2a2d31;
+  --border-bright:  #3c3c3c;
+  --accent-1:       #007acc;
+  --accent-2:       #4ec9b0;
+  --accent-3:       #c586c0;
+  --accent-4:       #4ec9b0;
+  --accent-warn:    #f78166;
+  --accent-stat:    #d7ba7d;
+  --text:           #d4d4d4;
+  --text-secondary: #858585;
+  --text-muted:     #6a737d;
+  --pad-top:        80px;
+  --pad-x:          100px;
+  --pad-bottom:     80px;
+
+  /* ── Type system ───────────────────────────────────── */
+  --font-mono:     "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", "Menlo", "Monaco", monospace;
+  --font-sans:     "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display:  "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Legacy aliases */
+  --mono:          var(--font-mono);
+  --sans:          var(--font-sans);
+
+  /* ── Typography scale (long-form, 1920x1080) ───────── */
+  --t-slam:         180px;
+  --t-headline:      72px;
+  --t-statement:     48px;
+  --t-code-hero:     44px;
+  --t-code-body:     28px;
+  --t-label:         24px;
+  --t-mono-caption:  22px;
+}

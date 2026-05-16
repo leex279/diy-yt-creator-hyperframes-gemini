@@ -1,0 +1,136 @@
+<!--
+  scene-bullets.html — 3 icon+text rows (~8s).
+
+  Pattern: section header → 3 rows, each with a circular icon badge
+           (rotating accent) + bold title + subtitle. Different visual
+           treatment from the numbered step cards used by anthropic.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-bullets"].
+-->
+<template id="scene-bullets-template">
+  <div data-composition-id="scene-bullets"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-bullets-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:left; gap:36px;
+        box-sizing:border-box;
+      }
+      #scene-bullets-content .header {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 80px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        text-align: center;
+        max-width: 880px;
+      }
+      #scene-bullets-content .header .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-bullets-content .row-list {
+        display: flex; flex-direction: column;
+        gap: 28px; width: 920px;
+      }
+      #scene-bullets-content .row {
+        display: flex; align-items: center; gap: 28px;
+        padding: 24px 28px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow-warm);
+      }
+      #scene-bullets-content .icon {
+        flex: 0 0 auto;
+        width: 92px; height: 92px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--text-on-warm);
+        line-height: 1;
+      }
+      #scene-bullets-content .row.r1 .icon { background: var(--accent-warm); }
+      #scene-bullets-content .row.r2 .icon { background: var(--accent-deep); color: var(--text-on-deep); }
+      #scene-bullets-content .row.r3 .icon { background: var(--accent-sage); color: var(--accent-ink); }
+      #scene-bullets-content .body { display:flex; flex-direction:column; gap: 4px; flex:1; }
+      #scene-bullets-content .title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 42px;
+        line-height: 1.05;
+        color: var(--accent-ink);
+      }
+      #scene-bullets-content .sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 30px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-bullets-content">
+      <div class="header" id="bullets-header">
+        Three things <span class="em">worth knowing.</span>
+      </div>
+      <div class="row-list">
+        <div class="row r1" id="bullets-r1">
+          <div class="icon">A</div>
+          <div class="body">
+            <div class="title">Sub-compositions</div>
+            <div class="sub">Each scene is its own paused timeline.</div>
+          </div>
+        </div>
+        <div class="row r2" id="bullets-r2">
+          <div class="icon">B</div>
+          <div class="body">
+            <div class="title">Tokens-driven</div>
+            <div class="sub">CSS variables set the palette, swap per video.</div>
+          </div>
+        </div>
+        <div class="row r3" id="bullets-r3">
+          <div class="icon">C</div>
+          <div class="body">
+            <div class="title">Deterministic by default</div>
+            <div class="sub">No randomness. No clocks. Frame-perfect renders.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance (0 → 2s)
+      tl.from("#bullets-header", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
+      tl.from("#bullets-r1", { x: -40, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 0.5);
+      tl.from("#bullets-r2", { x: -40, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 0.95);
+      tl.from("#bullets-r3", { x: -40, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 1.4);
+
+      // Mid-beats — sequential icon emphasis pulses (highlight each row)
+      tl.to("#bullets-r1 .icon", { scale: 1.12, duration: 0.5, ease: "back.out(2)", yoyo: true, repeat: 1 }, 4);
+      tl.to("#bullets-r2 .icon", { scale: 1.12, duration: 0.5, ease: "back.out(2)", yoyo: true, repeat: 1 }, 6);
+      tl.to("#bullets-r3 .icon", { scale: 1.12, duration: 0.5, ease: "back.out(2)", yoyo: true, repeat: 1 }, 8);
+      // Beat D (10s): row 1 + 3 cards drift slightly to draw eye to row 2
+      tl.to("#bullets-r2", { scale: 1.025, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 10);
+      // Beat E (12s): all rows pulse together
+      tl.to("#bullets-r1, #bullets-r2, #bullets-r3", { scale: 1.02, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 12);
+
+      window.__timelines["scene-bullets"] = tl;
+    </script>
+  </div>
+</template>

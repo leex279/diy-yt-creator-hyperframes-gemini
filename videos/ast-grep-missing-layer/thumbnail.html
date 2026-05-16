@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>ast-grep — Thumbnail v2 (Your agent is lying)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ───── Tokens (inlined from tokens/code-editor.css) ───── */
+  :root {
+    --bg-deep:       #0d1117;
+    --bg-editor:     #1e1e1e;
+    --bg-panel:      #252526;
+    --bg-active:     #2d2d30;
+    --bg-gutter:     #1e1e1e;
+
+    --border-soft:   #2a2d31;
+    --border-strong: #3c3c3c;
+    --accent-line:   #007acc;
+
+    --fg-default:    #d4d4d4;
+    --fg-muted:      #858585;
+    --fg-dim:        #6a737d;
+    --fg-bright:     #f0f6fc;
+
+    --syn-keyword:   #c586c0;
+    --syn-string:    #ce9178;
+    --syn-function:  #dcdcaa;
+    --syn-variable:  #9cdcfe;
+    --syn-type:      #4ec9b0;
+    --syn-number:    #b5cea8;
+    --syn-comment:   #6a9955;
+
+    --ok:            #4ec9b0;
+    --warn:          #d7ba7d;
+    --err:           #f48771;
+    --err-deep:      #ff4d4d;
+
+    --brand-blue:    #4ec9b0;
+    --brand-orange:  #f78166;
+
+    --font-mono:     "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", "Menlo", "Monaco", monospace;
+    --font-sans:     "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--fg-default);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ───── Canvas ───── */
+  #canvas {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    background:
+      radial-gradient(ellipse 900px 600px at 75% 80%, rgba(255, 60, 60, 0.18), transparent 70%),
+      radial-gradient(ellipse 700px 500px at 15% 20%, rgba(255, 90, 80, 0.10), transparent 70%),
+      var(--bg-deep);
+    overflow: hidden;
+  }
+
+  #grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 24px 24px;
+    z-index: 1;
+  }
+
+  /* ───── HEADLINE — top half, full width ───── */
+  #headline-wrap {
+    position: absolute;
+    top: 48px;
+    left: 56px;
+    right: 56px;
+    z-index: 10;
+  }
+
+  #overline {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 22px;
+    color: var(--brand-blue);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #overline::before {
+    content: "";
+    width: 28px; height: 2px;
+    background: var(--brand-blue);
+  }
+
+  .slam {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    color: var(--fg-bright);
+    text-shadow: 0 6px 30px rgba(0,0,0,0.65);
+  }
+  .slam .l1 {
+    display: block;
+    font-size: 130px;
+  }
+  .slam .l2 {
+    display: block;
+    font-size: 130px;
+    margin-top: -2px;
+  }
+  .slam .lying {
+    color: var(--fg-bright);
+    position: relative;
+    display: inline-block;
+    padding: 0 14px;
+    background: #ff3333;
+    box-shadow:
+      0 0 30px rgba(255, 51, 51, 0.55),
+      0 6px 24px rgba(0,0,0,0.4);
+    transform: rotate(-1.5deg);
+    border-radius: 6px;
+  }
+
+  /* ───── AGENT PANEL — bottom-left, the receipt ───── */
+  #agent-panel {
+    position: absolute;
+    bottom: 36px;
+    left: 56px;
+    width: 720px;
+    height: 270px;
+    background: var(--bg-editor);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    box-shadow:
+      0 24px 60px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(255,255,255,0.02) inset;
+    overflow: hidden;
+    z-index: 5;
+  }
+  #agent-title {
+    height: 42px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 10px;
+  }
+  .tdot { width: 11px; height: 11px; border-radius: 50%; }
+  .tdot.r { background: #ff5f56; }
+  .tdot.y { background: #ffbd2e; }
+  .tdot.g { background: #27c93f; }
+  #agent-label {
+    margin-left: 14px;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 18px;
+    color: var(--fg-default);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
+  #agent-label .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--brand-orange);
+  }
+
+  #agent-body {
+    padding: 18px 22px 16px;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 22px;
+    line-height: 1.5;
+  }
+  .agent-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--fg-default);
+  }
+  .agent-line .ico {
+    color: var(--ok);
+    font-weight: 800;
+    width: 22px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .agent-line .ico.x {
+    color: var(--err);
+  }
+  .agent-line .path {
+    color: var(--syn-variable);
+  }
+  .agent-line .verdict {
+    color: var(--ok);
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  .lie-bubble {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 51, 51, 0.14);
+    border: 1.5px solid rgba(255, 80, 80, 0.55);
+    color: #ff8a8a;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 10px;
+    letter-spacing: 0.01em;
+  }
+  .lie-bubble .skull {
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  /* ───── COST TAG — bottom-right, the receipt of the lie ───── */
+  #cost-card {
+    position: absolute;
+    bottom: 36px;
+    right: 56px;
+    width: 360px;
+    height: 270px;
+    background: linear-gradient(160deg, rgba(255,51,51,0.16), rgba(120,20,20,0.10));
+    border: 1.5px solid rgba(255, 80, 80, 0.55);
+    border-radius: 14px;
+    padding: 28px 26px;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow:
+      0 24px 60px rgba(255,51,51,0.18),
+      0 0 0 1px rgba(255,255,255,0.02) inset;
+  }
+  #cost-label {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 18px;
+    color: #ffb0b0;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #cost-label .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #ff4d4d;
+    box-shadow: 0 0 12px #ff4d4d;
+  }
+  #cost-value {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-weight: 800;
+    font-size: 90px;
+    line-height: 0.9;
+    color: #ffffff;
+    text-shadow: 0 4px 24px rgba(255,51,51,0.45);
+    letter-spacing: -0.02em;
+  }
+  #cost-value .currency {
+    font-size: 54px;
+    color: #ff8a8a;
+    margin-right: 4px;
+    vertical-align: top;
+    line-height: 1;
+  }
+  #cost-sub {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 19px;
+    color: #ffb0b0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #cost-sub .arrow {
+    color: #ff4d4d;
+    font-weight: 900;
+    font-size: 22px;
+  }
+
+  /* ───── Brand chrome bottom-right ───── */
+  #brand {
+    position: absolute;
+    top: 36px;
+    right: 56px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 12;
+  }
+  #brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand-blue), #2ea58a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-weight: 800;
+    font-size: 24px;
+    color: #0d1117;
+  }
+  #brand-text {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--brand-blue);
+    letter-spacing: -0.01em;
+  }
+
+</style>
+</head>
+<body>
+<div id="canvas">
+  <div id="grid"></div>
+
+  <!-- ───── Brand chrome (top-right) ───── -->
+  <div id="brand">
+    <div id="brand-mark">{</div>
+    <div id="brand-text">ast-grep</div>
+  </div>
+
+  <!-- ───── Headline ───── -->
+  <div id="headline-wrap">
+    <div id="overline">if you use Claude · Cursor · Copilot</div>
+    <div class="slam">
+      <span class="l1">YOUR AGENT IS</span>
+      <span class="l2"><span class="lying">LYING</span> TO YOU.</span>
+    </div>
+  </div>
+
+  <!-- ───── Agent panel (bottom-left) — the lie in action ───── -->
+  <div id="agent-panel">
+    <div id="agent-title">
+      <div class="tdot r"></div>
+      <div class="tdot y"></div>
+      <div class="tdot g"></div>
+      <div id="agent-label">
+        <div class="dot"></div>
+        Claude Code · agent session
+      </div>
+    </div>
+    <div id="agent-body">
+      <div class="agent-line">
+        <span class="ico">&#10003;</span>
+        <span>Read <span class="path">dag-executor.test.ts</span></span>
+        <span class="verdict">found 47 calls</span>
+      </div>
+      <div class="agent-line">
+        <span class="ico">&#10003;</span>
+        <span>Read <span class="path">utils.test.ts</span></span>
+        <span class="verdict">found 19 calls</span>
+      </div>
+      <div class="lie-bubble">
+        <span class="skull">&#9888;</span>
+        most of them aren't real
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── Cost card (bottom-right) — the receipt ───── -->
+  <div id="cost-card">
+    <div id="cost-label">
+      <span class="dot"></span>
+      your tokens
+    </div>
+    <div id="cost-value">
+      <span class="currency">$</span>0.47
+    </div>
+    <div id="cost-sub">
+      <span class="arrow">&uarr;</span>
+      and rising
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

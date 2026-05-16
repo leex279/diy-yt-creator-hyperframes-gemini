@@ -1,0 +1,169 @@
+<!--
+  scene-list-cards.html — Step-by-step card reveal archetype (Anthropic long-form).
+
+  NEW archetype. Ships 4 cards in a 2x2 grid with step-by-step reveal
+  (~5s apart) per .claude/rules/step-by-step-reveal.md.
+
+  Pattern:
+    - Mono overline + headline
+    - 4 cards, numbered 01-04, each with a 36px primary label + 24px descriptor
+    - Cards enter one at a time; all cards HIDDEN at t=0 via explicit tl.set
+
+  OPERATOR:
+    - Replace placeholder label/descriptor text in each card
+    - Tune SCENE_DURATION and card entrance times to narration word anchors
+    - Add or remove cards (3-6 range); update tl.set() list if count changes
+-->
+<template id="scene-list-cards-template">
+  <div data-composition-id="scene-list-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-list-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 32px;
+        box-sizing: border-box;
+      }
+      #list-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #list-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 72px;
+        line-height: 1.02;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1400px;
+      }
+      .list-cards-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        width: 100%;
+      }
+      .list-card {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 28px 32px;
+        border-radius: 20px;
+        background: linear-gradient(135deg,
+          rgba(167, 139, 250, 0.10) 0%,
+          rgba(167, 139, 250, 0.03) 100%);
+        border: 1.5px solid rgba(167, 139, 250, 0.35);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+      }
+      .list-card-num {
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 48px;
+        line-height: 1.0;
+        color: var(--accent-2);
+        min-width: 64px;
+        letter-spacing: -1px;
+      }
+      .list-card-body {
+        display: flex; flex-direction: column;
+        gap: 8px;
+        flex: 1;
+      }
+      .list-card-label {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 36px;
+        line-height: 1.15;
+        color: var(--text);
+      }
+      .list-card-desc {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 24px;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+    </style>
+
+    <div id="scene-list-content">
+      <div id="list-overline">KEY POINTS</div>
+      <div id="list-headline">Replace with scene headline</div>
+      <div class="list-cards-grid">
+        <div class="list-card" id="list-card-1">
+          <div class="list-card-num">01</div>
+          <div class="list-card-body">
+            <div class="list-card-label">Primary label one</div>
+            <div class="list-card-desc">Descriptor line for card one</div>
+          </div>
+        </div>
+        <div class="list-card" id="list-card-2">
+          <div class="list-card-num">02</div>
+          <div class="list-card-body">
+            <div class="list-card-label">Primary label two</div>
+            <div class="list-card-desc">Descriptor line for card two</div>
+          </div>
+        </div>
+        <div class="list-card" id="list-card-3">
+          <div class="list-card-num">03</div>
+          <div class="list-card-body">
+            <div class="list-card-label">Primary label three</div>
+            <div class="list-card-desc">Descriptor line for card three</div>
+          </div>
+        </div>
+        <div class="list-card" id="list-card-4">
+          <div class="list-card-num">04</div>
+          <div class="list-card-body">
+            <div class="list-card-label">Primary label four</div>
+            <div class="list-card-desc">Descriptor line for card four</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 20;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Hide all 4 cards at t=0 — explicit set so no tl.from() immediateRender ambiguity
+      tl.set("#list-card-1", { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#list-card-2", { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#list-card-3", { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#list-card-4", { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+      // Overline + headline enter first
+      tl.from("#list-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#list-headline",  { y: 28, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+
+      // Step-by-step card reveals — ~5s apart (paced to narration naming each item)
+      // OPERATOR: replace times with transcript.json word.start anchors for each card's name
+      tl.to("#list-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 1.5);
+      tl.to("#list-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 6.5);
+      tl.to("#list-card-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 11.5);
+      tl.to("#list-card-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 16.5);
+
+      // Pin timeline to scene duration
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-list-cards"] = tl;
+    </script>
+  </div>
+</template>

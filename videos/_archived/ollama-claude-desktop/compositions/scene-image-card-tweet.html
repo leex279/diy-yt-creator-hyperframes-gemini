@@ -1,0 +1,114 @@
+<!--
+  scene-image-card-tweet.html — X announcement screenshot (intro hook).
+  Cloned from scene-image-card.html. Unique data-composition-id +
+  timeline key so it can coexist with the cowork + code variants.
+-->
+<template id="scene-image-card-tweet-template">
+  <div data-composition-id="scene-image-card-tweet"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-image-card-tweet-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:28px;
+        box-sizing:border-box;
+      }
+      #scene-image-card-tweet-content .kicker {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-warm);
+      }
+      #scene-image-card-tweet-content .frame {
+        position: relative;
+        width: 920px;
+        height: 920px;
+        border-radius: 28px;
+        overflow: hidden;
+        background: #15202B;
+        border: 6px solid var(--accent-ink);
+        box-shadow: var(--shadow-warm);
+      }
+      #scene-image-card-tweet-content .frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+      }
+      #scene-image-card-tweet-content .badge {
+        position: absolute;
+        top: 24px; left: 24px;
+        padding: 10px 22px;
+        background: var(--accent-warm);
+        color: var(--text-on-warm);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        border-radius: 999px;
+      }
+      #scene-image-card-tweet-content .caption {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 38px;
+        line-height: 1.3;
+        color: var(--text);
+        max-width: 880px;
+      }
+      #scene-image-card-tweet-content .attribution {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 24px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-image-card-tweet-content">
+      <div class="kicker" id="ic-kicker">Just Shipped</div>
+      <div class="frame" id="ic-frame">
+        <img src="assets/tweet-announcement.png" alt="Ollama announcement on X" crossorigin="anonymous" />
+        <span class="badge" id="ic-badge">@ollama</span>
+      </div>
+      <div class="caption" id="ic-caption">Ollama Cloud, native in Claude Desktop.</div>
+      <div class="attribution" id="ic-attrib">x.com/ollama &middot; May 5</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Hidden-until-reveal pattern (set + to) — avoids the tl.from()
+      // flash where elements show briefly then snap invisible.
+      tl.set("#ic-kicker",  { y: 16, opacity: 0 }, 0);
+      tl.set("#ic-frame",   { scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ic-badge",   { x: -20, opacity: 0 }, 0);
+      tl.set("#ic-caption", { y: 16, opacity: 0 }, 0);
+      tl.set("#ic-attrib",  { y: 12, opacity: 0 }, 0);
+
+      tl.to("#ic-kicker",   { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0);
+      tl.to("#ic-frame",    { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.4)" }, 0.3);
+      tl.to("#ic-badge",    { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.9);
+      tl.to("#ic-caption",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 1.2);
+      tl.to("#ic-attrib",   { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 1.5);
+
+      tl.to("#ic-badge", { scale: 1.08, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 3.6);
+      tl.to("#ic-frame", { scale: 1.015, duration: 0.6, ease: "power2.inOut", yoyo: true, repeat: 1 }, 5.0);
+
+      window.__timelines["scene-image-card-tweet"] = tl;
+    </script>
+  </div>
+</template>

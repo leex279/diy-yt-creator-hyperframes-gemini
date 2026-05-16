@@ -1,0 +1,1731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic — Just Opened the Gates (Third-Party Agents Now on Plan)</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* Top banner (persistent, Anthropic wordmark) */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; }
+  #phase2 { z-index: 2; }
+  #phase3 { z-index: 3; }
+  #phase4 { z-index: 4; }
+  #phase5 { z-index: 5; }
+  #phase6 { z-index: 6; }
+  #phase7 { z-index: 7; }
+  #phase8 { z-index: 8; }
+  #phase9 { z-index: 9; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .overline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* PHASE 1 — Silent thumbnail-grade open */
+  #p1-topic-lockup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 32px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #p1-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 148px;
+    line-height: 0.92;
+    letter-spacing: -5px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  #p1-ga-receipt {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 38px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* PHASE 2 — Hook */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 18px;
+  }
+  #p2-overline { color: var(--orange); margin-top: 16px; opacity: 0; }
+  #p2-hero {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 92px;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    color: var(--text);
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    max-width: 980px;
+    margin-top: 8px;
+    opacity: 0;
+  }
+  #p2-hero .accent { color: var(--orange); }
+  /* Brand-row pills (OpenClaw / Archon) under the hook */
+  #p2-brands {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 940px;
+    margin-top: 22px;
+  }
+  .p2-brand-pill {
+    padding: 22px 32px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(245,241,235,0.06), rgba(245,241,235,0.02));
+    border: 1.5px solid rgba(245,241,235,0.18);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 52px;
+    letter-spacing: -1px;
+    text-align: left;
+    opacity: 0;
+  }
+  .p2-brand-pill .b-name {
+    display: block;
+  }
+  .p2-brand-pill .b-sub {
+    display: block;
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--text-dim);
+    letter-spacing: 1.5px;
+  }
+  .p2-brand-pill.orange { border-color: rgba(233,116,88,0.50); box-shadow: 0 14px 36px rgba(233,116,88,0.18); }
+  .p2-brand-pill.purple { border-color: rgba(167,139,250,0.50); box-shadow: 0 14px 36px rgba(167,139,250,0.18); }
+  .p2-brand-pill.green  { border-color: rgba(125,211,166,0.50); box-shadow: 0 14px 36px rgba(125,211,166,0.18); }
+  .p2-brand-pill.orange .b-name { color: var(--orange); }
+  .p2-brand-pill.purple .b-name { color: var(--purple); }
+  .p2-brand-pill.green  .b-name { color: var(--green); }
+  /* Brand logos inside pills */
+  .p2-brand-pill { display: flex; flex-direction: row; align-items: center; gap: 22px; }
+  .p2-brand-pill .b-text { display: flex; flex-direction: column; }
+  .brand-logo {
+    width: 56px; height: 56px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+  }
+  .brand-logo-white-bg {
+    background: #fff;
+    border-radius: 10px;
+    padding: 4px;
+    box-sizing: content-box;
+    width: 56px; height: 56px;
+  }
+  /* Phase 3 shift-pill logo (stacks above text since shift-pill is column) */
+  .pill-logo {
+    width: 56px; height: 56px;
+    object-fit: contain;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .pill-logo-white-bg {
+    background: #fff;
+    border-radius: 10px;
+    padding: 4px;
+    box-sizing: content-box;
+    width: 56px; height: 56px;
+  }
+
+  #p2-pivot-line {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.12;
+    color: var(--text);
+    letter-spacing: -1.2px;
+    max-width: 960px;
+    margin-top: 18px;
+    position: relative;
+    text-align: center;
+    opacity: 0;
+  }
+  #p2-pivot-line .accent { color: var(--orange); }
+  #p2-pivot-line .marker-wrap { position: relative; display: inline-block; }
+
+  /* X-post receipt cards — actual ClaudeDevs announcement screenshots for trust */
+  #p2-xposts {
+    position: absolute;
+    left: 60px; right: 60px;
+    top: 470px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    z-index: 8;
+  }
+  #p2-xpost-1, #p2-xpost-2 {
+    width: 860px; height: auto;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+    background: #15171e;
+    transform-origin: center center;
+    opacity: 0; /* GSAP reveals at the scheduled times */
+  }
+
+  /* PHASE 3 — The shift (BEFORE / AFTER) */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 14px;
+  }
+  #p3-overline { color: var(--orange); margin-top: 16px; }
+  #p3-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 940px;
+    letter-spacing: -1px;
+    margin-top: 4px;
+  }
+  /* 3 shift pills — OpenClaw, Archon, Your scripts */
+  #p3-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 940px;
+  }
+  .shift-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 222px;
+    min-height: 160px;
+    padding: 18px 8px;
+    border-radius: 22px;
+    text-align: center;
+  }
+  .shift-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.22), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.45);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.22);
+  }
+  .shift-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.22), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.45);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.22);
+  }
+  .shift-pill.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.22), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.45);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.22);
+  }
+  .shift-pill.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.22), rgba(107,154,239,0.06));
+    border: 2px solid rgba(107,154,239,0.45);
+    box-shadow: 0 14px 36px rgba(107,154,239,0.22);
+  }
+  .shift-pill .name {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 0.95;
+    letter-spacing: -1.2px;
+  }
+  .shift-pill.orange .name { color: var(--orange); text-shadow: 0 0 36px rgba(233,116,88,0.40); }
+  .shift-pill.purple .name { color: var(--purple); text-shadow: 0 0 36px rgba(167,139,250,0.40); }
+  .shift-pill.green  .name { color: var(--green);  text-shadow: 0 0 36px rgba(125,211,166,0.40); }
+  .shift-pill.blue   .name { color: var(--blue);   text-shadow: 0 0 36px rgba(107,154,239,0.40); }
+  .shift-pill .label {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  /* Before/After comparison strip */
+  #p3-beforeafter {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    margin-top: 14px;
+    width: 940px;
+  }
+  .ba-card {
+    flex: 1;
+    padding: 22px 24px;
+    border-radius: 18px;
+    text-align: left;
+  }
+  .ba-card .ba-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: 4px;
+    line-height: 1;
+  }
+  .ba-card .ba-body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.15;
+    margin-top: 10px;
+    color: var(--text);
+    letter-spacing: -0.4px;
+  }
+  .ba-card.before {
+    background: linear-gradient(135deg, rgba(209,67,67,0.16), rgba(209,67,67,0.05));
+    border: 1.8px solid rgba(209,67,67,0.45);
+  }
+  .ba-card.before .ba-label { color: var(--red); }
+  .ba-card.after {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 1.8px solid rgba(233,116,88,0.45);
+  }
+  .ba-card.after .ba-label { color: var(--orange); }
+
+  /* "The catch" body line */
+  #p3-catch {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 960px;
+    margin-top: 14px;
+    position: relative;
+    text-align: center;
+    letter-spacing: -0.5px;
+  }
+  #p3-catch .accent { color: var(--orange); }
+  #p3-catch .marker-wrap { position: relative; display: inline-block; }
+  .marker-sweep {
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    height: 6px;
+    width: 0;
+    background: var(--orange);
+    border-radius: 3px;
+    box-shadow: 0 0 12px rgba(233,116,88,0.7);
+  }
+
+  /* PHASE 4 — Who gets it */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+  }
+  #p4-overline { color: var(--purple); margin-top: 30px; }
+  #p4-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 940px;
+    margin-top: 12px;
+  }
+  .tier-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 36px;
+    border-radius: 22px;
+    text-align: left;
+  }
+  .tier-pill.purple { background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.05)); border: 2px solid rgba(167,139,250,0.45); }
+  .tier-pill.blue   { background: linear-gradient(135deg, rgba(107,154,239,0.20), rgba(107,154,239,0.05)); border: 2px solid rgba(107,154,239,0.45); }
+  .tier-pill.green  { background: linear-gradient(135deg, rgba(125,211,166,0.20), rgba(125,211,166,0.05)); border: 2px solid rgba(125,211,166,0.45); }
+  .tier-pill.orange { background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.05)); border: 2px solid rgba(233,116,88,0.45); }
+  .tier-pill .name {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: -1.5px;
+  }
+  .tier-pill.purple .name { color: var(--purple); }
+  .tier-pill.blue   .name { color: var(--blue); }
+  .tier-pill.green  .name { color: var(--green); }
+  .tier-pill.orange .name { color: var(--orange); }
+  .tier-pill .descriptor {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  #p4-free-strike {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 32px;
+    border-radius: 999px;
+    background: rgba(209,67,67,0.10);
+    border: 1.5px solid rgba(209,67,67,0.45);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 800;
+    font-size: 38px;
+    color: var(--red);
+    letter-spacing: 2px;
+    margin-top: 18px;
+  }
+  #p4-free-strike .strike {
+    text-decoration: line-through;
+    text-decoration-color: var(--red);
+    text-decoration-thickness: 4px;
+    color: var(--text-dim);
+  }
+
+  /* PHASE 5 — Timeline */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 20px;
+  }
+  #p5-overline { color: var(--orange); margin-top: 30px; }
+  #p5-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 940px;
+    margin-top: 8px;
+  }
+  .tl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 22px 28px;
+    border-radius: 20px;
+  }
+  .tl-card.orange { background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05)); border: 2px solid rgba(233,116,88,0.40); }
+  .tl-card.purple { background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05)); border: 2px solid rgba(167,139,250,0.40); }
+  .tl-card.blue   { background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05)); border: 2px solid rgba(107,154,239,0.40); }
+  .tl-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 900;
+    font-size: 38px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+    text-align: center;
+  }
+  .tl-card.orange .tl-date { background: var(--orange); }
+  .tl-card.purple .tl-date { background: var(--purple); }
+  .tl-card.blue   .tl-date { background: var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .tl-title {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .tl-sub {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: 1px;
+  }
+  .tl-card.orange .tl-sub { color: var(--orange); }
+  .tl-card.purple .tl-sub { color: var(--purple); }
+  .tl-card.blue   .tl-sub { color: var(--blue); }
+
+  /* PHASE 6 — The cap caveat */
+  #phase6 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 16px;
+  }
+  #p6-overline { color: var(--red); margin-top: 30px; }
+  #p6-stathero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 56px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.45);
+    box-shadow: 0 16px 40px rgba(233,116,88,0.20);
+    margin-top: 4px;
+  }
+  #p6-counter {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 180px;
+    line-height: 1.0;
+    letter-spacing: -6px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.45);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p6-counterlabel {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-top: 8px;
+  }
+  #p6-side-chips {
+    display: flex;
+    gap: 14px;
+    margin-top: 4px;
+    justify-content: center;
+  }
+  .side-chip {
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: rgba(233,116,88,0.10);
+    border: 1.5px solid rgba(233,116,88,0.40);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--orange);
+    letter-spacing: 1px;
+  }
+  /* Outcome chips — two overage outcomes */
+  #p6-outcomes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 940px;
+    margin-top: 12px;
+  }
+  .outcome-chip {
+    padding: 20px 28px;
+    border-radius: 18px;
+    text-align: left;
+  }
+  .outcome-orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.16), rgba(233,116,88,0.05));
+    border: 1.8px solid rgba(233,116,88,0.50);
+  }
+  .outcome-red {
+    background: linear-gradient(135deg, rgba(209,67,67,0.16), rgba(209,67,67,0.05));
+    border: 1.8px solid rgba(209,67,67,0.50);
+  }
+  .outcome-chip .oc-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+  .outcome-orange .oc-label { color: var(--orange); }
+  .outcome-red    .oc-label { color: var(--red); }
+  .outcome-chip .oc-body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.15;
+    color: var(--text);
+    margin-top: 8px;
+    letter-spacing: -0.3px;
+  }
+  /* +50% Claude Code aside (small) */
+  #p6-aside {
+    margin-top: 16px;
+    width: 940px;
+    padding: 14px 22px;
+    border-radius: 12px;
+    background: rgba(125,211,166,0.08);
+    border: 1.5px solid rgba(125,211,166,0.30);
+    text-align: left;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+  #p6-aside .aside-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--green);
+    flex-shrink: 0;
+  }
+  #p6-aside .aside-body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+  }
+
+  /* PHASE 7 — Community sentiment cards */
+  #phase7 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+  }
+  #p7-overline { color: var(--text); margin-top: 30px; }
+  #p7-card-stage {
+    position: relative;
+    width: 940px;
+    height: 900px;
+    margin-top: 12px;
+  }
+  .sentiment-card {
+    position: absolute;
+    inset: 0;
+    background: var(--card);
+    border-radius: 26px;
+    padding: 50px 50px 40px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    opacity: 0;
+  }
+  .sentiment-card.happy     { border: 2px solid rgba(125,211,166,0.55); background: linear-gradient(135deg, rgba(125,211,166,0.10), rgba(22,27,38,0.95)); }
+  .sentiment-card.frustrated{ border: 2px solid rgba(209,67,67,0.55);  background: linear-gradient(135deg, rgba(209,67,67,0.10), rgba(22,27,38,0.95)); }
+  .sentiment-card.confused  { border: 2px solid rgba(107,154,239,0.55);background: linear-gradient(135deg, rgba(107,154,239,0.10), rgba(22,27,38,0.95)); }
+  .sentiment-card .label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 900;
+    font-size: 44px;
+    letter-spacing: 6px;
+    text-align: left;
+    line-height: 1;
+  }
+  .sentiment-card.happy      .label { color: var(--green); }
+  .sentiment-card.frustrated .label { color: var(--red); }
+  .sentiment-card.confused   .label { color: var(--blue); }
+  .sentiment-card .quote {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 52px;
+    line-height: 1.25;
+    color: var(--text);
+    text-align: left;
+    letter-spacing: -0.5px;
+  }
+  .sentiment-card .pulse-word {
+    display: inline-block;
+    color: var(--text);
+    font-weight: 800;
+  }
+  .sentiment-card.happy      .pulse-word { color: var(--green); }
+  .sentiment-card.frustrated .pulse-word { color: var(--red); }
+  .sentiment-card.confused   .pulse-word { color: var(--blue); }
+
+  /* PHASE 8 — Who wins split */
+  #phase8 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 18px;
+  }
+  #p8-overline { color: var(--text); margin-top: 30px; }
+  #p8-split {
+    position: relative;
+    width: 960px;
+    margin-top: 14px;
+  }
+  #p8-half-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 28px 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.22), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.50);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.20);
+    text-align: left;
+  }
+  #p8-half-top .name {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 72px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--green);
+    text-shadow: 0 0 50px rgba(125,211,166,0.45);
+  }
+  #p8-half-top .cap {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text);
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+  #p8-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    position: relative;
+  }
+  #p8-divider::before,
+  #p8-divider::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background: rgba(245,241,235,0.20);
+  }
+  #p8-divider .or {
+    margin: 0 18px;
+    padding: 8px 22px;
+    border-radius: 999px;
+    background: rgba(245,241,235,0.06);
+    border: 1.5px solid rgba(245,241,235,0.22);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: var(--text);
+  }
+  #p8-half-bot {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 28px 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(209,67,67,0.22), rgba(209,67,67,0.06));
+    border: 2px solid rgba(209,67,67,0.50);
+    box-shadow: 0 14px 36px rgba(209,67,67,0.20);
+    text-align: left;
+  }
+  #p8-half-bot .name {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 72px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--red);
+    text-shadow: 0 0 50px rgba(209,67,67,0.45);
+  }
+  #p8-half-bot .cap {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text);
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+  #p8-fineprint {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 1.18;
+    color: var(--text);
+    margin-top: 16px;
+    max-width: 960px;
+    letter-spacing: -0.5px;
+  }
+  #p8-fineprint .em { color: var(--orange); }
+
+  /* PHASE 9 — Thumbnail close */
+  #phase9 .phase-content {
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    gap: 22px;
+  }
+  #p9-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 130px;
+    line-height: 0.92;
+    letter-spacing: -4px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    margin-top: 30px;
+  }
+  #p9-topic-slam .accent { color: var(--orange); }
+  #p9-receipt {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  #p9-cta-question {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 50px;
+    line-height: 1.18;
+    letter-spacing: -1px;
+    color: var(--orange);
+    max-width: 960px;
+    margin-top: 8px;
+  }
+  #p9-cta-question .em { color: var(--text); font-style: italic; }
+  #p9-subscribe {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+  }
+  #p9-subscribe .arrow {
+    color: var(--orange);
+    font-size: 52px;
+    line-height: 0.7;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="anthropic-claude-plan-programmatic-credits"
+     data-start="0"
+     data-duration="155.0"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner with Anthropic wordmark -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- PHASE 1 — Thumbnail-grade open -->
+  <div id="phase1" class="phase clip"
+       data-start="0" data-duration="1.0" data-track-index="10">
+    <div id="p1-topic-lockup">
+      <div id="p1-topic-slam">CLAUDE PLAN<br><span class="accent">JUST SPLIT IN TWO</span></div>
+      <div id="p1-ga-receipt">JUNE 15 &middot; $20&ndash;$200 PROGRAMMATIC CREDIT</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 — Hook (0 → 17.252s) -->
+  <div id="phase2" class="phase clip"
+       data-start="0" data-duration="17.252" data-track-index="11">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">ANTHROPIC &middot; JUNE 15</div>
+      <div id="p2-hero">Anthropic just<br><span class="accent">opened the gates.</span></div>
+      <div id="p2-brands">
+        <div class="p2-brand-pill orange" id="p2-brand-1">
+          <img class="brand-logo brand-logo-white-bg" src="assets/openclaw-logo.png" alt="OpenClaw" />
+          <span class="b-text">
+            <span class="b-name">OpenClaw</span>
+            <span class="b-sub">WAS BANNED &middot; NOW PERMITTED</span>
+          </span>
+        </div>
+        <div class="p2-brand-pill green" id="p2-brand-3">
+          <img class="brand-logo" src="assets/archon-logo.png" alt="Archon" />
+          <span class="b-text">
+            <span class="b-name">Archon</span>
+            <span class="b-sub">GRAY ZONE &middot; DEV HARNESS</span>
+          </span>
+        </div>
+      </div>
+      <div id="p2-pivot-line">
+        Banned third-party agents
+        <span class="marker-wrap">now permitted<span class="marker-sweep" id="p2-marker-sweep"></span></span>.
+        <span class="accent">New credit pool.</span>
+      </div>
+      <!-- X-post receipts for trust — actual ClaudeDevs announcement screenshots -->
+      <div id="p2-xposts">
+        <img id="p2-xpost-1" src="assets/xpost-details.png" alt="ClaudeDevs X-post details" />
+        <img id="p2-xpost-2" src="assets/xpost-50percent.png" alt="ClaudeDevs X-post 50% increase" />
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 — The shift (17.252 → 62.100s) -->
+  <div id="phase3" class="phase clip"
+       data-start="17.252" data-duration="44.848" data-track-index="12">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">UNTIL JUNE 15 &middot; AFTER JUNE 15</div>
+      <div id="p3-headline">Pre-June 15: agents were locked out. Now: in.</div>
+      <!-- 3 shift pills — Agent SDK consumers, status pre-June-15 -->
+      <div id="p3-pills">
+        <div class="shift-pill orange" id="p3-pill-1">
+          <img class="pill-logo pill-logo-white-bg" src="assets/openclaw-logo.png" alt="OpenClaw" />
+          <div class="name">OpenClaw</div>
+          <div class="label">WAS BANNED</div>
+        </div>
+        <div class="shift-pill green" id="p3-pill-3">
+          <img class="pill-logo" src="assets/archon-logo.png" alt="Archon" />
+          <div class="name">Archon</div>
+          <div class="label">GRAY ZONE</div>
+        </div>
+        <div class="shift-pill blue" id="p3-pill-4">
+          <div class="name">Your scripts</div>
+          <div class="label">COUNTED VS PLAN</div>
+        </div>
+      </div>
+      <!-- Before / After -->
+      <div id="p3-beforeafter">
+        <div class="ba-card before" id="p3-before">
+          <div class="ba-label">BEFORE</div>
+          <div class="ba-body">OpenClaw: BANNED. Archon: GRAY ZONE. Your scripts: count vs plan.</div>
+        </div>
+        <div class="ba-card after" id="p3-after">
+          <div class="ba-label">AFTER</div>
+          <div class="ba-body">All Agent SDK tools: one credit pool. Separate from IDE.</div>
+        </div>
+      </div>
+      <!-- The catch — new credit pool is small -->
+      <div id="p3-catch">
+        <span class="accent">The catch:</span><br>
+        The new credit pool is small.
+        <span class="marker-wrap">$20 on Pro burns fast<span class="marker-sweep" id="p3-marker-sweep"></span></span>.
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 — The amounts (62.100 → 75.394s) -->
+  <div id="phase4" class="phase clip"
+       data-start="62.100" data-duration="13.294" data-track-index="13">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">HERE'S THE MATH</div>
+      <div id="p4-pills">
+        <div class="tier-pill purple" id="p4-pill-1">
+          <span class="name">PRO</span>
+          <span class="descriptor">$20/MONTH</span>
+        </div>
+        <div class="tier-pill blue" id="p4-pill-2">
+          <span class="name">MAX 5&times;</span>
+          <span class="descriptor">$100/MONTH</span>
+        </div>
+        <div class="tier-pill orange" id="p4-pill-3">
+          <span class="name">MAX 20&times;</span>
+          <span class="descriptor">$200/MONTH</span>
+        </div>
+        <div class="tier-pill green" id="p4-pill-4">
+          <span class="name">TEAM / ENT</span>
+          <span class="descriptor">$20&ndash;$200/MONTH</span>
+        </div>
+      </div>
+      <div id="p4-free-strike">
+        <span class="strike">FREE PLAN</span>
+        <span>NOT INVITED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 — Timeline (75.394 → 89.627s) -->
+  <div id="phase5" class="phase clip"
+       data-start="75.394" data-duration="14.233" data-track-index="14">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">THE ROLLOUT</div>
+      <div id="p5-cards">
+        <div class="tl-card orange" id="p5-card-1">
+          <div class="tl-date">TODAY</div>
+          <div class="tl-body">
+            <div class="tl-title">Nothing changes.</div>
+            <div class="tl-sub">No action required</div>
+          </div>
+        </div>
+        <div class="tl-card purple" id="p5-card-2">
+          <div class="tl-date">JUNE 8</div>
+          <div class="tl-body">
+            <div class="tl-title">Paid users emailed.</div>
+            <div class="tl-sub">Claim link arrives</div>
+          </div>
+        </div>
+        <div class="tl-card blue" id="p5-card-3">
+          <div class="tl-date">JUNE 15</div>
+          <div class="tl-body">
+            <div class="tl-title">Programmatic credit goes into effect.</div>
+            <div class="tl-sub">Across every Agent SDK surface</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 — The cap caveat (89.627 → 109.456s) -->
+  <div id="phase6" class="phase clip"
+       data-start="89.627" data-duration="19.829" data-track-index="15">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">THE CATCH</div>
+      <div id="p6-stathero">
+        <div id="p6-counter">$<span id="p6-counter-num">0</span></div>
+        <div id="p6-counterlabel">ON PRO &middot; PROGRAMMATIC CREDIT</div>
+      </div>
+      <div id="p6-side-chips">
+        <div class="side-chip" id="p6-side-1">FEW HUNDRED SDK CALLS</div>
+        <div class="side-chip" id="p6-side-2">BURNS FAST</div>
+      </div>
+      <div id="p6-outcomes">
+        <div class="outcome-chip outcome-orange" id="p6-outcome-1">
+          <div class="oc-label">EXTRA USAGE ON</div>
+          <div class="oc-body">Flow to standard API rates per token</div>
+        </div>
+        <div class="outcome-chip outcome-red" id="p6-outcome-2">
+          <div class="oc-label">EXTRA USAGE OFF</div>
+          <div class="oc-body">Every SDK request hard-stops until next month</div>
+        </div>
+      </div>
+      <div id="p6-aside">
+        <span class="aside-label">SEPARATELY</span>
+        <span class="aside-body">Claude Code weekly limits +50% through July 13</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 7 — Sentiment cards (109.456 → 130.864s) -->
+  <div id="phase7" class="phase clip"
+       data-start="109.456" data-duration="21.408" data-track-index="16">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">BUILDERS ARE SPLIT</div>
+      <div id="p7-card-stage">
+
+        <!-- Card A — HAPPY -->
+        <div class="sentiment-card happy" id="p7-card-happy">
+          <div class="label">HAPPY</div>
+          <div class="quote">
+            "Third-party agents finally <span class="pulse-word" id="p7-pulse-happy">allowed on the plan</span>. No more juggling separate API keys."
+          </div>
+        </div>
+
+        <!-- Card B — SKEPTICAL -->
+        <div class="sentiment-card frustrated" id="p7-card-frustrated">
+          <div class="label">SKEPTICAL</div>
+          <div class="quote">
+            "Twenty bucks on Pro won't last builders running real Agent SDK loops. The <span class="pulse-word" id="p7-pulse-frustrated">cap matters</span>."
+          </div>
+        </div>
+
+        <!-- Card C — CONFUSED -->
+        <div class="sentiment-card confused" id="p7-card-confused">
+          <div class="label">CONFUSED</div>
+          <div class="quote">
+            "What counts as programmatic versus interactive? Hooks? Sub-agents? The line <span class="pulse-word" id="p7-pulse-confused">isn't clear</span>."
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 8 — The big question (130.864 → 144.900s) -->
+  <div id="phase8" class="phase clip"
+       data-start="130.864" data-duration="14.036" data-track-index="17">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">NET UPSIDE FOR MOST</div>
+      <div id="p8-split">
+        <div id="p8-half-top">
+          <div class="name">TWO BUDGETS</div>
+          <div class="cap">Programmatic separate. IDE budget protected.</div>
+        </div>
+        <div id="p8-divider"><span class="or">BUT</span></div>
+        <div id="p8-half-bot">
+          <div class="name">ONE QUESTION</div>
+          <div class="cap">Is the ceiling tall enough for what you actually run?</div>
+        </div>
+      </div>
+      <div id="p8-fineprint">The <span class="em">cap size</span> decides which one you are.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 9 — Thumbnail close (144.900 → 155.0s) -->
+  <div id="phase9" class="phase clip"
+       data-start="144.900" data-duration="10.100" data-track-index="18">
+    <div class="phase-content">
+      <div id="p9-topic-slam">CLAUDE PLAN<br><span class="accent">NOW SPLIT IN TWO.</span></div>
+      <div id="p9-receipt">JUNE 15 &middot; $20&ndash;$200 PROGRAMMATIC CREDIT</div>
+      <div id="p9-cta-question">
+        Twenty bucks of programmatic credit on Pro &mdash; <span class="em">generous</span>, or <span class="em">just enough rope</span>?
+      </div>
+      <div id="p9-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+    </div>
+  </div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="153.25"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — 8 cinematic-whoosh cues (P1→P2 through P8→P9) + 1 scale-slam on counter peak + 1 impact-slam at hook.
+       Whoosh fires at sceneT (== crossfade sceneT == wrapperTime - 0.4 for T1-T7, audio-design rule), data-duration=1.5s.
+       sfx-whoosh-t0 fires at the P1→P2 thumbnail-grade swap (~0.5s, just after impact-slam decay). -->
+  <!-- Hook punctuation — fires on "Anthropic" word (transcript_t=0.035s). Track 4 to keep clear of whoosh-only track 3. Volume 0.15 per audio-design.md canonical impact-slam value. -->
+  <audio id="sfx-impact-hook" src="assets/sfx/impact-slam.mp3"
+         data-start="0.035" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-t0" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="0.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t1" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="16.852" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="61.700" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="74.994" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="89.227" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="109.056" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="130.464" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="144.500" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Scale-slam on the $20 counter peak — anchored to "Twenty bucks" 92.448s (Phase 6 hero counter reveal) -->
+  <audio id="sfx-slam-counter" src="assets/sfx/scale-slam.mp3"
+         data-start="92.448" data-duration="0.73" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ──────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter
+  // ──────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('anthropic-credits-short', document.getElementById('shape-backdrop'));
+
+  // ──────────────────────────────────────────────────────
+  // Timeline
+  // ──────────────────────────────────────────────────────
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const TOTAL_DURATION = 155.0;
+
+  // Ambient breath across full duration
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 2, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Phase transition times (composition time) — aligned to phase wrapper boundaries (not narration anchors).
+  // Each T_N = phase(N+1).data-start − 0.4 so the crossfade-out completes near the new wrapper opening,
+  // eliminating the empty-background window where the previous content has faded but the next wrapper hasn't opened yet.
+  // (Old narration anchors are preserved inline for reference — per-element entrance tweens below still anchor to those.)
+  const T0 = 0.5;      // P1 → P2 — thumbnail-grade frame → hook content (manual transition; P2 wrapper already open from t=0)
+  const T1 = 16.852;   // P2 → P3 — P3 wrapper opens at 17.252  (narration "Here's" at 17.252)
+  const T2 = 61.700;   // P3 → P4 — P4 wrapper opens at 62.100  (narration "Here's the math" at 62.100)
+  const T3 = 74.994;   // P4 → P5 — P5 wrapper opens at 75.394  (narration "Here's the rollout" at 75.394)
+  const T4 = 89.227;   // P5 → P6 — P6 wrapper opens at 89.627  (narration "But there's a catch" at 89.627)
+  const T5 = 109.056;  // P6 → P7 — P7 wrapper opens at 109.456 (narration "Builders are split" at 109.456)
+  const T6 = 130.464;  // P7 → P8 — P8 wrapper opens at 130.864 (narration "Net upside" at 130.864)
+  const T7 = 144.500;  // P8 → P9 — P9 wrapper opens at 144.900 (narration "Twenty bucks" at 144.900)
+
+  // Crossfade helper
+  function crossfade(outId, inId, T) {
+    const outContent = outId + " .phase-content";
+    const inContent  = inId  + " .phase-content";
+    tl.to(outContent, { filter: "blur(20px)", duration: 0.5, ease: "power1.in" }, T);
+    tl.to(outContent, { opacity: 0,           duration: 0.4, ease: "power1.in" }, T + 0.3);
+    tl.set(inContent, { filter: "blur(20px)", opacity: 0 }, 0);
+    tl.to(inContent,  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T + 0.4);
+    tl.to(inContent,  { filter: "blur(0px)",  duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T + 0.6);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Topic lockup (single-frame thumbnail at t=0)
+  // ═══════════════════════════════════════════════════════
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.4, ease: "power2.in" }, 0.4);
+  tl.set("#phase2 .phase-content", { opacity: 0 }, 0);
+  tl.to("#phase2 .phase-content",  { opacity: 1, duration: 0.45, ease: "power2.out" }, 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Hook (0 → 17.252s)
+  // Narration anchors (transcript verbatim):
+  //   "Anthropic" 0.035, "opened" 0.801, "gates." 1.219,
+  //   "Third-party" 1.939, "banned" 3.634, "OpenClaw," 5.480, "others" 6.362,
+  //   "authenticate" 7.964, "plan" 9.067, "starting June 15." 9.416-10.019,
+  //   "And Anthropic added" 11.470-12.109, "credit pool" 12.748-13.061,
+  //   "Most builders haven't noticed yet." 14.953-16.312
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p2-overline",   { y: 20, opacity: 0 }, 0);
+  tl.set("#p2-hero",       { scale: 0.9, opacity: 0 }, 0);
+  tl.set("#p2-brand-1",    { x: -40, opacity: 0 }, 0);
+  tl.set("#p2-brand-3",    { x: -40, opacity: 0 }, 0);
+  tl.set("#p2-pivot-line", { y: 24, opacity: 0 }, 0);
+  tl.set("#p2-marker-sweep", { width: 0 }, 0);
+  // X-post receipts hidden at t=0 — GSAP owns the transform now (rotation set here, not CSS)
+  tl.set("#p2-xpost-1", { y: 50, scale: 0.85, opacity: 0, rotation: -1.2 }, 0);
+  tl.set("#p2-xpost-2", { y: 50, scale: 0.85, opacity: 0, rotation: 0.8 }, 0);
+
+  // Hero text in (during the Phase 1→2 fade swap)
+  tl.to("#p2-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.5);
+  tl.to("#p2-hero",     { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, 0.6);
+
+  // Hero scale-pulse on "gates." 1.219s (after the entrance tween settles, no overlap)
+  tl.to("#p2-hero", { scale: 1.04, duration: 0.32, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center", overwrite: "auto" }, 1.25);
+
+  // Brand pills — step-by-step. 2 pills now (Conductor removed).
+  tl.to("#p2-brand-1", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 5.48);  // OpenClaw — anchored to "OpenClaw,"
+  tl.to("#p2-brand-3", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 6.36);  // Archon — anchored to "others"
+
+  // Fade brand pills out at ~11.0s to make visual room for credit-pool pivot + X-post receipts
+  tl.to(["#p2-brand-1", "#p2-brand-3"], { opacity: 0, y: -10, duration: 0.4, ease: "power2.in" }, 10.80);
+
+  // Pivot line "Banned third-party agents now permitted. New credit pool." reveal at "And Anthropic added" 11.47s
+  tl.to("#p2-pivot-line", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 11.47);
+  // Marker sweep under "now permitted" — anchored to "credit pool" 12.748s
+  tl.to("#p2-marker-sweep", { width: "100%", duration: 0.6, ease: "power2.out" }, 12.75);
+
+  // X-post 1 enters at "credit pool to pay for them" 13.061s
+  tl.to("#p2-xpost-1", { y: 0, scale: 1, opacity: 1, rotation: -1.2, duration: 0.55, ease: "back.out(1.6)" }, 13.06);
+  // X-post 2 enters at "Most builders haven't noticed" 14.953s
+  tl.to("#p2-xpost-2", { y: 0, scale: 1, opacity: 1, rotation: 0.8, duration: 0.55, ease: "back.out(1.6)" }, 14.95);
+  // Scale-pulse on X-post 2 at "noticed yet" 15.859s
+  tl.to("#p2-xpost-2", { scale: 1.025, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 15.86);
+
+  crossfade("#phase2", "#phase3", T1);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — The shift (17.252 → 62.100s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "Here's what was true until June 15" 17.252-19.190,
+  //   "Third-party autonomous agents like OpenClaw" 20.386-22.745,
+  //   "weren't allowed to authenticate" 23.010-24.281,
+  //   "Separate API setup" 26.934-28.184,
+  //   "Separately billed" 28.502-29.422,
+  //   "Dev harnesses like Archon" 29.872-31.404,
+  //   "sat in a gray zone" 33.819-34.737,
+  //   "your own Agent SDK scripts" 35.746-37.504,
+  //   "counted against the same usage limit" 38.010-40.158,
+  //   "as your editor work" 40.158-41.182,
+  //   "Starting June 15" 42.132-42.944,
+  //   "Anthropic clears the rules" 43.281-44.502,
+  //   "A new monthly programmatic credit lands" 45.510-47.414,
+  //   "separate from your editor budget" 48.634-50.245,
+  //   "third-party Agent SDK tools" 51.419-53.428,
+  //   "previously-banned ones" 54.682-55.831,
+  //   "can now officially authenticate" 56.330-58.060,
+  //   "through your Claude plan" 58.060-59.188,
+  //   "and draw from this credit pool" 59.674-61.125
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p3-overline",      { y: 20, opacity: 0 }, 0);
+  tl.set("#p3-headline",      { y: 30, opacity: 0 }, 0);
+  tl.set("#p3-pill-1",        { y: 40, scale: 0.9, opacity: 0 }, 0);
+  tl.set("#p3-pill-3",        { y: 40, scale: 0.9, opacity: 0 }, 0);
+  tl.set("#p3-pill-4",        { y: 40, scale: 0.9, opacity: 0 }, 0);
+  tl.set("#p3-before",        { x: -40, opacity: 0 }, 0);
+  tl.set("#p3-after",         { x:  40, opacity: 0 }, 0);
+  tl.set("#p3-catch",         { y: 24, opacity: 0 }, 0);
+  tl.set("#p3-marker-sweep",  { width: 0 }, 0);
+
+  // Overline at scene start ("Here's what was true until June 15" 17.252), headline shortly after
+  tl.to("#p3-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 17.65);
+  tl.to("#p3-headline", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 18.45);
+
+  // 3 shift pills — step-by-step on Agent SDK consumers (Conductor pill removed)
+  //   "OpenClaw" 22.232 → OpenClaw pill
+  //   "Archon" 30.998 → Archon pill
+  //   "your own Agent SDK scripts" 35.746 → Your scripts pill
+  tl.to("#p3-pill-1", { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, 22.23);  // OpenClaw
+  tl.to("#p3-pill-3", { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, 31.00);  // Archon
+  tl.to("#p3-pill-4", { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, 35.75);  // Your scripts
+
+  // Pulse Archon pill at "gray zone" 34.249s (user is on Archon team — give it a beat)
+  tl.to("#p3-pill-3", { scale: 1.06, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 34.25);
+
+  // Before card at "Separate API setup. Separately billed." 26.934s
+  tl.to("#p3-before", { x: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 26.93);
+  // Before card pulse on "as your editor work" 40.158s — bridge beat under 5s rule
+  tl.to("#p3-before", { scale: 1.04, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 40.16);
+  // After card at "Starting June 15, Anthropic clears the rules" 42.132s
+  tl.to("#p3-after",  { x: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 42.13);
+  // Pulse After card on "separate from your editor budget" 48.634s
+  tl.to("#p3-after", { scale: 1.04, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 48.63);
+
+  // Catch / third-party-auth callout at "third-party Agent SDK tools" 51.419s
+  tl.to("#p3-catch", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 51.42);
+  // Pulse catch on "officially authenticate" 56.830s
+  tl.to("#p3-catch", { scale: 1.03, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 56.83);
+  // Marker sweep under "Claude plan" — "Claude" 58.629s
+  tl.to("#p3-marker-sweep", { width: "100%", duration: 0.6, ease: "power2.out" }, 58.63);
+
+  crossfade("#phase3", "#phase4", T2);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — The amounts (62.100 → 75.394s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "Here's the math" 62.100-62.797,
+  //   "Pro: twenty bucks" 63.551-65.151,
+  //   "Max five-x: a hundred" 66.164-67.871,
+  //   "Max twenty-x: two hundred" 68.753-70.378,
+  //   "Team and Enterprise included" 70.808-72.882,
+  //   "Free plan? Zero" 72.456-74.244, "Not invited" 74.686-75.137
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p4-overline",   { y: 20, opacity: 0 }, 0);
+  tl.set("#p4-pill-1",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p4-pill-2",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p4-pill-3",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p4-pill-4",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p4-free-strike", { scale: 0.9, opacity: 0 }, 0);
+
+  tl.to("#p4-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 62.50);
+  // 4 plan-amount pills — step-by-step at each price mention
+  tl.to("#p4-pill-1", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 63.55);  // Pro $20
+  tl.to("#p4-pill-2", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 66.16);  // Max 5x $100
+  tl.to("#p4-pill-3", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 68.75);  // Max 20x $200
+  tl.to("#p4-pill-4", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 70.81);  // Team / Ent
+  // Free-plan strike at "Free plan? Zero" 72.456s
+  tl.to("#p4-free-strike", { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, 72.46);
+  // Pulse strike on "Not invited" 74.686s
+  tl.to("#p4-free-strike", { scale: 1.05, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 74.69);
+
+  crossfade("#phase4", "#phase5", T3);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — Timeline (75.394 → 89.627s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "Here's the rollout" 75.394-76.084,
+  //   "Today: nothing changes" 76.404-77.472,
+  //   "June 8" 78.621-79.166,
+  //   "every paid user gets an email with the claim link" 79.597-82.058,
+  //   "June 15" 83.044-83.532,
+  //   "the new programmatic credit goes into effect" 84.298-86.238,
+  //   "Across every Agent SDK surface" 87.351-89.150
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p5-overline",    { y: 20, opacity: 0 }, 0);
+  tl.set("#p5-card-1",      { y: 30, opacity: 0 }, 0);
+  tl.set("#p5-card-2",      { y: 30, opacity: 0 }, 0);
+  tl.set("#p5-card-3",      { y: 30, opacity: 0 }, 0);
+
+  tl.to("#p5-overline", { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 75.80);
+  tl.to("#p5-card-1", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 76.40);  // Today
+  tl.to("#p5-card-2", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 78.62);  // June 8
+  tl.to("#p5-card-3", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 83.04);  // June 15
+  // Pulse card-3 on "Across every Agent SDK surface" 87.351s
+  tl.to("#p5-card-3", { scale: 1.04, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 87.35);
+
+  crossfade("#phase5", "#phase6", T4);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 6 — The cap caveat (89.627 → 109.456s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "But there's a catch" 89.627-90.231,
+  //   "The cap is small" 91.415-92.143,
+  //   "Twenty bucks on Pro" 92.448-93.540,
+  //   "burns in a few hundred Agent SDK calls" 93.690-96.022,
+  //   "Hit the ceiling" 96.790-97.510,
+  //   "and one of two things happens" 97.672-99.149,
+  //   "Extra usage on, you flow to standard API rates per token" 100.110-103.150,
+  //   "Extra usage off, every SDK request hard-stops until next month" 104.069-107.379,
+  //   "There's no middle ground" 108.399-109.422
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p6-overline",       { y: 20, opacity: 0 }, 0);
+  tl.set("#p6-stathero",       { scale: 0.92, opacity: 0 }, 0);
+  tl.set("#p6-side-1",         { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p6-side-2",         { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p6-outcome-1",      { x: -40, opacity: 0 }, 0);
+  tl.set("#p6-outcome-2",      { x: -40, opacity: 0 }, 0);
+  tl.set("#p6-aside",          { y: 20, opacity: 0 }, 0);
+
+  // Overline at scene start ("But there's a catch" 89.627)
+  tl.to("#p6-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 90.00);
+  // Stathero at "The cap is small" 91.415s
+  tl.to("#p6-stathero", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 91.42);
+
+  // $20 counter tween 0 → 20 over 0.9s, anchored to spoken "Twenty bucks" 92.448s
+  const counterEl = document.getElementById("p6-counter-num");
+  const counterObj = { val: 0 };
+  tl.to(counterObj, {
+    val: 20,
+    duration: 0.9,
+    ease: "power2.out",
+    onUpdate: function() { if (counterEl) counterEl.textContent = Math.round(counterObj.val); }
+  }, 92.45);
+
+  // Stathero scale-pulse on counter peak (~93.4s, end of "Pro")
+  tl.to("#p6-stathero", { scale: 1.06, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 93.40);
+
+  // Side chips — "burns in a few hundred Agent SDK calls" 93.690 / second chip after a beat
+  tl.to("#p6-side-1", { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 93.69);  // FEW HUNDRED SDK CALLS
+  tl.to("#p6-side-2", { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 95.30);  // BURNS FAST
+
+  // Hit the ceiling beat at "Hit the ceiling" 96.790s — stathero shake-pulse to anchor the bridge
+  tl.to("#p6-stathero", { scale: 1.04, duration: 0.32, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 96.79);
+
+  // Outcome chip 1 (EXTRA USAGE ON) at "Extra usage on" 100.110s
+  tl.to("#p6-outcome-1", { x: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 100.11);
+  // Outcome chip 2 (EXTRA USAGE OFF) at "Extra usage off" 104.069s
+  tl.to("#p6-outcome-2", { x: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 104.07);
+  // Pulse outcome-2 on "hard-stops until next month" — "hard-stops" 106.136s
+  tl.to("#p6-outcome-2", { scale: 1.03, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 106.14);
+
+  // Aside (+50% Claude Code) reveal at "There's no middle ground" 108.399s (a beat below the main content)
+  tl.to("#p6-aside", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 108.40);
+
+  crossfade("#phase6", "#phase7", T5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 7 — Sentiment cards (109.456 → 130.864s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "Builders are split" 109.456-110.296,
+  //   "Some are stoked" 111.220-112.068,
+  //   "third-party agents are finally allowed on the plan" 112.416-115.061,
+  //   "no more juggling separate API keys" 115.284-117.398,
+  //   "Some are skeptical" 118.325-119.440,
+  //   "twenty bucks on Pro won't last builders" 119.544-121.808,
+  //   "running real Agent SDK loops" 121.565-123.550,
+  //   "And some are confused" 124.351-125.593,
+  //   "what counts as programmatic versus interactive" 126.278-128.717,
+  //   "The line isn't clear" 129.715-130.585
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p7-overline",       { y: 20, opacity: 0 }, 0);
+  tl.set(["#p7-card-happy","#p7-card-frustrated","#p7-card-confused"],
+    { y: 40, opacity: 0, scale: 0.96 }, 0);
+
+  tl.to("#p7-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 109.85);
+
+  // HAPPY card — in at "Some are stoked" 111.220s, pulse on "finally allowed" 113.577s, out before skeptical
+  tl.to("#p7-card-happy", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 111.22);
+  tl.to("#p7-pulse-happy", { scale: 1.07, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 113.58);
+  tl.to("#p7-card-happy", { y: -40, opacity: 0, duration: 0.4, ease: "power2.in" }, 117.85);
+
+  // SKEPTICAL card — in at "Some are skeptical" 118.325s, pulse on "real Agent SDK loops" 122.192s, out before confused
+  tl.to("#p7-card-frustrated", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 118.33);
+  tl.to("#p7-pulse-frustrated", { scale: 1.07, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 122.19);
+  tl.to("#p7-card-frustrated", { y: -40, opacity: 0, duration: 0.4, ease: "power2.in" }, 123.90);
+
+  // CONFUSED card — in at "And some are confused" 124.351s, pulse on "line isn't clear" 130.075s
+  tl.to("#p7-card-confused", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 124.35);
+  // Bridge beat on "what counts as programmatic versus interactive?" 126.278s (gap-bridge under 5s rule)
+  tl.to("#p7-card-confused", { scale: 1.025, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 126.28);
+  tl.to("#p7-pulse-confused", { scale: 1.07, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 130.08);
+  // Pulse confused card whole at "isn't clear" 130.33s
+  tl.to("#p7-card-confused", { scale: 1.03, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 130.33);
+
+  crossfade("#phase7", "#phase8", T6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 8 — The big question (130.864 → 144.900s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "Net upside for most builders" 130.864-132.130,
+  //   "Two budgets instead of one" 133.278-134.497,
+  //   "Programmatic gets its own pool" 134.985-136.319,
+  //   "Your editor work stays protected" 137.423-138.687,
+  //   "The only real question" 139.246-140.395,
+  //   "is that ceiling tall enough for what you actually run" 141.196-143.831
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p8-overline",   { y: 20, opacity: 0 }, 0);
+  tl.set("#p8-half-top",   { y: 60, opacity: 0 }, 0);
+  tl.set("#p8-divider",    { opacity: 0 }, 0);
+  tl.set("#p8-half-bot",   { y: -60, opacity: 0 }, 0);
+  tl.set("#p8-fineprint",  { y: 24, opacity: 0 }, 0);
+
+  tl.to("#p8-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 131.20);
+  // TWO BUDGETS in at "Two budgets instead of one" 133.278s
+  tl.to("#p8-half-top", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 133.28);
+  // Pulse half-top at "Programmatic gets its own pool" 134.985s
+  tl.to("#p8-half-top", { scale: 1.03, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 134.99);
+  // BUT divider at "The only real question" 139.246s
+  tl.to("#p8-divider",  { opacity: 1, duration: 0.4, ease: "power2.out" }, 139.00);
+  // ONE QUESTION (half-bot) in at "The only real question" 139.246s
+  tl.to("#p8-half-bot", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 139.25);
+  // Fine print line "The cap size decides" — reveal at "is that ceiling tall enough" 141.196s
+  tl.to("#p8-fineprint", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 141.20);
+
+  crossfade("#phase8", "#phase9", T7);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 9 — Thumbnail close (144.900 → 155.0s)
+  // Narration anchors (transcript verbatim, new TTS):
+  //   "Twenty bucks of programmatic credit on Pro" 144.900-146.866
+  //   "generous Anthropic move" 147.512-148.892
+  //   "or just enough rope to hang yourself" 149.347-150.945
+  //   "Drop your pick below" 152.098-152.898
+  //   Hold from 152.898 → 155.0 = ~2.10s thumbnail-grade close hold.
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p9-topic-slam",   { y: 30, opacity: 0 }, 0);
+  tl.set("#p9-receipt",      { y: 20, opacity: 0 }, 0);
+  tl.set("#p9-cta-question", { y: 30, opacity: 0 }, 0);
+  tl.set("#p9-subscribe",    { y: 20, opacity: 0 }, 0);
+
+  tl.to("#p9-topic-slam",   { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 145.05);
+  tl.to("#p9-receipt",      { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 145.25);
+  tl.to("#p9-cta-question", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 145.45);
+  tl.to("#p9-subscribe",    { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 145.70);
+
+  // CTA pulse on "generous Anthropic move" 147.512s
+  tl.to("#p9-cta-question", { scale: 1.04, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 147.51);
+  // CTA pulse 2 on "just enough rope" 149.753s
+  tl.to("#p9-cta-question", { scale: 1.04, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 149.75);
+  // Subscribe pulse on "Drop your pick below" 152.098s
+  tl.to("#p9-subscribe", { scale: 1.04, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "center" }, 152.10);
+
+  // Reposition shapes at every phase transition (8 transitions: T0 = P1→P2 ... T7 = P8→P9)
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'anthropic-credits-short',
+    [T0, T1, T2, T3, T4, T5, T6, T7]
+  );
+
+  // Composition duration extender
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["anthropic-claude-plan-programmatic-credits"] = tl;
+</script>
+</body>
+</html>

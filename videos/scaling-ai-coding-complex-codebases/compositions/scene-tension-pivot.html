@@ -1,0 +1,208 @@
+﻿<!--
+  scene-tension-pivot.html â€” Tension headline + side comparison card.
+  Left: weight-contrast headline (300 / 800). Right: A vs B card comparing
+  a "2,000-line file with 3 imports" vs "500-line file imported by 20".
+-->
+<template id="scene-tension-pivot-template">
+  <div data-composition-id="scene-tension-pivot"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #tn-content {
+        width:100%; height:100%;
+        padding: 90px var(--pad-x) 80px;
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 60px;
+        align-items: center;
+        box-sizing:border-box;
+      }
+      #tn-left { display: flex; flex-direction: column; gap: 28px; }
+      #tn-left .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #tn-left .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #tn-left .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 116px;
+        line-height: 1.05;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+      }
+      #tn-left .headline .light {
+        font-weight: 300;
+        color: var(--ink-2);
+      }
+      #tn-left .sub {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: 32px;
+        line-height: 1.3;
+        color: var(--muted);
+        max-width: 800px;
+      }
+
+      /* Right side: A/B comparison */
+      #tn-right { display: flex; flex-direction: column; gap: 22px; }
+      .tn-card {
+        background: rgba(255,255,255,0.04);
+        border: 1.5px solid rgba(255,255,255,0.10);
+        border-radius: 18px;
+        padding: 26px 30px;
+        position: relative;
+        overflow: hidden;
+      }
+      .tn-card.good { border-color: rgba(59, 130, 246, 0.55); box-shadow: 0 0 40px rgba(59, 130, 246, 0.15); }
+      .tn-card.bad  { border-color: rgba(249, 115, 22, 0.55); box-shadow: 0 0 40px rgba(249, 115, 22, 0.15); }
+      .tn-card .verdict-row {
+        display: flex; align-items: center; gap: 14px;
+        margin-bottom: 14px;
+      }
+      .tn-card .verdict-row .badge {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+      }
+      .tn-card.good .verdict-row .badge { color: var(--accent-2); border: 1px solid var(--accent-2); }
+      .tn-card.bad  .verdict-row .badge { color: var(--accent-warn); border: 1px solid var(--accent-warn); }
+      .tn-card .verdict-row .verdict {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: -0.015em;
+      }
+      .tn-card.good .verdict-row .verdict { color: var(--accent-2); }
+      .tn-card.bad  .verdict-row .verdict { color: var(--accent-warn); }
+      .tn-card .specs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .tn-spec {
+        display: flex; flex-direction: column;
+        gap: 4px;
+      }
+      .tn-spec .k {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tn-spec .v {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 44px;
+        line-height: 1.0;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      .tn-spec .v .unit {
+        font-weight: 500;
+        font-size: 22px;
+        color: var(--muted);
+        margin-left: 6px;
+      }
+      .tn-card .corner-mark {
+        position: absolute;
+        top: 18px; right: 22px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 26px;
+        font-weight: 700;
+      }
+      .tn-card.good .corner-mark { color: var(--accent-2); }
+      .tn-card.bad  .corner-mark { color: var(--accent-warn); }
+    </style>
+
+    <div id="tn-content">
+      <div id="tn-left">
+        <div class="eyebrow" id="tn-eyebrow" style="opacity:0;visibility:hidden;">THE PIVOT</div>
+        <h1 class="headline" id="tn-headline" style="opacity:0;visibility:hidden;">
+          <span class="light">File size isn&rsquo;t</span><br/>
+          <span class="strong" id="tn-pivot">the right metric.</span>
+        </h1>
+        <p class="sub" id="tn-sub" style="opacity:0;visibility:hidden;">
+          Coupling is. The agent's context is what gets blown up &mdash; not your line count.
+        </p>
+      </div>
+
+      <div id="tn-right">
+        <div class="tn-card good" id="tn-card-good" style="opacity:0;visibility:hidden;">
+          <div class="corner-mark">&#x2713;</div>
+          <div class="verdict-row">
+            <span class="badge">Fine</span>
+            <span class="verdict">Loose &amp; clear</span>
+          </div>
+          <div class="specs">
+            <div class="tn-spec"><span class="k">Lines</span><span class="v">2,000</span></div>
+            <div class="tn-spec"><span class="k">Imports</span><span class="v">3</span></div>
+          </div>
+        </div>
+
+        <div class="tn-card bad" id="tn-card-bad" style="opacity:0;visibility:hidden;">
+          <div class="corner-mark">&#x26A0;</div>
+          <div class="verdict-row">
+            <span class="badge">Fire</span>
+            <span class="verdict">God component</span>
+          </div>
+          <div class="specs">
+            <div class="tn-spec"><span class="k">Lines</span><span class="v">500</span></div>
+            <div class="tn-spec"><span class="k">Imported by</span><span class="v">20<span class="unit">files</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#tn-eyebrow",  { y: 24 }, 0);
+      tl.set("#tn-headline", { y: 60 }, 0);
+      tl.set("#tn-sub",      { y: 24 }, 0);
+      tl.set("#tn-card-good",{ x: 30 }, 0);
+      tl.set("#tn-card-bad", { x: 30 }, 0);
+
+      tl.to("#tn-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#tn-headline", { y: 0, autoAlpha: 1, duration: 0.85, ease: "power3.out" }, 0.4);
+      tl.to("#tn-sub",      { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 1.2);
+
+      // Cards reveal staggered
+      tl.to("#tn-card-good", { x: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 3.0);
+      tl.to("#tn-card-bad",  { x: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 6.0);
+
+      // Pulses on each card to keep them alive
+      tl.to("#tn-card-good", { boxShadow: "0 0 80px rgba(59, 130, 246, 0.32)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 9.0);
+      tl.to("#tn-card-bad",  { boxShadow: "0 0 80px rgba(249, 115, 22, 0.32)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.0);
+
+      // Glow flicker on the pivot word for emphasis
+      tl.to("#tn-pivot", { textShadow: "0 0 50px rgba(59, 130, 246, 0.7)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 15.0);
+
+      // Extend timeline
+      tl.set({}, {}, 20);
+      window.__timelines["scene-tension-pivot"] = tl;
+    </script>
+  </div>
+</template>

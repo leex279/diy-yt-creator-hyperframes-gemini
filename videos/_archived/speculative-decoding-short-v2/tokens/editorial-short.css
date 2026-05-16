@@ -1,0 +1,186 @@
+/* ──────────────────────────────────────────────────────────────────────
+   videos/speculative-decoding-short-v2/tokens/editorial-short.css
+
+   v2 RESTYLE — dark-slate tech aesthetic.
+   Same 1080×1920 canvas + same scene structure as v1, but:
+     - Dark slate background (#0E1117) instead of warm cream
+     - Cyan / mint / amber accent rotation (no terracotta italic)
+     - Inter sans-serif EVERYWHERE — no playful italic serif
+     - Mono = JetBrains Mono for technical chrome
+     - Token-tile / arrow shapes (in shapes/) at higher opacity for dark bg
+
+   Keeps every CSS variable name from v1 so per-scene HTML stays portable.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface (dark slate, matte) ────────────────────────────── */
+  --bg:             #0E1117;
+  --bg-card:        #161B22;
+  --bg-surface:     #1F2937;
+  --bg-tint:        #1B2330;
+
+  --border:         rgba(230, 237, 243, 0.10);
+  --border-bright:  rgba(0, 212, 255, 0.45);
+
+  /* ── Cyan-led accent system ─────────────────────────────────── */
+  --accent-1:       #00D4FF;   /* cyan — primary */
+  --accent-2:       #4ADE80;   /* mint — secondary */
+  --accent-3:       #4ADE80;   /* mint alt — used in v1 as sage 'win' column */
+  --accent-4:       #00D4FF;
+  --accent-warn:    #F59E0B;   /* amber — sparse hero only */
+  --accent-stat:    #E6EDF3;
+
+  --primary:        var(--accent-1);
+  --secondary:      var(--accent-2);
+  --tertiary:       var(--accent-3);
+  --highlight:      var(--accent-1);
+  --pivot:          var(--accent-warn);
+
+  /* ── Text (near-white on dark) ──────────────────────────────── */
+  --text:           #E6EDF3;
+  --text-secondary: #9CA3AF;
+  --text-muted:     #6B7280;
+  --text-on-warm:   #0E1117;   /* dark text on solid cyan/mint accent fill */
+  --text-on-deep:   #E6EDF3;
+
+  /* ── Pill chrome ────────────────────────────────────────────── */
+  --pill-bg:        rgba(230, 237, 243, 0.05);
+  --pill-border:    rgba(230, 237, 243, 0.14);
+
+  /* ── Spacing (1080×1920 vertical safe-zone for Shorts) ─────── */
+  --pad-top:        240px;
+  --pad-x:          80px;
+  --pad-bottom:     240px;
+
+  /* ── Type — Inter sans dominantly + JetBrains Mono for tech chrome.
+        --serif kept as a token name for portability with v1 scene markup,
+        but mapped to Inter so the visual ouptut is sans-serif tech. ──── */
+  --serif:          'Inter', system-ui, sans-serif;
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Tech aesthetic — kill all italics inherited from v1's editorial markup.
+   ────────────────────────────────────────────────────────────────────── */
+#root, #root *,
+template, template * {
+  font-style: normal !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Override v1's warm-cream chrome to dark-tech.
+   ────────────────────────────────────────────────────────────────────── */
+
+html, body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+#ambient {
+  background:
+    radial-gradient(circle at 20% 12%, rgba(0, 212, 255, 0.08), transparent 55%),
+    radial-gradient(circle at 80% 88%, rgba(74, 222, 128, 0.06), transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.03), transparent 70%) !important;
+}
+
+#shape-backdrop img {
+  opacity: 0.055 !important;
+  filter: none !important;
+}
+
+#grain-overlay,
+#noise-overlay {
+  opacity: 0.025 !important;
+  mix-blend-mode: screen !important;
+}
+
+/* Top banner — anchored on dark, cyan wordmark */
+#top-banner-wordmark {
+  color: var(--accent-1) !important;
+}
+#top-banner-rule {
+  background: var(--accent-1) !important;
+}
+
+/* Progress bar — cyan gradient on dark track */
+#progress-track {
+  background: rgba(230, 237, 243, 0.08) !important;
+}
+#progress-fill {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2)) !important;
+}
+
+/* Source-url chip — dark glass */
+#source-url {
+  background: rgba(230, 237, 243, 0.05) !important;
+  border-color: rgba(230, 237, 243, 0.18) !important;
+}
+#source-url .source-url-label { color: var(--accent-1) !important; }
+#source-url .source-url-text  { color: var(--text-secondary) !important; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Helper classes — same vocabulary as v1 for portability.
+   ────────────────────────────────────────────────────────────────────── */
+
+.accent-italic {
+  font-style: normal !important;
+  color: var(--accent-1);
+  font-family: var(--sans);
+  font-weight: 800;
+}
+
+.section-number {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 56px;
+  color: var(--accent-1);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.section-overline-mono {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--accent-1);
+}
+
+.section-h2-serif {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 96px;
+  color: var(--text);
+  letter-spacing: -1px;
+  line-height: 1.0;
+}
+
+.body-serif {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 36px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.mono-badge {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--accent-1);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  padding: 8px 14px;
+  letter-spacing: 1px;
+}
+
+.editorial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px 36px;
+  box-shadow: none;
+}

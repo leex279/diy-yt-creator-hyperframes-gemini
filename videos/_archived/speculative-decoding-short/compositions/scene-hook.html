@@ -1,0 +1,218 @@
+<!--
+  scene-hook.html — HOOK (0–9.86s)
+  Word anchors:
+    0.05  "Two"          → slam in DRAFT box (left)
+    1.61  "side"         → reveal TARGET box (right) + connector arrow
+    2.93  "Faster"       → terracotta FASTER pill slam
+    4.80  "That is not"  → "not a trick" mono line
+    6.70  "That is how"  → confidence stamp band
+    7.81  "L L Ms"       → emphasize "ship today" tail
+-->
+<template id="scene-hook-template">
+  <div data-composition-id="scene-hook"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sh-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+      .sh-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sh-pair {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        margin-top: 12px;
+      }
+      .sh-model {
+        flex: 1 1 0;
+        min-width: 0;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 22px;
+        padding: 36px 24px 30px;
+        text-align: center;
+        box-shadow: 0 14px 32px rgba(28, 26, 24, 0.14);
+      }
+      .sh-model-label {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 8px;
+      }
+      .sh-model-name {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 88px;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sh-model-sub {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        margin-top: 10px;
+      }
+      .sh-amp {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 100px;
+        color: var(--accent-1);
+        line-height: 1;
+      }
+      .sh-headline {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 168px;
+        line-height: 0.95;
+        letter-spacing: -3px;
+        color: var(--text);
+      }
+      .sh-headline .sh-faster {
+        color: var(--accent-1);
+        position: relative;
+        display: inline-block;
+      }
+      .sh-faster-pill {
+        display: inline-block;
+        background: var(--accent-1);
+        color: var(--text-on-warm);
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 64px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        padding: 14px 28px 12px;
+        border-radius: 16px;
+        margin-top: 4px;
+      }
+      .sh-not-trick {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 32px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        line-height: 1.3;
+        max-width: 880px;
+      }
+      .sh-not-trick .sh-strike {
+        color: var(--accent-2);
+        position: relative;
+      }
+      .sh-not-trick .sh-strike::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; top: 52%;
+        height: 4px;
+        background: var(--accent-2);
+        transform: scaleX(var(--strike-x, 0));
+        transform-origin: left center;
+        border-radius: 2px;
+      }
+      .sh-stamp {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 36px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        background: rgba(199, 90, 63, 0.10);
+        border: 2px solid var(--accent-1);
+        border-radius: 14px;
+        padding: 18px 26px;
+        align-self: flex-start;
+      }
+    </style>
+
+    <div id="sh-content">
+      <div class="sh-overline" id="sh-overline">A 2022 PAPER · STILL UNDERUSED</div>
+
+      <div class="sh-pair" id="sh-pair">
+        <div class="sh-model" id="sh-model-a">
+          <div class="sh-model-label">DRAFT</div>
+          <div class="sh-model-name">small</div>
+          <div class="sh-model-sub">~1B params</div>
+        </div>
+        <div class="sh-amp" id="sh-amp">+</div>
+        <div class="sh-model" id="sh-model-b" style="opacity:0">
+          <div class="sh-model-label">TARGET</div>
+          <div class="sh-model-name">big</div>
+          <div class="sh-model-sub">70B params</div>
+        </div>
+      </div>
+
+      <div class="sh-headline" id="sh-headline">
+        <span class="sh-faster" id="sh-faster">Faster</span>
+        <span id="sh-than">than one.</span>
+      </div>
+
+      <div class="sh-not-trick" id="sh-not">
+        <span class="sh-strike" id="sh-strike">Not a trick.</span>&nbsp;
+        <span id="sh-not-2">Just how the fastest L&thinsp;L&thinsp;Ms ship today.</span>
+      </div>
+
+      <div class="sh-stamp" id="sh-stamp">2&ndash;3&times; INFERENCE</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sh-overline", { y: -8, opacity: 0 }, 0);
+      tl.set("#sh-model-a",  { x: -32, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#sh-amp",      { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#sh-model-b",  { x: 32,  opacity: 0, scale: 0.92 }, 0);
+      tl.set("#sh-faster",   { opacity: 0, scale: 0.7, filter: "blur(15px)" }, 0);
+      tl.set("#sh-than",     { opacity: 0, y: 16 }, 0);
+      tl.set("#sh-strike",   { opacity: 0, "--strike-x": 0 }, 0);
+      tl.set("#sh-not-2",    { opacity: 0 }, 0);
+      tl.set("#sh-stamp",    { scale: 0.7, opacity: 0, filter: "blur(15px)" }, 0);
+
+      tl.to("#sh-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#sh-model-a",  { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 0.10);
+      tl.to("#sh-amp",      { opacity: 1, scale: 1, duration: 0.4 }, 1.10);
+      tl.to("#sh-model-b",  { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 1.61);
+
+      tl.to("#sh-faster",   { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "back.out(1.5)" }, 2.93);
+      tl.to("#sh-than",     { opacity: 1, y: 0, duration: 0.4 }, 3.27);
+      tl.to("#sh-faster",   { scale: 1.05, duration: 0.25, yoyo: true, repeat: 1 }, 3.55);
+
+      tl.to("#sh-strike",  { opacity: 1, duration: 0.3 }, 4.80);
+      tl.to("#sh-strike",  { "--strike-x": 1, duration: 0.4, ease: "power2.out" }, 5.05);
+      tl.to("#sh-not-2",   { opacity: 1, duration: 0.4 }, 5.40);
+
+      tl.to("#sh-stamp",   { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "back.out(1.5)" }, 7.30);
+      tl.to("#sh-stamp",   { scale: 1.04, duration: 0.25, yoyo: true, repeat: 1 }, 7.85);
+
+      window.__timelines["scene-hook"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,1709 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>The Claude Founder's Playbook</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     CLAUDE FOUNDER'S PLAYBOOK — Anthropic Short
+     1080x1920 vertical · 143.22s · 9 phases
+     Mirrors V3 template; extended with Scene 5 "Four named killers".
+     Retimed to transcript anchors (transcript.json, 360 words).
+     ══════════════════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    margin: 0; padding: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1080px; height: 1920px;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    overflow: hidden;
+    background: #0B0F18;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --bg-deep: #060810;
+    --card: #0E121A;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --red-soft: #FF7C7C;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+  }
+
+  /* ══ Atmospheric layers ══════════════════════════════════════ */
+  #ambient {
+    position: absolute; inset: -200px; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.12), transparent 58%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.08), transparent 55%);
+  }
+  #vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 9;
+    background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%);
+  }
+  #shape-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  #shape-backdrop img { position: absolute; opacity: 0.15; object-fit: contain; pointer-events: none; }
+
+  #particle-field {
+    position: absolute; inset: 0; pointer-events: none; z-index: 8;
+    opacity: 0.7;
+  }
+  .particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(245,241,235,0.55);
+    box-shadow: 0 0 8px rgba(233,116,88,0.5);
+  }
+  #constellation-lines {
+    position: absolute; inset: 0; width: 1080px; height: 1920px;
+    pointer-events: none;
+  }
+  #constellation-lines line {
+    stroke: rgba(245,241,235,0.10);
+    stroke-width: 1px;
+  }
+
+  /* Token-stream edges — opacity bumped from 0.10 to 0.25 for WCAG AA. */
+  .token-stream {
+    position: absolute; top: 0; width: 28px; height: 1920px;
+    z-index: 7; pointer-events: none;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px; line-height: 1.6;
+    color: rgba(245,241,235,0.25);
+    overflow: hidden;
+    text-align: center;
+    user-select: none;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 2px;
+  }
+  #token-stream-left  { left: 16px; }
+  #token-stream-right { right: 16px; }
+
+  #grain {
+    position: absolute; inset: 0; pointer-events: none; z-index: 11;
+    opacity: 0.22; mix-blend-mode: overlay;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1.2px),
+      radial-gradient(rgba(0,0,0,0.18) 1px, transparent 1.2px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+  }
+  #scanlines {
+    position: absolute; inset: 0; pointer-events: none; z-index: 11;
+    opacity: 0.14; mix-blend-mode: soft-light;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px,
+      transparent 1px, transparent 3px
+    );
+  }
+
+  /* Cinematic chrome */
+  .letterbox { position: absolute; left: 0; width: 1080px; background: #000; z-index: 12; pointer-events: none; }
+  #letterbox-top    { top: 0;    height: 24px; }
+  #letterbox-bottom { bottom: 0; height: 24px; }
+
+  .vf-corner { position: absolute; width: 38px; height: 38px; z-index: 12; pointer-events: none; opacity: 0.55; border: 2px solid #F5F1EB; }
+  #vf-tl { top: 38px;    left: 38px;    border-right: none; border-bottom: none; }
+  #vf-tr { top: 38px;    right: 38px;   border-left: none;  border-bottom: none; }
+  #vf-bl { bottom: 38px; left: 38px;    border-right: none; border-top: none; }
+  #vf-br { bottom: 38px; right: 38px;   border-left: none;  border-top: none; }
+
+  #rec-indicator { position: absolute; top: 88px; left: 56px; z-index: 13; display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 22px; letter-spacing: 3px; color: #F5F1EB; opacity: 0.85; }
+  #rec-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); }
+  #timecode { position: absolute; top: 88px; right: 56px; z-index: 13; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 22px; letter-spacing: 2px; color: #F5F1EB; opacity: 0.85; font-variant-numeric: tabular-nums; }
+  #phase-label { position: absolute; bottom: 60px; left: 56px; z-index: 13; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 22px; letter-spacing: 4px; color: #F5F1EB; opacity: 0.7; }
+  #phase-label .num { color: var(--orange); }
+
+  #phase-ticks { position: absolute; bottom: 64px; right: 56px; z-index: 13; display: flex; gap: 7px; }
+  .phase-tick { width: 7px; height: 7px; border-radius: 50%; background: rgba(245,241,235,0.18); transition: all 0.3s; }
+  .phase-tick.active { background: var(--orange); box-shadow: 0 0 12px var(--orange); }
+
+  /* Top banner */
+  #top-banner { position: absolute; top: 80px; left: 0; width: 1080px; z-index: 10; pointer-events: none; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); text-align: center; }
+  #top-banner-logo { width: 520px; height: auto; display: block; margin: 0 auto; opacity: 0.92; }
+
+  #progress-track { position: absolute; bottom: 28px; left: 0; width: 1080px; height: 4px; background: rgba(245, 241, 235, 0.06); z-index: 10; }
+  #progress-fill { width: 0; height: 100%; background: var(--orange); box-shadow: 0 0 16px rgba(233, 116, 88, 0.8); }
+
+  /* Anamorphic flare */
+  #anamorphic {
+    position: absolute; top: 50%; left: -300px;
+    width: 1680px; height: 6px;
+    z-index: 14; pointer-events: none; opacity: 0;
+    background: linear-gradient(90deg,
+      transparent, rgba(140,200,255,0.3),
+      rgba(255,255,255,0.95) 45%, rgba(255,255,255,0.95) 55%,
+      rgba(140,200,255,0.3), transparent);
+    mix-blend-mode: screen;
+    filter: blur(1.5px);
+    box-shadow: 0 0 60px rgba(140,200,255,0.4);
+  }
+
+  /* Phase containers */
+  .phase { position: absolute; top: 0; left: 0; width: 1080px; height: 1920px; overflow: hidden; opacity: 0; }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; } #phase3 { z-index: 3; }
+  #phase4 { z-index: 4; } #phase5 { z-index: 5; }
+  #phase6 { z-index: 6; } #phase7 { z-index: 7; }
+  #phase8 { z-index: 8; } #phase9 { z-index: 9; }
+
+  .phase-content {
+    width: 100%; height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex; flex-direction: column;
+    box-sizing: border-box;
+  }
+  .overline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 34px; letter-spacing: 6px; text-transform: uppercase;
+  }
+
+  /* ══ PHASE 1 — Topic lockup (thumbnail-grade open) ══ */
+  #p1-topic-lockup {
+    position: absolute; top: 0; left: 0; width: 1080px; height: 1920px;
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 28px; pointer-events: none; z-index: 2;
+  }
+  #p1-brand-lockup { display: flex; align-items: center; gap: 20px; }
+  #p1-brand-logo { height: 90px; width: auto; display: block; }
+  #p1-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 156px; line-height: 0.88; letter-spacing: -5px;
+    color: var(--text); max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  #p1-receipt {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600;
+    font-size: 42px; color: var(--text-dim);
+    letter-spacing: 2px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #p1-receipt::before {
+    content: "›"; color: var(--orange);
+    font-weight: 900; font-size: 48px; line-height: 1;
+  }
+
+  /* ══ PHASE 2 — Hook B (FAIL FASTER + 42% climbing) ══ */
+  #phase2 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 24px; }
+  #p2-overline { color: var(--orange); }
+  #p2-pre {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
+    font-size: 60px; line-height: 1.05; color: var(--text);
+    max-width: 960px;
+  }
+  #p2-slam {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 196px; line-height: 0.88; letter-spacing: -5px;
+    color: var(--orange);
+    text-shadow: 0 0 90px rgba(233,116,88,0.65), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 720px; position: relative;
+    text-align: center;
+    word-spacing: 9999px;
+  }
+  #p2-slam-mark {
+    position: absolute; left: 0; bottom: -10px;
+    height: 8px; width: 0;
+    background: var(--orange);
+    box-shadow: 0 0 24px rgba(233,116,88,0.8);
+    border-radius: 4px;
+  }
+  #p2-stat-wrap {
+    margin-top: 28px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    width: 880px;
+    background: var(--card);
+    border: 2px solid rgba(233,116,88,0.40);
+    border-radius: 28px;
+    padding: 36px 32px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 100px rgba(233,116,88,0.15);
+  }
+  #p2-stat-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 32px; color: var(--text-dim);
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+  #p2-stat-row { display: flex; align-items: baseline; gap: 12px; }
+  #p2-stat-num {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 200px; line-height: 0.85; letter-spacing: -6px;
+    color: var(--orange); font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 80px rgba(233,116,88,0.5);
+  }
+  #p2-stat-unit {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 72px; color: var(--text-dim);
+  }
+  #p2-stat-sub {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
+    font-size: 38px; color: var(--text); text-align: center;
+    line-height: 1.2; max-width: 820px;
+    position: relative;
+  }
+  #p2-stat-sub .climb { color: var(--orange); font-weight: 900; position: relative; display: inline-block; }
+  #p2-climb-mark {
+    position: absolute; left: 0; bottom: -8px;
+    height: 6px; width: 0;
+    background: var(--orange);
+    box-shadow: 0 0 16px rgba(233,116,88,0.7);
+    border-radius: 3px;
+  }
+
+  /* ══ PHASE 3 — Krieger quote card ══ */
+  #phase3 .phase-content { align-items: center; justify-content: center; gap: 28px; }
+  #p3-overline { color: var(--purple); }
+  .quote-card {
+    width: 920px; background: var(--card);
+    border: 1px solid rgba(245,241,235,0.10);
+    border-radius: 22px; padding: 36px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .quote-top { display: flex; align-items: center; gap: 20px; }
+  .quote-avatar {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 42px; color: var(--bg); flex-shrink: 0;
+  }
+  .quote-meta { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .quote-name { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 38px; color: var(--text); }
+  .quote-handle { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 26px; color: var(--text-dim); letter-spacing: 1px; }
+  .quote-verify {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--bg); font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 24px;
+  }
+  .quote-text {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 600;
+    font-size: 40px; line-height: 1.32;
+    color: var(--text); text-align: left;
+    margin: 28px 0 28px;
+  }
+  .quote-text .em { color: var(--purple); font-weight: 800; }
+  .quote-bottom {
+    display: flex; gap: 32px; align-items: center;
+    padding-top: 22px;
+    border-top: 1px solid rgba(245,241,235,0.10);
+  }
+  .quote-stat {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 26px;
+    color: var(--text-dim); letter-spacing: 1px;
+  }
+  .quote-stat .icon { font-size: 22px; color: var(--text-dim); }
+  .quote-stat .num  { color: var(--text); font-variant-numeric: tabular-nums; min-width: 72px; }
+  #p3-cta {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 32px; color: var(--orange); letter-spacing: 2px; text-transform: uppercase;
+    padding: 14px 30px; border-radius: 999px;
+    background: rgba(233,116,88,0.10);
+    border: 1.5px solid rgba(233,116,88,0.40);
+  }
+
+  /* ══ PHASE 4 — Four-stage compass timeline ══ */
+  #phase4 .phase-content { align-items: center; justify-content: flex-start; text-align: center; gap: 22px; padding-top: 220px; padding-bottom: 200px; }
+  #p4-overline { color: var(--text); }
+  #p4-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 50px; line-height: 1.05; letter-spacing: -1px; color: var(--text); max-width: 960px; }
+  .compass-wrap { position: relative; width: 940px; }
+  #p4-connector { position: absolute; top: 30px; left: 90px; width: 6px; height: calc(100% - 60px); z-index: 0; pointer-events: none; }
+  #p4-connector line { stroke-dasharray: 1100; stroke-dashoffset: 1100; }
+  .compass-list { position: relative; display: flex; flex-direction: column; gap: 18px; width: 940px; z-index: 1; }
+  .cp-card { display: flex; flex-direction: row; align-items: center; gap: 26px; padding: 22px 28px; border-radius: 20px; }
+  .cp-card.orange { background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05)); border: 2px solid rgba(233,116,88,0.45); box-shadow: 0 10px 30px rgba(233,116,88,0.22); }
+  .cp-card.purple { background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05)); border: 2px solid rgba(167,139,250,0.45); box-shadow: 0 10px 30px rgba(167,139,250,0.22); }
+  .cp-card.blue   { background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05)); border: 2px solid rgba(107,154,239,0.45); box-shadow: 0 10px 30px rgba(107,154,239,0.22); }
+  .cp-card.green  { background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05)); border: 2px solid rgba(125,211,166,0.45); box-shadow: 0 10px 30px rgba(125,211,166,0.22); }
+  .cp-badge { display: flex; align-items: center; justify-content: center; min-width: 180px; padding: 14px 18px; border-radius: 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 900; font-size: 30px; letter-spacing: 1px; line-height: 1; color: var(--bg); }
+  .cp-card.orange .cp-badge { background: var(--orange); }
+  .cp-card.purple .cp-badge { background: var(--purple); }
+  .cp-card.blue   .cp-badge { background: var(--blue); }
+  .cp-card.green  .cp-badge { background: var(--green); }
+  .cp-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .cp-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 48px; line-height: 1.1; color: var(--text); }
+  .cp-sub   { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 32px; letter-spacing: 1px; opacity: 0; }
+  .cp-card.orange .cp-sub { color: var(--orange); }
+  .cp-card.purple .cp-sub { color: var(--purple); }
+  .cp-card.blue   .cp-sub { color: var(--blue); }
+  .cp-card.green  .cp-sub { color: var(--green); }
+  .cp-index { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 900; font-size: 30px; line-height: 1; }
+  .cp-card.orange .cp-index { background: rgba(233,116,88,0.20); border: 1.5px solid rgba(233,116,88,0.40); color: var(--orange); }
+  .cp-card.purple .cp-index { background: rgba(167,139,250,0.20); border: 1.5px solid rgba(167,139,250,0.40); color: var(--purple); }
+  .cp-card.blue   .cp-index { background: rgba(107,154,239,0.20); border: 1.5px solid rgba(107,154,239,0.40); color: var(--blue); }
+  .cp-card.green  .cp-index { background: rgba(125,211,166,0.20); border: 1.5px solid rgba(125,211,166,0.40); color: var(--green); }
+  #p4-bottleneck-marker {
+    position: absolute; left: 0; bottom: -8px;
+    height: 6px; width: 0;
+    background: var(--green);
+    box-shadow: 0 0 16px rgba(125,211,166,0.7);
+    border-radius: 3px;
+  }
+
+  /* ══ PHASE 5 — Four named killers (failure-mode-grid) ══ */
+  #phase5 .phase-content { align-items: center; justify-content: flex-start; text-align: center; gap: 14px; padding-top: 200px; padding-bottom: 180px; }
+  #p5-overline { color: var(--red-soft); }
+  #p5-headline { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 56px; line-height: 1.05; letter-spacing: -1px; color: var(--text); max-width: 960px; }
+  .killer-wrap { width: 960px; display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+  .killer-row { display: flex; flex-direction: row; align-items: center; gap: 18px; padding: 16px 20px; border-radius: 18px; position: relative; }
+  .killer-row.orange { background: linear-gradient(135deg, rgba(233,116,88,0.16), rgba(233,116,88,0.04)); border: 2px solid rgba(233,116,88,0.42); box-shadow: 0 8px 24px rgba(233,116,88,0.18); }
+  .killer-row.purple { background: linear-gradient(135deg, rgba(167,139,250,0.16), rgba(167,139,250,0.04)); border: 2px solid rgba(167,139,250,0.42); box-shadow: 0 8px 24px rgba(167,139,250,0.18); }
+  .killer-row.blue   { background: linear-gradient(135deg, rgba(107,154,239,0.16), rgba(107,154,239,0.04)); border: 2px solid rgba(107,154,239,0.42); box-shadow: 0 8px 24px rgba(107,154,239,0.18); }
+  .killer-row.green  { background: linear-gradient(135deg, rgba(125,211,166,0.16), rgba(125,211,166,0.04)); border: 2px solid rgba(125,211,166,0.42); box-shadow: 0 8px 24px rgba(125,211,166,0.18); }
+  .killer-row-mark { position: absolute; left: 20px; bottom: 6px; height: 5px; width: 0; border-radius: 3px; }
+  .killer-row.orange .killer-row-mark { background: var(--orange); box-shadow: 0 0 14px rgba(233,116,88,0.65); }
+  .killer-row.purple .killer-row-mark { background: var(--purple); box-shadow: 0 0 14px rgba(167,139,250,0.65); }
+  .killer-row.blue   .killer-row-mark { background: var(--blue);   box-shadow: 0 0 14px rgba(107,154,239,0.65); }
+  .killer-row.green  .killer-row-mark { background: var(--green);  box-shadow: 0 0 14px rgba(125,211,166,0.65); }
+  .killer-badge { display: flex; align-items: center; justify-content: center; min-width: 140px; padding: 12px 14px; border-radius: 12px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 900; font-size: 26px; letter-spacing: 1px; line-height: 1; color: var(--bg); }
+  .killer-row.orange .killer-badge { background: var(--orange); }
+  .killer-row.purple .killer-badge { background: var(--purple); }
+  .killer-row.blue   .killer-badge { background: var(--blue); }
+  .killer-row.green  .killer-badge { background: var(--green); }
+  .killer-body { display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left; }
+  .killer-name { font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 50px; line-height: 1.05; color: var(--text); letter-spacing: -1px; }
+  .killer-row.orange .killer-name { color: var(--orange); }
+  .killer-row.purple .killer-name { color: var(--purple); }
+  .killer-row.blue   .killer-name { color: var(--blue); }
+  .killer-row.green  .killer-name { color: var(--green); }
+  .killer-conseq { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 30px; letter-spacing: 0.5px; line-height: 1.25; color: var(--text-dim); opacity: 0; }
+  .killer-skull { display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; border-radius: 12px; font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 30px; color: var(--bg); background: rgba(245,241,235,0.85); line-height: 1; }
+  #p5-wrap-line { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 44px; line-height: 1.15; letter-spacing: -1px; color: var(--text); margin-top: 14px; max-width: 920px; position: relative; }
+  #p5-wrap-line .em { color: var(--red-soft); font-weight: 900; position: relative; display: inline-block; }
+  #p5-die-marker { position: absolute; left: 0; bottom: -6px; height: 6px; width: 0; background: var(--red-soft); box-shadow: 0 0 16px rgba(255,124,124,0.65); border-radius: 3px; }
+
+  /* ══ PHASE 6 — Three Claudes decision table ══ */
+  #phase6 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 22px; }
+  #p6-overline { color: var(--blue); }
+  #p6-headline {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 50px; line-height: 1.05; letter-spacing: -1px;
+    color: var(--text); max-width: 960px;
+  }
+  #p6-pagepill {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 26px; color: var(--blue); letter-spacing: 2px;
+    padding: 8px 20px; border-radius: 999px;
+    background: rgba(107,154,239,0.10);
+    border: 1.5px solid rgba(107,154,239,0.40);
+  }
+  .surfaces-wrap { width: 960px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 10px; }
+  .surface-col {
+    background: var(--card);
+    border: 2px solid rgba(245,241,235,0.10);
+    border-radius: 20px;
+    padding: 28px 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    align-items: center; text-align: center;
+    min-height: 460px;
+    position: relative;
+  }
+  .surface-col.chat   { border-color: rgba(233,116,88,0.40); background: linear-gradient(180deg, rgba(233,116,88,0.10), rgba(233,116,88,0.02)); }
+  .surface-col.cowork { border-color: rgba(167,139,250,0.40); background: linear-gradient(180deg, rgba(167,139,250,0.10), rgba(167,139,250,0.02)); }
+  .surface-col.code   { border-color: rgba(107,154,239,0.40); background: linear-gradient(180deg, rgba(107,154,239,0.10), rgba(107,154,239,0.02)); }
+  .surface-icon {
+    width: 80px; height: 80px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 42px; color: var(--bg);
+  }
+  .surface-col.chat   .surface-icon { background: var(--orange); }
+  .surface-col.cowork .surface-icon { background: var(--purple); }
+  .surface-col.code   .surface-icon { background: var(--blue); }
+  .surface-name {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 48px; line-height: 1.05; color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .surface-job {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600;
+    font-size: 32px; line-height: 1.35;
+    letter-spacing: 1px;
+    padding: 0 4px;
+  }
+  .surface-col.chat   .surface-job { color: var(--orange); }
+  .surface-col.cowork .surface-job { color: var(--purple); }
+  .surface-col.code   .surface-job { color: var(--blue); }
+  .surface-circle {
+    position: absolute; top: -18px; left: 50%;
+    transform: translateX(-50%);
+    width: 240px; height: 100px;
+    pointer-events: none; opacity: 0;
+  }
+  #p6-pickwrong {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
+    font-size: 36px; line-height: 1.2; color: var(--text);
+    margin-top: 14px;
+  }
+  #p6-pickwrong .em { color: var(--orange); font-weight: 900; }
+
+  /* ══ PHASE 7 — Vulcan receipt ══ */
+  #phase7 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 24px; }
+  #p7-overline { color: var(--orange); }
+  #p7-pre {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
+    font-size: 44px; line-height: 1.1; color: var(--text);
+    max-width: 920px;
+  }
+  #p7-brand {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 76px; line-height: 1.0; letter-spacing: -2px;
+    color: var(--orange);
+    text-shadow: 0 0 60px rgba(233,116,88,0.5);
+  }
+  #p7-brand .tag {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 26px; color: var(--text-dim); letter-spacing: 4px;
+  }
+  .pillrow {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+    width: 940px; margin-top: 6px;
+  }
+  .stat-pill {
+    background: var(--card);
+    border: 2px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    padding: 24px 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .stat-pill.o { border-color: rgba(233,116,88,0.40); background: linear-gradient(180deg, rgba(233,116,88,0.10), rgba(233,116,88,0.02)); }
+  .stat-pill.p { border-color: rgba(167,139,250,0.40); background: linear-gradient(180deg, rgba(167,139,250,0.10), rgba(167,139,250,0.02)); }
+  .stat-pill.b { border-color: rgba(107,154,239,0.40); background: linear-gradient(180deg, rgba(107,154,239,0.10), rgba(107,154,239,0.02)); }
+  .pill-num {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 96px; line-height: 0.9; letter-spacing: -3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-pill.o .pill-num { color: var(--orange); }
+  .stat-pill.p .pill-num { color: var(--purple); }
+  .stat-pill.b .pill-num { color: var(--blue); }
+  .pill-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 22px; color: var(--text-dim);
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  #p7-beat-line {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
+    font-size: 36px; line-height: 1.2; color: var(--text);
+    margin-top: 8px; max-width: 920px; position: relative;
+  }
+  #p7-beat-line .em { color: var(--orange); font-weight: 900; position: relative; display: inline-block; }
+  #p7-beat-mark {
+    position: absolute; left: 0; bottom: -6px;
+    height: 5px; width: 0;
+    background: var(--orange);
+    box-shadow: 0 0 14px rgba(233,116,88,0.7);
+    border-radius: 3px;
+  }
+  #p7-big-metric {
+    width: 720px;
+    background: var(--card);
+    border: 2px solid rgba(233,116,88,0.40);
+    border-radius: 24px;
+    padding: 28px 32px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 100px rgba(233,116,88,0.15);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    margin-top: 4px;
+  }
+  #p7-big-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 24px; color: var(--text-dim);
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+  #p7-big-num {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 168px; line-height: 0.85; letter-spacing: -5px;
+    color: var(--orange); font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 70px rgba(233,116,88,0.5);
+  }
+  #p7-big-foot {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 24px; color: var(--text); letter-spacing: 3px;
+  }
+  #p7-discipline {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 38px; color: var(--orange); letter-spacing: -0.5px;
+    margin-top: 6px;
+  }
+
+  /* ══ PHASE 8 — CLAUDE.md code-snippet warning ══ */
+  #phase8 .phase-content { align-items: center; justify-content: center; gap: 22px; }
+  #p8-overline { color: var(--green); }
+  #p8-warning {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 50px; line-height: 1.1; letter-spacing: -1px;
+    color: var(--text); text-align: center; max-width: 960px;
+  }
+  #p8-warning .em { color: var(--orange); font-weight: 900; }
+  .code-wrap {
+    width: 940px; background: var(--card);
+    border: 2px solid rgba(125,211,166,0.40);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 80px rgba(125,211,166,0.10);
+  }
+  .code-head {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(245,241,235,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800;
+    font-size: 22px; padding: 4px 12px;
+    color: var(--green); background: rgba(125,211,166,0.10);
+    border: 1px solid rgba(125,211,166,0.40); border-radius: 6px;
+    letter-spacing: 2px;
+  }
+  .code-filename {
+    flex: 1;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600;
+    font-size: 24px; color: var(--text); letter-spacing: 1px;
+  }
+  .code-tag {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800;
+    font-size: 20px; color: var(--orange); letter-spacing: 2px;
+    padding: 4px 12px; border-radius: 6px;
+    background: rgba(233,116,88,0.10); border: 1px solid rgba(233,116,88,0.40);
+  }
+  .code-body {
+    padding: 26px 24px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500;
+    font-size: 24px; line-height: 1.6; text-align: left;
+    min-height: 420px;
+  }
+  .code-line { display: flex; gap: 18px; opacity: 1; }
+  .code-num { color: rgba(245,241,235,0.30); width: 38px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .code-text { color: var(--text); flex: 1; white-space: pre; overflow: hidden; }
+  .code-text .h  { color: var(--green); font-weight: 800; }
+  .code-text .com { color: var(--text-dim); font-style: italic; }
+  .code-text .kw  { color: var(--purple); }
+  #p8-cheap {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 38px; line-height: 1.15; color: var(--text);
+    text-align: center; max-width: 960px; position: relative;
+    margin-top: 4px;
+  }
+  #p8-cheap .em { color: var(--green); font-weight: 900; position: relative; display: inline-block; }
+  #p8-cheap-mark {
+    position: absolute; left: 0; bottom: -8px;
+    height: 6px; width: 0;
+    background: var(--green);
+    box-shadow: 0 0 16px rgba(125,211,166,0.7);
+    border-radius: 3px;
+  }
+
+  /* ══ PHASE 9 — CTA close (thumbnail-grade close) ══ */
+  #phase9 .phase-content { align-items: center; justify-content: center; gap: 28px; text-align: center; }
+  #p9-overline { color: var(--orange); }
+  #p9-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 160px; line-height: 0.88; letter-spacing: -5px;
+    color: var(--orange);
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 80px rgba(233,116,88,0.45);
+    max-width: 960px;
+  }
+  #p9-outcome {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 40px; color: var(--text); letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 12px 28px; border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+  }
+  #cta-question {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 50px; line-height: 1.15; letter-spacing: -1px;
+    color: var(--orange);
+    max-width: 960px;
+    text-shadow: 0 0 40px rgba(233,116,88,0.4);
+  }
+  #cta-question .em { color: var(--text); font-style: italic; }
+  #p9-url-wrap { position: relative; display: inline-block; }
+  #p9-url {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 48px; letter-spacing: 2px;
+    color: var(--text);
+    padding: 18px 30px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.45);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.30);
+  }
+  #p9-url-circle {
+    position: absolute; left: -16px; top: -10px;
+    width: calc(100% + 32px); height: calc(100% + 20px);
+    pointer-events: none; opacity: 0;
+  }
+  #p9-subscribe {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 44px; color: var(--text);
+    padding: 16px 36px; border-radius: 999px;
+    background: rgba(245,241,235,0.06);
+    border: 2px solid rgba(245,241,235,0.18);
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="143.22"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- ─── Atmosphere ─── -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop" data-layout-allow-overflow="true"></div>
+
+  <div id="particle-field">
+    <svg id="constellation-lines" style="--hf-studio-offset-x: 2px; --hf-studio-offset-y: -5px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px); background-image: none" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate=""></svg>
+  </div>
+
+  <div id="token-stream-left"  class="token-stream"></div>
+  <div id="token-stream-right" class="token-stream"></div>
+
+  <!-- ─── Chrome ─── -->
+  <div id="letterbox-top" class="letterbox"></div>
+  <div id="letterbox-bottom" class="letterbox"></div>
+  <div id="vf-tl" class="vf-corner"></div>
+  <div id="vf-tr" class="vf-corner"></div>
+  <div id="vf-bl" class="vf-corner"></div>
+  <div id="vf-br" class="vf-corner"></div>
+  <div id="rec-indicator"><div id="rec-dot"></div><span>REC</span></div>
+  <div id="timecode">00:00:00</div>
+  <div id="phase-label"><span class="num">01</span> / 09</div>
+  <div id="phase-ticks">
+    <div class="phase-tick active" id="tick-1"></div>
+    <div class="phase-tick" id="tick-2"></div>
+    <div class="phase-tick" id="tick-3"></div>
+    <div class="phase-tick" id="tick-4"></div>
+    <div class="phase-tick" id="tick-5"></div>
+    <div class="phase-tick" id="tick-6"></div>
+    <div class="phase-tick" id="tick-7"></div>
+    <div class="phase-tick" id="tick-8"></div>
+    <div class="phase-tick" id="tick-9"></div>
+  </div>
+
+  <div id="top-banner"><img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" /></div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═════════ PHASE 1 — Topic lockup (0.00 → 2.81) (unchanged) ═════════ -->
+  <div id="phase1" class="phase">
+    <div id="p1-topic-lockup">
+      <div id="p1-brand-lockup">
+        <img id="p1-brand-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      </div>
+      <div id="p1-topic-slam">THE FOUNDER'S<br><span class="accent">PLAYBOOK.</span></div>
+      <div id="p1-receipt">May 2026 · 35 pages</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 2 — FAIL FASTER + 42% climbing (2.81 → 15.83) ═════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">But.</div>
+      <div id="p2-pre">Claude Code will help you</div>
+      <div id="p2-slam">FAIL FASTER.<div id="p2-slam-mark"></div></div>
+      <div id="p2-stat-wrap">
+        <div id="p2-stat-label">No-market-need rate</div>
+        <div id="p2-stat-row">
+          <div id="p2-stat-num">0</div>
+          <div id="p2-stat-unit">%</div>
+        </div>
+        <div id="p2-stat-sub">and the playbook says it's only going to <span class="climb">climb<span id="p2-climb-mark"></span></span>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 3 — Krieger quote card (15.83 → 28.72) ═════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">Social Proof</div>
+      <div class="quote-card" id="p3-quote">
+        <div class="quote-top">
+          <div class="quote-avatar">MK</div>
+          <div class="quote-meta">
+            <div class="quote-name">Mike Krieger</div>
+            <div class="quote-handle">Instagram co-founder · Anthropic CPO</div>
+          </div>
+          <div class="quote-verify">✓</div>
+        </div>
+        <div class="quote-text" id="p3-quote-text">
+          "Said publicly he could've built Instagram with <span class="em">just himself and his co-founder</span> using Claude today."
+        </div>
+        <div class="quote-bottom">
+          <div class="quote-stat"><span class="icon">♥</span><span class="num" id="p3-stat-likes">0</span></div>
+          <div class="quote-stat"><span class="icon">⟲</span><span class="num" id="p3-stat-reposts">0</span></div>
+        </div>
+      </div>
+      <div id="p3-cta">Anthropic just made it operational</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 4 — Four-stage compass (28.72 → 55.40) ═════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">The 4-stage compass</div>
+      <div id="p4-title">Goal · Exit Test · Failure Mode</div>
+      <div class="compass-wrap">
+        <svg id="p4-connector" viewBox="0 0 6 1100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="p4-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#E97458" />
+              <stop offset="33%"  stop-color="#A78BFA" />
+              <stop offset="66%"  stop-color="#6B9AEF" />
+              <stop offset="100%" stop-color="#7DD3A6" />
+            </linearGradient>
+          </defs>
+          <line x1="3" y1="0" x2="3" y2="1100"
+                stroke="url(#p4-grad)" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        <div class="compass-list">
+          <div class="cp-card orange" id="p4-card-1">
+            <div class="cp-badge">IDEA</div>
+            <div class="cp-body">
+              <div class="cp-title">A problem worth paying for</div>
+              <div class="cp-sub" id="p4-sub-1">Exit: people prepay</div>
+            </div>
+            <div class="cp-index">01</div>
+          </div>
+          <div class="cp-card purple" id="p4-card-2">
+            <div class="cp-badge">M V P</div>
+            <div class="cp-body">
+              <div class="cp-title">Prove people actually will</div>
+              <div class="cp-sub" id="p4-sub-2">Exit: retention, not signups</div>
+            </div>
+            <div class="cp-index">02</div>
+          </div>
+          <div class="cp-card blue" id="p4-card-3">
+            <div class="cp-badge">LAUNCH</div>
+            <div class="cp-body">
+              <div class="cp-title">One founder to a small team</div>
+              <div class="cp-sub" id="p4-sub-3">Exit: hiring without breaking velocity</div>
+            </div>
+            <div class="cp-index">03</div>
+          </div>
+          <div class="cp-card green" id="p4-card-4">
+            <div class="cp-badge">SCALE</div>
+            <div class="cp-body">
+              <div class="cp-title">You become the <span style="position: relative;">bottleneck<span id="p4-bottleneck-marker"></span></span></div>
+              <div class="cp-sub" id="p4-sub-4">Failure mode: every decision still routed through you</div>
+            </div>
+            <div class="cp-index">04</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 5 — Four named killers (55.40 → 93.27) ═════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">The 4 named killers</div>
+      <div id="p5-headline">Each stage has a <span style="color: var(--red-soft); font-weight:900;">named killer</span>.</div>
+      <div class="killer-wrap">
+        <div class="killer-row orange" id="p5-row-1">
+          <div class="killer-badge">IDEA</div>
+          <div class="killer-body">
+            <div class="killer-name">Mistaking building<br>for validating</div>
+            <div class="killer-conseq" id="p5-conseq-1">Ship a prototype in 4 hours · call it proof</div>
+          </div>
+          <div class="killer-skull">!</div>
+          <div class="killer-row-mark" id="p5-row-mark-1"></div>
+        </div>
+        <div class="killer-row purple" id="p5-row-2">
+          <div class="killer-badge">MVP</div>
+          <div class="killer-body">
+            <div class="killer-name">Agentic<br>technical debt</div>
+            <div class="killer-conseq" id="p5-conseq-2">Every session drifts the codebase from your plan</div>
+          </div>
+          <div class="killer-skull">!</div>
+          <div class="killer-row-mark" id="p5-row-mark-2"></div>
+        </div>
+        <div class="killer-row blue" id="p5-row-3">
+          <div class="killer-badge">LAUNCH</div>
+          <div class="killer-body">
+            <div class="killer-name">Founder becomes<br>the bottleneck</div>
+            <div class="killer-conseq" id="p5-conseq-3">1-hour decisions now take a week</div>
+          </div>
+          <div class="killer-skull">!</div>
+          <div class="killer-row-mark" id="p5-row-mark-3"></div>
+        </div>
+        <div class="killer-row green" id="p5-row-4">
+          <div class="killer-badge">SCALE</div>
+          <div class="killer-body">
+            <div class="killer-name">Delegating the<br>operational layer</div>
+            <div class="killer-conseq" id="p5-conseq-4">You built the systems · now you must trust them</div>
+          </div>
+          <div class="killer-skull">!</div>
+          <div class="killer-row-mark" id="p5-row-mark-4"></div>
+        </div>
+      </div>
+      <div id="p5-wrap-line">Four stages. Four named ways to <span class="em">die<span id="p5-die-marker"></span></span>.</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 6 — Three Claudes decision table (93.27 → 106.91) ═════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">Decision table · p.11</div>
+      <div id="p6-headline">Three surfaces. Same brain. Different jobs.</div>
+      <div id="p6-pagepill">PLAYBOOK · P.11</div>
+      <div class="surfaces-wrap" id="p6-surfaces">
+        <div class="surface-col chat" id="p6-col-chat" style="--hf-studio-width: 332px; --hf-studio-height: 266px; width: 332px; height: 266px; min-width: 0px; min-height: 0px; max-width: none; max-height: none; box-sizing: border-box; scale: none" data-hf-studio-box-size="true" data-hf-studio-original-width="" data-hf-studio-original-height="" data-hf-studio-original-min-width="" data-hf-studio-original-min-height="" data-hf-studio-original-max-width="" data-hf-studio-original-max-height="" data-hf-studio-original-flex-basis="" data-hf-studio-original-flex-grow="" data-hf-studio-original-flex-shrink="" data-hf-studio-original-box-sizing="" data-hf-studio-original-display="">
+          <div class="surface-icon">💬</div>
+          <div class="surface-name">Chat</div>
+          <div class="surface-job">Quick<br>exchanges</div>
+        </div>
+        <div class="surface-col cowork" id="p6-col-cowork" style="--hf-studio-width: 316px; --hf-studio-height: 263px; width: 316px; height: 263px; min-width: 0px; min-height: 0px; max-width: none; max-height: none; box-sizing: border-box; scale: none" data-hf-studio-box-size="true" data-hf-studio-original-width="" data-hf-studio-original-height="" data-hf-studio-original-min-width="" data-hf-studio-original-min-height="" data-hf-studio-original-max-width="" data-hf-studio-original-max-height="" data-hf-studio-original-flex-basis="" data-hf-studio-original-flex-grow="" data-hf-studio-original-flex-shrink="" data-hf-studio-original-box-sizing="" data-hf-studio-original-display="">
+          <div class="surface-icon">📋</div>
+          <div class="surface-name">Cowork</div>
+          <div class="surface-job">Knowledge<br>work</div>
+        </div>
+        <div class="surface-col code" id="p6-col-code" style="--hf-studio-width: 305px; --hf-studio-height: 271px; width: 305px; height: 271px; min-width: 0px; min-height: 0px; max-width: none; max-height: none; box-sizing: border-box; scale: none" data-hf-studio-box-size="true" data-hf-studio-original-width="" data-hf-studio-original-height="" data-hf-studio-original-min-width="" data-hf-studio-original-min-height="" data-hf-studio-original-max-width="" data-hf-studio-original-max-height="" data-hf-studio-original-flex-basis="" data-hf-studio-original-flex-grow="" data-hf-studio-original-flex-shrink="" data-hf-studio-original-box-sizing="" data-hf-studio-original-display="">
+          <div class="surface-icon">⌘</div>
+          <div class="surface-name">Code</div>
+          <div class="surface-job">The<br>codebase</div>
+          <svg class="surface-circle" id="p6-circle" viewBox="0 0 240 100" preserveAspectRatio="none" style="--hf-studio-offset-x: -3px; --hf-studio-offset-y: 105px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="">
+            <ellipse cx="120" cy="50" rx="110" ry="40"
+                     fill="none" stroke="#6B9AEF" stroke-width="4"
+                     stroke-linecap="round"
+                     stroke-dasharray="690" stroke-dashoffset="690"
+                     transform="rotate(-3 120 50)"
+                     id="p6-circle-path" />
+          </svg>
+        </div>
+      </div>
+      <div id="p6-pickwrong">Pick wrong, you <span class="em">waste hours</span>.</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 7 — Vulcan receipt (106.91 → 120.93) ═════════ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">Receipt · case study</div>
+      <div id="p7-pre">Here's what running it actually looks like.</div>
+      <div id="p7-brand">VULCAN<div class="tag">TECHNOLOGIES</div></div>
+      <div class="pillrow">
+        <div class="stat-pill o" id="p7-pill-1">
+          <div class="pill-num" id="p7-num-1">0</div>
+          <div class="pill-label">Months</div>
+        </div>
+        <div class="stat-pill p" id="p7-pill-2">
+          <div class="pill-num" id="p7-num-2">0</div>
+          <div class="pill-label">Founders</div>
+        </div>
+        <div class="stat-pill b" id="p7-pill-3">
+          <div class="pill-num" id="p7-num-3">0</div>
+          <div class="pill-label">Technical</div>
+        </div>
+      </div>
+      <div id="p7-beat-line">They <span class="em">beat the consulting firms<span id="p7-beat-mark"></span></span> to a state contract.</div>
+      <div id="p7-big-metric">
+        <div id="p7-big-label">Seed round</div>
+        <div id="p7-big-num">$0M</div>
+        <div id="p7-big-foot">RAISED</div>
+      </div>
+      <div id="p7-discipline">The discipline works.</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 8 — CLAUDE.md warning (120.93 → 133.40) ═════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">Warning · p.16-17</div>
+      <div id="p8-warning"><span class="em">Skip CLAUDE.md</span> and every session re-derives your decisions from scratch.</div>
+      <div class="code-wrap" id="p8-code">
+        <div class="code-head">
+          <div class="code-lang">MD</div>
+          <div class="code-filename">CLAUDE.md</div>
+          <div class="code-tag">REQUIRED</div>
+        </div>
+        <div class="code-body" id="p8-code-body">
+          <div class="code-line"><div class="code-num">1</div><div class="code-text" id="p8-l1"></div></div>
+          <div class="code-line"><div class="code-num">2</div><div class="code-text" id="p8-l2"></div></div>
+          <div class="code-line"><div class="code-num">3</div><div class="code-text" id="p8-l3"></div></div>
+          <div class="code-line"><div class="code-num">4</div><div class="code-text" id="p8-l4"></div></div>
+          <div class="code-line"><div class="code-num">5</div><div class="code-text" id="p8-l5"></div></div>
+          <div class="code-line"><div class="code-num">6</div><div class="code-text" id="p8-l6"></div></div>
+        </div>
+      </div>
+      <div id="p8-cheap"><span class="em">Five minutes<span id="p8-cheap-mark"></span></span> of docs · cheap insurance.</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 9 — CTA close (133.40 → 143.22) ═════════ -->
+  <div id="phase9" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p9-overline">The question</div>
+      <div id="p9-topic-slam">RUN THE<br>PLAYBOOK.</div>
+      <div id="p9-outcome">4 STAGES · 3 SURFACES · 1 FOUNDER</div>
+      <div id="cta-question">Running this <span class="em">playbook</span>, or still validating with <span class="em">vibes</span>?</div>
+      <div id="p9-url-wrap">
+        <div id="p9-url">claude.com/blog/the-founders-playbook</div>
+        <svg id="p9-url-circle" viewBox="0 0 800 100" preserveAspectRatio="none">
+          <ellipse cx="400" cy="50" rx="380" ry="40"
+                   fill="none" stroke="#E97458" stroke-width="4"
+                   stroke-linecap="round"
+                   stroke-dasharray="2400" stroke-dashoffset="2400"
+                   transform="rotate(-1 400 50)"
+                   id="p9-url-circle-path" />
+        </svg>
+      </div>
+      <div id="p9-subscribe">Subscribe for more AI news</div>
+    </div>
+  </div>
+
+  <!-- ─── Overlays ─── -->
+  <div id="vignette"></div>
+  <div id="scanlines"></div>
+  <div id="grain"></div>
+  <div id="anamorphic"></div>
+
+  <!-- ─── Audio ─── -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="143.22"
+         data-track-index="2"
+         data-volume="1.0"></audio>
+
+  <!-- SFX — phase-transition whooshes (1.5s duration, fire AT sceneT per audio-design.md) -->
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="2.81" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="15.83" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="28.72" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="55.40" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="93.27" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="106.91" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="120.93" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t9" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="133.40" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- SFX — layered hook stack at FAIL FASTER pivot (5.99s) -->
+  <audio id="sfx-impact-fail" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="5.94" data-duration="0.63" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-shake-fail" class="clip" src="assets/sfx/screen-shake.mp3"
+         data-start="5.94" data-duration="0.52" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-glitch-fail" class="clip" src="assets/sfx/glitch-zap.mp3"
+         data-start="5.99" data-duration="0.52" data-track-index="6" data-volume="0.09"></audio>
+
+  <!-- SFX — Phase 5 "Four named killers" spring-pops on each stage row -->
+  <audio id="sfx-pop-killer-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="57.37" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-killer-2" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="64.54" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-killer-3" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="72.96" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-killer-4" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="80.20" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- SFX — Vulcan eleven-million slam (118.00s) -->
+  <audio id="sfx-slam-eleven" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="117.95" data-duration="0.73" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- SFX — five-minutes strike-cross (128.67s) -->
+  <audio id="sfx-strike-five" class="clip" src="assets/sfx/strike-cross.mp3"
+         data-start="128.67" data-duration="0.63" data-track-index="4" data-volume="0.11"></audio>
+</div>
+
+<script>
+  /* ════════════════════════════════════════════════════════════
+     Deterministic helpers
+     ════════════════════════════════════════════════════════════ */
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 12, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function spawnParticles(seedPrefix, container, svg) {
+    const count = 30, w = 1080, h = 1920;
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      const seed = seedPrefix + '-p-' + i;
+      const x = 60 + seedHash(seed + '-x') * (w - 120);
+      const y = 240 + seedHash(seed + '-y') * (h - 480);
+      const scale = 0.6 + seedHash(seed + '-s') * 0.8;
+      positions.push({ x, y, scale });
+      const dot = document.createElement('div');
+      dot.className = 'particle';
+      dot.id = 'particle-' + i;
+      dot.style.left = x + 'px';
+      dot.style.top  = y + 'px';
+      dot.style.transform = 'scale(' + scale + ')';
+      container.appendChild(dot);
+    }
+    const NEAR = 260, NEAR2 = NEAR * NEAR;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    for (let i = 0; i < count; i++) {
+      const dists = [];
+      for (let j = 0; j < count; j++) {
+        if (j === i) continue;
+        const dx = positions[i].x - positions[j].x;
+        const dy = positions[i].y - positions[j].y;
+        dists.push({ j, d2: dx * dx + dy * dy });
+      }
+      dists.sort((a, b) => a.d2 - b.d2);
+      for (let k = 0; k < 2; k++) {
+        if (dists[k].d2 > NEAR2) break;
+        const j = dists[k].j;
+        if (j < i) continue;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', positions[i].x);
+        line.setAttribute('y1', positions[i].y);
+        line.setAttribute('x2', positions[j].x);
+        line.setAttribute('y2', positions[j].y);
+        const opacity = Math.max(0.10, 0.22 - Math.sqrt(dists[k].d2) / 2000);
+        line.setAttribute('stroke', 'rgba(245,241,235,' + opacity.toFixed(3) + ')');
+        svg.appendChild(line);
+      }
+    }
+    return positions;
+  }
+
+  function animateParticles(tl, positions, duration) {
+    positions.forEach((p, i) => {
+      const seed = 'drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 80;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      tl.to('#particle-' + i, {
+        x: dx, y: dy,
+        duration: duration / 2,
+        ease: 'sine.inOut',
+        yoyo: true, repeat: 1,
+      }, 0);
+    });
+  }
+
+  function fillTokenStreams() {
+    const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ{}<>[]/\\-+=#@*';
+    function build(seedPrefix) {
+      let out = '';
+      for (let i = 0; i < 160; i++) {
+        out += chars[Math.floor(seedHash(seedPrefix + '-' + i) * chars.length)];
+      }
+      return out;
+    }
+    document.getElementById('token-stream-left').textContent  = build('tsL');
+    document.getElementById('token-stream-right').textContent = build('tsR');
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  function fireAnamorphic(tl, t, dur) {
+    dur = dur || 0.8;
+    tl.fromTo("#anamorphic",
+      { opacity: 0, x: -1680, scaleX: 0.6 },
+      { opacity: 1, x: 0, scaleX: 1.3, duration: dur * 0.5, ease: "power3.out" }, t);
+    tl.to("#anamorphic",
+      { opacity: 0, x: 1680, scaleX: 0.6, duration: dur * 0.5, ease: "power3.in" }, t + dur * 0.5);
+  }
+
+  function countUp(tl, sel, target, start, dur, formatter) {
+    const obj = { v: 0 };
+    const el = document.querySelector(sel);
+    tl.to(obj, {
+      v: target, duration: dur, ease: "expo.out",
+      onUpdate: function () {
+        el.textContent = formatter ? formatter(obj.v) : Math.round(obj.v);
+      }
+    }, start);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     Boot atmosphere
+     ════════════════════════════════════════════════════════════ */
+  spawnShapes('founders-playbook', document.getElementById('shape-backdrop'));
+  const particlePositions = spawnParticles('founders-particles',
+    document.getElementById('particle-field'),
+    document.getElementById('constellation-lines'));
+  fillTokenStreams();
+
+  /* ════════════════════════════════════════════════════════════
+     Timeline — phase boundaries from retention-strategy.md
+     ════════════════════════════════════════════════════════════ */
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  /* Phase start times (transcript-anchored, retention-strategy.md, 9-scene extended) */
+  const T1 = 0.00;
+  const T2 = 2.81;
+  const T3 = 15.83;
+  const T4 = 28.72;
+  const T5 = 55.40;   /* NEW: Four named killers */
+  const T6 = 93.27;   /* Three Claudes (was T5 55.40) */
+  const T7 = 106.91;  /* Vulcan (was T6 69.20) */
+  const T8 = 120.93;  /* CLAUDE.md (was T7 83.40) */
+  const T9 = 133.40;  /* CTA close (was T8 95.83) */
+  const DUR = 143.22;
+
+  /* ── Initial state — all phases except 1 are hidden ── */
+  tl.set("#phase1", { opacity: 1, visibility: "visible" }, 0);
+  tl.set(["#phase2","#phase3","#phase4","#phase5","#phase6","#phase7","#phase8","#phase9"],
+         { opacity: 0, visibility: "hidden", filter: "blur(0px)", scale: 1 }, 0);
+  tl.set("#phase-label", { innerHTML: '<span class="num">01</span> / 09' }, 0);
+  tl.call(() => {
+    document.querySelectorAll(".phase-tick").forEach((t, i) => {
+      t.classList.toggle("active", i === 0);
+    });
+  }, null, 0);
+
+  /* ── Global atmosphere ── */
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0,  scale: 1.04, duration: DUR / 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0);
+  tl.fromTo("#progress-fill", { width: 0 }, { width: 1080, duration: DUR, ease: "none" }, 0);
+
+  /* ── Chrome entry ── */
+  tl.from("#letterbox-top",    { y: -24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from("#letterbox-bottom", { y:  24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from(".vf-corner", { scale: 0.6, opacity: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.05 }, 0.2);
+  tl.from("#rec-indicator", { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#timecode",      { x:  20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.fromTo("#phase-label", { x: -20, opacity: 0 }, { x: 0, opacity: 0.7, duration: 0.5, ease: "power2.out", overwrite: "auto", immediateRender: false }, 0.35);
+  tl.from("#phase-ticks",   { x:  20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.35);
+  tl.to("#rec-dot",       { opacity: 0.35, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 119 }, 0.5);
+  tl.from("#top-banner",  { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.4);
+
+  tl.from("#particle-field", { opacity: 0, duration: 1.2, ease: "power2.out" }, 0.2);
+  tl.from(".token-stream",   { opacity: 0, duration: 1.5, ease: "power2.out" }, 0.4);
+
+  animateParticles(tl, particlePositions, DUR);
+
+  /* Timecode */
+  (function () {
+    const el = document.getElementById("timecode");
+    const obj = { t: 0 };
+    tl.to(obj, {
+      t: DUR, duration: DUR, ease: "none",
+      onUpdate: function () {
+        const sec = obj.t;
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec) % 60;
+        const f = Math.floor((sec % 1) * 30);
+        el.textContent =
+          String(m).padStart(2,'0') + ':' +
+          String(s).padStart(2,'0') + ':' +
+          String(f).padStart(2,'0');
+      }
+    }, 0);
+  })();
+
+  /* Phase-to-phase blur crossfade helper */
+  function phaseCrossfade(fromSel, toSel, t) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.4, ease: "power1.in" }, t - 0.4);
+    tl.to(fromSel, { opacity: 0, duration: 0.3, ease: "power1.in" }, t - 0.2);
+    tl.set(fromSel, { visibility: "hidden" }, t + 0.1);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, t - 0.2);
+    tl.to(toSel, { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, t - 0.1);
+    tl.to(toSel, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, t + 0.1);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 1 — Topic lockup (0.00 → 2.81) [thumbnail-grade open]
+     ════════════════════════════════════════════════════════════
+     Per shorts-thumbnail-frames.md: NO entrance animation at t=0.
+     Topic lockup must be at full opacity from frame 0 so YouTube
+     auto-thumbnail picks the thumbnail-grade frame.
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p1-topic-lockup", { opacity: 1 }, 0);
+  tl.set(["#p1-brand-lockup","#p1-topic-slam","#p1-receipt"], { opacity: 1, y: 0 }, 0);
+  /* Hold static 0.0 → 2.41 then begin crossfade out at T2 - 0.4 = 2.41 */
+  phaseCrossfade("#phase1", "#phase2", T2);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 2 — FAIL FASTER + 42% climbing (2.81 → 15.83)
+     ════════════════════════════════════════════════════════════ */
+  /* Hidden-until-reveal pattern per step-by-step-reveal.md */
+  tl.set("#p2-overline",  { opacity: 0, y: 20 }, 0);
+  tl.set("#p2-pre",       { opacity: 0, y: 30 }, 0);
+  tl.set("#p2-slam",      { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p2-slam-mark", { width: 0 }, 0);
+  tl.set("#p2-stat-wrap", { opacity: 0, y: 30, scale: 0.95 }, 0);
+  tl.set("#p2-stat-sub",  { opacity: 0, y: 12 }, 0);
+  tl.set("#p2-climb-mark",{ width: 0 }, 0);
+
+  /* Entrance — overline + pre at scene start */
+  tl.to("#p2-overline", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 3.20);
+  tl.to("#p2-pre",      { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 3.50);
+  /* FAIL FASTER slam at the spoken anchor 5.991s */
+  tl.to("#p2-slam", { opacity: 1, scale: 1.0, duration: 0.55, ease: "back.out(1.7)" }, 5.94);
+  /* Inline shake on the slam — starts after slam-in opacity settles (5.94+0.55=6.49) */
+  tl.to("#p2-slam", { x:  8, duration: 0.05, ease: "none", overwrite: "auto" }, 6.50);
+  tl.to("#p2-slam", { x: -8, duration: 0.05, ease: "none", overwrite: "auto" }, 6.55);
+  tl.to("#p2-slam", { x:  5, duration: 0.05, ease: "none", overwrite: "auto" }, 6.60);
+  tl.to("#p2-slam", { x:  0, duration: 0.05, ease: "none", overwrite: "auto" }, 6.65);
+  /* Marker sweep under FASTER */
+  tl.to("#p2-slam-mark", { width: "100%", duration: 0.6, ease: "power2.out" }, 6.55);
+  /* Page-ten stat wrap entrance at "Page" 7.5s */
+  tl.to("#p2-stat-wrap", { opacity: 1, y: 0, scale: 1.0, duration: 0.55, ease: "back.out(1.4)" }, 7.50);
+  /* Counter 0 → 42 anchored to "forty-two" 8.394s */
+  countUp(tl, "#p2-stat-num", 42, 7.89, 1.29, (v) => Math.round(v));
+  /* Sub-line entrance after counter lands */
+  tl.to("#p2-stat-sub", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 11.85);
+  /* Marker sweep under "climb" at 14.895s */
+  tl.to("#p2-climb-mark", { width: "100%", duration: 0.5, ease: "power2.out" }, 14.90);
+
+  phaseCrossfade("#phase2", "#phase3", T3);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 3 — Krieger quote card (15.83 → 28.72)
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p3-overline",      { opacity: 0, y: 20 }, 0);
+  tl.set("#p3-quote",         { opacity: 0, y: 30, scale: 0.94 }, 0);
+  tl.set("#p3-quote .quote-top",    { opacity: 0, y: 12 }, 0);
+  tl.set("#p3-quote-text",          { opacity: 0, y: 12 }, 0);
+  tl.set("#p3-quote .quote-bottom", { opacity: 0, y: 12 }, 0);
+  tl.set("#p3-cta",           { opacity: 0, y: 12 }, 0);
+
+  /* Entrances 0.5s after scene start = 16.33 */
+  tl.to("#p3-overline", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 16.33);
+  tl.to("#p3-quote",    { opacity: 1, y: 0, scale: 1.0, duration: 0.6, ease: "back.out(1.4)" }, 16.50);
+  tl.to("#p3-quote .quote-top",    { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 17.00);
+  tl.to("#p3-quote-text",          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 19.50);
+  tl.to("#p3-quote .quote-bottom", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 20.50);
+  /* Engagement counters tick up anchored to "Instagram" 20.979s */
+  countUp(tl, "#p3-stat-likes",   12400, 20.50, 2.0, (v) => Math.round(v).toLocaleString());
+  countUp(tl, "#p3-stat-reposts",  3100, 20.65, 2.0, (v) => Math.round(v).toLocaleString());
+  /* Krieger #2 scale pulse at 25.55 */
+  tl.to("#p3-quote .quote-top", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 25.55);
+  /* "Anthropic just made it operational" CTA pill reveal at 26.58 */
+  tl.to("#p3-cta", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 26.58);
+
+  phaseCrossfade("#phase3", "#phase4", T4);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 4 — Four-stage compass (28.72 → 55.40)
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p4-overline", { opacity: 0, y: 20 }, 0);
+  tl.set("#p4-title",    { opacity: 0, y: 20 }, 0);
+  tl.set(["#p4-card-1","#p4-card-2","#p4-card-3","#p4-card-4"],
+         { opacity: 0, y: 30, x: -40, scale: 0.95 }, 0);
+  tl.set(["#p4-sub-1","#p4-sub-2","#p4-sub-3","#p4-sub-4"], { opacity: 0 }, 0);
+  tl.set("#p4-connector line", { strokeDashoffset: 1100 }, 0);
+  tl.set("#p4-bottleneck-marker", { width: 0 }, 0);
+
+  tl.to("#p4-overline", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 29.22);
+  tl.to("#p4-title",    { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 29.50);
+  /* Spine path draw */
+  tl.to("#p4-connector line", { strokeDashoffset: 0, duration: 6.0, ease: "power2.inOut" }, 29.22);
+
+  /* Cast reveal — 4 stage names called in quick sentence ("Idea. M V P. Launch. Scale.") */
+  tl.to("#p4-card-1", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 33.06);
+  tl.to("#p4-card-2", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 34.08);
+  tl.to("#p4-card-3", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 34.93);
+  tl.to("#p4-card-4", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 35.54);
+
+  /* Detail reveal — deep-dive sub-lines at narration anchors */
+  tl.to("#p4-sub-1", { opacity: 1, duration: 0.5, ease: "power2.out" }, 39.84);
+  tl.to("#p4-sub-2", { opacity: 1, duration: 0.5, ease: "power2.out" }, 42.86);
+  tl.to("#p4-sub-3", { opacity: 1, duration: 0.5, ease: "power2.out" }, 45.39);
+  tl.to("#p4-sub-4", { opacity: 1, duration: 0.5, ease: "power2.out" }, 48.91);
+
+  /* Scale-pulse on Scale-card to bridge 5.45s gap (51.80 anchor on word "you") */
+  tl.to("#p4-card-4", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 51.80);
+
+  /* Marker under "bottleneck" 54.356s */
+  tl.to("#p4-bottleneck-marker", { width: "100%", duration: 0.55, ease: "power2.out" }, 54.36);
+
+  phaseCrossfade("#phase4", "#phase5", T5);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 5 (NEW) — Four named killers (55.40 → 93.27)
+     ════════════════════════════════════════════════════════════
+     4 stage-killer rows reveal step-by-step at narration anchors:
+       - Idea stage @ 57.38 ("Idea stage." word index 173)
+       - MVP stage  @ 64.54 ("M V P stage." word index 186)
+       - Launch stage @ 72.96 ("Launch stage." word index 198)
+       - Scale stage @ 80.20 ("Scale stage." word index 212)
+     Each row's failure-mode consequence sub-line reveals 0.5-2s
+     after the stage name lands (narration delay).
+     ════════════════════════════════════════════════════════════ */
+  /* Hidden-until-reveal pattern per step-by-step-reveal.md */
+  tl.set("#p5-overline",   { opacity: 0, y: 20 }, 0);
+  tl.set("#p5-headline",   { opacity: 0, y: 20 }, 0);
+  tl.set(["#p5-row-1","#p5-row-2","#p5-row-3","#p5-row-4"],
+         { opacity: 0, y: 30, x: -30, scale: 0.95 }, 0);
+  tl.set(["#p5-conseq-1","#p5-conseq-2","#p5-conseq-3","#p5-conseq-4"],
+         { opacity: 0 }, 0);
+  tl.set("#p5-wrap-line",  { opacity: 0, y: 12 }, 0);
+  tl.set("#p5-die-marker", { width: 0 }, 0);
+  tl.set(["#p5-row-mark-1","#p5-row-mark-2","#p5-row-mark-3","#p5-row-mark-4"], { width: 0 }, 0);
+
+  /* Headline + overline at scene start (after whoosh peak) */
+  tl.to("#p5-overline",  { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 55.82);
+  tl.to("#p5-headline",  { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 56.10);
+
+  /* Row 1: Idea stage @ "Idea stage." 57.375 */
+  tl.to("#p5-row-1", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 57.38);
+  /* Row 1 consequence sub-line @ "Mistaking" 59.023 */
+  tl.to("#p5-conseq-1", { opacity: 1, duration: 0.5, ease: "power2.out" }, 59.02);
+
+  /* Row 2: MVP stage @ "M V P stage." 64.538 */
+  tl.to("#p5-row-2", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 64.54);
+  /* Row 2 consequence sub-line @ "Agentic" 66.453 */
+  tl.to("#p5-conseq-2", { opacity: 1, duration: 0.5, ease: "power2.out" }, 66.45);
+
+  /* Row 3: Launch stage @ "Launch stage." 72.955 */
+  tl.to("#p5-row-3", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 72.96);
+  /* Row 3 consequence sub-line @ "The founder becomes" 74.163 */
+  tl.to("#p5-conseq-3", { opacity: 1, duration: 0.5, ease: "power2.out" }, 74.16);
+
+  /* Row 4: Scale stage @ "Scale stage." 80.199 */
+  tl.to("#p5-row-4", { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 80.20);
+  /* Row 4 consequence sub-line @ "Delegating" 81.198 */
+  tl.to("#p5-conseq-4", { opacity: 1, duration: 0.5, ease: "power2.out" }, 81.20);
+
+  /* Visual-pacing bridge beats — marker-sweep underline at mid-gap between killer-rows
+     Breaks the 4 narration-paced gaps (5.5-6.9s) inside Scene 5 down to ≤3.5s each */
+  tl.to("#p5-row-mark-1", { width: 920, duration: 0.5, ease: "power2.out" }, 61.7);
+  tl.to("#p5-row-mark-2", { width: 920, duration: 0.5, ease: "power2.out" }, 69.7);
+  tl.to("#p5-row-mark-3", { width: 920, duration: 0.5, ease: "power2.out" }, 77.0);
+  tl.to("#p5-row-mark-4", { width: 920, duration: 0.5, ease: "power2.out" }, 84.5);
+
+  /* Wrap-up sub-line "Four stages. Four named ways to die." @ "Four" 88.106 */
+  tl.to("#p5-wrap-line", { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 88.11);
+  /* Marker under "die." @ word "die." 90.173 */
+  tl.to("#p5-die-marker", { width: "100%", duration: 0.55, ease: "power2.out" }, 90.17);
+
+  phaseCrossfade("#phase5", "#phase6", T6);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 6 — Three Claudes decision table (93.27 → 106.91)
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p6-overline",  { opacity: 0, y: 20 }, 0);
+  tl.set("#p6-headline",  { opacity: 0, y: 20 }, 0);
+  tl.set("#p6-pagepill",  { opacity: 0, scale: 0.9 }, 0);
+  tl.set(["#p6-col-chat","#p6-col-cowork","#p6-col-code"], { opacity: 0, y: 30, scale: 0.95 }, 0);
+  tl.set("#p6-circle",      { opacity: 0 }, 0);
+  tl.set("#p6-circle-path", { strokeDashoffset: 690 }, 0);
+  tl.set("#p6-pickwrong",   { opacity: 0, y: 12 }, 0);
+
+  /* Anchors (offset +37.87s from 8-scene version) */
+  tl.to("#p6-overline", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 93.70);
+  tl.to("#p6-headline", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 93.92);
+  tl.to("#p6-pagepill", { opacity: 1, scale: 1.0, duration: 0.45, ease: "back.out(1.5)" }, 94.32);
+
+  /* Column reveals anchored to spoken column name (offsets from transcript.json) */
+  tl.to("#p6-col-chat",   { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 99.90);
+  tl.to("#p6-col-cowork", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 101.40);
+  tl.to("#p6-col-code",   { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 103.48);
+
+  /* Marker-circle around Claude Code column at "Code" 103.95 */
+  tl.to("#p6-circle",      { opacity: 1, duration: 0.3 }, 103.95);
+  tl.to("#p6-circle-path", { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" }, 103.95);
+
+  tl.to("#p6-pickwrong", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 104.99);
+
+  phaseCrossfade("#phase6", "#phase7", T7);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 7 — Vulcan receipt (106.91 → 120.93)
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p7-overline",   { opacity: 0, y: 20 }, 0);
+  tl.set("#p7-pre",        { opacity: 0, y: 20 }, 0);
+  tl.set("#p7-brand",      { opacity: 0, y: 30, scale: 0.92 }, 0);
+  tl.set(["#p7-pill-1","#p7-pill-2","#p7-pill-3"], { opacity: 0, y: 24, scale: 0.92 }, 0);
+  tl.set("#p7-beat-line",  { opacity: 0, y: 12 }, 0);
+  tl.set("#p7-beat-mark",  { width: 0 }, 0);
+  tl.set("#p7-big-metric", { opacity: 0, y: 30, scale: 0.94 }, 0);
+  tl.set("#p7-discipline", { opacity: 0, y: 12 }, 0);
+
+  /* Anchors (offset +37.71s from 8-scene version) */
+  tl.to("#p7-overline", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 107.21);
+  tl.to("#p7-pre",      { opacity: 1, y: 0, duration: 0.5,  ease: "power2.out" }, 107.43);
+  /* Vulcan brand + anamorphic flare at "Vulcan" 110.222 */
+  tl.to("#p7-brand", { opacity: 1, y: 0, scale: 1.0, duration: 0.55, ease: "back.out(1.5)" }, 110.22);
+  fireAnamorphic(tl, 110.22, 0.8);
+
+  /* Stat-pill counters anchored to spoken numbers ("Four" 111.394, "Three" 112.126, "One" 113.856) */
+  tl.to("#p7-pill-1", { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.4)" }, 111.39);
+  countUp(tl, "#p7-num-1", 4, 111.54, 0.7, (v) => Math.round(v));
+
+  tl.to("#p7-pill-2", { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.4)" }, 112.13);
+  countUp(tl, "#p7-num-2", 3, 112.28, 0.7, (v) => Math.round(v));
+
+  tl.to("#p7-pill-3", { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.4)" }, 113.86);
+  countUp(tl, "#p7-num-3", 1, 114.01, 0.7, (v) => Math.round(v));
+
+  /* Beat-line "beat the consulting firms" with marker ("beat" 114.924) */
+  tl.to("#p7-beat-line", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 114.71);
+  tl.to("#p7-beat-mark", { width: "100%", duration: 0.7, ease: "power2.out" }, 114.92);
+
+  /* Big-metric $11M anchored to "Eleven" 117.999 */
+  tl.to("#p7-big-metric", { opacity: 1, y: 0, scale: 1.0, duration: 0.55, ease: "back.out(1.4)" }, 117.49);
+  countUp(tl, "#p7-big-num", 11, 117.95, 1.4, (v) => "$" + Math.round(v) + "M");
+
+  /* "The discipline works." closing punch ("discipline" 119.626) */
+  tl.to("#p7-discipline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 119.63);
+  tl.to("#p7-discipline", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut", overwrite: "auto" }, 120.22);
+
+  phaseCrossfade("#phase7", "#phase8", T8);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 8 — CLAUDE.md warning (120.93 → 133.40)
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p8-overline", { opacity: 0, y: 20 }, 0);
+  tl.set("#p8-warning",  { opacity: 0, y: 20 }, 0);
+  tl.set("#p8-code",     { opacity: 0, y: 30, scale: 0.96 }, 0);
+  tl.set("#p8-cheap",    { opacity: 0, y: 12 }, 0);
+  tl.set("#p8-cheap-mark", { width: 0 }, 0);
+
+  /* Anchors (offset +37.53s from 8-scene version) */
+  tl.to("#p8-overline", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 121.13);
+  tl.to("#p8-warning",  { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 121.35);
+  tl.to("#p8-code",     { opacity: 1, y: 0, scale: 1.0, duration: 0.6, ease: "back.out(1.4)" }, 121.73);
+
+  /* Typewriter the 6 CLAUDE.md lines (chars-by-char). Start 0.3s after code-card lands. */
+  const claudeLines = [
+    { sel: "#p8-l1", text: "# Project: founders-playbook", cls: "h" },
+    { sel: "#p8-l2", text: "## Stack: Next.js 15, Postgres", cls: "" },
+    { sel: "#p8-l3", text: "## Decisions:", cls: "" },
+    { sel: "#p8-l4", text: "  - Auth via Clerk (locked-in)", cls: "" },
+    { sel: "#p8-l5", text: "  - No global state libraries", cls: "" },
+    { sel: "#p8-l6", text: "// don't re-derive each session", cls: "com" },
+  ];
+  claudeLines.forEach((line, i) => {
+    const el = document.querySelector(line.sel);
+    const obj = { i: 0 };
+    const startT = 122.03 + i * 0.55;
+    const dur = Math.max(0.35, line.text.length * 0.018);
+    tl.to(obj, {
+      i: line.text.length, duration: dur,
+      ease: "steps(" + line.text.length + ")",
+      onUpdate: function () {
+        const txt = line.text.slice(0, Math.round(obj.i));
+        if (line.cls) {
+          el.innerHTML = '<span class="' + line.cls + '">' + txt + '</span>';
+        } else {
+          el.textContent = txt;
+        }
+      }
+    }, startT);
+  });
+
+  /* "Five minutes" marker at "five" 128.668 */
+  tl.to("#p8-cheap",      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 128.13);
+  tl.to("#p8-cheap-mark", { width: "100%", duration: 0.7, ease: "power2.out" }, 128.67);
+
+  /* Glow pulse bridge at "that" 132.291 (sets up the "collapses" close) */
+  tl.to("#p8-code", { boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 120px rgba(125,211,166,0.35)", duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 131.85);
+
+  phaseCrossfade("#phase8", "#phase9", T9);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 9 — CTA close (133.40 → 143.22) [thumbnail-grade close]
+     ════════════════════════════════════════════════════════════ */
+  tl.set("#p9-overline",   { opacity: 0, y: 20 }, 0);
+  tl.set("#p9-topic-slam", { opacity: 0, y: 20, scale: 0.95 }, 0);
+  tl.set("#p9-outcome",    { opacity: 0, y: 20 }, 0);
+  tl.set("#cta-question",  { opacity: 0, y: 20 }, 0);
+  tl.set("#p9-url-wrap",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p9-url-circle", { opacity: 0 }, 0);
+  tl.set("#p9-url-circle-path", { strokeDashoffset: 2400 }, 0);
+  tl.set("#p9-subscribe",  { opacity: 0, y: 12 }, 0);
+
+  /* Anchors (offset +37.57s from 8-scene version) */
+  tl.to("#p9-overline",   { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 133.57);
+  tl.to("#p9-topic-slam", { opacity: 1, y: 0, scale: 1.0, duration: 0.6, ease: "back.out(1.5)" }, 133.80);
+  tl.to("#p9-outcome",    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 134.12);
+  /* #cta-question enters at the spoken anchor "Are" 135.019 */
+  tl.to("#cta-question",  { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 134.96);
+  /* "vibes" scale pulse @ 137.620 */
+  tl.to("#cta-question",  { scale: 1.025, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 137.62);
+  /* Subtle audio-reactive style glow on #cta-question throughout 135.0–142.6 */
+  tl.to("#cta-question", { textShadow: "0 0 60px rgba(233,116,88,0.7)", duration: 0.5, yoyo: true, repeat: 7, ease: "sine.inOut" }, 135.10);
+
+  /* URL pill enters at "Drop" 139.014 */
+  tl.to("#p9-url-wrap", { opacity: 1, y: 0, scale: 1.0, duration: 0.55, ease: "back.out(1.4)" }, 139.01);
+  /* Marker-circle on URL at "subscribe" 141.335 */
+  tl.to("#p9-url-circle",      { opacity: 1, duration: 0.3 }, 141.34);
+  tl.to("#p9-url-circle-path", { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 141.34);
+  tl.to("#p9-subscribe",       { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 141.50);
+
+  /* ════════════════════════════════════════════════════════════
+     Shape backdrop reposition per phase + chrome updates
+     ════════════════════════════════════════════════════════════ */
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'founders-playbook',
+    [T2, T3, T4, T5, T6, T7, T8, T9]
+  );
+
+  function updateChrome(t, n) {
+    tl.set("#phase-label", { innerHTML: '<span class="num">' + String(n).padStart(2,'0') + '</span> / 09' }, t);
+    tl.call(() => {
+      document.querySelectorAll(".phase-tick").forEach((el, i) => {
+        el.classList.toggle("active", i === (n - 1));
+      });
+    }, null, t);
+  }
+  updateChrome(T2 + 0.1, 2);
+  updateChrome(T3 + 0.1, 3);
+  updateChrome(T4 + 0.1, 4);
+  updateChrome(T5 + 0.1, 5);
+  updateChrome(T6 + 0.1, 6);
+  updateChrome(T7 + 0.1, 7);
+  updateChrome(T8 + 0.1, 8);
+  updateChrome(T9 + 0.1, 9);
+
+  /* Pin timeline to total duration per hyperframes-pitfalls.md §1 */
+  tl.set({}, {}, 143.22);
+
+  window.__timelines["main"] = tl;
+
+  /* ═══ Fit-to-viewport scaler (browser preview only) ═══ */
+  (function fitStage() {
+    if (window.__hyperframes || window.HyperFramesRuntime) return;
+    const root = document.getElementById('root');
+    if (!root) return;
+    function apply() {
+      const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+      root.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+    }
+    apply();
+    window.addEventListener('resize', apply);
+  })();
+
+  /* ════════════════════════════════════════════════════════════
+     Dev preview auto-play + loop.
+     ════════════════════════════════════════════════════════════ */
+  (function devAutoplay() {
+    const externalDriver =
+      window.__hyperframes ||
+      window.HyperFramesRuntime ||
+      (window.frameElement && window.frameElement.hasAttribute("data-hf-driven"));
+    if (externalDriver) return;
+    tl.eventCallback("onComplete", function () { tl.restart(true); });
+    tl.play(0);
+    setTimeout(function () { if (tl.time() < 0.05) tl.play(0); }, 300);
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden && tl.time() < 0.05) tl.play(0);
+    });
+  })();
+</script>
+</body>
+</html>

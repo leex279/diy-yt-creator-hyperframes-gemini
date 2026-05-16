@@ -1,0 +1,55 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/long-form/dynamous-slides/tokens/dynamous.css
+   Dynamous-brand long-form (1920x1080) palette + typography tokens.
+
+   Adapted from the Dynamous brand system (deep navy + blue, Montserrat
+   for display, JetBrains Mono for data) to long-form HyperFrames.
+
+   USAGE:
+     - Linked once from index.html <head>:
+         <link rel="stylesheet" href="tokens/dynamous.css">
+     - Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #07090F;   /* near-black with blue tint */
+  --bg-alt:         #080A13;
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-surface:     rgba(255, 255, 255, 0.06);
+  --border:         rgba(255, 255, 255, 0.08);
+  --border-bright:  rgba(255, 255, 255, 0.18);
+
+  /* ── Dynamous brand accents (NO PURPLE) ──────────────
+     Dynamous Blue is the hero; restrict to one or two focal
+     elements per scene. Cyan and deep-halo are for tertiary
+     accents and CTA glow only. */
+  --accent:         #3B82F6;   /* Dynamous Blue — hero color */
+  --accent-1:       #3B82F6;   /* alias for cross-template compat */
+  --accent-2:       #60A5FA;   /* Dynamous Light — highlights */
+  --accent-3:       #0EA5E9;   /* Dynamous Cyan — CTA glow */
+  --accent-dim:     #1E40AF;   /* Deep halo, hover state */
+  --accent-pale:    #DBEAFE;   /* very rare light tints */
+  --accent-warn:    #F97316;   /* used ONLY on the closing subscribe pill */
+  --accent-stat:    #60A5FA;   /* hero stats — Dynamous Light, not yellow */
+
+  /* ── Text ──────────────────────────────────────────── */
+  --ink:            rgba(255, 255, 255, 0.98);
+  --ink-2:          rgba(255, 255, 255, 0.78);
+  --muted:          rgba(255, 255, 255, 0.58);
+  --muted-2:        rgba(255, 255, 255, 0.36);
+  --text:           rgba(255, 255, 255, 0.98);  /* alias */
+  --text-secondary: rgba(255, 255, 255, 0.62);
+  --text-muted:     rgba(255, 255, 255, 0.40);
+
+  /* ── Spacing (1920x1080 safe-zone) ─────────────────── */
+  --pad-top:        110px;
+  --pad-x:          140px;
+  --pad-bottom:     110px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Montserrat', system-ui, sans-serif;
+  --font-display:   'Montserrat', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+  --font-data:      'JetBrains Mono', ui-monospace, monospace;
+}

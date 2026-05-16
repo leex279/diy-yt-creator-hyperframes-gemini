@@ -1,0 +1,72 @@
+{
+  "agent": "video-timing-pacer",
+  "video_slug": "claude-founders-playbook",
+  "review_date": "2026-05-16",
+  "review_pass": "final-extended-9-scene",
+  "verdict": "FAIL_HIGH",
+  "canvas": "1080x1920",
+  "composition_duration_s": 143.2,
+  "narration_duration_s": 143.22,
+  "composition_narration_match": true,
+  "phases_audited": 9,
+  "entrances_audited": 78,
+  "findings": {
+    "blocker": [],
+    "high": [
+      {
+        "id": "T-001",
+        "phase": "Phase 5 (Four named killers)",
+        "title": "visual-pacing-5s violations inside the new Scene 5",
+        "detail": "Killer-row entrance cadence is paced to narration word anchors but four consecutive gaps exceed the 5.0s rule because the per-stage narration beat is ~7s. Gaps measured between consecutive meaningful entrances (skull/pulse decorations excluded per rule):\n  - 59.02 (#p5-conseq-1) -> 64.54 (#p5-row-2) = 5.52s\n  - 66.45 (#p5-conseq-2) -> 72.96 (#p5-row-3) = 6.51s\n  - 74.16 (#p5-conseq-3) -> 80.20 (#p5-row-4) = 6.04s\n  - 81.20 (#p5-conseq-4) -> 88.11 (#p5-wrap-line) = 6.91s",
+        "rule": ".claude/rules/visual-pacing-5s.md",
+        "auto_fix": false,
+        "recommended_fix": "Add a marker-sweep beat (e.g., sweeping color underline on the killer-name) at the midpoint of each gap. Suggested anchors: 61.7 (between row-1 and row-2), 69.7 (between row-2 and row-3), 77.0 (between row-3 and row-4), 84.5 (between row-4 and wrap-line). Each marker is purely decorative on existing geometry and does NOT compete with the screenshot-anchor-markers rule (no chart screenshots involved)."
+      }
+    ],
+    "medium": [
+      {
+        "id": "T-002",
+        "phase": "Phase 3 (Krieger drop)",
+        "title": "Pre-existing 6.08s gap inside Phase 3",
+        "detail": "20.50 (#p3-quote .quote-bottom) -> 25.55 (scale-pulse on author-name, decorative, doesn't count) -> 26.58 (#p3-cta). Real meaningful-content gap is 20.50 -> 26.58 = 6.08s.",
+        "rule": ".claude/rules/visual-pacing-5s.md",
+        "auto_fix": false,
+        "recommended_fix": "Insert a marker-sweep beat under the quote-text at ~23.0s ('Instagram' phrase). Not a regression - same root cause as 8-scene review."
+      },
+      {
+        "id": "T-003",
+        "phase": "Phase 6 (Three Claudes decision)",
+        "title": "Pre-existing 5.58s gap inside Phase 6",
+        "detail": "94.32 (#p6-pagepill) -> 99.90 (#p6-col-chat) = 5.58s static window. Was 5.29s in 8-scene version; widened slightly due to phase boundary shift.",
+        "rule": ".claude/rules/visual-pacing-5s.md",
+        "auto_fix": false,
+        "recommended_fix": "Skeleton-reveal the 3 empty column containers at t=96.5 (border only, icons hidden), then ramp opacity at each column's word anchor (99.90 / 101.40 / 103.48)."
+      },
+      {
+        "id": "T-004",
+        "phase": "Phase 4 (Four-stage compass)",
+        "title": "Phase 4 51.80 scale-pulse decoration doesn't satisfy 5s rule per spec",
+        "detail": "Same as 8-scene review T-007. Replace pulse with a marker-underline beat at t=51.80.",
+        "auto_fix": false
+      }
+    ],
+    "low": []
+  },
+  "sfx_alignment": {
+    "whooshes_audited": 8,
+    "max_drift_s": 0.0,
+    "verdict": "PASS",
+    "notes": "All 8 cinematic-whoosh cues fire at exact T2/T3/T4/T5/T6/T7/T8/T9 (2.81, 15.83, 28.72, 55.40, 93.27, 106.91, 120.93, 133.40). Renumber preserved alignment; new T5=55.40 whoosh added at exact phase boundary. data-duration=1.5 on all whooshes per audio-design.md rule. data-volume=0.11 (within cap). Decision-table cues (57.37, 64.54, 72.96, 80.20) align with each killer-row entrance (drift <0.05s)."
+  },
+  "track_overlap": {
+    "track2_narration": "PASS",
+    "track3_whooshes": "PASS (sequential, no overlap)",
+    "track4_decision_cues": "PASS (4 cues at 57.37, 64.54, 72.96, 80.20 all 0.52s wide, ~7s apart, no overlap)"
+  },
+  "thumbnail_holds": {
+    "first_frame_open_hold_s": 2.4,
+    "last_frame_terminal_hold_s": 1.72,
+    "verdict": "PASS",
+    "notes": "Terminal hold improved 1.18s -> 1.72s vs 8-scene version. Last meaningful entrance #p9-subscribe at 141.50, composition end 143.22. cta-question textShadow yoyo (135.10 + 7 repeats * 0.5*2 ends 142.10) settles 1.12s before end."
+  }
+}

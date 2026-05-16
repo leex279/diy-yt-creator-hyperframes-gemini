@@ -1,0 +1,103 @@
+<!--
+  scene-marker-question.html — Closing community question with marker sweep.
+
+  Pattern: pretitle (over to you) -> big headline with marker sweep on YOU
+           -> supporting subline asking what they use.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-marker-question"].
+-->
+<template id="scene-marker-question-template">
+  <div data-composition-id="scene-marker-question"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-marker-question-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-marker-question-content .pretitle {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 38px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warm);
+      }
+      #scene-marker-question-content .headline {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: 168px;
+        line-height: 1.0;
+        letter-spacing: -4px;
+        color: var(--accent-ink);
+        max-width: 980px;
+      }
+      #scene-marker-question-content .marker-wrap {
+        position: relative;
+        display: inline-block;
+        color: var(--accent-ink);
+        padding: 0 16px;
+      }
+      #scene-marker-question-content .marker-band {
+        position: absolute;
+        left: 0; right: 0; bottom: 14px;
+        height: 60%;
+        background: var(--accent-warm);
+        border-radius: 6px;
+        z-index: -1;
+        opacity: 0.92;
+      }
+      #scene-marker-question-content .subline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 500;
+        font-size: 42px;
+        line-height: 1.4;
+        color: #FFFFFF;
+        max-width: 920px;
+      }
+    </style>
+
+    <div id="scene-marker-question-content">
+      <div class="pretitle" id="markerq-pretitle">Over to you</div>
+      <div class="headline" id="markerq-headline">
+        Have
+        <span class="marker-wrap">
+          <span class="marker-band" id="markerq-band"></span>you
+        </span>
+        tried it?
+      </div>
+      <div class="subline"  id="markerq-subline">gstack &middot; BMAD &middot; Spec Kit &middot; superpowers &middot; raw Claude Code? <br/>Tell us in the comments.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance (0 -> 2.2s)
+      tl.from("#markerq-pretitle", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#markerq-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, 0.3);
+      tl.fromTo("#markerq-band",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "power2.inOut" }, 1.1);
+      tl.from("#markerq-subline", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 1.7);
+
+      // Mid-beats
+      tl.to("#markerq-band", { opacity: 0.85, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 4.0);
+      tl.to("#markerq-headline", { scale: 1.025, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 6.0);
+      // Re-sweep the marker once for emphasis
+      tl.to("#markerq-band", { clipPath: "inset(0 100% 0 0)", duration: 0.5, ease: "power2.inOut" }, 8.5);
+      tl.to("#markerq-band", { clipPath: "inset(0 0% 0 0)",   duration: 0.5, ease: "power2.inOut" }, 9.0);
+      tl.to("#markerq-subline", { scale: 1.03, color: "var(--accent-warm)", duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 11);
+
+      window.__timelines["scene-marker-question"] = tl;
+    </script>
+  </div>
+</template>

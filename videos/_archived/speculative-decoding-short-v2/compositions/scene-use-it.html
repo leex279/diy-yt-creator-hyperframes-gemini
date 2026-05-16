@@ -1,0 +1,254 @@
+<!--
+  scene-use-it.html — TRY IT TODAY (138.58–156.90, scene-rel 0–18.32)
+  Word anchors (scene-rel = abs - 138.58):
+    0.00  "Want to try it today?"           → headline
+    1.45  "L M Studio"                       → LM Studio card lands
+    2.08  "has it built in"                  → "BUILT IN" tag
+    3.75  "Load your main model"             → step 1 row
+    4.83  "Pick a smaller draft..."          → step 2 row
+    7.85  "Start chatting"                   → step 3 row
+    8.71  "For production, v L L M"          → vLLM card transitions in
+    9.39  "v L L M takes one flag"           → flag tag
+   12.00  "Pass speculative model and..."    → CLI snippet rolls in
+   16.10  "Same trick. Identical output"     → receipt line
+-->
+<template id="scene-use-it-template">
+  <div data-composition-id="scene-use-it"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #su-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .su-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      .su-h {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 96px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .su-h .em { color: var(--accent-1); }
+
+      /* Card pattern shared by both tools */
+      .su-card {
+        background: var(--bg-card);
+        border: 2px solid var(--border-bright);
+        border-radius: 22px;
+        padding: 24px 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.05);
+      }
+      .su-card-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .su-card-tag {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        background: rgba(0, 212, 255, 0.12);
+        color: var(--accent-1);
+        border: 1px solid var(--accent-1);
+        border-radius: 8px;
+        padding: 6px 14px;
+      }
+      .su-card-name {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -1px;
+      }
+      .su-built-in {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 24px;
+        letter-spacing: 3px;
+        background: var(--accent-2);
+        color: var(--text-on-warm);
+        border-radius: 6px;
+        padding: 6px 12px;
+        text-transform: uppercase;
+      }
+
+      /* Step rows for LM Studio */
+      .su-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .su-step {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 32px;
+        color: var(--text);
+      }
+      .su-step .num {
+        flex: 0 0 auto;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 24px;
+        background: rgba(74, 222, 128, 0.18);
+        color: var(--accent-2);
+        border: 1px solid var(--accent-2);
+        border-radius: 999px;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .su-step strong {
+        color: var(--accent-1);
+        font-weight: 800;
+      }
+
+      /* CLI snippet for vLLM */
+      .su-cli {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 1.45;
+        background: #0A0E14;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 22px;
+        color: var(--text);
+        white-space: pre-wrap;
+      }
+      .su-cli .cmd { color: var(--accent-2); }
+      .su-cli .flag { color: var(--accent-1); }
+      .su-cli .val { color: var(--text); }
+      .su-cli .cont { color: var(--text-secondary); }
+
+      .su-receipt {
+        margin-top: auto;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 44px;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        text-align: center;
+      }
+      .su-receipt .em {
+        color: var(--accent-1);
+        font-weight: 800;
+      }
+    </style>
+
+    <div id="su-content">
+      <div class="su-overline" id="su-overline">USE IT TODAY</div>
+      <div class="su-h" id="su-h">Two ways to <span class="em">turn it on.</span></div>
+
+      <!-- LM Studio card -->
+      <div class="su-card" id="su-lms-card">
+        <div class="su-card-head">
+          <div class="su-card-tag" id="su-lms-tag">CASUAL</div>
+          <div class="su-card-name" id="su-lms-name">LM Studio</div>
+          <div class="su-built-in" id="su-lms-built">BUILT IN</div>
+        </div>
+        <div class="su-steps">
+          <div class="su-step" id="su-step-1"><span class="num">1</span><span>Load <strong>main model</strong></span></div>
+          <div class="su-step" id="su-step-2"><span class="num">2</span><span>Pick smaller <strong>draft</strong> (same vocab)</span></div>
+          <div class="su-step" id="su-step-3"><span class="num">3</span><span>Start chatting</span></div>
+        </div>
+      </div>
+
+      <!-- vLLM card -->
+      <div class="su-card" id="su-vllm-card">
+        <div class="su-card-head">
+          <div class="su-card-tag" id="su-vllm-tag">PRODUCTION</div>
+          <div class="su-card-name" id="su-vllm-name">vLLM</div>
+        </div>
+        <div class="su-cli" id="su-cli"><span class="cmd">vllm serve</span> <span class="val">main-model</span> <span class="cont">\</span>
+  <span class="flag">--speculative-model</span> <span class="val">draft-model</span> <span class="cont">\</span>
+  <span class="flag">--num-speculative-tokens</span> <span class="val">5</span></div>
+      </div>
+
+      <div class="su-receipt" id="su-receipt">
+        Same trick. <span class="em">Identical output.</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#su-overline",  { y: -8, opacity: 0 }, 0);
+      tl.set("#su-h",         { y: 24, opacity: 0 }, 0);
+      tl.set("#su-lms-card",  { y: 32, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#su-lms-tag",   { opacity: 0, scale: 0.8 }, 0);
+      tl.set("#su-lms-name",  { opacity: 0, y: 12 }, 0);
+      tl.set("#su-lms-built", { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#su-step-1",    { opacity: 0, x: -24 }, 0);
+      tl.set("#su-step-2",    { opacity: 0, x: -24 }, 0);
+      tl.set("#su-step-3",    { opacity: 0, x: -24 }, 0);
+      tl.set("#su-vllm-card", { y: 32, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#su-vllm-tag",  { opacity: 0, scale: 0.8 }, 0);
+      tl.set("#su-vllm-name", { opacity: 0, y: 12 }, 0);
+      tl.set("#su-cli",       { opacity: 0, y: 16 }, 0);
+      tl.set("#su-receipt",   { opacity: 0, y: 16 }, 0);
+
+      tl.to("#su-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#su-h",        { y: 0, opacity: 1, duration: 0.55 }, 0.20);
+
+      // LM Studio card lands at "L M Studio" (1.45)
+      tl.to("#su-lms-card",  { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 1.45);
+      tl.to("#su-lms-tag",   { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 1.55);
+      tl.to("#su-lms-name",  { opacity: 1, y: 0, duration: 0.45 }, 1.72);
+      tl.to("#su-lms-built", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 2.08);
+
+      // 3 steps reveal at narration anchors
+      tl.to("#su-step-1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 3.75);
+      tl.to("#su-step-2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 4.83);
+      tl.to("#su-step-3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 7.85);
+
+      // vLLM card lands at "For production, v L L M" (8.71)
+      tl.to("#su-vllm-card", { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 8.71);
+      tl.to("#su-vllm-tag",  { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 8.85);
+      tl.to("#su-vllm-name", { opacity: 1, y: 0, duration: 0.45 }, 9.20);
+
+      // CLI snippet rolls in at "Pass speculative model..." (12.00)
+      tl.to("#su-cli", { opacity: 1, y: 0, duration: 0.5 }, 9.39);
+
+      // Receipt at "Same trick. Identical output." (16.10)
+      tl.to("#su-receipt", { opacity: 1, y: 0, duration: 0.5 }, 16.10);
+      tl.to("#su-receipt", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1 }, 16.80);
+      // Pad timeline so HyperFrames keeps the scene mounted past last tween.
+      tl.to({}, { duration: 1 }, 200);
+
+
+      window.__timelines["scene-use-it"] = tl;
+    </script>
+  </div>
+</template>

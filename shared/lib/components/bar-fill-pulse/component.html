@@ -1,0 +1,160 @@
+<!--
+  shared/lib/components/bar-fill-pulse/component.html
+  Horizontal bar fills 0→target% over `duration` seconds.
+  An energy-pulse highlight travels along the fill's leading edge.
+  On completion, the full bar flashes briefly.
+
+  Element markup:
+    <div class="bar-fill-pulse" data-percent="87">
+      <div class="bfp-track">
+        <div class="bfp-fill"></div>
+        <div class="bfp-pulse"></div>
+      </div>
+    </div>
+
+  SOURCE: Original — no template extraction. Authored for shared/lib.
+
+  COMPONENT IS PASTE-IN — split into three sections below.
+
+  ── HOW TO USE ──────────────────────────────────────────────────────────
+
+  1) HTML — paste the wrapper wherever the bar should appear.
+     data-percent sets the target fill (0–100).
+-->
+
+<div class="bar-fill-pulse" data-percent="87">
+  <div class="bfp-track">
+    <div class="bfp-fill"></div>
+    <div class="bfp-pulse"></div>
+  </div>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/bar-fill-pulse — keep this comment block */
+  .bar-fill-pulse {
+    width: var(--bfp-width, 900px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bfp-track {
+    position: relative;
+    width: 100%;
+    height: var(--bfp-height, 24px);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: visible;
+  }
+
+  .bfp-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--accent, #E97458) 0%,
+      color-mix(in srgb, var(--accent, #E97458) 70%, #fff 30%) 100%
+    );
+    box-shadow:
+      0 0 18px rgba(233, 116, 88, 0.55),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+    transform-origin: left center;
+  }
+
+  /* Energy pulse: bright highlight that rides the fill's leading edge */
+  .bfp-pulse {
+    position: absolute;
+    top: -4px;
+    left: 0%;
+    width: 80px;
+    height: calc(var(--bfp-height, 24px) + 8px);
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.55) 40%,
+      rgba(255, 255, 255, 0.80) 60%,
+      transparent 100%
+    );
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  /* Completion flash overlay */
+  .bfp-fill.complete {
+    box-shadow:
+      0 0 40px rgba(233, 116, 88, 0.85),
+      0 0 80px rgba(233, 116, 88, 0.35),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+</style>
+
+<!--
+  3) JS — paste this function into the host <script> and call it against
+     your composition's GSAP timeline.
+
+     addBarFillPulse(tl, sel, at, opts)
+       tl   — the host GSAP timeline (paused)
+       sel  — CSS selector for the .bar-fill-pulse wrapper div
+       at   — timeline start time (seconds) for fill start
+       opts — { percent: number (0-100), duration: number }
+                 percent  — target fill % (reads data-percent attr if omitted)
+                 duration — total fill duration in seconds (default: 1.4)
+
+     SFX wiring (host must add <audio> elements — see recipe.md):
+       1 × cinematic-whoosh  at at + 0.0   (track 3) — fill starts
+       1 × scale-slam        at at + duration (track 4) — bar locks
+     2 <audio> elements total.
+-->
+
+<script>
+  function addBarFillPulse(tl, sel, at, opts) {
+    var o = opts || {};
+    var el = document.querySelector(sel);
+    var pct = (o.percent !== undefined) ? o.percent
+            : (el ? parseFloat(el.getAttribute('data-percent')) : 100);
+    var duration = (o.duration !== undefined) ? o.duration : 1.4;
+    var fillSel = sel + ' .bfp-fill';
+    var pulseSel = sel + ' .bfp-pulse';
+
+    // Hide at t=0 — explicit hidden-until-reveal pattern
+    tl.set(fillSel, { width: '0%', opacity: 1 }, 0);
+    tl.set(pulseSel, { left: '0%', opacity: 0 }, 0);
+
+    // Fill expands left→right
+    tl.to(fillSel, {
+      width: pct + '%',
+      duration: duration,
+      ease: 'power2.inOut'
+    }, at);
+
+    // Energy pulse rides the leading edge
+    tl.to(pulseSel, { opacity: 1, duration: 0.15, ease: 'power1.out' }, at);
+    tl.to(pulseSel, {
+      left: 'calc(' + pct + '% - 60px)',
+      duration: duration,
+      ease: 'power2.inOut'
+    }, at);
+    tl.to(pulseSel, { opacity: 0, duration: 0.25, ease: 'power1.in' }, at + duration - 0.25);
+
+    // Completion flash
+    tl.to(fillSel, {
+      boxShadow: '0 0 50px rgba(233,116,88,0.9), 0 0 100px rgba(233,116,88,0.4), 0 2px 8px rgba(0,0,0,0.4)',
+      duration: 0.12,
+      ease: 'power2.out'
+    }, at + duration);
+    tl.to(fillSel, {
+      boxShadow: '0 0 18px rgba(233,116,88,0.55), 0 2px 8px rgba(0,0,0,0.4)',
+      duration: 0.5,
+      ease: 'power2.in'
+    }, at + duration + 0.12);
+  }
+</script>

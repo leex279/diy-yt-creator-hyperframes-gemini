@@ -1,0 +1,121 @@
+<!--
+  scene-quote-card.html — Pulled quote archetype (Anthropic long-form).
+
+  NEW archetype. A centered pull-quote from the source article.
+
+  Structure:
+    - 180px orange opening quote-mark glyph
+    - 56px Inter 700 italic quote text (centered)
+    - Author / source line in 28px mono uppercase
+    - Marker-sweep underline on a key phrase, 2s after quote settles
+
+  OPERATOR:
+    - Replace placeholder quote text (max ~120 chars for clean wrap)
+    - Replace author/source attribution line
+    - Update #quote-mark-text, #quote-text, #quote-attribution
+    - Tune SCENE_DURATION and underline entry time to narration
+-->
+<template id="scene-quote-card-template">
+  <div data-composition-id="scene-quote-card"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-quote-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 36px;
+        box-sizing: border-box;
+      }
+      #quote-mark-text {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 180px;
+        line-height: 0.7;
+        color: var(--accent-1);
+        text-shadow: 0 0 80px rgba(233, 116, 88, 0.40);
+        align-self: flex-start;
+        margin-left: 60px;
+      }
+      #quote-card {
+        max-width: 1400px;
+        text-align: center;
+        position: relative;
+      }
+      #quote-text {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-style: italic;
+        font-size: 56px;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        position: relative;
+      }
+      /* Marker-sweep underline under a key phrase */
+      #quote-mark-line {
+        display: block;
+        height: 5px;
+        width: 0;
+        background: var(--accent-1);
+        border-radius: 3px;
+        margin-top: 8px;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 0 20px rgba(233, 116, 88, 0.60);
+      }
+      #quote-attribution {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-quote-content">
+      <div id="quote-mark-text">&ldquo;</div>
+      <div id="quote-card">
+        <div id="quote-text">
+          Replace this with the actual quote from the source article or speaker.
+        </div>
+        <span id="quote-mark-line"></span>
+      </div>
+      <div id="quote-attribution">AUTHOR NAME &middot; SOURCE TITLE &middot; DATE</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 18;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Opening quote-mark glide in
+      tl.from("#quote-mark-text", { x: -30, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, 0);
+
+      // Quote text rise
+      tl.from("#quote-card", { y: 36, opacity: 0, scale: 0.97, duration: 0.8, ease: "power3.out", immediateRender: false }, 0.4);
+
+      // Attribution fades in after quote settles
+      tl.from("#quote-attribution", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 1.4);
+
+      // Marker-sweep underline enters 2s after quote settles — visual-pacing-5s beat
+      tl.to("#quote-mark-line", { width: "60%", duration: 0.8, ease: "power2.out" }, 3.5);
+
+      // Pin timeline to scene duration
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-quote-card"] = tl;
+    </script>
+  </div>
+</template>

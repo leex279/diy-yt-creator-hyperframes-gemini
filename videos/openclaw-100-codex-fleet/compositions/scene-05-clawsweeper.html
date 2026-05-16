@@ -1,0 +1,455 @@
+<!--
+  scene-05-clawsweeper.html — Tool 1 deep-dive (63.6s, comp-time 122.58-186.23).
+
+  Title slam + 4-lane architecture diagram + 0.1% close-rate stat + safety chip.
+
+  Scene-internal anchors (audio-time - 122.582):
+     0.0   "Okay, back to the fleet..."
+     3.7   "claw-sweeper" tool-name reveal
+    21.6   "four lanes" — diagram reveal
+    23.0   "Review" lane 1
+    24.7   "Apply" lane 2
+    27.8   "Repair" lane 3
+    32.2   "Commit Review" lane 4
+    39.5   "scanned three thousand four hundred..." — stat counter starts
+    47.3   "zero point one percent" — 0.1% slam
+    52.4   "never sleeps" — safety chip
+-->
+<template id="scene-05-clawsweeper-template">
+  <div data-composition-id="scene-05-clawsweeper"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s05-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 10px;
+        box-sizing:border-box;
+      }
+      #s05-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s05-title {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 110px;
+        line-height: 1;
+        letter-spacing: -3px;
+        color: var(--text);
+      }
+      #s05-title .tool { color: var(--accent-1); }
+      #s05-meta {
+        display:flex; gap: 16px; align-items:center;
+      }
+      .s05-chip {
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border-bright);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      .s05-chip.cyan { color: var(--accent-2); border-color: rgba(34, 211, 238, 0.5); }
+      .s05-chip.ok { color: var(--accent-ok); border-color: rgba(16, 185, 129, 0.5); }
+
+      #s05-desc-card {
+        margin-top: 2px;
+        padding: 8px 22px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-bright);
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 20px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1400px;
+      }
+      #s05-desc-card .accent { color: var(--accent-1); font-weight: 800; }
+      .s05-desc-mark-wrap { position: relative; display: inline-block; }
+      #s05-desc-mark {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -4px;
+        height: 5px;
+        background: var(--accent-1);
+        border-radius: 3px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      #s05-receipt-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        margin-top: 2px;
+        padding: 6px 16px;
+        border-radius: 10px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1px solid rgba(34, 211, 238, 0.4);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--accent-2);
+      }
+      #s05-receipt-chip .div { color: var(--text-muted); }
+      #s05-cadence-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        margin-top: 2px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: rgba(252, 211, 77, 0.08);
+        border: 1px solid rgba(252, 211, 77, 0.3);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--accent-stat);
+      }
+      #s05-lanes-header {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 4px;
+        color: var(--accent-1);
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+
+      #s05-lanes {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+        width: 100%;
+        max-width: 1680px;
+        margin-top: 8px;
+      }
+      .s05-lane {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 18px;
+        padding: 24px 22px;
+        display:flex; flex-direction:column;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      }
+      .s05-lane::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; right: 0;
+        height: 6px;
+        background: var(--accent-1);
+      }
+      .s05-lane.l2::before { background: var(--accent-stat); }
+      .s05-lane.l3::before { background: var(--accent-2); }
+      .s05-lane.l4::before { background: var(--accent-ok); }
+      .s05-lane .idx {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+      }
+      .s05-lane .name {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .s05-lane .desc {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      #s05-stat-row {
+        display:flex; align-items:center; justify-content:center;
+        gap: 40px;
+        margin-top: 16px;
+        width: 100%;
+      }
+      #s05-stat-fraction {
+        display:flex; flex-direction:column; align-items:center; gap: 10px;
+        padding: 24px 40px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1.5px solid rgba(34, 211, 238, 0.4);
+        border-radius: 22px;
+      }
+      #s05-stat-fraction .num {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 56px;
+        line-height: 1;
+        color: var(--accent-2);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -2px;
+      }
+      #s05-stat-fraction .num .closed { color: var(--accent-stat); }
+      #s05-stat-fraction .lbl {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      #s05-stat-pct {
+        display:flex; flex-direction:column; align-items:center; gap: 8px;
+        padding: 36px 50px 28px;
+        background: linear-gradient(135deg, rgba(252, 211, 77, 0.18) 0%, rgba(252, 211, 77, 0.03) 100%);
+        border: 1.5px solid rgba(252, 211, 77, 0.55);
+        border-radius: 22px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+      }
+      #s05-stat-pct .num {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 120px;
+        line-height: 1.0;
+        color: var(--accent-stat);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -5px;
+        text-shadow: 0 0 60px rgba(252, 211, 77, 0.5);
+      }
+      #s05-stat-pct .lbl {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      #s05-safety {
+        display:inline-flex; align-items:center; gap: 14px;
+        padding: 14px 28px;
+        background: rgba(16, 185, 129, 0.10);
+        border: 1.5px solid rgba(16, 185, 129, 0.4);
+        border-radius: 999px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        color: var(--accent-ok);
+        margin-top: 14px;
+      }
+      #s05-safety .dot {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: var(--accent-ok);
+        box-shadow: 0 0 14px rgba(16, 185, 129, 0.7);
+      }
+    </style>
+
+    <div id="s05-content">
+      <div id="s05-overline">TOOL 1 &middot; OPEN SOURCE</div>
+      <div id="s05-title"><span class="tool">clawsweeper</span></div>
+      <div id="s05-meta">
+        <div class="s05-chip" id="s05-chip-mit">MIT</div>
+        <div class="s05-chip cyan" id="s05-chip-org">github.com/openclaw/clawsweeper</div>
+        <div class="s05-chip" id="s05-chip-model">GPT-5.5 &middot; high reasoning</div>
+      </div>
+
+      <div id="s05-desc-card">
+        <span id="s05-desc-frag-1">Reads every open issue, checks if the fix already landed on
+        <span class="s05-desc-mark-wrap"><span class="accent">main</span><span id="s05-desc-mark"></span></span>,</span>
+        <span id="s05-desc-frag-2">and closes it with the exact merge reference.</span>
+      </div>
+
+      <div id="s05-cadence-chip">
+        Cadence: new &middot; hourly &nbsp;|&nbsp; &lt;30 days &middot; daily &nbsp;|&nbsp; older &middot; weekly
+      </div>
+
+      <div id="s05-lanes-header">&rarr; runs in FOUR LANES</div>
+
+      <div id="s05-lanes">
+        <div class="s05-lane l1" id="s05-lane-1">
+          <div class="idx">LANE 01</div>
+          <div class="name">Review</div>
+          <div class="desc">Proposes closures with the exact merge reference.</div>
+        </div>
+        <div class="s05-lane l2" id="s05-lane-2">
+          <div class="idx">LANE 02</div>
+          <div class="name">Apply</div>
+          <div class="desc">Executes closures with safety checks.</div>
+        </div>
+        <div class="s05-lane l3" id="s05-lane-3">
+          <div class="idx">LANE 03</div>
+          <div class="name">Repair</div>
+          <div class="desc">Autofix &amp; automerge via maintainer commands.</div>
+        </div>
+        <div class="s05-lane l4" id="s05-lane-4">
+          <div class="idx">LANE 04</div>
+          <div class="name">Commit Review</div>
+          <div class="desc">Analyzes everything that hits main.</div>
+        </div>
+      </div>
+
+      <div id="s05-stat-row">
+        <div id="s05-stat-fraction">
+          <div class="num"><span class="closed" id="s05-stat-closed">0</span> / <span id="s05-stat-scanned">0</span></div>
+          <div class="lbl">closed / scanned &middot; one ref week</div>
+        </div>
+        <div id="s05-stat-pct">
+          <div class="num"><span id="s05-stat-pct-num">0.0</span>%</div>
+          <div class="lbl">close rate</div>
+        </div>
+      </div>
+
+      <div id="s05-safety">
+        <span class="dot"></span>
+        <span id="s05-safety-frag-1">Never sleeps</span><span id="s05-safety-sep-1" class="sep"> &middot; </span><span id="s05-safety-frag-2">never closes a maintainer's own issue</span><span id="s05-safety-sep-2" class="sep"> &middot; </span><span id="s05-safety-frag-3">re-fetches GitHub before any change</span>
+      </div>
+
+      <div id="s05-receipt-chip">
+        <span>@clawsweeper</span>
+        <span class="div">&middot;</span>
+        <span>openclaw org</span>
+        <span class="div">&middot;</span>
+        <span>MIT</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        // Hide everything from t=0
+        tl.set("#s05-overline",      { opacity: 0, y: 16 }, 0);
+        tl.set("#s05-title",         { opacity: 0, y: 30, scale: 0.95 }, 0);
+        tl.set("#s05-meta",          { opacity: 1, y: 0 }, 0);
+        tl.set("#s05-chip-mit",      { opacity: 0, scale: 0.85, y: 12 }, 0);
+        tl.set("#s05-chip-org",      { opacity: 0, scale: 0.85, y: 12 }, 0);
+        tl.set("#s05-chip-model",    { opacity: 0, scale: 0.85, y: 12 }, 0);
+        tl.set("#s05-desc-card",     { opacity: 0, y: 20 }, 0);
+        tl.set("#s05-desc-frag-1",   { opacity: 0, y: 12 }, 0);
+        tl.set("#s05-desc-frag-2",   { opacity: 0, y: 12 }, 0);
+        tl.set("#s05-desc-mark",     { scaleX: 0 }, 0);
+        tl.set("#s05-cadence-chip",  { opacity: 0, y: 12 }, 0);
+        tl.set("#s05-lanes-header",  { opacity: 0, y: 12 }, 0);
+        tl.set("#s05-lane-1",        { opacity: 0, y: 28, scale: 0.95 }, 0);
+        tl.set("#s05-lane-2",        { opacity: 0, y: 28, scale: 0.95 }, 0);
+        tl.set("#s05-lane-3",        { opacity: 0, y: 28, scale: 0.95 }, 0);
+        tl.set("#s05-lane-4",        { opacity: 0, y: 28, scale: 0.95 }, 0);
+        tl.set("#s05-stat-fraction", { opacity: 0, y: 30, scale: 0.92 }, 0);
+        tl.set("#s05-stat-pct",      { opacity: 0, y: 30, scale: 0.92 }, 0);
+        tl.set("#s05-safety",        { opacity: 0, y: 16 }, 0);
+        tl.set("#s05-safety-frag-1", { opacity: 0 }, 0);
+        tl.set("#s05-safety-frag-2", { opacity: 0 }, 0);
+        tl.set("#s05-safety-frag-3", { opacity: 0 }, 0);
+        tl.set("#s05-safety-sep-1",  { opacity: 0 }, 0);
+        tl.set("#s05-safety-sep-2",  { opacity: 0 }, 0);
+        tl.set("#s05-receipt-chip",  { opacity: 0, y: 16 }, 0);
+
+        // Title + chips enter at "claw-sweeper" word (t=3.7)
+        tl.to("#s05-overline", { opacity: 1, y: 0, duration: 0.5 }, 0.3);
+        tl.to("#s05-title",    { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.5)" }, 3.5);
+        // Meta chips stagger to narration anchors:
+        //   "Open source, MIT licensed" @ 5.56s — MIT chip
+        //   "lives under the OpenClaw GitHub org" @ 7.57s — github URL chip
+        //   "GPT-5.5" model chip — early at scene start (4.2s) since model isn't spoken
+        tl.to("#s05-chip-model", { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 4.2);
+        tl.to("#s05-chip-mit",   { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 5.6);
+        tl.to("#s05-chip-org",   { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 7.6);
+
+        // REAL-CONTENT BEATS — fill the 4.2 → 22.8 gap (was 18.6s static)
+        // Description card frame appears at "The job is simple to describe" @ narration 10.36s
+        // Frag 1 enters together with frame; Frag 2 enters at "it closes" @ 17.19s
+        // Sourced: content-brief Section 3.1 — mechanic paraphrased from clawsweeper README
+        tl.to("#s05-desc-card",   { opacity: 1, y: 0, duration: 0.5 }, 10.4);
+        tl.to("#s05-desc-frag-1", { opacity: 1, y: 0, duration: 0.4 }, 10.6);
+        // Marker sweep on the "main" accent word, anchored to narration "main" @ 16.64s
+        tl.to("#s05-desc-mark",   { scaleX: 1, duration: 0.6, ease: "power2.out" }, 16.6);
+        // Frag 2 enters at "it closes the issue" @ narration 17.19s
+        tl.to("#s05-desc-frag-2", { opacity: 1, y: 0, duration: 0.5 }, 17.2);
+        // Cadence chip reveals at "It reads every open issue" @ narration 12.05s
+        // Sourced: content-brief Section 3.1 cadence schedule
+        tl.to("#s05-cadence-chip", { opacity: 1, y: 0, duration: 0.5 }, 13.4);
+        // Lanes header reveals at "It runs in four lanes" @ narration 21.69s
+        tl.to("#s05-lanes-header", { opacity: 1, y: 0, duration: 0.5 }, 21.6);
+
+        // 4 lanes — staggered to each name as it's spoken
+        tl.to("#s05-lane-1", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 22.8);  // "Review"
+        tl.to("#s05-lane-2", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 24.5);  // "Apply"
+        tl.to("#s05-lane-3", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 27.6);  // "Repair"
+        tl.to("#s05-lane-4", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 32.0);  // "Commit Review"
+
+        // REAL-CONTENT BEAT — ghost-in stat-fraction at "credible" @ narration 37.99s
+        // (fills the 32.0 → 39.3 gap; frame appears at 0.35 opacity, full reveal at 39.3)
+        tl.to("#s05-stat-fraction", { opacity: 0.35, duration: 0.6, ease: "power2.out" }, 35.7);
+        // Stat fraction full reveal with "scanned 3,478" (t=39.5), counter ticks 0 -> 3478
+        tl.to("#s05-stat-fraction", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, 39.3);
+        tl.to({ v: 0 }, {
+          v: 3478,
+          duration: 4.0,
+          ease: "power2.out",
+          onUpdate: function() {
+            const el = document.getElementById("s05-stat-scanned");
+            if (el) el.textContent = Math.round(this.targets()[0].v).toLocaleString();
+          }
+        }, 39.5);
+        // Closed count rolls up to 4 with "closed about four"
+        tl.to({ v: 0 }, {
+          v: 4,
+          duration: 1.0,
+          ease: "power2.out",
+          onUpdate: function() {
+            const el = document.getElementById("s05-stat-closed");
+            if (el) el.textContent = Math.round(this.targets()[0].v);
+          }
+        }, 45.8);
+
+        // 0.1% slam pill enters with "zero point one percent" (t=47.3)
+        tl.to("#s05-stat-pct", { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.6)" }, 47.0);
+        // Counter rolls 0.0 -> 0.1
+        tl.to({ v: 0 }, {
+          v: 0.1,
+          duration: 1.2,
+          ease: "power2.out",
+          onUpdate: function() {
+            const el = document.getElementById("s05-stat-pct-num");
+            if (el) el.textContent = this.targets()[0].v.toFixed(1);
+          }
+        }, 47.3);
+        // Glow pulse on the 0.1% pill once it lands
+        tl.to("#s05-stat-pct", { boxShadow: "0 16px 50px rgba(252, 211, 77, 0.65)", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 48.8);
+
+        // Safety chip frame at "never sleeps" (t=52.4); fragments reveal step-by-step
+        // Frag 1 ("Never sleeps") @ 52.4s — "never sleeps" narration
+        // Frag 2 ("never closes a maintainer's own issue") @ 55.0s — "never closes a maintainer's" 55.97s
+        // Frag 3 ("re-fetches GitHub before any change") @ 59.2s — "re-fetches the GitHub state" 59.21s
+        tl.to("#s05-safety",       { opacity: 1, y: 0, duration: 0.6 }, 52.2);
+        tl.to("#s05-safety-frag-1",{ opacity: 1, duration: 0.4 }, 52.4);
+        tl.to("#s05-safety-sep-1", { opacity: 1, duration: 0.3 }, 55.5);
+        tl.to("#s05-safety-frag-2",{ opacity: 1, duration: 0.4 }, 55.6);
+        tl.to("#s05-safety-sep-2", { opacity: 1, duration: 0.3 }, 59.1);
+        tl.to("#s05-safety-frag-3",{ opacity: 1, duration: 0.4 }, 59.2);
+        // Subtle dot pulse — finite repeat for the remainder of the scene
+        tl.to("#s05-safety .dot", { scale: 1.4, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 8 }, 52.8);
+
+        // REAL-CONTENT BEAT — receipt chip reveals at "never touches protected labels" @ 57.56s
+        // Sourced: content-brief Section 3.1 (handle, org, license)
+        tl.to("#s05-receipt-chip", { opacity: 1, y: 0, duration: 0.6 }, 57.5);
+
+        tl.set({}, {}, 63.6);
+        window.__timelines["scene-05-clawsweeper"] = tl;
+      })();
+    </script>
+  </div>
+</template>

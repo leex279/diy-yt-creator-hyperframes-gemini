@@ -1,0 +1,144 @@
+{
+  "agent": "video-layout-typography",
+  "video_slug": "claude-founders-playbook",
+  "review_date": "2026-05-16",
+  "review_pass": "final-extended-9-scene",
+  "verdict": "FAIL_HIGH",
+  "canvas": "1080x1920",
+  "typography_audit": {
+    "rule": ".claude/rules/shorts-typography.md",
+    "violations_total": 18,
+    "violations_new_in_scene5": 1,
+    "violations_pre_existing": 17,
+    "delta_vs_8_scene": "+1 (17 -> 18) - one new finding from Scene 5: #p5-headline 50px < 56px phase-headline min",
+    "details": [
+      {
+        "id": "L-001",
+        "phase": 4,
+        "selector": ".cp-title",
+        "current_px": 36,
+        "min_px": 48,
+        "role": "list-item primary",
+        "delta_px": -12,
+        "auto_fix": false
+      },
+      {
+        "id": "L-002",
+        "phase": 4,
+        "selector": ".cp-sub",
+        "current_px": 24,
+        "min_px": 30,
+        "role": "descriptor",
+        "delta_px": -6,
+        "auto_fix": false,
+        "notes": "Renders ~9px on iPhone 13 (0.36x scale)."
+      },
+      {
+        "id": "L-003",
+        "phase": 6,
+        "selector": ".surface-name",
+        "current_px": 34,
+        "min_px": 48,
+        "role": "list-item primary",
+        "delta_px": -14,
+        "auto_fix": false
+      },
+      {
+        "id": "L-004",
+        "phase": 6,
+        "selector": ".surface-job",
+        "current_px": 22,
+        "min_px": 30,
+        "role": "descriptor",
+        "delta_px": -8,
+        "auto_fix": false,
+        "notes": "Renders ~8px on iPhone 13."
+      },
+      {
+        "id": "L-005",
+        "phase": 5,
+        "selector": "#p5-headline",
+        "current_px": 50,
+        "min_px": 56,
+        "role": "phase headline",
+        "delta_px": -6,
+        "auto_fix": false,
+        "is_new": true,
+        "notes": "NEW Scene 5 introduces 1 new typography violation. Killer-row body sizes are fine: .killer-name 50px >= 48px PASS, .killer-conseq 30px >= 30px PASS (exact minimum)."
+      },
+      {
+        "id": "L-006",
+        "phase": "7-8",
+        "summary": "13 additional pre-existing violations: code-text, code-lang, code-tag, pill-label, quote-handle, brand-tag, footer chrome - all 22-28px where 30px+ is required. Same set as 8-scene review."
+      }
+    ]
+  },
+  "scene5_typography_specific": {
+    "selectors_audited": ["#p5-overline", "#p5-headline", ".killer-badge", ".killer-name", ".killer-conseq", ".killer-skull", "#p5-wrap-line"],
+    "primary_label_pass": true,
+    "descriptor_pass": true,
+    "phase_headline_fail": "#p5-headline 50px < 56px (-6px)",
+    "verdict": "PASS_WITH_HEADLINE_FINDING"
+  },
+  "first_frame_t0_check": {
+    "rule": ".claude/rules/shorts-thumbnail-frames.md",
+    "elements": {
+      "topic_statement": "PASS (#p1-topic-slam 156px, brand-lockup visible)",
+      "visual_anchor": "PASS (Anthropic + ClaudeCode logos in #p1-brand-lockup)",
+      "brand_chrome": "PASS (top-banner Anthropic mark visible at 0)",
+      "outcome_receipt": "PASS (#p1-receipt visible from t=0)",
+      "cta_pill": "N/A on opening frame"
+    },
+    "opening_hold_s": 2.4,
+    "verdict": "PASS"
+  },
+  "last_frame_t14322_check": {
+    "rule": ".claude/rules/shorts-thumbnail-frames.md",
+    "elements": {
+      "topic_statement": "PASS (#p9-topic-slam 'RUN THE PLAYBOOK.' 160px)",
+      "visual_anchor": "PASS (URL pill + marker-circle settled)",
+      "brand_chrome": "PASS (top-banner persists)",
+      "outcome_receipt": "PARTIAL (#p9-outcome '4 STAGES * 3 SURFACES * 1 FOUNDER' is 32px, outcome-receipt min is 36px)",
+      "cta_question": "PASS (#cta-question 'Running this playbook, or still validating with vibes?' visible 36px+)"
+    },
+    "terminal_hold_s": 1.72,
+    "previous_terminal_hold_s": 1.18,
+    "improvement_vs_8_scene": "+0.54s (now PASSES >=1.5s threshold)",
+    "verdict": "PASS_WITH_MINOR_FINDING"
+  },
+  "screenshot_anchor_marker_check": {
+    "rule": ".claude/rules/screenshot-anchor-markers.md",
+    "violations": 0,
+    "notes": "No chart screenshots used; all marker-sweeps are on synthetic typography (em pills, headlines). PASS."
+  },
+  "shape_backdrop_rearrange_check": {
+    "phases_with_reposition": 8,
+    "expected": 8,
+    "verdict": "PASS (T2..T9, repositionShapesPerPhase called with all 8 transitions)"
+  },
+  "findings": {
+    "blocker": [],
+    "high": [
+      {
+        "id": "L-template",
+        "title": "Typography below role minimum (17 pre-existing selectors)",
+        "auto_fix": false,
+        "recommended_fix": "V3 template-wide issue inherited from templates/shorts/anthropic/. Bump cp-title 36->48, cp-sub 24->30, surface-name 34->48, surface-job 22->30, etc. Fix at template root recommended."
+      },
+      {
+        "id": "L-005",
+        "title": "#p5-headline 50px below 56px phase-headline minimum (NEW in Scene 5)",
+        "auto_fix": false,
+        "recommended_fix": "Bump #p5-headline font-size from 50px to 56px (line 373 in index.html). Confirm overflow stays clean."
+      },
+      {
+        "id": "L-006",
+        "title": "#p9-outcome 32px below 36px outcome-receipt minimum (last frame)",
+        "auto_fix": false,
+        "recommended_fix": "Bump #p9-outcome from 32px to 40px so the last frame fully satisfies thumbnail-frame outcome-line minimum."
+      }
+    ],
+    "medium": [],
+    "low": []
+  }
+}

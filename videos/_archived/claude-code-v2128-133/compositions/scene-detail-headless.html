@@ -1,0 +1,235 @@
+<!--
+  scene-detail-headless.html — 4-card 2x2 detail scene for "Headless & SDK".
+
+  Header (overline + headline) above a 2x2 grid of 4 patch cards. Each card
+  enters on the spoken word that introduces it. A closer banner ("Pipe it.
+  Script it. Ship it.") lands at the end of the slot.
+
+  Pattern source: forked from scene-feature-cards.html (cards CSS) +
+  scene-stats-opener.html (header CSS). 4 cards instead of 6 means the
+  layout becomes 2x2 with larger card body type for legibility.
+-->
+<template id="scene-detail-headless-template">
+  <div data-composition-id="scene-detail-headless"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-detail-headless-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 90px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-detail-headless-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        text-align:center;
+      }
+      #scene-detail-headless-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        opacity: 0;
+      }
+      #scene-detail-headless-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .dh-grid {
+        width: 1700px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 24px;
+      }
+      .dh-card {
+        position: relative;
+        padding: 28px 32px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+        display:flex; flex-direction:column;
+        gap: 12px;
+        min-height: 230px;
+        box-sizing: border-box;
+        opacity: 0;
+      }
+      .dh-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-accent, var(--accent-1)), transparent);
+        border-radius: 14px 14px 0 0;
+      }
+      .dh-card .row {
+        display:flex; flex-direction:row;
+        align-items:center; gap: 14px;
+        margin-bottom: 4px;
+      }
+      .dh-card .num {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+      .dh-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.18;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+      .dh-card .det {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .dh-card .det code {
+        font-family: var(--mono);
+        font-size: 18px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .dh-card.a { --card-accent: var(--accent-1);    border-color: rgba(88, 166, 255, 0.55);  }
+      .dh-card.b { --card-accent: var(--accent-2);    border-color: rgba(6, 182, 212, 0.55);   }
+      .dh-card.c { --card-accent: var(--accent-3);    border-color: rgba(163, 113, 247, 0.55); }
+      .dh-card.d { --card-accent: var(--accent-4);    border-color: rgba(63, 185, 80, 0.55);   }
+      .dh-card.a .num { color: var(--accent-1); background: rgba(88, 166, 255, 0.18); }
+      .dh-card.b .num { color: var(--accent-2); background: rgba(6, 182, 212, 0.18); }
+      .dh-card.c .num { color: var(--accent-3); background: rgba(163, 113, 247, 0.18); }
+      .dh-card.d .num { color: var(--accent-4); background: rgba(63, 185, 80, 0.18); }
+
+      #dh-close {
+        position: absolute;
+        left: 50%; bottom: 42px;
+        opacity: 0;
+        background: rgba(63, 185, 80, 0.16);
+        border: 2px solid var(--accent-4);
+        border-radius: 14px;
+        padding: 10px 28px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--accent-4);
+        letter-spacing: 0.4px;
+        box-shadow: 0 8px 28px rgba(63, 185, 80, 0.4);
+      }
+    </style>
+
+    <div id="scene-detail-headless-content">
+      <div class="header-block">
+        <div class="overline" id="dh-overline">HOOKS &amp; POWER-USER APIS</div>
+        <div class="headline" id="dh-headline">Hooks and Bash just got smarter.</div>
+      </div>
+
+      <div class="dh-grid">
+        <div class="dh-card a" id="dh-card-1">
+          <div class="row">
+            <div class="num">01</div>
+          </div>
+          <div class="ttl"><code>$CLAUDE_EFFORT</code> in hooks + Bash</div>
+          <div class="det">Hooks receive <code>effort.level</code> as JSON input; Bash subprocesses read <code>$CLAUDE_EFFORT</code>. Adapt to high / medium / low.</div>
+        </div>
+        <div class="dh-card b" id="dh-card-2">
+          <div class="row">
+            <div class="num">02</div>
+          </div>
+          <div class="ttl"><code>CLAUDE_CODE_SESSION_ID</code></div>
+          <div class="det">Bash subprocesses now get the env var matching the hook <code>session_id</code>. Tool-level session tracing finally works.</div>
+        </div>
+        <div class="dh-card c" id="dh-card-3">
+          <div class="row">
+            <div class="num">03</div>
+          </div>
+          <div class="ttl"><code>worktree.baseRef</code> setting</div>
+          <div class="det">Pick <code>fresh</code> (origin/default) or <code>head</code> (local HEAD) for new worktree base branches.</div>
+        </div>
+        <div class="dh-card d" id="dh-card-4">
+          <div class="row">
+            <div class="num">04</div>
+          </div>
+          <div class="ttl">Sandbox path overrides (Linux/WSL)</div>
+          <div class="det"><code>sandbox.bwrapPath</code> + <code>sandbox.socatPath</code> point at custom bubblewrap and socat binaries.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dh-close">&#10003; Hook it. Trace it. Sandbox it.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Transcript-driven timing for v2.1.128–v2.1.133. scene_t = root_t - 98.42.
+      // Narration scene_t (relative):
+      //   "Hooks and power user APIs."              scene_t  0.00 (#247)
+      //   "The CLAUDE EFFORT environment var..."    scene_t  1.94 (#252) → card 1
+      //   "CLAUDE CODE SESSION ID matches..."       scene_t 11.61 (#276) → card 2
+      //   "The worktree dot baseRef setting..."     scene_t 19.46 (#296) → card 3
+      //   "And on Linux and WSL, sandbox..."        scene_t 30.12 (#323) → card 4
+      // Slot length: 39.49s
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#dh-overline", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#dh-headline", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+
+      const cards = [
+        { sel: "#dh-card-1", num: "#dh-card-1 .num", at:  1.94 },
+        { sel: "#dh-card-2", num: "#dh-card-2 .num", at: 11.61 },
+        { sel: "#dh-card-3", num: "#dh-card-3 .num", at: 19.46 },
+        { sel: "#dh-card-4", num: "#dh-card-4 .num", at: 30.12 },
+      ];
+      cards.forEach(({ sel, num, at }, i) => {
+        const next = cards[i + 1] ? cards[i + 1].at : 38.5;
+        const dwell = next - at;
+        tl.fromTo(sel,
+          { y: 28, opacity: 0, scale: 0.96 },
+          { y: 0,  opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.4)" },
+          at);
+        // Mid-dwell pulse keeps each card alive (visual-pacing-5s rule)
+        if (dwell > 7.0) {
+          tl.to(num, { scale: 1.20, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 3.0);
+          tl.to(num, { scale: 1.15, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 6.5);
+        } else if (dwell > 4.0) {
+          tl.to(num, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, at + 2.0);
+        }
+      });
+
+      // Closer banner just before scene exits
+      tl.fromTo("#dh-close",
+        { xPercent: -50, scale: 0.85, opacity: 0 },
+        { xPercent: -50, scale: 1,    opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+        37.0);
+
+      // Anchor to slot length (39.49s)
+      tl.set({}, {}, 39.49);
+
+      window.__timelines["scene-detail-headless"] = tl;
+    </script>
+  </div>
+</template>

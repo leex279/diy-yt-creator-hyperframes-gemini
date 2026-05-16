@@ -1,0 +1,255 @@
+<!--
+  scene-09-fleet-recap.html — Fleet recap (40.3s, comp-time 346.82-387.14).
+
+  5-layer architecture stack (clawsweeper / crabbox / clawpatch / Codex / deepsec)
+  with bracket label "~100-agent fleet" on the right.
+
+  Scene-internal anchors (audio - 306.819):
+     0    "Back in, and here's how all of it stacks together"
+     4.2  Claw-sweeper
+     7.7  Crab-box
+    11.8  Claw-patch
+    16.3  Codex
+    21.4  deep-sec
+    27.0  Codex configured for security
+    31.6  That's it. That's the hundred-agent fleet
+    34.6  Three thin, well-scoped tools
+    38.7  Composable, not magical
+-->
+<template id="scene-09-fleet-recap-template">
+  <div data-composition-id="scene-09-fleet-recap"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s09-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 28px;
+        box-sizing:border-box;
+      }
+      #s09-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s09-stack-row {
+        display:flex; align-items:center; gap: 40px;
+      }
+      #s09-stack {
+        display:flex; flex-direction:column;
+        gap: 14px;
+      }
+      .s09-layer {
+        width: 1100px;
+        padding: 18px 28px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--border-bright);
+        display:flex; align-items:center; gap: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      }
+      .s09-layer::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 8px;
+        background: var(--accent-1);
+      }
+      .s09-layer.l2::before { background: var(--accent-stat); }
+      .s09-layer.l3::before { background: var(--accent-2); }
+      .s09-layer.l4::before { background: var(--accent-warn); }
+      .s09-layer.l5::before { background: var(--accent-ok); }
+      .s09-layer .pos {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        color: var(--text-muted);
+        width: 80px;
+      }
+      .s09-layer .name {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 38px;
+        color: var(--text);
+        min-width: 270px;
+      }
+      .s09-layer .role {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 22px;
+        color: var(--text-secondary);
+        flex: 1;
+      }
+
+      #s09-bracket {
+        display:flex; flex-direction:column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 18px 22px;
+        border-left: 4px solid var(--accent-1);
+        border-top: 4px solid var(--accent-1);
+        border-bottom: 4px solid var(--accent-1);
+        border-right: none;
+        border-radius: 18px 0 0 18px;
+        height: 320px;
+      }
+      #s09-bracket .num {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 100px;
+        line-height: 1;
+        color: var(--accent-1);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -4px;
+        text-shadow: 0 0 40px rgba(201, 42, 42, 0.5);
+      }
+      #s09-bracket .lbl {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 2px;
+        color: var(--accent-1);
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      #s09-synth {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        line-height: 1.1;
+        letter-spacing: -1.5px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1500px;
+      }
+      #s09-count-chip {
+        display:inline-flex; align-items:center; gap: 12px;
+        padding: 12px 22px;
+        border-radius: 12px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1.5px solid rgba(34, 211, 238, 0.4);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--accent-2);
+        margin-top: 6px;
+      }
+      .s09-mark-wrap {
+        position: relative;
+        display: inline-block;
+      }
+      #s09-mark-bar {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -6px;
+        height: 8px;
+        background: var(--accent-1);
+        border-radius: 4px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+    </style>
+
+    <div id="s09-content">
+      <div id="s09-overline">HOW IT ALL STACKS</div>
+
+      <div id="s09-stack-row">
+        <div id="s09-stack">
+          <div class="s09-layer l1" id="s09-layer-1">
+            <span class="pos">TOP</span>
+            <span class="name">clawsweeper</span>
+            <span class="role">closes dead issues</span>
+          </div>
+          <div class="s09-layer l2" id="s09-layer-2">
+            <span class="pos">MIDDLE</span>
+            <span class="name">crabbox.sh</span>
+            <span class="role">leases machines that run the work</span>
+          </div>
+          <div class="s09-layer l3" id="s09-layer-3">
+            <span class="pos">BASE</span>
+            <span class="name">clawpatch.ai</span>
+            <span class="role">slices code into reviewable units</span>
+          </div>
+          <div class="s09-layer l4" id="s09-layer-4">
+            <span class="pos">ACROSS</span>
+            <span class="name">Codex</span>
+            <span class="role">reads &amp; writes everything</span>
+          </div>
+          <div class="s09-layer l5" id="s09-layer-5">
+            <span class="pos">SECURE</span>
+            <span class="name">deepsec + Codex(sec)</span>
+            <span class="role">vulnerability scanning &amp; coverage</span>
+          </div>
+        </div>
+
+        <div id="s09-bracket">
+          <div class="num">~100</div>
+          <div class="lbl">AGENT FLEET</div>
+        </div>
+      </div>
+
+      <div id="s09-count-chip">3 OSS tools + Codex agents + deepsec</div>
+
+      <div id="s09-synth">
+        <span class="s09-mark-wrap">Three thin, well-scoped tools<span id="s09-mark-bar"></span></span> &mdash; composable, not magical.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        tl.set("#s09-overline", { opacity: 0, y: 16 }, 0);
+        ["#s09-layer-1","#s09-layer-2","#s09-layer-3","#s09-layer-4","#s09-layer-5"].forEach(s =>
+          tl.set(s, { opacity: 0, x: -40, scale: 0.96 }, 0));
+        tl.set("#s09-bracket", { opacity: 0, scale: 0.9 }, 0);
+        tl.set("#s09-synth", { opacity: 0, y: 20 }, 0);
+        tl.set("#s09-mark-bar", { scaleX: 0 }, 0);
+        tl.set("#s09-count-chip", { opacity: 0, y: 14 }, 0);
+
+        tl.to("#s09-overline", { opacity: 1, y: 0, duration: 0.5 }, 0);
+
+        // Layers staggered to narration
+        tl.to("#s09-layer-1", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 4.0);   // clawsweeper
+        tl.to("#s09-layer-2", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 7.5);   // crabbox
+        tl.to("#s09-layer-3", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 11.6);  // clawpatch
+        tl.to("#s09-layer-4", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 16.1);  // Codex
+        tl.to("#s09-layer-5", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 21.2);  // deepsec
+
+        // REAL-CONTENT BEAT — count chip at narration "Codex configured for security" @ 26.56s
+        // (fills the 21.2 → 31.4 gap)
+        tl.to("#s09-count-chip", { opacity: 1, y: 0, duration: 0.5 }, 26.5);
+        // REAL-CONTENT BEAT — ghost-in the bracket at narration "covering whatever deep-sec doesn't" @ 29.71s
+        tl.to("#s09-bracket", { opacity: 0.3, duration: 0.5, ease: "power2.out" }, 29.6);
+
+        // Bracket label appears at "hundred-agent fleet" (t=32.5)
+        tl.to("#s09-bracket", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 31.4);
+        // Number glow pulse when fleet is named
+        tl.to("#s09-bracket .num", { scale: 1.08, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 32.5);
+
+        // Synth line at "Three thin, well-scoped tools" (t=34.6) with marker sweep
+        tl.to("#s09-synth", { opacity: 1, y: 0, duration: 0.6 }, 34.4);
+        tl.to("#s09-mark-bar", { scaleX: 1, duration: 0.6, ease: "power2.out" }, 35.0);
+
+        tl.set({}, {}, 40.3);
+        window.__timelines["scene-09-fleet-recap"] = tl;
+      })();
+    </script>
+  </div>
+</template>

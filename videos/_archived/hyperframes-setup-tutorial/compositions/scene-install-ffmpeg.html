@@ -1,0 +1,165 @@
+<!--
+  scene-install-ffmpeg.html — 3-card variant tightened to ~14s scene window.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-install-ffmpeg-template">
+  <div data-composition-id="scene-install-ffmpeg"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #install-ffmpeg-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:42px; box-sizing:border-box;
+      }
+      #install-ffmpeg-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:14px; text-align:center;
+      }
+      #install-ffmpeg-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-2);
+      }
+      #install-ffmpeg-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 60px; line-height: 1.05;
+        letter-spacing: -1.5px; color: var(--text);
+      }
+      #install-ffmpeg-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 28px;
+      }
+      .ff-card {
+        width: 530px;
+        padding: 32px 32px;
+        border-radius: 22px;
+        border: 1.5px solid var(--border-bright);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        display:flex; flex-direction:column;
+        gap: 14px;
+      }
+      .ff-card.win {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.20) 0%, rgba(59, 130, 246, 0.04) 100%);
+        border-color: rgba(59, 130, 246, 0.55);
+      }
+      .ff-card.linux {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.20) 0%, rgba(34, 197, 94, 0.04) 100%);
+        border-color: rgba(34, 197, 94, 0.55);
+      }
+      .ff-card.mac {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.20) 0%, rgba(139, 92, 246, 0.04) 100%);
+        border-color: rgba(139, 92, 246, 0.55);
+      }
+      .ff-card .label {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .ff-card.win .label   { color: var(--accent-1); }
+      .ff-card.linux .label { color: var(--accent-4); }
+      .ff-card.mac .label   { color: var(--accent-3); }
+      .ff-card .title {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 26px; line-height: 1.2;
+        color: var(--text);
+      }
+      .ff-card .cmd {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        line-height: 1.5;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 18px;
+        color: var(--text);
+        word-break: break-word;
+      }
+      .ff-card .cmd .prompt { color: var(--text-secondary); margin-right: 8px; }
+
+      #iff-verify {
+        display:inline-flex; align-items:center; gap: 18px;
+        padding: 14px 28px; border-radius: 999px;
+        background: rgba(251,188,4,.12);
+        border: 1px solid rgba(251,188,4,.55);
+      }
+      #iff-verify .lbl {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 16px; letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+      }
+      #iff-verify .cmd-inline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px;
+        color: var(--text);
+      }
+      #iff-verify .check {
+        font-family: var(--mono); font-weight: 800;
+        font-size: 22px;
+        color: var(--accent-4);
+      }
+    </style>
+
+    <div id="install-ffmpeg-content">
+      <div class="header-block">
+        <div class="overline" id="iff-overline">INSTALL FFMPEG &middot; STEP 2B</div>
+        <div class="headline" id="iff-headline">One command per OS</div>
+      </div>
+
+      <div class="row">
+        <div class="ff-card win" id="iff-card-win">
+          <div class="label">Windows</div>
+          <div class="title">winget</div>
+          <div class="cmd"><span class="prompt">PS&gt;</span>winget install ffmpeg</div>
+        </div>
+        <div class="ff-card linux" id="iff-card-linux">
+          <div class="label">Linux</div>
+          <div class="title">apt</div>
+          <div class="cmd"><span class="prompt">$</span>sudo apt install ffmpeg</div>
+        </div>
+        <div class="ff-card mac" id="iff-card-mac">
+          <div class="label">macOS</div>
+          <div class="title">brew</div>
+          <div class="cmd"><span class="prompt">$</span>brew install ffmpeg</div>
+        </div>
+      </div>
+
+      <div id="iff-verify">
+        <span class="lbl">Verify</span>
+        <span class="cmd-inline">ffmpeg -version</span>
+        <span class="check">&rarr; v7.x ✓</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#iff-overline",   { y: 22, opacity: 0 }, 0);
+      tl.set("#iff-headline",   { y: 32, opacity: 0 }, 0);
+      tl.set("#iff-card-win",   { y: 36, opacity: 0 }, 0);
+      tl.set("#iff-card-linux", { y: 36, opacity: 0 }, 0);
+      tl.set("#iff-card-mac",   { y: 36, opacity: 0 }, 0);
+      tl.set("#iff-verify",     { y: 16, scale: 0.94, opacity: 0 }, 0);
+
+      tl.to("#iff-overline",   { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0);
+      tl.to("#iff-headline",   { y: 0, opacity: 1, duration: 0.55 }, 0.25);
+      tl.to("#iff-card-win",   { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.65);
+      tl.to("#iff-card-linux", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 1.05);
+      tl.to("#iff-card-mac",   { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 1.45);
+      tl.to("#iff-verify",     { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 2.05);
+
+      window.__timelines["scene-install-ffmpeg"] = tl;
+    </script>
+  </div>
+</template>

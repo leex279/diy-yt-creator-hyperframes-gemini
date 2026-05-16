@@ -1,0 +1,271 @@
+﻿<!--
+  scene-cta.html â€” Dynamous endcard (horizontal long-form adaptation).
+  Adapts shared/lib/blocks/dynamous-endcard/block.html (which is 1080x1920
+  vertical) to a 1920x1080 horizontal two-column layout for this long-form.
+
+  Uses REAL brand assets:
+    - assets/dynamous-icon.png  (the blue flame icon)
+    - assets/dynamous-logo-light.svg  (Dynamous AI Mastery wordmark, white)
+
+  Content (locked across all videos per shared/lib/blocks/dynamous-endcard):
+    - 4 community offerings (Agentic Coding Course, AI Second Brain,
+      AI Agent Master Course, Daily Events + Friday Workshops)
+    - Link in Description â†“ + 10% OFF badge
+    - dynamous.ai URL with discount code
+
+  Plus the engagement-cta rule's debate question.
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #ec-content {
+        width:100%; height:100%;
+        padding: 70px 90px 70px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+        box-sizing:border-box;
+      }
+      /* Glass card baseline shared by both sides */
+      .ec-card {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 28px;
+        padding: 44px 44px 44px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow:
+          0 16px 64px rgba(0, 0, 0, 0.55),
+          0 0 80px rgba(59, 130, 246, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        position: relative;
+      }
+
+      /* LEFT: brand + headline + debate */
+      #ec-left {
+        display: flex; flex-direction: column;
+        gap: 22px;
+        height: auto;
+      }
+      #ec-brand-row {
+        display: flex; align-items: center; gap: 22px;
+      }
+      #ec-icon {
+        width: 110px; height: 150px;
+        filter: drop-shadow(0 0 36px rgba(59, 130, 246, 0.55));
+        flex: 0 0 110px;
+      }
+      #ec-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+      #ec-wordmark {
+        flex: 1;
+      }
+      #ec-wordmark img { width: 100%; height: auto; display: block; max-width: 460px; }
+      #ec-headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        color: var(--ink);
+      }
+      #ec-debate {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 30px;
+        line-height: 1.3;
+        letter-spacing: -0.012em;
+        color: var(--accent-2);
+        padding-top: 16px;
+        border-top: 1px solid rgba(255,255,255,0.10);
+      }
+      #ec-comment {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 22px;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      #ec-comment .pencil {
+        display: inline-block; margin-right: 10px;
+        color: var(--accent);
+      }
+
+      /* RIGHT: offerings + button + discount + URL */
+      #ec-right {
+        display: flex; flex-direction: column;
+        gap: 24px;
+      }
+      #ec-offerings {
+        list-style: none;
+        margin: 0; padding: 0;
+        display: flex; flex-direction: column;
+        gap: 14px;
+      }
+      #ec-offerings li {
+        display: flex; align-items: center; gap: 16px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 26px;
+        line-height: 1.2;
+        color: #f1f5f9;
+      }
+      .ec-check {
+        flex-shrink: 0;
+        width: 36px; height: 36px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 22px; font-weight: 900;
+        color: #ffffff;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 100%);
+        box-shadow: 0 0 18px rgba(59, 130, 246, 0.55);
+      }
+      #ec-button-row {
+        display: flex; align-items: center; gap: 16px;
+        margin-top: 4px;
+      }
+      #ec-button {
+        flex: 1;
+        display: flex; align-items: center; justify-content: center; gap: 14px;
+        padding: 18px 32px;
+        border-radius: 16px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-3) 100%);
+        background-size: 200% 100%;
+        box-shadow:
+          0 4px 24px rgba(59, 130, 246, 0.4),
+          0 0 60px rgba(14, 165, 233, 0.18);
+      }
+      #ec-button .arrow {
+        font-size: 32px; line-height: 0.7; font-weight: 900;
+      }
+      #ec-discount {
+        flex: 0 0 auto;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-size: 28px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+      }
+      #ec-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 600;
+        color: #cbd5e1;
+        letter-spacing: 0.04em;
+        text-align: center;
+        word-break: break-all;
+      }
+
+      /* Final fade-to-black overlay */
+      #ec-blackout {
+        position: absolute; inset: 0;
+        background: #000000;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 100;
+      }
+    </style>
+
+    <div id="ec-content">
+      <!-- LEFT: brand + debate -->
+      <div class="ec-card" id="ec-left">
+        <div id="ec-brand-row">
+          <div id="ec-icon" style="opacity:0;visibility:hidden;">
+            <img src="assets/dynamous-icon.png" alt="Dynamous" crossorigin="anonymous" />
+          </div>
+          <div id="ec-wordmark" style="opacity:0;visibility:hidden;">
+            <img src="assets/dynamous-logo-light.svg" alt="Dynamous AI Mastery" />
+          </div>
+        </div>
+        <div id="ec-headline" style="opacity:0;visibility:hidden;">Join the Community</div>
+        <div id="ec-debate" style="opacity:0;visibility:hidden;">Vertical slices, or shared test folders &mdash; which one are you running?</div>
+        <div id="ec-comment" style="opacity:0;visibility:hidden;"><span class="pencil">&#x270F;</span>Drop your take in the comments</div>
+      </div>
+
+      <!-- RIGHT: offerings + button + url -->
+      <div class="ec-card" id="ec-right">
+        <ul id="ec-offerings">
+          <li id="ec-o1" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>Agentic Coding Course</span></li>
+          <li id="ec-o2" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>AI Second Brain (OpenClaw &mdash; you own it)</span></li>
+          <li id="ec-o3" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>AI Agent Master Course</span></li>
+          <li id="ec-o4" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>Daily Events + Friday Workshops</span></li>
+        </ul>
+        <div id="ec-button-row">
+          <div id="ec-button" style="opacity:0;visibility:hidden;">
+            <span>Link in Description</span>
+            <span class="arrow">&darr;</span>
+          </div>
+          <div id="ec-discount" style="opacity:0;visibility:hidden;">10% OFF</div>
+        </div>
+        <div id="ec-url" style="opacity:0;visibility:hidden;">https://dynamous.ai/?code=646a60</div>
+      </div>
+    </div>
+
+    <div id="ec-blackout"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial offsets
+      tl.set("#ec-icon",     { scale: 0.85 }, 0);
+      tl.set("#ec-wordmark", { x: -16 }, 0);
+      tl.set("#ec-headline", { y: 18 }, 0);
+      tl.set("#ec-debate",   { y: 20 }, 0);
+      tl.set("#ec-comment",  { y: 14 }, 0);
+      ["#ec-o1","#ec-o2","#ec-o3","#ec-o4"].forEach(sel => tl.set(sel, { x: -22 }, 0));
+      tl.set("#ec-button",   { scale: 0.9 }, 0);
+      tl.set("#ec-discount", { scale: 0.5 }, 0);
+      tl.set("#ec-url",      { y: 10 }, 0);
+
+      // Card scale-in
+      tl.from("#ec-left",  { scale: 0.94, autoAlpha: 0, duration: 0.55, ease: "back.out(1.2)", immediateRender: false }, 0);
+      tl.from("#ec-right", { scale: 0.94, autoAlpha: 0, duration: 0.55, ease: "back.out(1.2)", immediateRender: false }, 0.15);
+
+      // LEFT side reveals
+      tl.to("#ec-icon",     { scale: 1, autoAlpha: 1, duration: 0.65, ease: "back.out(1.6)" }, 0.4);
+      tl.to("#ec-wordmark", { x: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.6);
+      tl.to("#ec-headline", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.9);
+      tl.to("#ec-debate",   { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 1.4);
+      tl.to("#ec-comment",  { y: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, 2.0);
+
+      // RIGHT side reveals â€” offerings stagger
+      ["#ec-o1","#ec-o2","#ec-o3","#ec-o4"].forEach((sel, i) => {
+        tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.7 + i * 0.18);
+      });
+      tl.to("#ec-button",   { scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.6)" }, 1.7);
+      tl.to("#ec-discount", { scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.8)" }, 1.9);
+      tl.to("#ec-url",      { y: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, 2.2);
+
+      // Mid-hold beats â€” gradient shimmer on the button, glow on the icon, pulse on discount
+      tl.to("#ec-button", { backgroundPosition: "200% 0%", duration: 8, ease: "none" }, 2.5);
+      tl.to("#ec-icon", { y: -10, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: 4 }, 3.0);
+      tl.to("#ec-discount", { scale: 1.06, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 4 }, 4.0);
+      tl.to("#ec-debate", { scale: 1.02, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 2 }, 6.0);
+      tl.to("#ec-left", { boxShadow: "0 16px 80px rgba(0,0,0,0.6), 0 0 120px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255,255,255,0.08)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 2 }, 8.0);
+      tl.to("#ec-right", { boxShadow: "0 16px 80px rgba(0,0,0,0.6), 0 0 120px rgba(14, 165, 233, 0.35), inset 0 1px 0 rgba(255,255,255,0.08)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 2 }, 9.0);
+
+      // Final fade-to-black starts at 17s of 19s slot
+      tl.to("#ec-blackout", { opacity: 1, duration: 1.5, ease: "power2.in" }, 17.0);
+
+      tl.set({}, {}, 22);
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

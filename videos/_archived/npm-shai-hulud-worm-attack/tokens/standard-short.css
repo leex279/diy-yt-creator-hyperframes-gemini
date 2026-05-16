@@ -1,0 +1,89 @@
+/* ──────────────────────────────────────────────────────────────────────
+   videos/npm-shai-hulud-worm-attack/tokens/standard-short.css
+   ALARM RED dark stage — NPM supply-chain worm aesthetic.
+
+   Per-video override of the standard-short token file. Variable names
+   from the base standard-short template are preserved so the existing
+   index.html keeps referencing --accent-warm / --accent-deep / etc. —
+   they're just retargeted to the alarm palette. New --alarm-* / --caution /
+   --signal vars are added as additional tokens for direct use where the
+   per-phase code wants them.
+
+   Aesthetic: near-black ground, alarm-red dominant, caution-yellow for
+   warnings, signal-green ONLY in the pnpm-v11 defense phase. Mirrors the
+   topic (NPM supply-chain attack, hijacked, alarm).
+
+   Scoped to :root so every sub-composition wired via data-composition-src
+   inherits these vars without needing a wrapper.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface — dark stage ──────────────────────────────────────────
+     Near-black with a cool tint; not pure black, which reads as a
+     compositor void. Elevated cards lift to #0E1014. */
+  --bg:             #07080A;
+  --bg-card:        #0E1014;
+  --bg-surface:     #131419;
+  --bg-tint:        #1A0808;   /* red-tinted background for alarm callouts */
+  --bg-deep:        rgba(3, 4, 6, 0.85);
+
+  --border:         #1F2329;
+  --border-bright:  #2A2F36;
+  --shadow-warm:    0 12px 32px rgba(0, 0, 0, 0.55),
+                    0 2px 6px  rgba(255, 42, 42, 0.06);
+
+  /* ── ALARM palette (the dominant accent) ──────────────────────────
+     The "hijacked" hero color and its variants. */
+  --alarm:          #FF2A2A;   /* bright alarm red — hero hijacked color */
+  --alarm-soft:     #FF5A4A;   /* softer red — secondary */
+  --alarm-deep:     #B91C1C;   /* deep red — FORGED stamp, token-name pill */
+  --alarm-glow:     rgba(255, 42, 42, 0.25);
+  --alarm-tint:     #1A0808;   /* red-tinted bg for alarm phases */
+
+  /* ── Supporting accents ──────────────────────────────────────────── */
+  --caution:        #FFB800;   /* warning yellow — pull_request_target, dead-man clock */
+  --caution-soft:   #FFD24D;
+  --signal:         #10B981;   /* green — pnpm v11 fix, "BLOCKED" stamps */
+  --signal-soft:    #34D399;
+  --signal-deep:    #047857;
+  --mono-blue:      #94A3B8;   /* mono terminal text */
+
+  /* ── Aliases the index.html already references ────────────────────
+     Map the base template's accent-* names onto the alarm palette so
+     the existing CSS keeps working without rewiring every selector. */
+  --accent-warm:    var(--alarm);          /* primary lead — RED */
+  --accent-deep:    var(--alarm-deep);     /* counterpoint — DEEP RED */
+  --accent-sage:    var(--signal);         /* secondary — GREEN (P7 only) */
+  --accent-gold:    var(--caution);        /* highlight — YELLOW */
+  --accent-rose:    var(--alarm-soft);     /* soft pivot — SOFT RED */
+  --accent-ink:     #F4F4F5;               /* primary text — bright off-white */
+
+  --primary:        var(--accent-warm);
+  --secondary:      var(--accent-deep);
+  --tertiary:       var(--accent-sage);
+  --highlight:      var(--accent-gold);
+  --pivot:          var(--accent-rose);
+
+  /* ── Text ─────────────────────────────────────────────────────────
+     Off-white on near-black gives ~17:1 contrast (AAA). Dimmed tiers
+     keep hierarchy without dropping below AA. */
+  --text:           #F4F4F5;
+  --text-secondary: #9CA3AF;
+  --text-muted:     #5B6473;
+  --text-on-warm:   #FFFFFF;
+  --text-on-deep:   #FFFFFF;
+
+  /* ── Pill chrome ───────────────────────────────────────────────── */
+  --pill-bg:        rgba(255, 255, 255, 0.05);
+  --pill-border:    rgba(255, 255, 255, 0.10);
+
+  /* ── Spacing (1080x1920 safe-zone for vertical Shorts) ─────────── */
+  --pad-top:        240px;
+  --pad-x:          80px;
+  --pad-bottom:     240px;
+
+  /* ── Type ──────────────────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --serif:          'Playfair Display', 'EB Garamond', Georgia, serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

@@ -1,0 +1,2318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Hostinger × OpenClaw — Tutorial Template</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hyperframes/core/dist/hyperframe.runtime.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hyperframes/shader-transitions/dist/index.global.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        /* === Brand identity === */
+        --bg: #0e0f19;
+        --bg-2: #15172a;
+        --bg-3: #1f2240;
+        --ink: #ffffff;
+        --muted: #a0a3bd;
+        --muted-2: #6b6e8a;
+        --accent: #673de6;
+        --accent-2: #8b5cf6;
+        --accent-dim: #2d1b69;
+        --success: #00c896;
+        --line: rgba(255, 255, 255, 0.08);
+        --line-2: rgba(255, 255, 255, 0.14);
+
+        --font-display: "Manrope", system-ui, sans-serif;
+        --font-data: "JetBrains Mono", ui-monospace, monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-display);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .scene-content {
+        width: 100%;
+        height: 100%;
+        padding: 110px 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 32px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ===== Type utilities ===== */
+      .display {
+        font-family: var(--font-display);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+      }
+      .body-text {
+        font-family: var(--font-display);
+        font-weight: 300;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+      .data-text {
+        font-family: var(--font-data);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+      }
+      .kicker {
+        font-family: var(--font-data);
+        font-weight: 500;
+        font-size: 22px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+
+      /* ===== Persistent brand mark (top-right Hostinger H-icon across all scenes) ===== */
+      .brand-mark {
+        position: absolute;
+        top: 48px;
+        right: 56px;
+        height: 64px;
+        width: auto;
+        z-index: 60;
+        opacity: 0.92;
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+        pointer-events: none;
+      }
+
+      /* ===== Decorative chrome ===== */
+      .grain {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 50;
+        opacity: 0.14;
+        background-image:
+          radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.2px),
+          radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1.2px);
+        background-size:
+          3px 3px,
+          5px 5px;
+        background-position:
+          0 0,
+          1px 2px;
+        mix-blend-mode: overlay;
+      }
+      .vignette {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 49;
+        background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+      }
+      .grid-bg {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 80px 80px;
+        mask-image: radial-gradient(ellipse at center, black 40%, transparent 90%);
+      }
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ===== Reusable bits ===== */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 24px;
+        border-radius: 100px;
+        background: var(--bg-2);
+        border: 1px solid var(--line-2);
+        font-family: var(--font-data);
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--ink);
+        letter-spacing: 0.02em;
+      }
+      .pill .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 16px var(--accent);
+      }
+      .accent-line {
+        height: 4px;
+        background: var(--accent);
+        border-radius: 4px;
+      }
+      .badge-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: rgba(0, 200, 150, 0.14);
+        border: 1px solid rgba(0, 200, 150, 0.4);
+        color: var(--success);
+        font-family: var(--font-data);
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      /* ====================== SCENE 1 — HOOK ====================== */
+      #s1 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 40px;
+      }
+      #s1 .glow-1 {
+        width: 900px;
+        height: 900px;
+        background: var(--accent);
+        opacity: 0.25;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s1 h1 {
+        font-size: 180px;
+        max-width: 1400px;
+      }
+      #s1 h1 .word {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+      }
+      #s1 h1 .word > span {
+        display: inline-block;
+      }
+      #s1 .sub {
+        font-size: 32px;
+        max-width: 1100px;
+        color: var(--muted);
+      }
+      #s1 .accent-line {
+        width: 120px;
+      }
+
+      /* ====================== SCENE 2 — BRAND LOCKUP ====================== */
+      #s2 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 30px;
+      }
+      #s2 .glow-2 {
+        width: 700px;
+        height: 700px;
+        background: var(--accent);
+        opacity: 0.18;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s2 .lockup {
+        display: flex;
+        align-items: center;
+        gap: 50px;
+      }
+      #s2 .brand {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 92px;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+      }
+      /* Official Hostinger SVG — sized to match the prior 92px display text */
+      #s2 .brand img {
+        height: 92px;
+        width: auto;
+        display: block;
+      }
+      #s2 .x {
+        font-family: var(--font-data);
+        font-weight: 400;
+        font-size: 64px;
+        color: var(--accent-2);
+        opacity: 0.8;
+      }
+      #s2 .product {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 92px;
+        letter-spacing: -0.02em;
+        color: var(--accent-2);
+      }
+      #s2 .tagline {
+        font-family: var(--font-data);
+        font-size: 24px;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* ====================== SCENE 3 — WHY AUTOMATE ====================== */
+      #s3 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+      }
+      #s3 .left {
+        flex: 0 0 540px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      #s3 .left h2 {
+        font-size: 96px;
+        line-height: 0.98;
+      }
+      #s3 .left .sub {
+        font-size: 26px;
+        color: var(--muted);
+        max-width: 480px;
+      }
+      #s3 .list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      #s3 .item {
+        display: flex;
+        gap: 28px;
+        align-items: flex-start;
+        padding: 28px 32px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+      #s3 .num {
+        font-family: var(--font-data);
+        font-size: 28px;
+        font-weight: 500;
+        color: var(--accent-2);
+        min-width: 60px;
+      }
+      #s3 .item h3 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      #s3 .item p {
+        font-size: 22px;
+        color: var(--muted);
+        font-weight: 300;
+        line-height: 1.4;
+      }
+
+      /* ====================== SCENE 4 — WHY HOSTINGER ====================== */
+      #s4 .scene-content {
+        gap: 50px;
+      }
+      #s4 .glow-4 {
+        width: 800px;
+        height: 800px;
+        background: var(--accent);
+        opacity: 0.12;
+        top: -200px;
+        right: -200px;
+      }
+      #s4 h2 {
+        font-size: 110px;
+        line-height: 1;
+        max-width: 1100px;
+      }
+      #s4 .pills {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        max-width: 1400px;
+      }
+      #s4 .feat {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 32px 36px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+      #s4 .feat-ic {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      #s4 .feat-title {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+      #s4 .feat-sub {
+        font-size: 20px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+
+      /* ====================== SCENE 5 — LANDING PAGE MOCK ====================== */
+      #s5 .scene-content {
+        padding: 80px 200px;
+        align-items: center;
+        justify-content: center;
+      }
+      #s5 .glow-5 {
+        width: 900px;
+        height: 600px;
+        background: var(--accent);
+        opacity: 0.18;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s5 .browser {
+        width: 1520px;
+        height: 880px;
+        background: var(--bg-2);
+        border: 1px solid var(--line-2);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 60px 120px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+      }
+      #s5 .browser-bar {
+        height: 60px;
+        background: #1a1c33;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        gap: 16px;
+      }
+      #s5 .browser-dots {
+        display: flex;
+        gap: 8px;
+      }
+      #s5 .browser-dots span {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #333752;
+      }
+      #s5 .browser-url {
+        flex: 1;
+        height: 36px;
+        background: #0f1124;
+        border-radius: 8px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        font-family: var(--font-data);
+        font-size: 18px;
+        color: var(--muted);
+      }
+      #s5 .browser-url .lock {
+        margin-right: 8px;
+        color: var(--success);
+      }
+      #s5 .page {
+        flex: 1;
+        padding: 80px 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        justify-content: center;
+        position: relative;
+      }
+      /* Banner-driven s5 — official Hostinger affiliate hero sits inside the page with breathing room */
+      #s5 .page.page-banner {
+        padding: 40px 60px;
+        overflow: hidden;
+        background: var(--bg-2);
+      }
+      #s5 .page-hero {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        border-radius: 16px;
+      }
+      #s5 .page .pkicker {
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #s5 .page .pkicker img {
+        height: 22px;
+        width: auto;
+        display: block;
+      }
+      #s5 .page h2 {
+        font-size: 96px;
+        line-height: 0.98;
+        max-width: 900px;
+      }
+      #s5 .page p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+        max-width: 700px;
+      }
+      #s5 .cta-row {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-top: 16px;
+      }
+      #s5 .cta-btn {
+        background: var(--accent);
+        color: white;
+        padding: 22px 40px;
+        border-radius: 12px;
+        font-size: 24px;
+        font-weight: 700;
+        font-family: var(--font-display);
+      }
+      #s5 .cta-ghost {
+        padding: 22px 40px;
+        border-radius: 12px;
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      #s5-cursor {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      /* ====================== SCENE 6 — PLAN COMPARISON ====================== */
+      #s6 .scene-content {
+        gap: 48px;
+        padding: 100px 160px;
+      }
+      #s6 .top {
+        text-align: center;
+      }
+      #s6 .top h2 {
+        font-size: 92px;
+        line-height: 1;
+        margin-bottom: 12px;
+      }
+      #s6 .top p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+      #s6 .plans {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+      #s6 .plan {
+        padding: 48px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        position: relative;
+      }
+      #s6 .plan.featured {
+        background: linear-gradient(180deg, rgba(103, 61, 230, 0.16) 0%, var(--bg-2) 60%);
+        border: 1px solid var(--accent);
+      }
+      #s6 .plan-tag {
+        position: absolute;
+        top: -16px;
+        left: 48px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: var(--accent);
+        font-family: var(--font-data);
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      #s6 .plan-name {
+        font-family: var(--font-data);
+        font-size: 20px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      #s6 .plan-title {
+        font-size: 56px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      #s6 .plan-price {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      #s6 .plan-price .amt {
+        font-size: 72px;
+        font-weight: 800;
+        font-family: var(--font-display);
+      }
+      #s6 .plan-price .per {
+        font-family: var(--font-data);
+        font-size: 22px;
+        color: var(--muted);
+      }
+      #s6 .plan-feats {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 8px;
+      }
+      #s6 .plan-feats li {
+        list-style: none;
+        font-size: 22px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      #s6 .check {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0, 200, 150, 0.18);
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+      #s6 .plan.alt .check {
+        background: rgba(139, 92, 246, 0.18);
+        color: var(--accent-2);
+      }
+
+      /* ====================== SCENE 7 — PRICING / DURATION ====================== */
+      #s7 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 40px;
+        padding: 100px 160px;
+      }
+      #s7 .glow-7 {
+        width: 1000px;
+        height: 700px;
+        background: var(--accent);
+        opacity: 0.22;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s7 h2 {
+        font-size: 72px;
+        max-width: 1100px;
+      }
+      #s7 .duration-row {
+        display: flex;
+        gap: 16px;
+        margin: 12px 0;
+      }
+      #s7 .dur {
+        padding: 22px 40px;
+        border-radius: 14px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--muted);
+        position: relative;
+      }
+      #s7 .dur.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+      #s7 .dur .save {
+        position: absolute;
+        top: -14px;
+        right: -10px;
+        background: var(--success);
+        color: var(--bg);
+        font-family: var(--font-data);
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+      #s7 .price-display {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      #s7 .price-display .cur {
+        font-size: 80px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      #s7 .price-display .amt {
+        font-size: 260px;
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        background: linear-gradient(180deg, #ffffff 0%, #c9b6ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      #s7 .price-display .per {
+        font-family: var(--font-data);
+        font-size: 36px;
+        color: var(--muted);
+      }
+      #s7 .billed {
+        font-family: var(--font-data);
+        font-size: 22px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+      }
+
+      /* ====================== SCENE 8 — CART + COUPON ====================== */
+      #s8 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+        padding: 100px 160px;
+      }
+      #s8 .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      #s8 .left .lk {
+        color: var(--accent-2);
+      }
+      #s8 .left h2 {
+        font-size: 88px;
+        line-height: 0.98;
+      }
+      #s8 .left p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+        max-width: 540px;
+      }
+      #s8 .cart {
+        flex: 0 0 720px;
+        background: var(--bg-2);
+        border: 1px solid var(--line-2);
+        border-radius: 24px;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+      }
+      #s8 .cart-title {
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      #s8 .cart-item {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg);
+        border-radius: 14px;
+      }
+      #s8 .cart-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 22px;
+        color: white;
+      }
+      #s8 .cart-item-body {
+        flex: 1;
+      }
+      #s8 .cart-item-name {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      #s8 .cart-item-term {
+        font-size: 18px;
+        color: var(--muted);
+        font-family: var(--font-data);
+      }
+      #s8 .cart-item-price {
+        font-size: 24px;
+        font-weight: 700;
+        font-family: var(--font-data);
+      }
+      #s8 .coupon-row {
+        display: flex;
+        gap: 12px;
+      }
+      #s8 .coupon-input {
+        flex: 1;
+        padding: 18px 22px;
+        background: var(--bg);
+        border: 1px solid var(--accent);
+        border-radius: 12px;
+        font-family: var(--font-data);
+        font-size: 22px;
+        letter-spacing: 0.16em;
+        font-weight: 500;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #s8 .coupon-applied {
+        color: var(--success);
+        font-size: 16px;
+      }
+      #s8 .totals {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--line);
+      }
+      #s8 .totals .row {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-data);
+        font-size: 22px;
+      }
+      #s8 .totals .row.muted {
+        color: var(--muted);
+      }
+      #s8 .totals .row.muted .strike {
+        text-decoration: line-through;
+      }
+      #s8 .totals .row.discount {
+        color: var(--success);
+      }
+      #s8 .totals .row.final {
+        font-size: 32px;
+        font-weight: 700;
+        font-family: var(--font-display);
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      /* ====================== SCENE 9 — SETUP STEPS ====================== */
+      #s9 .scene-content {
+        gap: 50px;
+        padding: 100px 160px;
+      }
+      #s9 .head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 40px;
+      }
+      #s9 h2 {
+        font-size: 84px;
+        line-height: 0.98;
+        max-width: 1000px;
+      }
+      #s9 .progress {
+        flex: 0 0 320px;
+        margin-bottom: 14px;
+      }
+      #s9 .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: var(--bg-2);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      #s9 .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 6px;
+        width: 0%;
+        transform-origin: left;
+      }
+      #s9 .progress-label {
+        font-family: var(--font-data);
+        font-size: 18px;
+        color: var(--muted);
+        margin-top: 8px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      #s9 .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+      }
+      #s9 .step {
+        padding: 36px 32px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-height: 320px;
+      }
+      #s9 .step-num {
+        font-family: var(--font-data);
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--accent-2);
+        letter-spacing: 0.16em;
+      }
+      #s9 .step-ic {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: var(--bg-3);
+        border: 1px solid var(--line-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s9 .step-title {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      #s9 .step-desc {
+        font-size: 19px;
+        color: var(--muted);
+        font-weight: 300;
+        line-height: 1.4;
+        margin-top: auto;
+      }
+
+      /* ====================== SCENE 10 — CONFIG + AI PROVIDER ====================== */
+      #s10 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+        padding: 100px 160px;
+      }
+      #s10 .left {
+        flex: 0 0 540px;
+      }
+      #s10 .left h2 {
+        font-size: 80px;
+        line-height: 0.98;
+        margin-bottom: 24px;
+      }
+      #s10 .left p {
+        font-size: 22px;
+        color: var(--muted);
+        font-weight: 300;
+        line-height: 1.4;
+        max-width: 480px;
+      }
+      #s10 .form {
+        flex: 1;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 44px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      #s10 .form-title {
+        font-size: 26px;
+        font-weight: 700;
+      }
+      #s10 .opt {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        padding: 24px 28px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        cursor: pointer;
+      }
+      #s10 .opt.active {
+        border-color: var(--accent);
+        background: linear-gradient(180deg, rgba(103, 61, 230, 0.18) 0%, var(--bg) 100%);
+      }
+      #s10 .radio {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid var(--line-2);
+        flex-shrink: 0;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s10 .opt.active .radio {
+        border-color: var(--accent);
+      }
+      #s10 .opt.active .radio::after {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      #s10 .opt-body {
+        flex: 1;
+      }
+      #s10 .opt-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      #s10 .opt-sub {
+        font-size: 18px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+      #s10 .opt-badge {
+        padding: 6px 12px;
+        background: var(--accent);
+        border-radius: 6px;
+        font-family: var(--font-data);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        margin-left: 12px;
+      }
+
+      /* ====================== SCENE 11 — CHANNEL SELECTION ====================== */
+      #s11 .scene-content {
+        gap: 56px;
+        padding: 100px 160px;
+        align-items: center;
+        text-align: center;
+      }
+      #s11 h2 {
+        font-size: 96px;
+        line-height: 1;
+        max-width: 1200px;
+      }
+      #s11 .sub {
+        font-size: 24px;
+        color: var(--muted);
+      }
+      #s11 .channels {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
+        width: 100%;
+        max-width: 1400px;
+      }
+      #s11 .ch {
+        padding: 44px 32px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        position: relative;
+      }
+      #s11 .ch.selected {
+        border-color: var(--accent);
+        background: linear-gradient(180deg, rgba(103, 61, 230, 0.16) 0%, var(--bg-2) 100%);
+      }
+      #s11 .ch-ic {
+        width: 88px;
+        height: 88px;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s11 .ch-name {
+        font-size: 26px;
+        font-weight: 700;
+      }
+      #s11 .ch-tag {
+        font-family: var(--font-data);
+        font-size: 16px;
+        color: var(--muted);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      #s11 .ch .pulse {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 16px var(--success);
+        opacity: 0;
+      }
+      #s11 .ch.selected .pulse {
+        opacity: 1;
+      }
+
+      /* ====================== SCENE 12 — WORKFLOW DEMO ====================== */
+      #s12 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+        padding: 100px 160px;
+      }
+      #s12 .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      #s12 .left h2 {
+        font-size: 88px;
+        line-height: 0.98;
+      }
+      #s12 .left p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+        max-width: 500px;
+      }
+      #s12 .left .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--success);
+        margin-bottom: 8px;
+      }
+      #s12 .left .live .live-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 12px var(--success);
+      }
+      #s12 .phone {
+        flex: 0 0 480px;
+        height: 800px;
+        background: #0a0c18;
+        border: 12px solid #1a1c33;
+        border-radius: 48px;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 60px 120px rgba(0, 0, 0, 0.6);
+      }
+      #s12 .phone-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 4px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      #s12 .phone-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      #s12 .phone-meta-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      #s12 .phone-meta-sub {
+        font-size: 13px;
+        color: var(--success);
+        font-family: var(--font-data);
+      }
+      #s12 .msg {
+        max-width: 80%;
+        padding: 14px 18px;
+        border-radius: 18px;
+        font-size: 18px;
+        line-height: 1.35;
+      }
+      #s12 .msg.user {
+        align-self: flex-end;
+        background: var(--accent);
+        color: white;
+        border-bottom-right-radius: 6px;
+      }
+      #s12 .msg.bot {
+        align-self: flex-start;
+        background: var(--bg-3);
+        color: var(--ink);
+        border-bottom-left-radius: 6px;
+      }
+      #s12 .msg.bot .ok {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--success);
+        font-family: var(--font-data);
+        font-size: 14px;
+        margin-top: 6px;
+      }
+      #s12 .typing {
+        align-self: flex-start;
+        background: var(--bg-3);
+        padding: 14px 18px;
+        border-radius: 18px;
+        border-bottom-left-radius: 6px;
+        display: flex;
+        gap: 6px;
+      }
+      #s12 .typing span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+
+      /* ====================== SCENE 13 — FEATURE SPOTLIGHT ====================== */
+      #s13 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 32px;
+        padding: 100px 160px;
+      }
+      #s13 .glow-13 {
+        width: 1100px;
+        height: 800px;
+        background: var(--accent);
+        opacity: 0.2;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s13 .big-stat {
+        font-size: 480px;
+        font-weight: 800;
+        line-height: 0.85;
+        letter-spacing: -0.04em;
+        background: linear-gradient(180deg, #ffffff 0%, #b497ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      #s13 .stat-label {
+        font-size: 48px;
+        font-weight: 700;
+        max-width: 1000px;
+      }
+      #s13 .stat-sub {
+        font-size: 24px;
+        color: var(--muted);
+        font-family: var(--font-data);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: inline-flex;
+        gap: 16px;
+        align-items: center;
+      }
+      #s13 .stat-sub .live-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 16px var(--success);
+      }
+
+      /* ====================== SCENE 14 — CTA ====================== */
+      #s14 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 40px;
+        padding: 100px 160px;
+      }
+      #s14 .glow-14 {
+        width: 1200px;
+        height: 800px;
+        background: var(--accent);
+        opacity: 0.28;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s14 .lk-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 22px;
+        border-radius: 100px;
+        border: 1px solid var(--line-2);
+        font-family: var(--font-data);
+        font-size: 22px;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+      }
+      #s14 .lk-row .ic {
+        color: var(--accent-2);
+      }
+      #s14 .lk-row img.lk-icon {
+        height: 28px;
+        width: auto;
+        display: block;
+      }
+      #s14 h2 {
+        font-size: 160px;
+        line-height: 0.95;
+        max-width: 1500px;
+      }
+      #s14 .coupon-card {
+        margin-top: 12px;
+        padding: 40px 56px;
+        border: 2px dashed var(--accent-2);
+        border-radius: 20px;
+        background: rgba(103, 61, 230, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+        position: relative;
+      }
+      #s14 .coupon-card .clabel {
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.32em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      #s14 .coupon-code {
+        font-family: var(--font-data);
+        font-size: 80px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        color: white;
+      }
+      #s14 .coupon-card .discount {
+        position: absolute;
+        top: -22px;
+        right: -22px;
+        background: var(--success);
+        color: var(--bg);
+        font-family: var(--font-data);
+        font-weight: 700;
+        font-size: 22px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        transform: rotate(8deg);
+      }
+      #s14 .cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 28px 56px;
+        background: var(--accent);
+        border-radius: 14px;
+        font-size: 32px;
+        font-weight: 800;
+        font-family: var(--font-display);
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="main"
+      data-composition-id="main"
+      data-width="1920"
+      data-height="1080"
+      data-start="0"
+      data-duration="53.5"
+    >
+      <!-- ============ SCENE 1 — HOOK (0–3s) ============ -->
+      <div class="scene clip" id="s1" data-start="0" data-duration="3" data-track-index="0">
+        <div class="glow glow-1"></div>
+        <div class="grid-bg"></div>
+        <div class="vignette"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s1-kicker">Hostinger × OpenClaw</div>
+          <h1 class="display" id="s1-title">
+            <span class="word"><span>Your</span></span>
+            <span class="word"><span>AI.</span></span>
+            <span class="word"><span>Your</span></span>
+            <span class="word"><span>rules.</span></span>
+          </h1>
+          <div class="accent-line" id="s1-line"></div>
+          <p class="body-text sub" id="s1-sub">
+            No subscriptions. No data harvesting. No setup pain.
+          </p>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 2 — BRAND LOCKUP (3–5.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s2"
+        data-start="3"
+        data-duration="2.5"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-2"></div>
+        <div class="grid-bg"></div>
+        <div class="vignette"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="lockup">
+            <div class="brand" id="s2-brand">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_White.svg" alt="Hostinger" />
+            </div>
+            <div class="x" id="s2-x">×</div>
+            <div class="product" id="s2-product">OpenClaw</div>
+          </div>
+          <div class="accent-line" id="s2-line" style="width: 200px;"></div>
+          <div class="tagline" id="s2-tag">A personal AI agent — deployed in minutes</div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 3 — WHY AUTOMATE (5.5–9.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s3"
+        data-start="5.5"
+        data-duration="4"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="left">
+            <div class="kicker" id="s3-kicker">01 / Why automate</div>
+            <h2 class="display" id="s3-title">The boring stuff. Gone.</h2>
+            <p class="sub" id="s3-sub">
+              Hand off repetitive work to an AI agent that runs on your own infrastructure.
+            </p>
+          </div>
+          <div class="list">
+            <div class="item s3-item">
+              <div class="num">01</div>
+              <div>
+                <h3>Reclaim 10+ hours a week</h3>
+                <p>Replies, summaries, scheduling — handled while you sleep.</p>
+              </div>
+            </div>
+            <div class="item s3-item">
+              <div class="num">02</div>
+              <div>
+                <h3>Run leads & support 24/7</h3>
+                <p>Always-on assistants that never miss a message or a meeting.</p>
+              </div>
+            </div>
+            <div class="item s3-item">
+              <div class="num">03</div>
+              <div>
+                <h3>Keep every chat under your control</h3>
+                <p>Conversations stay on infrastructure you own, never a third-party SaaS.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 4 — WHY HOSTINGER (9.5–13.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s4"
+        data-start="9.5"
+        data-duration="4"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-4"></div>
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s4-kicker">02 / Why Hostinger</div>
+          <h2 class="display" id="s4-title">Everything wired up. <br />Nothing to babysit.</h2>
+          <div class="pills">
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="white" />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">1-click deployment</div>
+                <div class="feat-sub">Install through the Docker Catalog or hPanel.</div>
+              </div>
+            </div>
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" />
+                  <path d="M12 6v6l4 2" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">Built-in AI credits</div>
+                <div class="feat-sub">Pre-connected brain — no extra API signups.</div>
+              </div>
+            </div>
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" />
+                  <path
+                    d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"
+                    stroke="white"
+                    stroke-width="1.6"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">Live web scraping</div>
+                <div class="feat-sub">Real-time data without manual Brave API setup.</div>
+              </div>
+            </div>
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" stroke="white"
+                    stroke-width="2" fill="none" />
+                  <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">Private & sovereign</div>
+                <div class="feat-sub">Your vault, your firewalls, your data only.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 5 — LANDING PAGE (13.5–17s) ============ -->
+      <div
+        class="scene clip"
+        id="s5"
+        data-start="13.5"
+        data-duration="3.5"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-5"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="browser" id="s5-browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span></span><span></span><span></span></div>
+              <div class="browser-url">
+                <span class="lock">🔒</span>
+                <span id="s5-url">hostinger.com/openclaw</span>
+              </div>
+            </div>
+            <div class="page page-banner">
+              <!-- Official Hostinger affiliate banner — swap this PNG per sponsorship deal -->
+              <img class="page-hero" id="s5-hero" src="assets/hostinger-banners/AFF_2000x1000_OpenClaw_US.png" alt="Discover OpenClaw on Hostinger" />
+              <!-- Cursor lands on the banner's pink "Deploy" button -->
+              <svg id="s5-cursor" viewBox="0 0 24 24" style="top: 75%; left: 14%;">
+                <path d="M3 2l16 8-7 2-2 7-7-17z" fill="white" stroke="black" stroke-width="1" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 6 — PLAN COMPARISON (17–22s) ============ -->
+      <div
+        class="scene clip"
+        id="s6"
+        data-start="17"
+        data-duration="5"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="top">
+            <div class="kicker" id="s6-kicker">03 / Pick your plan</div>
+            <h2 class="display" id="s6-title">Managed or VPS?</h2>
+            <p id="s6-sub">Two ways to deploy. Same OpenClaw, different control.</p>
+          </div>
+          <div class="plans">
+            <div class="plan featured" id="s6-plan-1">
+              <div class="plan-tag">Recommended</div>
+              <div class="plan-name">Managed OpenClaw</div>
+              <div class="plan-title">Hassle-free</div>
+              <div class="plan-price">
+                <span class="amt">$5.99</span><span class="per">/ month</span>
+              </div>
+              <ul class="plan-feats">
+                <li><span class="check">✓</span> 1-click install — zero terminal</li>
+                <li><span class="check">✓</span> Auto security patches & backups</li>
+                <li><span class="check">✓</span> Telegram & WhatsApp from hPanel</li>
+                <li><span class="check">✓</span> Stable verified OpenClaw version</li>
+              </ul>
+            </div>
+            <div class="plan alt" id="s6-plan-2">
+              <div class="plan-name">OpenClaw on VPS</div>
+              <div class="plan-title">More freedom</div>
+              <div class="plan-price">
+                <span class="amt">$8.99</span><span class="per">/ month</span>
+              </div>
+              <ul class="plan-feats">
+                <li><span class="check">✓</span> Full root, custom firewalls</li>
+                <li><span class="check">✓</span> Manual updates on your schedule</li>
+                <li><span class="check">✓</span> Docker Catalog or terminal install</li>
+                <li><span class="check">✓</span> Same AI credits & web scraping</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 7 — PRICING / DURATION (22–25.5s) — SHADER ANCHOR ============ -->
+      <div
+        class="scene clip"
+        id="s7"
+        data-start="22"
+        data-duration="3.5"
+        data-track-index="0"
+        style="opacity:0;"
+      >
+        <div class="glow glow-7"></div>
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s7-kicker">04 / Pick your term</div>
+          <h2 class="display" id="s7-title">Lock in 24 months. Save big.</h2>
+          <div class="duration-row">
+            <div class="dur" id="s7-d1">1 mo</div>
+            <div class="dur" id="s7-d12">12 mo</div>
+            <div class="dur active" id="s7-d24">
+              24 mo
+              <div class="save">SAVE 60%</div>
+            </div>
+          </div>
+          <div class="price-display">
+            <span class="cur">$</span>
+            <span class="amt" id="s7-amt">5.99</span>
+            <span class="per">/ month</span>
+          </div>
+          <div class="billed" id="s7-billed">Billed every 24 months</div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 8 — CART + COUPON (25.5–29.5s) — SHADER ANCHOR ============ -->
+      <div
+        class="scene clip"
+        id="s8"
+        data-start="25.5"
+        data-duration="4"
+        data-track-index="0"
+        style="opacity:0;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="left">
+            <div class="kicker lk" id="s8-kicker">05 / Apply the coupon</div>
+            <h2 class="display" id="s8-title">An extra discount, just for you.</h2>
+            <p id="s8-sub">Drop the code at checkout — watch the price fall in real time.</p>
+          </div>
+          <div class="cart" id="s8-cart">
+            <div class="cart-title">Your cart</div>
+            <div class="cart-item">
+              <div class="cart-thumb">OC</div>
+              <div class="cart-item-body">
+                <div class="cart-item-name">Managed OpenClaw</div>
+                <div class="cart-item-term">24-month plan · Hassle-free</div>
+              </div>
+              <div class="cart-item-price">$143.76</div>
+            </div>
+            <div class="coupon-row">
+              <div class="coupon-input">
+                <span id="s8-code">OPENCLAW20</span>
+                <span class="coupon-applied">✓ APPLIED</span>
+              </div>
+            </div>
+            <div class="totals">
+              <div class="row muted">
+                <span>Subtotal</span><span class="strike">$143.76</span>
+              </div>
+              <div class="row discount">
+                <span>Coupon — OPENCLAW20</span><span id="s8-discount">−$28.75</span>
+              </div>
+              <div class="row final">
+                <span>Total</span><span id="s8-total">$115.01</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 9 — SETUP STEPS (29.5–34.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s9"
+        data-start="29.5"
+        data-duration="5"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="head">
+            <div>
+              <div class="kicker" id="s9-kicker">06 / The 4-step setup</div>
+              <h2 class="display" id="s9-title">From purchase to AI agent — in 4 steps.</h2>
+            </div>
+            <div class="progress">
+              <div class="progress-bar"><div class="progress-fill" id="s9-progress"></div></div>
+              <div class="progress-label" id="s9-progress-label">Step 04 / 04</div>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step s9-step">
+              <div class="step-num">01</div>
+              <div class="step-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="6" width="18" height="14" rx="2" stroke="white" stroke-width="2" />
+                  <path d="M3 10h18" stroke="white" stroke-width="2" />
+                </svg>
+              </div>
+              <div class="step-title">Buy your plan</div>
+              <div class="step-desc">Hit Get OpenClaw — pre-selected in cart.</div>
+            </div>
+            <div class="step s9-step">
+              <div class="step-num">02</div>
+              <div class="step-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2" />
+                  <path d="M12 2v3M12 19v3M22 12h-3M5 12H2M19 5l-2 2M7 17l-2 2M19 19l-2-2M7 7L5 5"
+                    stroke="white" stroke-width="2" />
+                </svg>
+              </div>
+              <div class="step-title">Configure environment</div>
+              <div class="step-desc">Set your env variables — one screen, all defaults.</div>
+            </div>
+            <div class="step s9-step">
+              <div class="step-num">03</div>
+              <div class="step-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18V5l12-2v13" stroke="white" stroke-width="2" />
+                  <circle cx="6" cy="18" r="3" stroke="white" stroke-width="2" />
+                  <circle cx="18" cy="16" r="3" stroke="white" stroke-width="2" />
+                </svg>
+              </div>
+              <div class="step-title">Choose your AI brain</div>
+              <div class="step-desc">Hostinger credits or bring your own API key.</div>
+            </div>
+            <div class="step s9-step">
+              <div class="step-num">04</div>
+              <div class="step-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 12c0 5-9 9-9 9s-9-4-9-9V5l9-3 9 3v7z" stroke="white" stroke-width="2" />
+                </svg>
+              </div>
+              <div class="step-title">Pick a channel</div>
+              <div class="step-desc">WhatsApp, Telegram, Slack, Discord — done.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 10 — CONFIG + AI PROVIDER (34.5–38.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s10"
+        data-start="34.5"
+        data-duration="4"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="left">
+            <div class="kicker" id="s10-kicker">07 / Configure</div>
+            <h2 class="display" id="s10-title">Pick your AI brain.</h2>
+            <p id="s10-sub">
+              Use the credits Hostinger pre-loaded — or paste your own OpenAI, Anthropic
+              or Gemini key.
+            </p>
+          </div>
+          <div class="form" id="s10-form">
+            <div class="form-title">AI Provider</div>
+            <div class="opt active s10-opt">
+              <div class="radio"></div>
+              <div class="opt-body">
+                <div class="opt-title">
+                  Ready-to-use AI
+                  <span class="opt-badge">RECOMMENDED</span>
+                </div>
+                <div class="opt-sub">Pre-connected. Add credits and ship.</div>
+              </div>
+            </div>
+            <div class="opt s10-opt">
+              <div class="radio"></div>
+              <div class="opt-body">
+                <div class="opt-title">External API key</div>
+                <div class="opt-sub">Bring your own OpenAI / Anthropic / Gemini key.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 11 — CHANNEL SELECTION (38.5–42s) ============ -->
+      <div
+        class="scene clip"
+        id="s11"
+        data-start="38.5"
+        data-duration="3.5"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s11-kicker">08 / Connect a channel</div>
+          <h2 class="display" id="s11-title">Where do you want to chat?</h2>
+          <div class="channels">
+            <div class="ch selected s11-ch">
+              <div class="pulse"></div>
+              <div class="ch-ic" style="background: #25d366;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="white">
+                  <path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-.9 1.2c-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.5.3-.5.9-1.6.1-.2.05-.4 0-.5l-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1-1.1 2.6s1.1 3 1.3 3.2c.2.3 2.3 3.5 5.6 4.9.8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.4-.3z" />
+                </svg>
+              </div>
+              <div class="ch-name">WhatsApp</div>
+              <div class="ch-tag">CONNECTED</div>
+            </div>
+            <div class="ch s11-ch">
+              <div class="ch-ic" style="background: #229ed9;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="white">
+                  <path d="M9.04 15.12l-.4 4c.55 0 .8-.24 1.1-.52l2.6-2.5 5.4 3.9c1 .55 1.7.27 1.95-.92l3.55-16.6c.3-1.43-.5-2-1.5-1.66L1.7 9.27c-1.4.55-1.38 1.34-.25 1.7l5.2 1.63 12.1-7.6c.57-.4 1.1-.18.66.22" />
+                </svg>
+              </div>
+              <div class="ch-name">Telegram</div>
+              <div class="ch-tag">1-CLICK</div>
+            </div>
+            <div class="ch s11-ch">
+              <div class="ch-ic" style="background: #4a154b;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="white">
+                  <path d="M9 2a2 2 0 110 4H7a2 2 0 110-4h2zm6 4V4a2 2 0 114 0v2a2 2 0 11-4 0zm-9 9a2 2 0 110-4h2a2 2 0 110 4H6zm9 6a2 2 0 11-4 0v-2a2 2 0 114 0v2zm6-9a2 2 0 110 4h-2a2 2 0 110-4h2zM4 11a2 2 0 110-4h2a2 2 0 110 4H4z" />
+                </svg>
+              </div>
+              <div class="ch-name">Slack</div>
+              <div class="ch-tag">VIA API</div>
+            </div>
+            <div class="ch s11-ch">
+              <div class="ch-ic" style="background: #5865f2;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="white">
+                  <path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4c1.6.4 3 1 4.4 1.8a17 17 0 0 0-15.2 0c1.4-.8 2.8-1.4 4.4-1.8L8.6 3A19.8 19.8 0 0 0 3.7 4.4 21 21 0 0 0 0 16.6a19.7 19.7 0 0 0 6.1 3l1.3-2c-1-.3-2-.7-3-1.3l.6-.5a14 14 0 0 0 13.9 0l.6.5c-1 .6-2 1-3 1.3l1.3 2A19.7 19.7 0 0 0 24 16.6a21 21 0 0 0-3.7-12.2zM8 14a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </div>
+              <div class="ch-name">Discord</div>
+              <div class="ch-tag">VIA API</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 12 — WORKFLOW DEMO (42–46s) ============ -->
+      <div
+        class="scene clip"
+        id="s12"
+        data-start="42"
+        data-duration="4"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="left">
+            <div class="live"><span class="live-dot"></span>Live execution</div>
+            <h2 class="display" id="s12-title">Your agent. Working.</h2>
+            <p id="s12-sub">
+              Send a message — OpenClaw orchestrates calls to your tools, schedules,
+              and replies. All on your hardware.
+            </p>
+          </div>
+          <div class="phone">
+            <div class="phone-bar">
+              <div class="phone-avatar">OC</div>
+              <div>
+                <div class="phone-meta-name">OpenClaw Agent</div>
+                <div class="phone-meta-sub">● online</div>
+              </div>
+            </div>
+            <div class="msg user s12-msg-1" id="s12-m1">
+              Schedule a meeting with Sarah tomorrow at 3pm.
+            </div>
+            <div class="typing s12-typing" id="s12-typing">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="msg bot s12-msg-2" id="s12-m2">
+              Done. Calendar invite sent to sarah@example.com, blocked 3–4pm.
+              <div class="ok">✓ Executed in 1.2s</div>
+            </div>
+            <div class="msg user s12-msg-3" id="s12-m3">
+              Pull yesterday's signups from the dashboard.
+            </div>
+            <div class="msg bot s12-msg-4" id="s12-m4">
+              47 new signups, 12 from organic. Full breakdown sent to your email.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 13 — FEATURE SPOTLIGHT (46–49.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s13"
+        data-start="46"
+        data-duration="3.5"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-13"></div>
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s13-kicker">09 / Always on</div>
+          <div class="big-stat display" id="s13-stat">24/7</div>
+          <div class="stat-label display" id="s13-label">
+            Your AI agent never clocks out.
+          </div>
+          <div class="stat-sub" id="s13-sub">
+            <span class="live-dot"></span> Running while you sleep
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 14 — CTA (49.5–53.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s14"
+        data-start="49.5"
+        data-duration="4"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-14"></div>
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="lk-row" id="s14-link">
+            <img class="lk-icon" src="assets/hostinger-brand/Hostinger_Icon_White.svg" alt="Hostinger" />
+            <span class="data-text">hostinger.com/openclaw</span>
+          </div>
+          <h2 class="display" id="s14-title">Launch yours today.</h2>
+          <div class="coupon-card" id="s14-coupon">
+            <div class="clabel">Coupon code</div>
+            <div class="coupon-code" id="s14-code">OPENCLAW20</div>
+            <div class="discount" id="s14-discount">−20% OFF</div>
+          </div>
+          <div class="cta-btn" id="s14-btn">Deploy OpenClaw →</div>
+          <!-- MANDATORY: debate-sparking CTA question per .claude/rules/engagement-cta.md
+               The wording MUST match the final spoken line of script.txt AND the
+               engagement question in youtube-description.md. Style + animate per
+               the rule (sized 36-48px for long-form). -->
+          <div id="s14-cta-question"
+               style="margin-top: 20px;
+                      font-family: var(--sans, system-ui); font-weight: 800; font-size: 44px;
+                      line-height: 1.12; letter-spacing: -1px; color: var(--accent, #ffd166);
+                      text-align: center; max-width: 1400px;">
+            REPLACE: your debate question?
+          </div>
+        </div>
+      </div>
+
+      <!-- Persistent top-right Hostinger H-mark — visible across every scene -->
+      <img
+        class="brand-mark"
+        src="assets/hostinger-brand/Hostinger_Icon_White.svg"
+        alt="Hostinger"
+      />
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // ============================================================
+      // SCENE VISIBILITY TOGGLES (autoAlpha for non-anchor scenes)
+      // s7 + s8 are shader anchors — HyperShader owns their opacity
+      // ============================================================
+      tl.set("#s1", { autoAlpha: 0 }, 3.0);
+      tl.set("#s2", { autoAlpha: 1 }, 3.0);
+      tl.set("#s2", { autoAlpha: 0 }, 5.5);
+      tl.set("#s3", { autoAlpha: 1 }, 5.5);
+      tl.set("#s3", { autoAlpha: 0 }, 9.5);
+      tl.set("#s4", { autoAlpha: 1 }, 9.5);
+      tl.set("#s4", { autoAlpha: 0 }, 13.5);
+      tl.set("#s5", { autoAlpha: 1 }, 13.5);
+      tl.set("#s5", { autoAlpha: 0 }, 17.0);
+      tl.set("#s6", { autoAlpha: 1 }, 17.0);
+      tl.set("#s6", { autoAlpha: 0 }, 22.0);
+      // First shader anchor — must be explicitly shown
+      tl.set("#s7", { opacity: 1 }, 22.0);
+      // s7 + s8 managed by HyperShader during 22.0 – 29.5
+      tl.set("#s9", { autoAlpha: 1 }, 29.5);
+      tl.set("#s9", { autoAlpha: 0 }, 34.5);
+      tl.set("#s10", { autoAlpha: 1 }, 34.5);
+      tl.set("#s10", { autoAlpha: 0 }, 38.5);
+      tl.set("#s11", { autoAlpha: 1 }, 38.5);
+      tl.set("#s11", { autoAlpha: 0 }, 42.0);
+      tl.set("#s12", { autoAlpha: 1 }, 42.0);
+      tl.set("#s12", { autoAlpha: 0 }, 46.0);
+      tl.set("#s13", { autoAlpha: 1 }, 46.0);
+      tl.set("#s13", { autoAlpha: 0 }, 49.5);
+      tl.set("#s14", { autoAlpha: 1 }, 49.5);
+
+      // ============================================================
+      // SCENE 1 — HOOK  (0 – 3s)
+      // ============================================================
+      tl.from("#s1-kicker", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 0.15);
+      tl.from("#s1-title .word > span",
+        { y: 160, duration: 0.8, ease: "expo.out", stagger: { each: 0.08, from: "start" } },
+        0.25);
+      tl.from("#s1-line", { scaleX: 0, transformOrigin: "left", duration: 0.6, ease: "power3.out" }, 0.9);
+      tl.from("#s1-sub", { y: 24, autoAlpha: 0, duration: 0.6, ease: "power2.out" }, 1.0);
+      // mid-scene: glow pulse
+      tl.to(".glow-1", { opacity: 0.4, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.5);
+
+      // ============================================================
+      // SCENE 2 — BRAND LOCKUP  (3 – 5.5s)
+      // ============================================================
+      tl.from("#s2-brand", { x: -80, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 3.2);
+      tl.from("#s2-x", { scale: 0, autoAlpha: 0, duration: 0.5, ease: "back.out(2)" }, 3.5);
+      tl.from("#s2-product", { x: 80, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 3.2);
+      tl.from("#s2-line", { scaleX: 0, transformOrigin: "center", duration: 0.5, ease: "power2.out" }, 3.9);
+      tl.from("#s2-tag", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 4.05);
+      // mid-scene: subtle breathing on lockup
+      tl.to("#s2-brand", { y: -4, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.4);
+      tl.to("#s2-product", { y: -4, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.4);
+      tl.to(".glow-2", { opacity: 0.32, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.6);
+
+      // ============================================================
+      // SCENE 3 — WHY AUTOMATE  (5.5 – 9.5s)
+      // ============================================================
+      tl.from("#s3-kicker", { x: -30, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 5.7);
+      tl.from("#s3-title", { y: 40, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 5.85);
+      tl.from("#s3-sub", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 6.15);
+      tl.from(".s3-item",
+        { x: 80, autoAlpha: 0, duration: 0.6, ease: "power3.out", stagger: 0.15 },
+        6.05);
+
+      // ============================================================
+      // SCENE 4 — WHY HOSTINGER  (9.5 – 13.5s)
+      // ============================================================
+      tl.from("#s4-kicker", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 9.7);
+      tl.from("#s4-title", { y: 50, autoAlpha: 0, duration: 0.7, ease: "expo.out" }, 9.85);
+      tl.from(".s4-feat",
+        { y: 40, autoAlpha: 0, duration: 0.55, ease: "back.out(1.4)", stagger: 0.1 },
+        10.2);
+      tl.to(".glow-4", { opacity: 0.22, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 10.5);
+
+      // ============================================================
+      // SCENE 5 — LANDING PAGE  (13.5 – 17s)
+      // ============================================================
+      tl.from("#s5-browser",
+        { y: 80, autoAlpha: 0, scale: 0.96, duration: 0.7, ease: "power3.out", transformOrigin: "center" },
+        13.65);
+      // Banner fades in slightly after the browser shell lands
+      tl.from("#s5-hero", { autoAlpha: 0, scale: 1.04, duration: 0.6, ease: "power2.out", immediateRender: false }, 14.0);
+      // cursor glides to the banner's "Deploy" CTA button (bottom-left of banner art)
+      tl.fromTo("#s5-cursor",
+        { x: 320, y: -120, autoAlpha: 0 },
+        { x: 0, y: 0, autoAlpha: 1, duration: 1.0, ease: "power2.inOut" },
+        14.75);
+      // ken burns slow zoom on browser
+      tl.to("#s5-browser", { scale: 1.03, duration: 3.5, ease: "none", transformOrigin: "center" }, 13.65);
+
+      // ============================================================
+      // SCENE 6 — PLAN COMPARISON  (17 – 22s)
+      // ============================================================
+      tl.from("#s6-kicker", { y: 16, autoAlpha: 0, duration: 0.45, ease: "power3.out" }, 17.15);
+      tl.from("#s6-title", { y: 30, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 17.25);
+      tl.from("#s6-sub", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 17.45);
+      tl.from("#s6-plan-1",
+        { x: -100, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 17.5);
+      tl.from("#s6-plan-2",
+        { x: 100, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 17.65);
+      tl.from("#s6-plan-1 .plan-feats li",
+        { x: -20, autoAlpha: 0, duration: 0.4, ease: "power2.out", stagger: 0.1 },
+        18.0);
+      tl.from("#s6-plan-2 .plan-feats li",
+        { x: 20, autoAlpha: 0, duration: 0.4, ease: "power2.out", stagger: 0.1 },
+        18.15);
+
+      // ============================================================
+      // SCENE 7 — PRICING / DURATION  (22 – 25.5s) — SHADER ANCHOR
+      // (no exit tweens — shader IS the exit)
+      // ============================================================
+      tl.from("#s7-kicker", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 22.15);
+      tl.from("#s7-title", { y: 30, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 22.25);
+      tl.from("#s7-d1",
+        { y: 20, autoAlpha: 0, duration: 0.4, ease: "back.out(1.6)" }, 22.5);
+      tl.from("#s7-d12",
+        { y: 20, autoAlpha: 0, duration: 0.4, ease: "back.out(1.6)" }, 22.6);
+      tl.from("#s7-d24",
+        { y: 20, autoAlpha: 0, duration: 0.4, ease: "back.out(1.6)" }, 22.7);
+      tl.from("#s7-d24 .save",
+        { scale: 0, rotate: -20, autoAlpha: 0, duration: 0.4, ease: "back.out(2)" }, 22.95);
+      // counter from 12.99 -> 5.99 (price falls)
+      tl.from("#s7-amt", { y: 20, autoAlpha: 0, duration: 0.4 }, 22.85);
+      var s7p = { v: 12.99 };
+      tl.to(s7p, {
+        v: 5.99, duration: 0.9, ease: "power2.out",
+        onUpdate: function () {
+          document.getElementById("s7-amt").textContent = s7p.v.toFixed(2);
+        }
+      }, 23.05);
+      tl.from("#s7-billed", { autoAlpha: 0, duration: 0.4 }, 23.6);
+      tl.to(".glow-7", { opacity: 0.36, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 23.4);
+      // active pill glow pulse
+      tl.to("#s7-d24",
+        { boxShadow: "0 0 60px rgba(103,61,230,0.65)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        24.0);
+
+      // ============================================================
+      // SCENE 8 — CART + COUPON  (25.5 – 29.5s) — SHADER ANCHOR
+      // ============================================================
+      tl.from("#s8-kicker", { x: -20, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 25.95);
+      tl.from("#s8-title", { y: 30, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 26.05);
+      tl.from("#s8-sub", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 26.3);
+      tl.from("#s8-cart",
+        { x: 100, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 25.85);
+      // coupon "stamps" in with a slight rotation
+      tl.from("#s8-code", { autoAlpha: 0, scale: 0.6, rotate: -8, duration: 0.5, ease: "back.out(2)" }, 26.9);
+      tl.from(".coupon-applied", { autoAlpha: 0, x: -10, duration: 0.4, ease: "power3.out" }, 27.25);
+      // discount counter
+      var s8d = { v: 0 };
+      tl.to(s8d, {
+        v: 28.75, duration: 0.8, ease: "power2.out",
+        onUpdate: function () {
+          document.getElementById("s8-discount").textContent =
+            "−$" + s8d.v.toFixed(2);
+        }
+      }, 27.5);
+      // total counter falls 143.76 -> 115.01
+      var s8t = { v: 143.76 };
+      tl.to(s8t, {
+        v: 115.01, duration: 0.9, ease: "power2.out",
+        onUpdate: function () {
+          document.getElementById("s8-total").textContent = "$" + s8t.v.toFixed(2);
+        }
+      }, 27.55);
+      // final total flash
+      tl.to("#s8-total",
+        { color: "#00C896", duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1 },
+        28.5);
+
+      // ============================================================
+      // SCENE 9 — SETUP STEPS  (29.5 – 34.5s)
+      // ============================================================
+      tl.from("#s9-kicker", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 29.7);
+      tl.from("#s9-title", { y: 40, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 29.85);
+      tl.from(".s9-step",
+        { y: 60, autoAlpha: 0, duration: 0.55, ease: "back.out(1.4)", stagger: 0.18 },
+        30.15);
+      tl.from("#s9-progress-label", { autoAlpha: 0, duration: 0.4 }, 30.15);
+      // progress fills from 0% to 100% as cards arrive
+      var prog = { v: 0 };
+      tl.to(prog, {
+        v: 100, duration: 1.2, ease: "power2.out",
+        onUpdate: function () {
+          document.getElementById("s9-progress").style.width = prog.v + "%";
+          var step = Math.min(4, Math.ceil(prog.v / 25));
+          document.getElementById("s9-progress-label").textContent =
+            "Step 0" + step + " / 04";
+        }
+      }, 30.3);
+
+      // ============================================================
+      // SCENE 10 — CONFIG + AI PROVIDER  (34.5 – 38.5s)
+      // ============================================================
+      tl.from("#s10-kicker", { x: -20, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 34.7);
+      tl.from("#s10-title", { y: 40, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 34.85);
+      tl.from("#s10-sub", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 35.1);
+      tl.from("#s10-form",
+        { x: 80, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 34.7);
+      tl.from(".s10-opt",
+        { y: 24, autoAlpha: 0, duration: 0.5, ease: "back.out(1.4)", stagger: 0.18 },
+        35.35);
+      // active card glow pulse
+      tl.to(".s10-opt.active",
+        { boxShadow: "0 0 40px rgba(103,61,230,0.4)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        36.4);
+
+      // ============================================================
+      // SCENE 11 — CHANNEL SELECTION  (38.5 – 42s)
+      // ============================================================
+      tl.from("#s11-kicker", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 38.65);
+      tl.from("#s11-title", { y: 40, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 38.8);
+      tl.from(".s11-ch",
+        { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.55, ease: "back.out(1.6)", stagger: 0.1 },
+        39.1);
+      // selected pulse
+      tl.fromTo(".s11-ch.selected .pulse",
+        { scale: 0.6, opacity: 0.4 },
+        { scale: 1.2, opacity: 1, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 2 },
+        40.0);
+
+      // ============================================================
+      // SCENE 12 — WORKFLOW DEMO  (42 – 46s)
+      // ============================================================
+      tl.from("#s12 .live", { autoAlpha: 0, x: -10, duration: 0.4, ease: "power3.out" }, 42.15);
+      tl.from("#s12-title", { y: 40, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 42.3);
+      tl.from("#s12-sub", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 42.55);
+      tl.from("#s12 .phone",
+        { x: 100, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 42.15);
+      // chat messages cascade
+      tl.from("#s12-m1", { y: 20, autoAlpha: 0, scale: 0.9, duration: 0.4, ease: "back.out(1.6)" }, 42.7);
+      tl.from("#s12-typing", { autoAlpha: 0, scale: 0.9, duration: 0.3, ease: "power2.out" }, 43.1);
+      tl.to("#s12-typing span",
+        { y: -4, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 3, stagger: 0.12 },
+        43.15);
+      tl.to("#s12-typing", { autoAlpha: 0, duration: 0.2 }, 44.0);
+      tl.from("#s12-m2", { y: 20, autoAlpha: 0, scale: 0.9, duration: 0.4, ease: "back.out(1.6)" }, 44.0);
+      tl.from("#s12-m3", { y: 20, autoAlpha: 0, scale: 0.9, duration: 0.4, ease: "back.out(1.6)" }, 44.7);
+      tl.from("#s12-m4", { y: 20, autoAlpha: 0, scale: 0.9, duration: 0.4, ease: "back.out(1.6)" }, 45.2);
+
+      // ============================================================
+      // SCENE 13 — FEATURE SPOTLIGHT  (46 – 49.5s)
+      // ============================================================
+      tl.from("#s13-kicker", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 46.2);
+      tl.from("#s13-stat",
+        { scale: 0.5, autoAlpha: 0, duration: 0.9, ease: "expo.out" }, 46.4);
+      tl.from("#s13-label", { y: 30, autoAlpha: 0, duration: 0.6, ease: "power3.out" }, 47.0);
+      tl.from("#s13-sub", { autoAlpha: 0, y: 16, duration: 0.5, ease: "power2.out" }, 47.3);
+      // big stat breathing
+      tl.to("#s13-stat",
+        { scale: 1.04, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        47.6);
+      tl.to(".glow-13", { opacity: 0.32, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 47.5);
+      // live dot pulse
+      tl.to("#s13-sub .live-dot",
+        { scale: 1.4, opacity: 0.6, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 2 },
+        47.8);
+
+      // ============================================================
+      // SCENE 14 — CTA  (49.5 – 53.5s)  (FINAL — exit tweens OK)
+      // ============================================================
+      tl.from("#s14-link", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 49.7);
+      tl.from("#s14-title", { y: 60, autoAlpha: 0, duration: 0.8, ease: "expo.out" }, 49.85);
+      tl.from("#s14-coupon",
+        { y: 40, scale: 0.92, autoAlpha: 0, duration: 0.6, ease: "back.out(1.6)" }, 50.45);
+      tl.from("#s14-discount",
+        { scale: 0, rotate: -30, autoAlpha: 0, duration: 0.5, ease: "back.out(2.2)" }, 50.85);
+      tl.from("#s14-btn",
+        { y: 24, autoAlpha: 0, duration: 0.5, ease: "back.out(1.6)" }, 51.05);
+      // sustained pulses
+      tl.to(".glow-14", { opacity: 0.4, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 50.5);
+      tl.to("#s14-btn",
+        { scale: 1.04, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 2 },
+        51.7);
+      tl.to("#s14-coupon",
+        { borderColor: "#673de6", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 2 },
+        51.5);
+
+      // ============================================================
+      // SHADER TRANSITIONS — 1 hero transition between Pricing → Cart
+      // ============================================================
+      window.HyperShader.init({
+        bgColor:
+          getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0e0f19",
+        scenes: ["s7", "s8"],
+        timeline: tl,
+        transitions: [
+          { time: 25.25, shader: "cinematic-zoom", duration: 0.5 },
+        ],
+      });
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!--
+  scene-code-block.html — Terminal command for Claude Desktop + Ollama setup.
+-->
+<template id="scene-code-block-template">
+  <div data-composition-id="scene-code-block"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-code-block-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-code-block-content .kicker {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-code-block-content .window {
+        width: 940px;
+        background: var(--accent-ink);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-warm);
+        text-align: left;
+      }
+      #scene-code-block-content .titlebar {
+        display: flex; align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        background: rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      #scene-code-block-content .dot {
+        width: 14px; height: 14px; border-radius: 50%;
+      }
+      #scene-code-block-content .dot.r { background: #FF5F57; }
+      #scene-code-block-content .dot.y { background: #FEBC2E; }
+      #scene-code-block-content .dot.g { background: #28C840; }
+      #scene-code-block-content .filename {
+        margin-left: 18px;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 22px;
+        color: rgba(255, 255, 255, 0.55);
+      }
+      #scene-code-block-content .body {
+        padding: 28px 36px;
+      }
+      #scene-code-block-content .line {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 28px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.90);
+        white-space: pre;
+      }
+      #scene-code-block-content .kw  { color: var(--accent-rose); }
+      #scene-code-block-content .fn  { color: var(--accent-gold); }
+      #scene-code-block-content .str { color: var(--accent-sage); }
+      #scene-code-block-content .num { color: var(--accent-warm); }
+      #scene-code-block-content .com { color: rgba(255, 255, 255, 0.40); font-style: italic; }
+      #scene-code-block-content .out {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+        color: var(--accent-sage);
+        font-style: italic;
+      }
+      #scene-code-block-content .footnote {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 32px;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-code-block-content">
+      <div class="kicker" id="cb-kicker">$ Setup</div>
+      <div class="window" id="cb-window">
+        <div class="titlebar">
+          <span class="dot r"></span>
+          <span class="dot y"></span>
+          <span class="dot g"></span>
+          <span class="filename">terminal &mdash; one-time setup</span>
+        </div>
+        <div class="body">
+          <div class="line" id="cb-l1"><span class="com"># 1. Set your Ollama API key</span></div>
+          <div class="line" id="cb-l2"><span class="kw">export</span> <span class="fn">OLLAMA_API_KEY</span>=<span class="str">"&lt;your-key&gt;"</span></div>
+          <div class="line" id="cb-l3"><span class="com"># 2. Launch the Claude Desktop bridge</span></div>
+          <div class="line" id="cb-l4"><span class="fn">ollama</span> <span class="kw">launch</span> <span class="str">claude-desktop</span></div>
+          <div class="line out" id="cb-l5">&rarr; Reload. Ollama models in the picker.</div>
+        </div>
+      </div>
+      <div class="footnote" id="cb-footnote">That's the whole setup.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Hidden-until-reveal pattern (set + to). Lines hidden as group at t=0;
+      // each one reveals on its narration beat.
+      tl.set("#cb-kicker",   { y: 16, opacity: 0 }, 0);
+      tl.set("#cb-window",   { y: 30, scale: 0.96, opacity: 0 }, 0);
+      tl.set("#cb-l1, #cb-l2, #cb-l3, #cb-l4", { x: -20, opacity: 0 }, 0);
+      tl.set("#cb-l5",       { y: 14, opacity: 0 }, 0);
+      tl.set("#cb-footnote", { y: 16, opacity: 0 }, 0);
+
+      tl.to("#cb-kicker",   { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0);
+      tl.to("#cb-window",   { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 0.3);
+      tl.to("#cb-l1, #cb-l2, #cb-l3, #cb-l4", { x: 0, opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.55 }, 1.0);
+      tl.to("#cb-l5",       { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 4.0);
+      tl.to("#cb-footnote", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 4.4);
+
+      tl.to("#cb-l4 .kw",  { scale: 1.15, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 5.2);
+      tl.to("#cb-l4 .str", { scale: 1.12, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 5.8);
+      tl.to("#cb-l5",      { color: "var(--accent-gold)", scale: 1.04, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 7.0);
+      tl.to("#cb-window",  { scale: 1.015, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 8.5);
+
+      window.__timelines["scene-code-block"] = tl;
+    </script>
+  </div>
+</template>

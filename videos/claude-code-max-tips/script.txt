@@ -1,0 +1,19 @@
+Most Claude Max subscribers hit their limit by noon — and they never figure out why.
+
+You're paying a hundred or two hundred dollars a month for Claude Max. But here's what Anthropic doesn't put on the pricing page: a bloated CLAUDE.md file costs you tokens on every single turn. Not just once. Every message. Five thousand tokens of CLAUDE.md instructions means five thousand tokens burned before you've typed a word.
+
+There are five fixes that actually move the needle.
+
+Fix one. Trim your CLAUDE.md below two hundred lines. Most developers bloat it to six hundred lines over time — rules for debugging, rules for testing, rules for formatting. But Claude reads the whole file on every message, even when you're just fixing a C S S typo. Keep only what's essential. Cut the rest.
+
+Fix two. Use dot-claudeignore. It works exactly like dot-gitignore. Add your node-modules, your build folders, your generated files. When Claude can't see those files, it can't accidentally load them — and your context stays clean.
+
+Fix three. Specific beats vague. "Fix the bug" sends Claude hunting across your entire codebase. "Fix the J W T validation in src/auth/validate.ts line forty-two where expired tokens aren't rejected" goes straight to the problem. The difference can be ten times fewer tokens consumed.
+
+Fix four. Run slash-compact before your context fills. Claude Code auto-compacts when you hit about eighty-three percent of the context window. But by then you've already paid for all those tokens. Running slash-compact manually at the halfway point keeps sessions sharp and cheap.
+
+Fix five. Watch your images. A full screenshot passed to Claude costs about thirteen hundred tokens. A tight crop of the relevant section? Under a hundred. Same information, thirteen times cheaper.
+
+The Max plan gives you headroom. These five fixes make sure you actually use it for the work that matters, not the filler your project drags in by default.
+
+If you want to learn more about A I, check out the dynamous.ai community.

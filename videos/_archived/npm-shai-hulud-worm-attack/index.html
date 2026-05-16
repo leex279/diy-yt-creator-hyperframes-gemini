@@ -1,0 +1,1923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>NPM Shai-Hulud Worm — How One Fork-PR Hijacked Tanstack</title>
+<link rel="stylesheet" href="tokens/standard-short.css" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 warm cream paper stage.
+     Phase-mutex pattern (one index.html, 9 phases).
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient deep-red wash on near-black */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 18%, rgba(255, 42, 42, 0.12), transparent 55%),
+      radial-gradient(circle at 80% 75%, rgba(185, 28, 28, 0.10), transparent 60%),
+      radial-gradient(circle at 50% 105%, rgba(255, 42, 42, 0.06), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — desaturated, red-shifted for alarm aesthetic */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.11;
+    object-fit: contain;
+    pointer-events: none;
+    filter: brightness(0.7) sepia(1) hue-rotate(-25deg) saturate(2);
+  }
+
+  /* Subtle grain overlay — red-warm tint */
+  #grain-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.05;
+    mix-blend-mode: screen;
+  }
+
+  /* Alarm scanline overlay — for alarm-heavy phases (P1, P5, P6) */
+  .alarm-phase::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(255, 42, 42, 0.06) 3px,
+      rgba(255, 42, 42, 0.06) 4px
+    );
+    z-index: 9;
+    mix-blend-mode: screen;
+  }
+
+  /* Top chrome */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+  }
+  #top-banner-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 22px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--alarm);
+    box-shadow: 0 0 20px rgba(255, 42, 42, 0.18), var(--shadow-warm);
+  }
+  #top-banner-logo {
+    display: block;
+    width: 200px;
+    height: auto;
+  }
+  #top-banner-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--alarm);
+    box-shadow: 0 0 14px rgba(255, 42, 42, 0.85);
+    animation: pulse-alarm 1.4s ease-in-out infinite;
+  }
+  #top-banner-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 4px;
+    color: var(--alarm);
+    text-transform: uppercase;
+  }
+  @keyframes pulse-alarm {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 42, 42, 0.55); }
+    50%      { box-shadow: 0 0 22px rgba(255, 42, 42, 1.0); }
+  }
+
+  /* Progress bar */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(43, 42, 40, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--alarm);
+    box-shadow: 0 0 14px rgba(255, 42, 42, 0.75);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — phase-mutex inside one index.html.
+     Each phase is an absolutely-positioned 1080x1920 div
+     that GSAP fades in/out via opacity + visibility.
+     ────────────────────────────────────────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    padding: 240px 80px;
+  }
+  #phase0 { z-index: 5; opacity: 1; }
+  #phase1, #phase2, #phase3, #phase4,
+  #phase5, #phase6, #phase7, #phase8 {
+    z-index: 1; opacity: 0; visibility: hidden;
+  }
+
+  /* ── Shared typography utilities ──────────────────── */
+  .kicker {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 5px;
+    color: var(--alarm);
+    text-transform: uppercase;
+  }
+  .headline-serif {
+    font-family: var(--serif);
+    font-weight: 900;
+    line-height: 0.94;
+    letter-spacing: -0.02em;
+    color: var(--accent-ink);
+  }
+  .body-line {
+    font-family: var(--sans);
+    color: var(--accent-ink);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 0 — Thumbnail-grade open (t=0..2.5s)
+     Topic + brand + outcome receipt visible at t=0.
+     ────────────────────────────────────────────────── */
+  #p0-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 56px;
+  }
+  #p0-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-warm);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 4px;
+    color: var(--accent-ink);
+  }
+  #p0-brand-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--alarm);
+    box-shadow: 0 0 12px rgba(255, 42, 42, 0.85);
+  }
+  #p0-topic {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 168px;
+    line-height: 0.93;
+    letter-spacing: -0.03em;
+    color: var(--accent-ink);
+  }
+  #p0-topic .accent {
+    color: var(--alarm);
+    position: relative;
+    display: inline-block;
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 24px var(--alarm-glow), 0 0 48px var(--alarm-glow);
+  }
+  #p0-mark-hijacked {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    height: 40px;
+    width: 0;
+    background: rgba(255, 42, 42, 0.30);
+    border-radius: 6px;
+    z-index: -1;
+  }
+  #p0-outcome {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 56px;
+    color: var(--accent-ink);
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  #p0-outcome .num {
+    color: var(--alarm);
+    font-variant-numeric: tabular-nums;
+  }
+  #p0-anchor {
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 36px;
+    border-radius: 28px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--alarm);
+    box-shadow: 0 0 24px rgba(255, 42, 42, 0.18), var(--shadow-warm);
+  }
+  #p0-anchor .icon {
+    width: 64px; height: 64px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--alarm), var(--alarm-deep));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 34px;
+    box-shadow: 0 0 18px rgba(255, 42, 42, 0.45);
+  }
+  #p0-anchor .label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent-ink);
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — Trojan-Horse Hook (t=2.5..23.0s)
+     ────────────────────────────────────────────────── */
+  #p1-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 36px;
+  }
+  #p1-kicker { /* uses .kicker */ }
+  #p1-headline {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 132px;
+    line-height: 0.93;
+    letter-spacing: -0.02em;
+    color: var(--accent-ink);
+  }
+  #p1-headline .accent {
+    color: var(--alarm);
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 22px var(--alarm-glow);
+  }
+  #p1-chips {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .chip {
+    padding: 16px 26px;
+    border-radius: 18px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-bright);
+    box-shadow: var(--shadow-warm);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 34px;
+    color: var(--accent-ink);
+    letter-spacing: 1px;
+  }
+  .chip.danger {
+    color: var(--alarm);
+    border-color: var(--alarm-deep);
+  }
+  #p1-trust-card {
+    padding: 28px 36px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-bright);
+    box-shadow: var(--shadow-warm);
+    margin-top: 12px;
+  }
+  #p1-trust-card .trust-kicker {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: var(--caution);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  #p1-trust-card .trust-claim {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 42px;
+    color: var(--accent-ink);
+    line-height: 1.15;
+  }
+  #p1-but {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 240px;
+    color: var(--alarm);
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    margin: 22px 0 14px 0;
+    text-shadow: 0 0 30px var(--alarm-glow), 0 0 60px var(--alarm-glow);
+  }
+  #p1-signed-row {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+  #p1-signed-pill {
+    position: relative;
+    padding: 18px 32px;
+    border-radius: 18px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--caution);
+    box-shadow: 0 0 16px rgba(255, 184, 0, 0.18), var(--shadow-warm);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--caution);
+    overflow: hidden;
+  }
+  #p1-mark-signed {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 14px;
+    height: 30px;
+    width: 0;
+    background: rgba(255, 184, 0, 0.40);
+    border-radius: 4px;
+    z-index: -1;
+  }
+  #p1-still-line {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 92px;
+    color: var(--alarm);
+    letter-spacing: -0.04em;
+    margin-top: 6px;
+    text-shadow: 0 0 20px var(--alarm-glow);
+  }
+  #p1-still-line .em { position: relative; display: inline-block; }
+  #p1-mark-still {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 8px;
+    height: 22px;
+    width: 0;
+    background: rgba(255, 42, 42, 0.50);
+    border-radius: 4px;
+    z-index: -1;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — YAML Smoking Gun (t=23.0..48.0s)
+     ────────────────────────────────────────────────── */
+  #p2-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  #p2-headline {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 92px;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--accent-ink);
+  }
+  #p2-headline .accent { color: var(--alarm); text-shadow: 0 0 18px var(--alarm-glow); }
+  #p2-yaml {
+    background: #050608;
+    border-radius: 26px;
+    padding: 36px 40px;
+    border: 1.5px solid var(--border-bright);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 42, 42, 0.04);
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1.42;
+    color: #E5E7EB;
+    margin-top: 10px;
+    position: relative;
+  }
+  #p2-yaml .filename {
+    display: block;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: #6B7280;
+    margin-bottom: 16px;
+    text-transform: lowercase;
+  }
+  #p2-yaml .k { color: #94A3B8; }
+  #p2-yaml .v { color: var(--caution); }
+  #p2-yaml .c { color: #4B5563; }
+  #p2-yaml-trigger {
+    position: relative;
+    display: inline-block;
+    color: var(--caution);
+    font-weight: 700;
+  }
+  #p2-mark-pr-target {
+    position: absolute;
+    left: -12px; right: -12px;
+    top: -8px; bottom: -8px;
+    border: 4px solid var(--caution);
+    border-radius: 18px;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 0 20px rgba(255, 184, 0, 0.40);
+  }
+  #p2-yaml-ref {
+    position: relative;
+    display: inline-block;
+    color: var(--alarm);
+    font-weight: 700;
+  }
+  #p2-mark-ref {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 6px;
+    height: 24px;
+    width: 0;
+    background: rgba(255, 42, 42, 0.40);
+    border-radius: 4px;
+    z-index: -1;
+  }
+  #p2-support {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  #p2-support .word {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 40px;
+    padding: 14px 24px;
+    border-radius: 14px;
+    background: var(--bg-tint);
+    border: 1.5px solid var(--alarm-deep);
+    color: var(--accent-ink);
+  }
+  #p2-support .word.warm { color: var(--alarm); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — 8-hour Cache Poison Timeline (t=48..76s)
+     ────────────────────────────────────────────────── */
+  #p3-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  #p3-headline {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 80px;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--accent-ink);
+  }
+  #p3-headline .accent { color: var(--alarm); text-shadow: 0 0 18px var(--alarm-glow); }
+  #p3-cache-pill {
+    align-self: flex-start;
+    padding: 14px 28px;
+    border-radius: 999px;
+    background: var(--alarm-deep);
+    color: #FFFFFF;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    box-shadow: 0 0 18px rgba(185, 28, 28, 0.45);
+  }
+  #p3-timeline {
+    position: relative;
+    margin-top: 16px;
+  }
+  .p3-row {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    padding: 22px 26px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-bright);
+    box-shadow: var(--shadow-warm);
+    margin-bottom: 18px;
+  }
+  /* Hour 0 / Hour 8 — muted gray markers (early timeline, no alarm yet) */
+  #p3-row-1 .hour,
+  #p3-row-2 .hour {
+    color: var(--text-secondary);
+  }
+  .p3-row .hour {
+    flex-shrink: 0;
+    width: 168px;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: 1px;
+    color: var(--alarm);
+    align-self: center;
+  }
+  .p3-row .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .p3-row .title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 38px;
+    color: var(--accent-ink);
+    line-height: 1.1;
+  }
+  .p3-row .sub {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 26px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+  /* Row 3 — WORM WAKES / OIDC token scraped — full alarm red */
+  #p3-row-3 {
+    border-color: var(--alarm);
+    box-shadow: 0 0 24px rgba(255, 42, 42, 0.22), var(--shadow-warm);
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--alarm-tint) 100%);
+  }
+  #p3-row-3 .hour { color: var(--alarm); text-shadow: 0 0 14px var(--alarm-glow); }
+  #p3-row-3 .title { color: var(--alarm); }
+  /* Row 4 — PUBLISH — alarm red emphasis on the count */
+  #p3-row-4 .hour { color: var(--alarm); }
+  #p3-row-4 .title { color: var(--accent-ink); }
+  #p3-row-4 .count-big {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 56px;
+    color: var(--alarm);
+    margin-right: 12px;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 14px var(--alarm-glow);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — Worm Spreads, counter + company pills
+     (t=76..104.4s)
+     ────────────────────────────────────────────────── */
+  #p4-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    align-items: center;
+  }
+  #p4-kicker {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 5px;
+    color: var(--alarm);
+    text-transform: uppercase;
+    align-self: flex-start;
+  }
+  #p4-counter-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 18px;
+  }
+  #p4-counter {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 360px;
+    line-height: 0.9;
+    color: var(--alarm);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 40px var(--alarm-glow), 0 0 80px var(--alarm-glow);
+  }
+  #p4-counter-suffix {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 46px;
+    color: var(--accent-ink);
+    margin-top: 4px;
+    text-align: center;
+    line-height: 1.1;
+  }
+  #p4-518m-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  #p4-518m {
+    position: relative;
+    display: inline-block;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 40px;
+    padding: 12px 20px;
+    color: var(--alarm);
+  }
+  #p4-mark-518m {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 8px;
+    height: 24px;
+    width: 0;
+    background: rgba(255, 42, 42, 0.40);
+    border-radius: 4px;
+    z-index: -1;
+  }
+  #p4-518m-label {
+    font-family: var(--mono);
+    font-size: 28px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+  }
+  #p4-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    margin-top: 18px;
+  }
+  .p4-pill {
+    padding: 18px 22px;
+    border-radius: 18px;
+    background: var(--alarm-tint);
+    border: 1.5px solid var(--alarm-deep);
+    box-shadow: 0 0 12px rgba(255, 42, 42, 0.10), var(--shadow-warm);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    color: var(--accent-ink);
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  #p4-pill-1, #p4-pill-2, #p4-pill-3,
+  #p4-pill-4, #p4-pill-5, #p4-pill-6 { color: var(--accent-ink); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 5 — Persistence + Forged Commits
+     (t=104.4..129.65s)
+     ────────────────────────────────────────────────── */
+  #p5-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  #p5-headline {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 96px;
+    line-height: 0.94;
+    color: var(--accent-ink);
+    letter-spacing: -0.02em;
+  }
+  #p5-uninstall-line {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 64px;
+    color: var(--accent-ink);
+    position: relative;
+    display: inline-block;
+    align-self: flex-start;
+  }
+  #p5-uninstall-line .target {
+    position: relative;
+    display: inline-block;
+    color: var(--alarm);
+  }
+  #p5-mark-uninstall {
+    position: absolute;
+    left: -8px; right: -8px;
+    top: 50%;
+    height: 8px;
+    width: 0;
+    background: var(--alarm);
+    transform: translateY(-50%) rotate(-2deg);
+    border-radius: 4px;
+    z-index: -1;
+    box-shadow: 0 0 14px var(--alarm-glow);
+  }
+  #p5-claude-callout {
+    align-self: flex-start;
+    padding: 16px 26px;
+    border-radius: 18px;
+    background: var(--alarm-tint);
+    border: 1.5px solid var(--alarm-deep);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--alarm);
+    letter-spacing: 1px;
+  }
+  #p5-commit-row {
+    margin-top: 6px;
+    padding: 24px 30px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--alarm-deep);
+    box-shadow: 0 0 20px rgba(255, 42, 42, 0.18), var(--shadow-warm);
+    display: flex;
+    gap: 22px;
+    align-items: center;
+    position: relative;
+  }
+  #p5-commit-row .avatar {
+    flex-shrink: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--alarm-deep), var(--alarm));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 30px;
+  }
+  #p5-commit-row .commit-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #p5-commit-row .author {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--accent-ink);
+    word-break: break-all;
+  }
+  #p5-commit-row .commit-msg {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 32px;
+    color: var(--accent-ink);
+  }
+  #p5-commit-row .branch {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: var(--alarm-tint);
+    color: var(--alarm);
+    align-self: flex-start;
+    letter-spacing: 0.5px;
+  }
+  #p5-forged-stamp {
+    position: absolute;
+    top: -28px;
+    right: 30px;
+    padding: 10px 22px;
+    border: 4px solid var(--alarm-deep);
+    border-radius: 8px;
+    transform: rotate(-6deg);
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: 4px;
+    color: var(--alarm-deep);
+    background: rgba(7, 8, 10, 0.92);
+    text-transform: uppercase;
+    box-shadow: 0 0 18px rgba(185, 28, 28, 0.40);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 6 — Dead-Man Switch (t=129.65..152.9s)
+     ────────────────────────────────────────────────── */
+  #p6-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  #p6-kicker {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 5px;
+    color: var(--caution);
+    text-transform: uppercase;
+  }
+  #p6-headline {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 116px;
+    line-height: 0.94;
+    color: var(--accent-ink);
+    letter-spacing: -0.02em;
+  }
+  #p6-headline .accent { color: var(--alarm); text-shadow: 0 0 22px var(--alarm-glow); }
+  #p6-clock-row {
+    display: flex;
+    gap: 26px;
+    align-items: center;
+    margin-top: 12px;
+  }
+  /* Clock starts caution-yellow (warning); flips to alarm-red on rm reveal via class swap */
+  #p6-clock {
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 200px;
+    color: var(--caution);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    line-height: 0.9;
+    text-shadow: 0 0 28px rgba(255, 184, 0, 0.50);
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+  #p6-clock.is-alarm {
+    color: var(--alarm);
+    text-shadow: 0 0 28px var(--alarm-glow), 0 0 56px var(--alarm-glow);
+  }
+  #p6-clock-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text-secondary);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    line-height: 1.2;
+    max-width: 320px;
+  }
+  #p6-token-card {
+    padding: 22px 26px;
+    border-radius: 20px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--alarm-deep);
+    box-shadow: 0 0 22px rgba(185, 28, 28, 0.22), var(--shadow-warm);
+    position: relative;
+  }
+  #p6-token-card .tlabel {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  #p6-token-name {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--alarm);
+    line-height: 1.3;
+    word-break: break-all;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 0 14px var(--alarm-glow);
+  }
+  #p6-mark-token {
+    position: absolute;
+    left: -6px; right: -6px;
+    top: 0; bottom: 0;
+    background: rgba(255, 42, 42, 0.20);
+    border-radius: 6px;
+    width: 0;
+    z-index: -1;
+  }
+  #p6-typewriter {
+    margin-top: 4px;
+    padding: 20px 26px;
+    border-radius: 16px;
+    background: #050608;
+    border: 1.5px solid var(--alarm-deep);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 48px;
+    color: var(--alarm);
+    letter-spacing: 1px;
+    min-height: 88px;
+    box-shadow: inset 0 0 18px rgba(255, 42, 42, 0.10);
+  }
+  #p6-typewriter .prompt { color: var(--caution); margin-right: 12px; }
+  #p6-typewriter .cmd { color: var(--alarm); text-shadow: 0 0 8px var(--alarm-glow); }
+  #p6-typewriter .cursor {
+    display: inline-block;
+    width: 18px;
+    height: 38px;
+    background: var(--alarm);
+    vertical-align: middle;
+    margin-left: 6px;
+    box-shadow: 0 0 10px var(--alarm-glow);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 7 — pnpm v11 Defense (t=152.9..178.15s)
+     ────────────────────────────────────────────────── */
+  #p7-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  #p7-kicker {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 5px;
+    color: var(--signal);
+    text-transform: uppercase;
+  }
+  #p7-headline {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 96px;
+    line-height: 0.93;
+    color: var(--accent-ink);
+    letter-spacing: -0.02em;
+  }
+  #p7-headline .accent {
+    color: var(--signal);
+    text-shadow: 0 0 22px rgba(16, 185, 129, 0.40);
+  }
+  #p7-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 14px;
+  }
+  .p7-card {
+    padding: 24px 28px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 2px solid var(--signal);
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.18), var(--shadow-warm);
+    display: flex;
+    gap: 22px;
+    align-items: flex-start;
+  }
+  .p7-card .badge {
+    flex-shrink: 0;
+    width: 76px; height: 76px;
+    border-radius: 18px;
+    background: var(--signal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 50px;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+  }
+  .p7-card .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .p7-card .title {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 38px;
+    color: var(--accent-ink);
+    letter-spacing: 0.5px;
+    position: relative;
+    display: inline-block;
+  }
+  .p7-card .title .em { position: relative; display: inline-block; }
+  #p7-mark-24h {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 4px;
+    height: 18px;
+    width: 0;
+    background: rgba(16, 185, 129, 0.45);
+    border-radius: 4px;
+    z-index: -1;
+  }
+  .p7-card .sub {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 28px;
+    color: var(--text-secondary);
+    line-height: 1.25;
+  }
+  #p7-footer {
+    margin-top: 6px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--alarm);
+    letter-spacing: -0.01em;
+    text-shadow: 0 0 16px var(--alarm-glow);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 8 — Thumbnail close + CTA (t=178.15..190s)
+     ────────────────────────────────────────────────── */
+  #p8-stack {
+    position: absolute;
+    inset: 240px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    justify-content: center;
+  }
+  #p8-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-warm);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 4px;
+    color: var(--accent-ink);
+    align-self: flex-start;
+  }
+  /* P8 brand dot — split signal/alarm aesthetic */
+  #p8-brand-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.80);
+  }
+  #p8-topic {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.93;
+    letter-spacing: -0.03em;
+    color: var(--signal);
+    text-shadow: 0 0 24px rgba(16, 185, 129, 0.35);
+  }
+  /* "OR ROULETTE" red side */
+  #p8-topic .accent {
+    color: var(--alarm);
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 26px var(--alarm-glow), 0 0 52px var(--alarm-glow);
+  }
+  #p8-anchor-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 32px;
+    border-radius: 24px;
+    background: var(--signal);
+    box-shadow: 0 0 22px rgba(16, 185, 129, 0.35), var(--shadow-warm);
+    align-self: flex-start;
+  }
+  #p8-anchor-row .shield {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 40px;
+  }
+  #p8-anchor-row .label {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 32px;
+    color: #FFFFFF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  #p8-outcome {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 48px;
+    color: var(--accent-ink);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  /* CTA question — off-white text on dark with a subtle red question-mark glow */
+  #cta-question {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--accent-ink);
+    padding: 24px 30px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 2px solid var(--alarm);
+    box-shadow: 0 0 24px rgba(255, 42, 42, 0.22), var(--shadow-warm);
+  }
+  #p8-url-wrap {
+    align-self: flex-start;
+    position: relative;
+    padding: 14px 18px;
+  }
+  #p8-url {
+    display: inline-block;
+    padding: 32px 40px;
+    border-radius: 999px;
+    background: var(--alarm);
+    color: #FFFFFF;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.2;
+    letter-spacing: 1px;
+    position: relative;
+    box-shadow: 0 0 26px rgba(255, 42, 42, 0.45);
+  }
+  #p8-mark-url {
+    position: absolute;
+    inset: 4px 4px;
+    border: 4px solid var(--alarm);
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="191.5"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Warm radial wash + ink shape backdrop -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner -->
+  <div id="top-banner">
+    <div id="top-banner-inner">
+      <img id="top-banner-logo" src="assets/npm-logo.svg" alt="npm">
+      <span id="top-banner-dot"></span>
+      <span id="top-banner-label">BREACH</span>
+    </div>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 0 — Thumbnail-grade open (t=0..2.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase0" class="clip phase"
+       data-start="0" data-duration="2.5" data-track-index="1">
+    <div id="p0-stack">
+      <div id="p0-topic">
+        NPM JUST GOT<br><span class="accent">HIJACKED<span id="p0-mark-hijacked"></span></span>.
+      </div>
+      <div id="p0-anchor">
+        <div class="icon">!</div>
+        <div class="label">169 PACKAGES &middot; 6 MIN</div>
+      </div>
+      <div id="p0-outcome">
+        <span class="num">169</span> packages.<br>
+        <span class="num">6</span> minutes. Signed.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — Trojan-Horse Hook (t=2.5..23.0s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="clip phase alarm-phase"
+       data-start="2.5" data-duration="20.5" data-track-index="1">
+    <div id="p1-stack">
+      <div id="p1-kicker" class="kicker">SHAI-HULUD &middot; TANSTACK</div>
+      <div id="p1-headline">
+        TanStack hijacked in<br><span class="accent">six minutes</span>.
+      </div>
+      <div id="p1-chips">
+        <div id="p1-chip-clock" class="chip danger">00:06:00</div>
+        <div id="p1-chip-rm" class="chip danger">$ rm -rf ~/</div>
+      </div>
+      <div id="p1-trust-card">
+        <div class="trust-kicker">TRUSTED PUBLISHING</div>
+        <div class="trust-claim">&ldquo;supposed to stop this.&rdquo;</div>
+      </div>
+      <div id="p1-but">BUT.</div>
+      <div id="p1-signed-row">
+        <div id="p1-signed-pill"><span>SIGNED</span><span id="p1-mark-signed"></span></div>
+        <div class="chip">SLSA-ATTESTED</div>
+      </div>
+      <div id="p1-still-line">
+        <span class="em">Still<span id="p1-mark-still"></span></span> malware.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — YAML Smoking Gun (t=23..48s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="clip phase"
+       data-start="23.0" data-duration="25.0" data-track-index="1">
+    <div id="p2-stack">
+      <div id="p2-headline">
+        The <span class="accent">smoking gun</span>.<br>One YAML line.
+      </div>
+      <div id="p2-yaml">
+        <span class="filename">.github/workflows/bundle-size.yml</span>
+        <span class="c"># run on PR from forks</span><br>
+        <span class="k">on:</span> <span id="p2-yaml-trigger" class="v">pull_request_target<span id="p2-mark-pr-target"></span></span><br>
+        <span class="k">jobs:</span><br>
+        &nbsp;&nbsp;<span class="k">size:</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="k">steps:</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="k">checkout</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="p2-yaml-ref" class="v">ref: refs/pull/$PR/merge<span id="p2-mark-ref"></span></span>
+      </div>
+      <div id="p2-support">
+        <div class="word warm">Fork code.</div>
+        <div class="word warm">Real secrets.</div>
+        <div class="word warm">Same runner.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — 8-hour Cache Poison Timeline (t=48..76s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="clip phase"
+       data-start="48.0" data-duration="29.1" data-track-index="1">
+    <div id="p3-stack">
+      <div id="p3-headline">
+        Closing the PR<br><span class="accent">did nothing</span>.
+      </div>
+      <div id="p3-cache-pill">1.1 GB cache &middot; poisoned</div>
+      <div id="p3-timeline">
+        <div id="p3-row-1" class="p3-row">
+          <div class="hour">T+0</div>
+          <div class="body">
+            <div class="title">Fork-PR opens, then closes.</div>
+            <div class="sub">cache write &middot; bundle-size.yml fires</div>
+          </div>
+        </div>
+        <div id="p3-row-2" class="p3-row">
+          <div class="hour">~8H</div>
+          <div class="body">
+            <div class="title">Unrelated maintainer merges a real PR.</div>
+            <div class="sub">CI pulls the poisoned cache</div>
+          </div>
+        </div>
+        <div id="p3-row-3" class="p3-row">
+          <div class="hour">WORM WAKES</div>
+          <div class="body">
+            <div class="title">Scrapes OIDC token from /proc/$PID/mem.</div>
+            <div class="sub">npm trusted-publishing &middot; signed in seconds</div>
+          </div>
+        </div>
+        <div id="p3-row-4" class="p3-row">
+          <div class="hour">PUBLISH</div>
+          <div class="body">
+            <div class="title"><span class="count-big">84</span>TanStack versions live on npmjs.com.</div>
+            <div class="sub">before anyone refreshed the page</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — Worm Spreads (t=76..104.4s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="clip phase"
+       data-start="77.1" data-duration="28.3" data-track-index="1">
+    <div id="p4-stack">
+      <div id="p4-kicker">AIKIDO &middot; NEXT MORNING</div>
+      <div id="p4-counter-wrap">
+        <div id="p4-counter">0</div>
+        <div id="p4-counter-suffix">poisoned packages<br>across 169 maintainers</div>
+      </div>
+      <div id="p4-518m-row">
+        <div id="p4-518m"><span>518M</span><span id="p4-mark-518m"></span></div>
+        <div id="p4-518m-label">WEEKLY DOWNLOADS HIT</div>
+      </div>
+      <div id="p4-pills">
+        <div id="p4-pill-1" class="p4-pill">Mistral</div>
+        <div id="p4-pill-2" class="p4-pill">UiPath</div>
+        <div id="p4-pill-3" class="p4-pill">OpenSearch</div>
+        <div id="p4-pill-4" class="p4-pill">Guardrails</div>
+        <div id="p4-pill-5" class="p4-pill">Squawk</div>
+        <div id="p4-pill-6" class="p4-pill">TanStack</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — Persistence + Forged Commits (t=104.4..129.65s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="clip phase alarm-phase"
+       data-start="105.4" data-duration="25.4" data-track-index="1">
+    <div id="p5-stack">
+      <div id="p5-headline">
+        npm uninstall does <span style="color:var(--accent-warm)">NOT</span> remove this.
+      </div>
+      <div id="p5-uninstall-line">
+        $ npm <span class="target">uninstall<span id="p5-mark-uninstall"></span></span> &nbsp;&rarr;&nbsp; stays.
+      </div>
+      <div id="p5-claude-callout">CLAUDE CODE HOOKS &middot; VS CODE TASKS</div>
+      <div id="p5-commit-row">
+        <div class="avatar">CL</div>
+        <div class="commit-body">
+          <div class="author">claude@users.noreply.github.com</div>
+          <div class="commit-msg">chore: update dependencies</div>
+          <div class="branch">dune-wordlist-*</div>
+        </div>
+        <div id="p5-forged-stamp">FORGED</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 6 — Dead-Man Switch (t=129.65..152.9s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase6" class="clip phase alarm-phase"
+       data-start="130.8" data-duration="23.25" data-track-index="1">
+    <div id="p6-stack">
+      <div id="p6-kicker">DEAD-MAN SWITCH</div>
+      <div id="p6-headline">
+        Revoke the token,<br><span class="accent">delete your home folder</span>.
+      </div>
+      <div id="p6-clock-row">
+        <div id="p6-clock">60</div>
+        <div id="p6-clock-label">DAEMON POLLS<br>GITHUB EVERY 60s</div>
+      </div>
+      <div id="p6-token-card">
+        <div class="tlabel">TOKEN NAME &middot; LITERAL STRING</div>
+        <div id="p6-token-name">
+          <span>IfYouRevokeThisTokenItWill<br>WipeTheComputerOfTheOwner</span>
+          <span id="p6-mark-token"></span>
+        </div>
+      </div>
+      <div id="p6-typewriter">
+        <span class="prompt">$</span><span class="cmd" id="p6-cmd-text"></span><span class="cursor" id="p6-cursor"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 7 — pnpm v11 Defense (t=152.9..178.15s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase7" class="clip phase"
+       data-start="154.05" data-duration="25.25" data-track-index="1">
+    <div id="p7-stack">
+      <div id="p7-kicker">DEFENSE &middot; PNPM V11</div>
+      <div id="p7-headline">
+        Three defaults<br><span class="accent">block the worm</span>.
+      </div>
+      <div id="p7-cards">
+        <div id="p7-card-1" class="p7-card">
+          <div class="badge">1</div>
+          <div class="body">
+            <div class="title">minimumReleaseAge &middot; <span class="em">24 hours<span id="p7-mark-24h"></span></span></div>
+            <div class="sub">New packages sit dormant for a day before any install resolves them.</div>
+          </div>
+        </div>
+        <div id="p7-card-2" class="p7-card">
+          <div class="badge">2</div>
+          <div class="body">
+            <div class="title">blockExoticSubdeps: true</div>
+            <div class="sub">Refuses git, tarball, and other exotic sub-dependencies.</div>
+          </div>
+        </div>
+        <div id="p7-card-3" class="p7-card">
+          <div class="badge">3</div>
+          <div class="body">
+            <div class="title">approved-builds</div>
+            <div class="sub">Every postinstall script needs your explicit confirmation.</div>
+          </div>
+        </div>
+      </div>
+      <div id="p7-footer">Already shipped. Almost nobody migrated.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 8 — Thumbnail close + CTA (t=178.15..190s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase8" class="clip phase"
+       data-start="179.3" data-duration="12.2" data-track-index="1">
+    <div id="p8-stack">
+      <div id="p8-topic">
+        PNPM V11<br><span class="accent">OR ROULETTE</span>.
+      </div>
+      <div id="p8-anchor-row">
+        <div class="shield">&#9678;</div>
+        <div class="label">3 DEFAULTS &middot; ALREADY SHIPPED</div>
+      </div>
+      <div id="p8-outcome">
+        Three defaults blocked the entire chain.
+      </div>
+      <div id="cta-question">
+        Switching today, or waiting for the next worm?
+      </div>
+      <div id="p8-url-wrap">
+        <div id="p8-url">
+          pnpm.io/blog/releases/11.0
+        </div>
+        <span id="p8-mark-url"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUDIO — narration + SFX (track 2 narration, 3-5 SFX)
+       ═══════════════════════════════════════════════════════ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="191.14"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Cinematic whoosh on every phase transition (visual swap moment) -->
+  <audio id="sfx-whoosh-p1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="2.45" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="22.95" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="47.95" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="77.05" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="105.35" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="130.75" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="154.00" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="179.25" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Paper-grain overlay — last child so it tints everything below -->
+  <svg id="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="11" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#grain-filter)" fill="#1A0808" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.dataset.seedIndex = String(i);
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Rearrange shape positions on every phase transition.
+  // For each phase boundary, jitter every shape by a deterministic
+  // (-80..80px) X/Y delta + small rotation. Per
+  // `feedback_shape_rearrange_on_whoosh_default`.
+  function repositionShapesAt(tl, container, phaseSeedKey, atTime) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = phaseSeedKey + '-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 160;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 160;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 20;
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: 0.7, ease: 'power2.out'
+      }, atTime - 0.4);
+    });
+  }
+
+  // Phase crossfade — outgoing fades + blurs, incoming clears + sharpens.
+  function crossfadePhases(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0,                          duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  const SHAPE_CONTAINER = document.getElementById('shape-backdrop');
+  spawnShapes('npm-shai-hulud', SHAPE_CONTAINER);
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 191.5;
+  const tl = gsap.timeline({ paused: true });
+
+  // Slow ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Linear progress bar
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in (one-shot)
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Phase boundaries (data_start values)
+  const P0 = 0.00;
+  const P1 = 2.50;
+  const P2 = 23.00;
+  const P3 = 48.00;
+  const P4 = 77.10;
+  const P5 = 105.40;
+  const P6 = 130.80;
+  const P7 = 154.05;
+  const P8 = 179.30;
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 0 — Thumbnail-grade open (t=0..2.5s)
+  // All thumbnail elements visible at t=0. Only motion: marker on HIJACKED.
+  // ═══════════════════════════════════════════════════════
+  // Marker sweep on HIJACKED at word 0.94s
+  tl.set("#p0-mark-hijacked", { width: 0 }, 0);
+  tl.to("#p0-mark-hijacked", { width: "100%", duration: 0.55, ease: "power2.out" }, 0.94);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Trojan-Horse Hook (t=2.5..23.0s)
+  // ═══════════════════════════════════════════════════════
+  // Hide P1 children until phase start; reveal sequence anchored to transcript.
+  tl.set("#p1-kicker",     { opacity: 0, y: -12 }, 0);
+  tl.set("#p1-headline",   { opacity: 0, y: 24 }, 0);
+  tl.set("#p1-chips",      { opacity: 0, y: 18 }, 0);
+  tl.set("#p1-chip-clock", { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p1-chip-rm",    { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p1-trust-card", { opacity: 0, y: 22 }, 0);
+  tl.set("#p1-but",        { opacity: 0, scale: 0.7 }, 0);
+  tl.set("#p1-signed-row", { opacity: 0, y: 22 }, 0);
+  tl.set("#p1-mark-signed",{ width: 0 }, 0);
+  tl.set("#p1-still-line", { opacity: 0, scale: 0.86 }, 0);
+  tl.set("#p1-mark-still", { width: 0 }, 0);
+
+  // Hook entrances (word anchors from transcript)
+  tl.to("#p1-kicker",     { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, P1 + 0.05);
+  tl.to("#p1-headline",   { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, P1 + 0.20); // "TanStack..." @ 2.577
+  tl.to("#p1-chips",      { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, P1 + 1.30);
+  tl.to("#p1-chip-clock", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, 3.95); // "six minutes" @ 3.959
+  tl.to("#p1-chip-rm",    { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, 6.92); // "nukes" @ 6.954
+  tl.to("#p1-trust-card", { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 9.20);       // "Trusted" @ 9.287
+
+  // BUT slam @ 12.41 ("But")
+  tl.to("#p1-but", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 12.40);
+
+  // SIGNED + SLSA row + marker on "signed" @ 13.30
+  tl.to("#p1-signed-row", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 13.20);
+  tl.to("#p1-mark-signed", { width: "100%", duration: 0.45, ease: "power2.out" }, 13.30);
+
+  // STILL slam @ 15.02 ("Still")
+  tl.to("#p1-still-line", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 15.02);
+  tl.to("#p1-mark-still", { width: "100%", duration: 0.55, ease: "power2.out" }, 15.30);
+
+  // Permissions callback beat at ~19.8s (subtle yoyo on trust-card)
+  tl.to("#p1-trust-card", { scale: 1.03, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, 19.80);
+
+  // Crossfade P0 → P1 at P1 transition (whoosh moment)
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p1', P1);
+  crossfadePhases(tl, "#phase0", "#phase1", P1 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — YAML Smoking Gun (t=23..48s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p2-headline", { opacity: 0, y: 24 }, 0);
+  tl.set("#p2-yaml",     { opacity: 0, y: 30 }, 0);
+  tl.set("#p2-mark-pr-target", { opacity: 0, scale: 1.1, rotation: -1.5 }, 0);
+  tl.set("#p2-mark-ref", { width: 0 }, 0);
+  tl.set("#p2-support .word", { opacity: 0, y: 20 }, 0);
+
+  tl.to("#p2-headline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.05);   // "So how did" @ 23.184
+  tl.to("#p2-yaml",     { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 25.70);      // "smoking" @ 25.785
+  // pull_request_target marker-circle at 30.45 ("pull")
+  tl.to("#p2-mark-pr-target", { opacity: 1, scale: 0.94, rotation: -1.5, duration: 0.6, ease: "back.out(1.7)" }, 30.40);
+  // ref:/merge marker-highlight at 37.84 ("merge")
+  tl.to("#p2-mark-ref", { width: "100%", duration: 0.55, ease: "power2.out" }, 37.79);
+  // Fork code / Real secrets / Same runner support words at 41.5s narration
+  tl.to("#p2-support .word", { opacity: 1, y: 0, duration: 0.35, stagger: 0.22, ease: "power2.out" }, 41.45);
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p2', P2);
+  crossfadePhases(tl, "#phase1", "#phase2", P2 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — 8-hour Cache Poison Timeline (t=48..76s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p3-headline",  { opacity: 0, y: 24 }, 0);
+  tl.set("#p3-cache-pill",{ opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p3-row-1", { opacity: 0, x: -40 }, 0);
+  tl.set("#p3-row-2", { opacity: 0, x: -40 }, 0);
+  tl.set("#p3-row-3", { opacity: 0, x: -40 }, 0);
+  tl.set("#p3-row-4", { opacity: 0, x: -40 }, 0);
+
+  tl.to("#p3-headline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.05);  // "And here is why" @ 48.052
+  tl.to("#p3-cache-pill", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 52.50); // "one-point-one" @ 52.522
+  tl.to("#p3-row-1", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 56.04);  // "The cache poisons" @ 56.062
+  tl.to("#p3-row-2", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 60.30);  // "Hours later" @ 60.323
+  tl.to("#p3-row-3", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 66.88);  // "scrapes" @ 66.905
+  // Sustained glow pulse on row-3 to bridge to row-4 entrance
+  tl.to("#p3-row-3", { boxShadow: "0 12px 32px rgba(224,122,95,0.45), 0 0 24px rgba(224,122,95,0.4)", duration: 0.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 69.50);
+  tl.to("#p3-row-4", { opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.5)" }, 71.77);  // "Eighty-four" @ 71.793
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p3', P3);
+  crossfadePhases(tl, "#phase2", "#phase3", P3 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Worm Spreads (t=76..104.4s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p4-kicker", { opacity: 0, y: -12 }, 0);
+  tl.set("#p4-counter-wrap", { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p4-518m-row", { opacity: 0, y: 18 }, 0);
+  tl.set("#p4-mark-518m", { width: 0 }, 0);
+  tl.set("#p4-pill-1", { opacity: 0, y: 40, scale: 0.92 }, 0);
+  tl.set("#p4-pill-2", { opacity: 0, y: 40, scale: 0.92 }, 0);
+  tl.set("#p4-pill-3", { opacity: 0, y: 40, scale: 0.92 }, 0);
+  tl.set("#p4-pill-4", { opacity: 0, y: 40, scale: 0.92 }, 0);
+  tl.set("#p4-pill-5", { opacity: 0, y: 40, scale: 0.92 }, 0);
+  tl.set("#p4-pill-6", { opacity: 0, y: 40, scale: 0.92 }, 0);
+
+  tl.to("#p4-kicker", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P4 + 0.05);          // "And that is how" @ 77.180
+  tl.to("#p4-counter-wrap", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 81.58); // "morning" @ 81.615
+
+  // Counter 0 → 373 (light tick) → 169 (slam) — visible TanStack hero pill above row
+  const counter = { v: 0 };
+  const counterEl = document.getElementById('p4-counter');
+  tl.to(counter, {
+    v: 373,
+    duration: 2.8,
+    ease: "power1.out",
+    onUpdate: function() { counterEl.textContent = Math.round(counter.v); }
+  }, 82.87); // "three-hundred" @ 82.892
+  tl.to(counter, {
+    v: 169,
+    duration: 0.45,
+    ease: "power2.out",
+    onUpdate: function() { counterEl.textContent = Math.round(counter.v); }
+  }, 85.84); // "one-hundred sixty-nine" @ 85.864
+  tl.to("#p4-counter", { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "sine.inOut" }, 85.84);
+
+  // 518M row at 89.18
+  tl.to("#p4-518m-row", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 89.18);
+  tl.to("#p4-mark-518m", { width: "100%", duration: 0.5, ease: "power2.out" }, 89.22);
+
+  // Company pills at narration word-anchors
+  tl.to("#p4-pill-1", { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(1.6)" }, 92.53); // Mistral @ 92.551
+  tl.to("#p4-pill-2", { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(1.6)" }, 93.40); // UiPath @ 93.422
+  tl.to("#p4-pill-3", { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(1.6)" }, 94.41); // OpenSearch @ 94.432
+  tl.to("#p4-pill-4", { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(1.6)" }, 95.19); // Guardrails @ 95.210
+  tl.to("#p4-pill-5", { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(1.6)" }, 96.76); // Squawk @ 96.777
+  tl.to("#p4-pill-6", { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 101.96); // "worm" pivot @ 101.979
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p4', P4);
+  crossfadePhases(tl, "#phase3", "#phase4", P4 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — Persistence + Forged Commits (t=104.4..129.65s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p5-headline",        { opacity: 0, y: 24 }, 0);
+  tl.set("#p5-uninstall-line",  { opacity: 0, y: 20 }, 0);
+  tl.set("#p5-mark-uninstall",  { width: 0 }, 0);
+  tl.set("#p5-claude-callout",  { opacity: 0, y: 18 }, 0);
+  tl.set("#p5-commit-row",      { opacity: 0, y: 30 }, 0);
+  tl.set("#p5-forged-stamp",    { opacity: 0, scale: 1.4, rotation: -16 }, 0);
+
+  tl.to("#p5-headline",       { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P5 + 0.05);   // "But the worm" @ 105.461
+  tl.to("#p5-uninstall-line", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 108.51);    // "twist" @ 108.538
+  tl.to("#p5-mark-uninstall", { width: "100%", duration: 0.55, ease: "power2.out" }, 110.07);       // "uninstall" @ 110.094
+  tl.to("#p5-claude-callout", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 115.15);     // "Claude" @ 115.179
+  tl.to("#p5-claude-callout", { scale: 1.04, duration: 0.22, yoyo: true, repeat: 1, ease: "sine.inOut" }, 116.55);
+  tl.to("#p5-commit-row",     { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 118.59);     // "Reopen" @ 118.615
+  tl.to("#p5-forged-stamp",   { opacity: 1, scale: 1, rotation: -6, duration: 0.5, ease: "back.out(1.7)" }, 121.22); // "forged" @ 121.251
+  tl.to("#p5-commit-row",     { x: -8, duration: 0.05, yoyo: true, repeat: 5, ease: "power1.inOut" }, 121.25);
+  // Dune-wordlist branch pulse at 126.30 ("Dune" @ 126.324, "wordlist." @ 126.567)
+  tl.to("#p5-commit-row .branch", { scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 126.30);
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p5', P5);
+  crossfadePhases(tl, "#phase4", "#phase5", P5 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 6 — Dead-Man Switch (t=129.65..152.9s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p6-kicker",   { opacity: 0, y: -12 }, 0);
+  tl.set("#p6-headline", { opacity: 0, y: 24 }, 0);
+  tl.set("#p6-clock-row",{ opacity: 0, y: 20 }, 0);
+  tl.set("#p6-token-card", { opacity: 0, y: 20 }, 0);
+  tl.set("#p6-mark-token", { width: 0 }, 0);
+  tl.set("#p6-typewriter", { opacity: 0, y: 20 }, 0);
+  // Reset clock alarm state at t=0 so scrubbing back is deterministic
+  tl.call(() => { const c = document.getElementById('p6-clock'); if (c) c.classList.remove('is-alarm'); }, null, 0);
+
+  tl.to("#p6-kicker",    { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P6 + 0.05);     // "And my favorite" @ 130.863
+  tl.to("#p6-headline",  { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 132.05);       // "dead-man" @ 132.071
+  tl.to("#p6-clock-row", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 133.86);      // "daemon" @ 133.881
+
+  // 60 → 0 countdown over 4s starting at 135.20 ("sixty")
+  const clock = { v: 60 };
+  const clockEl = document.getElementById('p6-clock');
+  tl.to(clock, {
+    v: 0,
+    duration: 4.0,
+    ease: "none",
+    onUpdate: function() { clockEl.textContent = Math.round(clock.v); }
+  }, 135.20);
+  tl.to("#p6-clock", { scale: 1.08, duration: 0.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, 135.20);
+
+  // rm -rf typewriter at 139.49 ("r-m") — flip the clock to alarm-red simultaneously
+  tl.to("#p6-typewriter", { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 139.45);
+  tl.call(() => { clockEl.classList.add('is-alarm'); }, null, 139.45);
+  const cmdText = "rm -rf ~/";
+  const cmdEl = document.getElementById('p6-cmd-text');
+  cmdEl.textContent = "";
+  const cmdObj = { i: 0 };
+  tl.to(cmdObj, {
+    i: cmdText.length,
+    duration: 0.7,
+    ease: "none",
+    onUpdate: function() {
+      cmdEl.textContent = " " + cmdText.slice(0, Math.floor(cmdObj.i));
+    }
+  }, 139.55);
+  // Cursor blink — finite deterministic repeats while phase active
+  tl.to("#p6-cursor", { opacity: 0, duration: 0.5, yoyo: true, repeat: 20, ease: "steps(1)" }, 140.30);
+
+  // Token name reveal + marker on "revoke" @ 144.528
+  tl.to("#p6-token-card", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 142.70);
+  tl.to("#p6-mark-token", { width: "100%", duration: 0.8, ease: "power2.out" }, 144.50);
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p6', P6);
+  crossfadePhases(tl, "#phase5", "#phase6", P6 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 7 — pnpm v11 Defense (t=152.9..178.15s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p7-kicker",   { opacity: 0, y: -12 }, 0);
+  tl.set("#p7-headline", { opacity: 0, y: 24 }, 0);
+  tl.set("#p7-card-1",   { opacity: 0, y: 40 }, 0);
+  tl.set("#p7-card-2",   { opacity: 0, y: 40 }, 0);
+  tl.set("#p7-card-3",   { opacity: 0, y: 40 }, 0);
+  tl.set("#p7-mark-24h", { width: 0 }, 0);
+  tl.set("#p7-footer",   { opacity: 0, y: 16 }, 0);
+
+  tl.to("#p7-kicker",   { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P7 + 0.05);      // "So how do you stop" @ 154.117
+  tl.to("#p7-headline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 156.34);         // "fix" @ 156.369
+
+  // Cards at narration word-anchors (~5s spacing — within 5s rule)
+  tl.to("#p7-card-1", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 161.98);  // "minimum" @ 162.011
+  tl.to("#p7-mark-24h", { width: "100%", duration: 0.5, ease: "power2.out" }, 163.18);     // "twenty-four" @ 163.207
+  tl.to("#p7-card-2", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 167.13); // "block" @ 167.155
+  tl.to("#p7-card-3", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 171.42); // "approved-builds" @ 171.451
+
+  // Footer "Three defaults. Already shipped. Almost nobody migrated." at 175.78
+  tl.to("#p7-footer", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 175.75);
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p7', P7);
+  crossfadePhases(tl, "#phase6", "#phase7", P7 - 0.5);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 8 — Thumbnail close + CTA (t=178.15..190s)
+  // Held still ≥1.5s after entrance settles.
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p8-brand",      { opacity: 0, y: -12 }, 0);
+  tl.set("#p8-topic",      { opacity: 0, y: 24, scale: 0.96 }, 0);
+  tl.set("#p8-anchor-row", { opacity: 0, y: 20 }, 0);
+  tl.set("#p8-outcome",    { opacity: 0, y: 16 }, 0);
+  tl.set("#cta-question",  { opacity: 0, y: 22 }, 0);
+  tl.set("#p8-url",        { opacity: 0, y: 20 }, 0);
+  tl.set("#p8-mark-url",   { opacity: 0, scale: 1.1, rotation: -1 }, 0);
+
+  // Quick stagger: thumbnail-grade elements settled by ~179.65s
+  tl.to("#p8-brand",      { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, P8 + 0.05);
+  tl.to("#p8-topic",      { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, P8 + 0.20);
+  tl.to("#p8-anchor-row", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P8 + 0.45);
+  tl.to("#p8-outcome",    { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P8 + 0.70);
+  tl.to("#cta-question",  { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P8 + 0.95);
+  tl.to("#p8-url",        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P8 + 1.10);
+  tl.to("#p8-mark-url",   { opacity: 1, scale: 0.92, rotation: -1, duration: 0.55, ease: "back.out(1.6)" }, P8 + 1.05);
+
+  repositionShapesAt(tl, SHAPE_CONTAINER, 'p8', P8);
+  crossfadePhases(tl, "#phase7", "#phase8", P8 - 0.5);
+
+  // Pin the timeline to TOTAL_DURATION so the renderer captures the
+  // closing held frame (per hyperframes-pitfalls.md §1).
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

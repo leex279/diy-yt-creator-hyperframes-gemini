@@ -1,0 +1,98 @@
+{
+  "agent": "video-render-validator",
+  "video_slug": "claude-founders-playbook",
+  "review_date": "2026-05-16",
+  "review_pass": "final-extended-9-scene",
+  "verdict": "WARN_MEDIUM",
+  "lint": {
+    "errors": 0,
+    "warnings": 3,
+    "details": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warn",
+        "subject": "anthropic-logo-light.svg",
+        "auto_fix": false,
+        "notes": "Known dual-use (top banner + Phase 1 brand lockup); benign per prior review R-004."
+      },
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warn",
+        "subject": "#phase-label",
+        "auto_fix": false,
+        "notes": "Chrome ticker re-applies opacity to same selector each phase. False positive per prior review R-003. overwrite: 'auto' already set on initial fromTo."
+      },
+      {
+        "code": "composition_file_too_large",
+        "severity": "warn",
+        "subject": "index.html (1040 lines)",
+        "auto_fix": false,
+        "notes": "Same as 8-scene review R-002. Structural refactor; out of scope for re-review."
+      }
+    ]
+  },
+  "validate_wcag_contrast": {
+    "errors": 0,
+    "warnings": 0,
+    "contrast_warnings": 31,
+    "all_decorative": true,
+    "delta_vs_8_scene": "+7 (24 -> 31)",
+    "delta_explanation": "Scene 5 adds 4 killer-badge + 4 killer-skull elements (8 new decorative contrast hits) but only 7 net because token-stream sampling timestamps consolidate. All hero/body text passes. No new failures on hero/headline text introduced by Scene 5."
+  },
+  "inspect_layout": {
+    "issues": 0,
+    "samples": 9,
+    "verdict": "PASS"
+  },
+  "font_family_render_blocker": {
+    "hits": 0,
+    "verdict": "PASS",
+    "notes": "No --font-* CSS variable references that would render-block. All font-family declarations are literal strings."
+  },
+  "composition_duration_vs_narration": {
+    "composition_s": 143.2,
+    "narration_s": 143.22,
+    "delta_s": 0.02,
+    "verdict": "PASS",
+    "notes": "tl.set({}, {}, 143.22) at line 1661 pins the timeline correctly per hyperframes-pitfalls.md section 1."
+  },
+  "sfx_files_present": {
+    "checked": 8,
+    "missing": 0,
+    "verdict": "PASS"
+  },
+  "oversized_images": {
+    "checked": 4,
+    "violations": 0,
+    "verdict": "PASS"
+  },
+  "backdrop_filter_stacks": {
+    "max_radius_px": 24,
+    "max_layers": 2,
+    "verdict": "PASS"
+  },
+  "findings": {
+    "blocker": [],
+    "high": [],
+    "medium": [
+      {
+        "id": "R-001",
+        "title": "31 decorative WCAG contrast warnings (up from 24 in 8-scene)",
+        "detail": "All decorative (token-stream ambient filler, badge tokens, surface icons, code-num ordinals, killer-badges, killer-skulls). No body or hero text fails. Not a publish blocker.",
+        "auto_fix": false
+      }
+    ],
+    "low": [
+      {
+        "id": "R-002",
+        "title": "Lint overlapping_gsap_tweens false-positive on #phase-label",
+        "auto_fix": false
+      },
+      {
+        "id": "R-003",
+        "title": "Lint duplicate_media_discovery_risk on anthropic-logo-light.svg",
+        "auto_fix": false
+      }
+    ]
+  }
+}

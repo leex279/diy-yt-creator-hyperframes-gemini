@@ -1,0 +1,1600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Dynamous Standalone Promo — Instagram Reel</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0f172a;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --text-dim: #94a3b8;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --cyan: #06b6d4;
+    --red: #dc2626;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --pill-bg: rgba(248, 250, 252, 0.06);
+    --pill-border: rgba(248, 250, 252, 0.14);
+
+    --pad-top: 140px;
+    --pad-x: 60px;
+    --pad-bottom: 220px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 20%, rgba(168, 85, 247, 0.18), transparent 55%),
+      radial-gradient(circle at 80% 75%, rgba(236, 72, 153, 0.10), transparent 55%),
+      radial-gradient(circle at 50% 105%, rgba(6, 182, 212, 0.10), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Dynamous-flame backdrop — scattered logo marks at low opacity */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+    filter: brightness(1.6);
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+  }
+
+  /* Persistent Werbung badge — German ad-disclosure compliance, top-right
+     throughout the whole short. Sits above the endcard (z-index 100) so it
+     remains visible during the CTA window. */
+  #werbung-badge {
+    position: absolute;
+    top: 56px;
+    right: 56px;
+    z-index: 110;
+    background: #dc2626;
+    color: #ffffff;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 2px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
+    pointer-events: none;
+  }
+
+  /* Top banner — Dynamous wordmark (smaller now, leaves space for Werbung badge) */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    width: 480px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  }
+  #top-banner-logo {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(248, 250, 252, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.55);
+  }
+
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    perspective: 1400px;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; visibility: hidden; }
+  #phase3 { z-index: 3; opacity: 0; visibility: hidden; }
+  #phase4 { z-index: 4; opacity: 0; visibility: hidden; }
+  #phase5 { z-index: 5; opacity: 0; visibility: hidden; }
+  #phase6 { z-index: 6; opacity: 0; visibility: hidden; }
+  #phase7 { z-index: 7; opacity: 0; visibility: hidden; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — HOOK (0 - 2.4s)
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p1-overline { color: var(--purple); }
+  #p1-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 260px;
+    line-height: 0.92;
+    letter-spacing: -8px;
+    color: var(--pink);
+    text-shadow: 0 0 80px rgba(236, 72, 153, 0.55), 0 12px 30px rgba(0, 0, 0, 0.6);
+    max-width: 1000px;
+  }
+  #p1-sub {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    word-spacing: 0.05em;
+  }
+  #p1-sub .em { color: var(--pink); }
+  #p1-receipt {
+    margin-top: 8px;
+    padding: 18px 32px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(236, 72, 153, 0.12));
+    border: 1.5px solid rgba(168, 85, 247, 0.45);
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.25);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — Community + feed screenshot (2.4 - 6.4s)
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 18px;
+  }
+  #p2-overline { color: var(--cyan); }
+  #p2-counter-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+  }
+  #p2-counter-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 280px;
+    line-height: 0.88;
+    letter-spacing: -10px;
+    color: var(--cyan);
+    text-shadow: 0 0 80px rgba(6, 182, 212, 0.55), 0 12px 28px rgba(0, 0, 0, 0.55);
+    font-variant-numeric: tabular-nums;
+  }
+  #p2-counter-plus {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    color: var(--text);
+    line-height: 0.88;
+  }
+  #p2-label {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 84px;
+    letter-spacing: -2px;
+    color: var(--text);
+    word-spacing: 0.05em;
+  }
+  #p2-sub {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 52px;
+    line-height: 1.15;
+    color: var(--text-dim);
+    word-spacing: 0.05em;
+  }
+  #p2-sub .em { color: var(--cyan); }
+  #p2-feed-frame {
+    margin-top: 12px;
+    width: 1000px;
+    height: 520px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 2px solid rgba(6, 182, 212, 0.40);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 50px rgba(6, 182, 212, 0.25);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+  }
+  #p2-feed-frame video,
+  #p2-feed-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform-origin: center center;
+  }
+  /* Phase 2 narrows its x-padding so the 1000px frame fits within the canvas */
+  #phase2 .phase-content { padding-left: 40px; padding-right: 40px; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — JOINING FORCES — Cole + Rasmus + Thomas
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 18px;
+    padding-top: 170px;
+  }
+  #p3-overline {
+    color: var(--amber);
+    text-shadow: 0 0 24px rgba(245, 158, 11, 0.45);
+  }
+  /* Cole — founder, top center, larger */
+  #p3-cole-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  #p3-cole-frame {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid rgba(245, 158, 11, 0.60);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.60), 0 0 60px rgba(245, 158, 11, 0.40);
+    background: var(--card);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+  }
+  #p3-cole-frame img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform-origin: center center;
+  }
+  #p3-cole-name {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    word-spacing: 0.06em;
+    color: var(--text);
+    text-shadow: 0 0 40px rgba(245, 158, 11, 0.40);
+  }
+  #p3-cole-role {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--amber);
+    text-transform: uppercase;
+    word-spacing: 0.10em;
+  }
+  #p3-cole-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.20), rgba(245, 158, 11, 0.04));
+    border: 1.5px solid rgba(245, 158, 11, 0.45);
+    font-family: var(--sans);
+    color: var(--text);
+  }
+  #p3-cole-stat .num {
+    font-weight: 900; font-size: 40px; letter-spacing: -1.5px; color: var(--amber);
+    font-variant-numeric: tabular-nums;
+  }
+  #p3-cole-stat .suffix {
+    font-family: var(--mono); font-weight: 700; font-size: 22px; letter-spacing: 2px;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  /* YouTube handle tag — small mono label so viewers can find the channels */
+  #p3-cole-handle {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 1.5px;
+    color: var(--amber);
+    margin-top: 2px;
+    text-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+  }
+  /* Energy connector between Cole and team row */
+  #p3-connector {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 8px;
+    color: var(--purple);
+    text-shadow: 0 0 24px rgba(168, 85, 247, 0.70);
+    margin: 4px 0;
+  }
+  /* Rasmus + Thomas row — two cards side-by-side */
+  #p3-team-row {
+    display: flex;
+    flex-direction: row;
+    gap: 60px;
+    align-items: flex-start;
+  }
+  .p3-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .p3-side-frame {
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--card);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+  }
+  #p3-rasmus-card .p3-side-frame {
+    border: 4px solid rgba(168, 85, 247, 0.60);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 0 50px rgba(168, 85, 247, 0.35);
+  }
+  #p3-thomas-card .p3-side-frame {
+    border: 4px solid rgba(236, 72, 153, 0.60);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 0 50px rgba(236, 72, 153, 0.35);
+  }
+  .p3-side-frame img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform-origin: center center;
+  }
+  .p3-side-name {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 42px;
+    line-height: 1;
+    letter-spacing: -1.5px;
+    color: var(--text);
+  }
+  #p3-rasmus-card .p3-side-name .em { color: var(--purple); }
+  #p3-thomas-card .p3-side-name .em { color: var(--pink); }
+  .p3-side-role {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 2.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .p3-side-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 18px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(248, 250, 252, 0.18);
+    background: rgba(248, 250, 252, 0.04);
+  }
+  .p3-side-stat .num {
+    font-family: var(--sans); font-weight: 900; font-size: 30px;
+    letter-spacing: -1px; font-variant-numeric: tabular-nums;
+  }
+  #p3-rasmus-card .p3-side-stat .num { color: var(--purple); }
+  #p3-thomas-card .p3-side-stat .num { color: var(--pink); }
+  .p3-side-stat .suffix {
+    font-family: var(--mono); font-weight: 700; font-size: 18px;
+    letter-spacing: 2px; color: var(--text-dim);
+  }
+  /* Side YouTube handles — purple for Rasmus, pink for Thomas */
+  .p3-side-handle {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  #p3-rasmus-card .p3-side-handle { color: var(--purple); text-shadow: 0 0 12px rgba(168, 85, 247, 0.4); }
+  #p3-thomas-card .p3-side-handle { color: var(--pink); text-shadow: 0 0 12px rgba(236, 72, 153, 0.4); }
+  /* Combined total — bottom hero stat */
+  #p3-combined {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.28), rgba(236, 72, 153, 0.18));
+    border: 2px solid rgba(168, 85, 247, 0.55);
+    box-shadow: 0 14px 40px rgba(168, 85, 247, 0.35);
+  }
+  #p3-combined .num {
+    font-family: var(--sans); font-weight: 900; font-size: 64px;
+    line-height: 1; letter-spacing: -2px; color: var(--text);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 28px rgba(236, 72, 153, 0.45);
+  }
+  #p3-combined .suffix {
+    font-family: var(--mono); font-weight: 800; font-size: 24px;
+    letter-spacing: 3px; color: var(--text); text-transform: uppercase;
+  }
+  #p3-combined .em { color: var(--pink); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — Agentic Coding screenshot (14.3 - 20.1s)
+     ────────────────────────────────────────────────── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+    padding-top: 120px;
+  }
+  #p4-overline { color: var(--purple); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 120px;
+    line-height: 0.94;
+    letter-spacing: -2px;
+    word-spacing: 0.06em;
+    color: var(--text);
+    text-shadow: 0 0 60px rgba(168, 85, 247, 0.35);
+  }
+  #p4-headline .em { color: var(--purple); }
+  #p4-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 38px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.24), rgba(168, 85, 247, 0.06));
+    border: 2.5px solid rgba(168, 85, 247, 0.55);
+    box-shadow: 0 14px 36px rgba(168, 85, 247, 0.30);
+  }
+  #p4-pill-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 80px;
+    line-height: 0.85;
+    color: var(--purple);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 24px rgba(168, 85, 247, 0.50);
+  }
+  #p4-pill-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--text);
+  }
+  #p4-screenshot-frame {
+    width: 880px;
+    height: 688px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--card);
+    border: 2.5px solid rgba(168, 85, 247, 0.42);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.65), 0 0 60px rgba(168, 85, 247, 0.25);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+  }
+  #p4-screenshot-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    transform-origin: center center;
+  }
+  #p4-sub {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1.18;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    word-spacing: 0.05em;
+  }
+  #p4-sub .em { color: var(--pink); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 5 — AI Second Brain (20.1 - 27.7s)
+     ────────────────────────────────────────────────── */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+    padding-top: 140px;
+  }
+  #p5-overline { color: var(--cyan); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 100px;
+    line-height: 0.94;
+    letter-spacing: -2px;
+    word-spacing: 0.05em;
+    color: var(--text);
+    text-shadow: 0 0 60px rgba(6, 182, 212, 0.40);
+  }
+  #p5-headline .em { color: var(--cyan); }
+  #p5-headline .sub-line {
+    display: block;
+    font-size: 72px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: -2px;
+  }
+  #p5-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.24), rgba(6, 182, 212, 0.06));
+    border: 2.5px solid rgba(6, 182, 212, 0.55);
+    box-shadow: 0 14px 36px rgba(6, 182, 212, 0.30);
+  }
+  #p5-pill-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 76px;
+    line-height: 0.85;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 24px rgba(6, 182, 212, 0.50);
+  }
+  #p5-pill-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--text);
+  }
+  #p5-own-badge {
+    display: inline-block;
+    padding: 14px 26px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(34, 197, 94, 0.08));
+    border: 1.5px solid rgba(34, 197, 94, 0.50);
+    word-spacing: 0.10em;
+  }
+  #p5-own-badge .em { color: var(--green); margin-right: 0.35em; }
+  /* Phase 5 content screenshot — sized to native aspect (~1.40:1) */
+  #p5-content-frame {
+    width: 880px;
+    height: 628px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--card);
+    border: 2.5px solid rgba(6, 182, 212, 0.42);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.65), 0 0 60px rgba(6, 182, 212, 0.25);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    margin-top: 8px;
+  }
+  #p5-content-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    transform-origin: center center;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 6 — Workshop + community proof (27.7 - 34.7s)
+     ────────────────────────────────────────────────── */
+  #phase6 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+    padding-top: 120px;
+  }
+  #p6-overline { color: var(--pink); }
+  #p6-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 90px;
+    line-height: 0.94;
+    letter-spacing: -2px;
+    word-spacing: 0.05em;
+    color: var(--text);
+  }
+  #p6-headline .em { color: var(--pink); }
+  #p6-workshop-frame {
+    width: 840px;
+    height: 560px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 2.5px solid rgba(236, 72, 153, 0.42);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 60px rgba(236, 72, 153, 0.25);
+    background: var(--card);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    position: relative;
+  }
+  /* Carousel track holds 3 workshop screenshots side-by-side */
+  .p6-workshop-track {
+    display: flex;
+    width: 2520px;   /* 3 × 840 */
+    height: 100%;
+    transform-origin: center center;
+  }
+  .p6-workshop-track img {
+    width: 840px;
+    height: 560px;
+    flex-shrink: 0;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+  /* Carousel dot indicators */
+  #p6-carousel-dots {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 3;
+  }
+  .p6-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(248, 250, 252, 0.30);
+    transition: background 0.3s;
+  }
+  .p6-dot.active { background: var(--pink); box-shadow: 0 0 12px rgba(236, 72, 153, 0.70); }
+  #p6-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 880px;
+    margin-top: 4px;
+  }
+  .p6-chip {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 28px;
+    border-radius: 20px;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 46px;
+    letter-spacing: -1px;
+    word-spacing: 0.05em;
+    color: var(--text);
+    text-align: left;
+  }
+  .p6-chip .p6-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 30px;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+  .p6-chip.purple {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(168, 85, 247, 0.04));
+    border: 2px solid rgba(168, 85, 247, 0.42);
+  }
+  .p6-chip.purple .p6-num { background: var(--purple); }
+  .p6-chip.pink {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.18), rgba(236, 72, 153, 0.04));
+    border: 2px solid rgba(236, 72, 153, 0.42);
+  }
+  .p6-chip.pink .p6-num { background: var(--pink); }
+  .p6-chip.cyan {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.18), rgba(6, 182, 212, 0.04));
+    border: 2px solid rgba(6, 182, 212, 0.42);
+  }
+  .p6-chip.cyan .p6-num { background: var(--cyan); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 7 — Calendar (34.7 - 38.7s)
+     ────────────────────────────────────────────────── */
+  #phase7 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+    padding-top: 140px;
+  }
+  #p7-overline { color: var(--amber); }
+  #p7-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 100px;
+    line-height: 0.94;
+    letter-spacing: -2px;
+    word-spacing: 0.05em;
+    color: var(--text);
+    text-shadow: 0 0 60px rgba(245, 158, 11, 0.40);
+  }
+  #p7-headline .em { color: var(--amber); }
+  #p7-calendar-frame {
+    width: 960px;
+    height: 540px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--card);
+    border: 2.5px solid rgba(245, 158, 11, 0.42);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.65), 0 0 60px rgba(245, 158, 11, 0.25);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+  }
+  #p7-calendar-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    transform-origin: center center;
+  }
+  #p7-tag {
+    margin-top: 8px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    word-spacing: 0.08em;
+  }
+  #p7-tag .em { color: var(--amber); }
+  /* Past-event archive badge — distinct purple gradient to mark a NEW value-prop beat */
+  #p7-tag-archive {
+    margin-top: 6px;
+    padding: 16px 30px;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.28), rgba(236, 72, 153, 0.16));
+    border: 2px solid rgba(168, 85, 247, 0.55);
+    border-radius: 999px;
+    box-shadow: 0 12px 36px rgba(168, 85, 247, 0.30);
+    word-spacing: 0.06em;
+  }
+  #p7-tag-archive .em { color: var(--purple); }
+
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+  /* Pivot moment — "BUT —" slam on top of endcard to grab attention before the question */
+  #pivot-flash {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 104;
+    background: #ffffff;
+    opacity: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  #pivot-but {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 105;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #pivot-but-text {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 360px;
+    line-height: 0.85;
+    letter-spacing: -16px;
+    color: var(--pink);
+    text-shadow:
+      0 0 80px rgba(236, 72, 153, 0.95),
+      0 0 40px rgba(168, 85, 247, 0.65),
+      0 14px 36px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    font-style: italic;
+    transform: rotate(-4deg);
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="49.5"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" />
+  </div>
+
+  <!-- Werbung disclosure badge — persistent top-right -->
+  <div id="werbung-badge">Werbung</div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- PHASE 1 — Hook (0 - 2.4s) -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Inside Dynamous</div>
+      <div id="p1-slam">ALONE?</div>
+      <div id="p1-sub">Most devs build with AI <span class="em">alone.</span></div>
+      <div id="p1-receipt">1,000+ build together →</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 — Community + feed screenshot (2.4 - 6.4s) -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">Inside Dynamous</div>
+      <div id="p2-counter-row">
+        <span id="p2-counter-num">0</span><span id="p2-counter-plus">+</span>
+      </div>
+      <div id="p2-label">BUILDERS</div>
+      <div id="p2-sub">Building <span class="em">together</span></div>
+      <div id="p2-feed-frame">
+        <video id="p2-feed-video"
+               class="clip"
+               src="assets/dyn-home.mp4"
+               data-start="2.4"
+               data-duration="4.0"
+               data-track-index="8"
+               data-width="1810"
+               data-height="942"
+               muted
+               playsinline></video>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 — JOINING FORCES (6.4 - 14.3s) -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">⚡ Joining Forces ⚡</div>
+
+      <!-- Cole — founder, top center -->
+      <div id="p3-cole-card">
+        <div id="p3-cole-frame">
+          <img src="assets/dynamous-cole-medin.webp" alt="Cole Medin" />
+        </div>
+        <div id="p3-cole-name">Cole Medin</div>
+        <div id="p3-cole-role">Founder · Dynamous</div>
+        <div id="p3-cole-stat">
+          <span class="num" id="p3-cole-num">0K</span>
+          <span class="suffix">subscribers</span>
+        </div>
+        <div id="p3-cole-handle">@ColeMedin</div>
+      </div>
+
+      <!-- Energy connector -->
+      <div id="p3-connector">━━ ◆ ━━</div>
+
+      <!-- Rasmus + Thomas row -->
+      <div id="p3-team-row">
+        <div id="p3-rasmus-card" class="p3-side">
+          <div class="p3-side-frame">
+            <img src="assets/team-rasmus.jpg" alt="Rasmus Widing" />
+          </div>
+          <div class="p3-side-name"><span class="em">Rasmus</span></div>
+          <div class="p3-side-role">Core team</div>
+          <div class="p3-side-stat">
+            <span class="num" id="p3-rasmus-num">0K</span>
+            <span class="suffix">subs</span>
+          </div>
+          <div class="p3-side-handle" id="p3-rasmus-handle">@RasmusWiding</div>
+        </div>
+        <div id="p3-thomas-card" class="p3-side">
+          <div class="p3-side-frame">
+            <img src="assets/team-thomas.png" alt="Thomas — DIY Smart Code (Me)" />
+          </div>
+          <div class="p3-side-name"><span class="em">Thomas</span></div>
+          <div class="p3-side-role">Core team · Me</div>
+          <div class="p3-side-stat">
+            <span class="num" id="p3-thomas-num">0K</span>
+            <span class="suffix">subs</span>
+          </div>
+          <div class="p3-side-handle" id="p3-thomas-handle">@DIYSmartCode</div>
+        </div>
+      </div>
+
+      <!-- Combined creator-strong total -->
+      <div id="p3-combined">
+        <span class="num" id="p3-total-num">0K</span>
+        <span class="suffix">creator-strong</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 — Agentic Coding screenshot (14.3 - 20.1s) -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Course · 01 / 02</div>
+      <div id="p4-headline"><span class="em">AGENTIC</span> CODING</div>
+      <div id="p4-pill">
+        <div id="p4-pill-num">18</div>
+        <div id="p4-pill-label">MODULES</div>
+      </div>
+      <div id="p4-screenshot-frame">
+        <img src="assets/dynamous-course-content.png" alt="Agentic Coding course curriculum — 15 sections, 72 lessons" />
+      </div>
+      <div id="p4-sub">From idea to <span class="em">production-grade</span> software</div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 — AI Second Brain (20.1 - 27.7s) -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">Course · 02 / 02</div>
+      <div id="p5-headline">AI <span class="em">SECOND BRAIN</span><span class="sub-line">BOOTCAMP</span></div>
+      <div id="p5-pill">
+        <div id="p5-pill-num">8</div>
+        <div id="p5-pill-label">LESSONS</div>
+      </div>
+      <div id="p5-own-badge"><span class="em">✓</span>Privacy-first OpenClaw alternative</div>
+      <div id="p5-content-frame">
+        <img src="assets/dynamous-second-brain-content.png" alt="AI Second Brain Bootcamp — 8 lessons" />
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 — Workshop + community proof (27.7 - 34.7s) -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">Real builders. Real time.</div>
+      <div id="p6-headline">Ship <span class="em">together.</span></div>
+      <div id="p6-workshop-frame">
+        <div class="p6-workshop-track" id="p6-workshop-track">
+          <img src="assets/dynamous-workshop-01.png" alt="Community Workshop — Prompt Injection Attacks & Defense" />
+          <img src="assets/dynamous-workshop-02.png" alt="Community Workshop — How to Actually Scale AI Coding to Complex Codebases" />
+          <img src="assets/dynamous-workshop-03.png" alt="Community Workshop — Second Brain Security and Using Local Models" />
+        </div>
+        <div id="p6-carousel-dots">
+          <div class="p6-dot active" id="p6-dot-1"></div>
+          <div class="p6-dot" id="p6-dot-2"></div>
+          <div class="p6-dot" id="p6-dot-3"></div>
+        </div>
+      </div>
+      <div id="p6-chips">
+        <div class="p6-chip purple" id="p6-chip-1">
+          <div class="p6-num">1</div>
+          <div>Friday workshops</div>
+        </div>
+        <div class="p6-chip pink" id="p6-chip-2">
+          <div class="p6-num">2</div>
+          <div>Daily hangouts</div>
+        </div>
+        <div class="p6-chip cyan" id="p6-chip-3">
+          <div class="p6-num">3</div>
+          <div>Debug-together sessions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 7 — Calendar (34.7 - 38.7s) -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">One Calendar</div>
+      <div id="p7-headline">Something <span class="em">every week.</span></div>
+      <div id="p7-calendar-frame">
+        <img src="assets/dynamous-events.png" alt="Dynamous events calendar" />
+      </div>
+      <div id="p7-tag"><span class="em">PICK ANY WEEK</span> · ALWAYS ON</div>
+      <div id="p7-tag-archive">+ Every past event · <span class="em">recorded &amp; yours</span></div>
+    </div>
+  </div>
+
+  <!-- ENDCARD MOUNT (42.41 - 49.41s) -->
+  <div id="dynamous-endcard-mount"
+       class="clip"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="42.41"
+       data-duration="7"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- BUT pivot moment — rendered ABOVE the endcard, dissolves before the question lands -->
+  <div id="pivot-flash"></div>
+  <div id="pivot-but"><div id="pivot-but-text">BUT —</div></div>
+
+  <!-- NARRATION -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="48.1"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Background music (override the no-music-on-shorts rule per user request) -->
+  <audio id="bg-music-hook"
+         class="clip"
+         src="audio/bg-music-hook-trimmed.mp3"
+         data-start="0"
+         data-duration="13.0"
+         data-track-index="5"
+         data-volume="0.22"></audio>
+
+  <!-- Transition whooshes -->
+  <!-- "ALONE?" reveal — dark atmospheric riser, NOT impact/slam -->
+  <audio id="sfx-alone-reveal" class="clip" src="assets/sfx/alone-reveal.mp3"
+         data-start="0.0" data-duration="1.8" data-track-index="6" data-volume="0.20"></audio>
+
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="2.4" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Counter SFX — scale-slam on the "thousand" word (4.11s) as 1,000+ pops in,
+       impact-slam at the landing (5.01s) for the satisfying punch on the final number. -->
+  <audio id="sfx-counter-pop" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="4.11" data-duration="0.7" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-counter-land" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="5.01" data-duration="0.6" data-track-index="4" data-volume="0.14"></audio>
+
+  <!-- Team-arrival slam — when all 3 portraits drop into frame on "Three creators." -->
+  <audio id="sfx-team-arrival" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="6.55" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <!-- Team-combined slam — when 224K total reveals on "Joining forces." -->
+  <audio id="sfx-team-combined" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="12.65" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- "BUT —" pivot cue — canonical glitch-zap for the violent-contrast pivot moment -->
+  <audio id="sfx-but-pivot" class="clip" src="assets/sfx/glitch-zap.mp3"
+         data-start="44.10" data-duration="0.6" data-track-index="4" data-volume="0.12"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="6.4" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="14.3" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="20.1" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="27.7" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="34.7" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="42.2" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // Dynamous flame backdrop — 10 marks scattered at low opacity
+  function spawnShapes(seedPrefix, container) {
+    const src = 'assets/dynamous-logo.png';
+    const count = 10, w = 1080, h = 1920, minSize = 220, sizeRange = 220;
+    const minDist = 400, MAX_TRIES = 100;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 60;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 400, MAX_TRIES = 100;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 60;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  function crossfade(tl, fromSel, toSel, t) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, t);
+    tl.to(fromSel, { opacity: 0,                          duration: 0.4, ease: "power1.in" }, t + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, t + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, t + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, t + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, t + 0.6);
+  }
+
+  // 3D reveal: tilted 45° to the back, smoothly blends to 0°,
+  // THEN the inner <img> zooms in for a Ken Burns finish.
+  // Uses explicit set-at-0 + to-at-t pattern (per step-by-step-reveal rule)
+  // so the element is reliably hidden until the reveal moment.
+  function reveal3DWithZoom(tl, frameSel, t, kenBurnsDuration) {
+    tl.set(frameSel,
+      { rotationY: -45, scale: 0.92, opacity: 0, transformPerspective: 1400, transformOrigin: "center center" },
+      0);
+    tl.to(frameSel,
+      { rotationY: 0, scale: 1, opacity: 1, duration: 0.75, ease: "power2.out", overwrite: "auto" },
+      t);
+    if (kenBurnsDuration > 0) {
+      tl.to(frameSel + " img",
+        { scale: 1.10, duration: kenBurnsDuration, ease: "sine.out", transformOrigin: "center center" },
+        t + 0.75);
+    }
+  }
+
+  spawnShapes('dynamous-promo-ig', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 49.5;
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 22, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#top-banner",    { y: -20, opacity: 0, duration: 0.6, ease: "power2.out", overwrite: "auto" }, 0.2);
+  tl.from("#werbung-badge", { y: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+
+  // Transition anchors
+  const T1 = 2.4;   // P1 → P2
+  const T2 = 6.4;   // P2 → P3
+  const T3 = 14.3;  // P3 → P4
+  const T4 = 20.1;  // P4 → P5
+  const T5 = 27.7;  // P5 → P6
+  const T6 = 34.7;  // P6 → P7
+  const T7 = 42.2;  // P7 → endcard
+
+  // ═══ PHASE 1 — Hook (visible from t=0) ═══
+  tl.from("#p1-overline", { y: -10, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.0);
+  tl.from("#p1-slam",     { scale: 0.86, opacity: 0, duration: 0.7, ease: "back.out(1.6)" }, 0.1);
+  tl.from("#p1-sub",      { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.5);
+  tl.from("#p1-receipt",  { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.9);
+  tl.to("#p1-receipt",    { scale: 1.05, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, 1.7);
+
+  crossfade(tl, "#phase1", "#phase2", T1);
+
+  // ═══ PHASE 2 — Community + feed screenshot ═══
+  tl.set("#p2-label",      { opacity: 0 }, 0);
+  tl.set("#p2-sub",        { opacity: 0 }, 0);
+
+  tl.from("#p2-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.5);
+  // Counter rolls 0 → 1,000 starting at "thousand" 4.11
+  const counter = { val: 0 };
+  tl.to(counter, {
+    val: 1000,
+    duration: 0.9,
+    ease: "power2.out",
+    onUpdate() {
+      const el = document.getElementById("p2-counter-num");
+      if (el) el.textContent = Math.round(counter.val).toLocaleString();
+    }
+  }, 4.11);
+  tl.from("#p2-counter-row", { scale: 0.9, opacity: 0, duration: 0.5, ease: "back.out(1.4)" }, 4.11);
+  tl.to("#p2-label",   { opacity: 1, duration: 0.5, ease: "power2.out" }, 4.68);
+  tl.from("#p2-label", { y: 18, duration: 0.5, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 4.68);
+  tl.to("#p2-sub",     { opacity: 1, duration: 0.5, ease: "power2.out" }, 5.16);
+  tl.from("#p2-sub",   { y: 18, duration: 0.5, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 5.16);
+  // Feed thumbnail — 3D reveal (no zoom; phase window too short for full Ken Burns)
+  reveal3DWithZoom(tl, "#p2-feed-frame", 4.9, 0);
+
+  crossfade(tl, "#phase2", "#phase3", T2);
+
+  // ═══ PHASE 3 — JOINING FORCES (anchors: Three creators 6.55, One mission 7.65, Cole Medin 8.23/8.49, Dynamous founder 8.92/9.38, Rasmus and Thomas 10.77/11.37, core team 11.95, Joining forces 12.61) ═══
+  // Hide all team elements at t=0
+  tl.set("#p3-cole-name",   { opacity: 0 }, 0);
+  tl.set("#p3-cole-role",   { opacity: 0 }, 0);
+  tl.set("#p3-cole-stat",   { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p3-cole-handle", { opacity: 0 }, 0);
+  tl.set("#p3-connector",   { opacity: 0, scaleX: 0.6 }, 0);
+  tl.set("#p3-rasmus-card .p3-side-name", { opacity: 0 }, 0);
+  tl.set("#p3-rasmus-card .p3-side-role", { opacity: 0 }, 0);
+  tl.set("#p3-rasmus-card .p3-side-stat", { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p3-rasmus-handle", { opacity: 0 }, 0);
+  tl.set("#p3-thomas-card .p3-side-name", { opacity: 0 }, 0);
+  tl.set("#p3-thomas-card .p3-side-role", { opacity: 0 }, 0);
+  tl.set("#p3-thomas-card .p3-side-stat", { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p3-thomas-handle", { opacity: 0 }, 0);
+  tl.set("#p3-combined",   { opacity: 0, scale: 0.88 }, 0);
+
+  // Overline "Joining Forces" enters
+  tl.from("#p3-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 6.5);
+
+  // "Three creators." — all 3 portraits slide in from off-screen edges simultaneously
+  // Cole drops from above (founder, center top)
+  tl.fromTo("#p3-cole-frame",
+    { y: -120, rotationY: -45, scale: 0.85, opacity: 0, transformPerspective: 1400, transformOrigin: "center center" },
+    { y: 0,    rotationY: 0,   scale: 1,    opacity: 1, duration: 0.75, ease: "power2.out", transformPerspective: 1400, transformOrigin: "center center" },
+    6.55);
+  // Rasmus slides in from left
+  tl.fromTo("#p3-rasmus-card .p3-side-frame",
+    { x: -260, rotationY: -35, scale: 0.85, opacity: 0, transformPerspective: 1400 },
+    { x: 0,    rotationY: 0,   scale: 1,    opacity: 1, duration: 0.75, ease: "power2.out", transformPerspective: 1400 },
+    6.75);
+  // Thomas slides in from right
+  tl.fromTo("#p3-thomas-card .p3-side-frame",
+    { x: 260, rotationY: 35,  scale: 0.85, opacity: 0, transformPerspective: 1400 },
+    { x: 0,   rotationY: 0,   scale: 1,    opacity: 1, duration: 0.75, ease: "power2.out", transformPerspective: 1400 },
+    6.95);
+
+  // "One mission." (7.65) — energy connector glows in
+  tl.to("#p3-connector", { opacity: 1, scaleX: 1, duration: 0.55, ease: "back.out(1.5)" }, 7.65);
+  tl.to("#p3-connector", { textShadow: "0 0 36px rgba(168, 85, 247, 0.95)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 8.0);
+
+  // "Cole Medin" (8.23) — name + stat reveal, counter rolls 0 → 205K
+  tl.to("#p3-cole-name", { opacity: 1, duration: 0.45, ease: "power2.out" }, 8.23);
+  tl.from("#p3-cole-name", { y: 18, duration: 0.45, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 8.23);
+  // "Dynamous founder" (8.92) — role + counter
+  tl.to("#p3-cole-role", { opacity: 1, duration: 0.4, ease: "power2.out" }, 8.92);
+  tl.to("#p3-cole-stat", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 8.92);
+  // @ColeMedin handle enters after the founder beat
+  tl.to("#p3-cole-handle", { opacity: 1, duration: 0.4, ease: "power2.out" }, 9.55);
+  tl.from("#p3-cole-handle", { y: 10, duration: 0.4, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 9.55);
+  const coleCounter = { val: 0 };
+  tl.to(coleCounter, {
+    val: 205, duration: 0.9, ease: "power2.out",
+    onUpdate() {
+      const el = document.getElementById("p3-cole-num");
+      if (el) el.textContent = Math.round(coleCounter.val).toLocaleString() + "K";
+    }
+  }, 8.92);
+
+  // "Rasmus" (10.77) — name + stat (counter rolls 0 → 2.3K)
+  tl.to("#p3-rasmus-card .p3-side-name", { opacity: 1, duration: 0.4, ease: "power2.out" }, 10.77);
+  tl.from("#p3-rasmus-card .p3-side-name", { y: 14, duration: 0.4, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 10.77);
+  tl.to("#p3-rasmus-card .p3-side-stat", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 10.77);
+  const rasmusCounter = { val: 0 };
+  tl.to(rasmusCounter, {
+    val: 2.3, duration: 0.8, ease: "power2.out",
+    onUpdate() {
+      const el = document.getElementById("p3-rasmus-num");
+      if (el) el.textContent = rasmusCounter.val.toFixed(1) + "K";
+    }
+  }, 10.77);
+  // "Thomas" (11.37) — name + stat (counter rolls 0 → 16.5K)
+  tl.to("#p3-thomas-card .p3-side-name", { opacity: 1, duration: 0.4, ease: "power2.out" }, 11.37);
+  tl.from("#p3-thomas-card .p3-side-name", { y: 14, duration: 0.4, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 11.37);
+  tl.to("#p3-thomas-card .p3-side-stat", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 11.37);
+  const thomasCounter = { val: 0 };
+  tl.to(thomasCounter, {
+    val: 16.5, duration: 0.8, ease: "power2.out",
+    onUpdate() {
+      const el = document.getElementById("p3-thomas-num");
+      if (el) el.textContent = thomasCounter.val.toFixed(1) + "K";
+    }
+  }, 11.37);
+  // "core team" (11.95) — role labels + handles for both side cards
+  tl.to("#p3-rasmus-card .p3-side-role", { opacity: 1, duration: 0.4, ease: "power2.out" }, 11.95);
+  tl.to("#p3-thomas-card .p3-side-role", { opacity: 1, duration: 0.4, ease: "power2.out" }, 11.95);
+  tl.to("#p3-rasmus-handle", { opacity: 1, duration: 0.4, ease: "power2.out" }, 12.15);
+  tl.from("#p3-rasmus-handle", { y: 8, duration: 0.4, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 12.15);
+  tl.to("#p3-thomas-handle", { opacity: 1, duration: 0.4, ease: "power2.out" }, 12.30);
+  tl.from("#p3-thomas-handle", { y: 8, duration: 0.4, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 12.30);
+
+  // "Joining forces." (12.61) — combined total reveals + counter rolls 0 → 224K + connector pulse
+  tl.to("#p3-combined", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 12.61);
+  const totalCounter = { val: 0 };
+  tl.to(totalCounter, {
+    val: 224, duration: 1.0, ease: "power2.out",
+    onUpdate() {
+      const el = document.getElementById("p3-total-num");
+      if (el) el.textContent = Math.round(totalCounter.val).toLocaleString() + "K";
+    }
+  }, 12.65);
+  // Final pulse + connector glow
+  tl.to("#p3-combined", { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 13.30);
+  tl.to("#p3-connector", { textShadow: "0 0 50px rgba(168, 85, 247, 1)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 12.61);
+
+  crossfade(tl, "#phase3", "#phase4", T3);
+
+  // ═══ PHASE 4 — Agentic Coding (anchors: Course one 14.50, Agentic 15.17, Eighteen 16.14, production-grade 18.80) ═══
+  tl.set("#p4-pill",             { opacity: 0 }, 0);
+  tl.set("#p4-sub",              { opacity: 0 }, 0);
+
+  tl.from("#p4-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 14.5);
+  tl.from("#p4-headline", { y: 28, opacity: 0, scale: 0.95, duration: 0.65, ease: "back.out(1.4)" }, 15.17);
+  tl.to("#p4-pill",       { opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 16.14);
+  tl.from("#p4-pill",     { scale: 0.85, duration: 0.5, ease: "back.out(1.5)", immediateRender: false, overwrite: "auto" }, 16.14);
+  // Real course screenshot — 3D reveal (45° → 0°) then zoom-in
+  reveal3DWithZoom(tl, "#p4-screenshot-frame", 17.2, 2.2);
+  // Sub on "production-grade"
+  tl.to("#p4-sub",   { opacity: 1, duration: 0.55, ease: "power2.out", overwrite: "auto" }, 18.80);
+  tl.from("#p4-sub", { y: 18, duration: 0.55, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 18.80);
+
+  crossfade(tl, "#phase4", "#phase5", T4);
+
+  // ═══ PHASE 5 — Second Brain (anchors: Course two 20.13, AI Second Brain 21.58, Bootcamp 22.46, Eight 23.10, Capture 24.72, prompt 25.34, paper 25.99, pattern 26.77) ═══
+  tl.set("#p5-pill",      { opacity: 0 }, 0);
+  tl.set("#p5-own-badge", { opacity: 0, scale: 0.85 }, 0);
+
+  tl.from("#p5-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 20.15);
+  tl.from("#p5-headline", { y: 28, opacity: 0, scale: 0.95, duration: 0.7, ease: "back.out(1.4)" }, 21.58);
+  tl.to("#p5-pill",       { opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 23.10);
+  tl.from("#p5-pill",     { scale: 0.85, duration: 0.5, ease: "back.out(1.5)", immediateRender: false, overwrite: "auto" }, 23.10);
+  tl.to("#p5-own-badge",  { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 24.05);
+  // Real 8-lesson screenshot — 3D reveal (45° → 0°) on "Capture", zoom plays through "every prompt, every paper, every pattern"
+  reveal3DWithZoom(tl, "#p5-content-frame", 24.72, 2.2);
+
+  crossfade(tl, "#phase5", "#phase6", T5);
+
+  // ═══ PHASE 6 — Workshop (anchors: Friday 28.12, Daily 29.12, Debug-together 30.15, Real builders 32.33) ═══
+  tl.set("#p6-chip-1", { opacity: 0, x: -40, scale: 0.94 }, 0);
+  tl.set("#p6-chip-2", { opacity: 0, x: -40, scale: 0.94 }, 0);
+  tl.set("#p6-chip-3", { opacity: 0, x: -40, scale: 0.94 }, 0);
+
+  tl.from("#p6-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 27.8);
+  tl.from("#p6-headline", { y: 28, opacity: 0, duration: 0.6, ease: "power3.out" }, 27.95);
+  // Workshop frame — 3D reveal (45° → 0°), no Ken Burns (we run the carousel instead)
+  tl.set("#p6-workshop-frame",
+    { rotationY: -45, scale: 0.92, opacity: 0, transformPerspective: 1400, transformOrigin: "center center" },
+    0);
+  tl.to("#p6-workshop-frame",
+    { rotationY: 0, scale: 1, opacity: 1, duration: 0.75, ease: "power2.out", overwrite: "auto" },
+    28.12);
+  // Carousel — initial track position is 0 (showing workshop-01).
+  // Slide to workshop-02 at ~30.0, workshop-03 at ~32.3.
+  tl.set("#p6-workshop-track", { x: 0 }, 0);
+  tl.set("#p6-dot-2", { opacity: 1 }, 0); // dots stay visible; their `.active` bg is toggled by classList
+  tl.to("#p6-workshop-track",
+    { x: -840, duration: 0.65, ease: "power2.inOut" }, 30.0);
+  tl.to("#p6-workshop-track",
+    { x: -1680, duration: 0.65, ease: "power2.inOut" }, 32.4);
+  // Sync dot indicator state with slide events
+  tl.call(() => {
+    document.getElementById('p6-dot-1')?.classList.remove('active');
+    document.getElementById('p6-dot-2')?.classList.add('active');
+  }, [], 30.0);
+  tl.call(() => {
+    document.getElementById('p6-dot-2')?.classList.remove('active');
+    document.getElementById('p6-dot-3')?.classList.add('active');
+  }, [], 32.4);
+
+  // 3 community chips at word anchors (paced to "Friday workshops / Daily hangouts / Debug-together")
+  tl.to("#p6-chip-1", { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 28.50);
+  tl.to("#p6-chip-2", { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 29.12);
+  tl.to("#p6-chip-3", { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 30.15);
+
+  crossfade(tl, "#phase6", "#phase7", T6);
+
+  // ═══ PHASE 7 — Calendar (anchors: One calendar 35.10, Something 36.08, every single week 37.30-37.65) ═══
+  tl.set("#p7-tag",         { opacity: 0 }, 0);
+  tl.set("#p7-tag-archive", { opacity: 0, scale: 0.88 }, 0);
+
+  tl.from("#p7-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 34.8);
+  tl.from("#p7-headline", { y: 28, opacity: 0, scale: 0.95, duration: 0.65, ease: "back.out(1.4)" }, 35.10);
+  // Calendar screenshot — 3D reveal then FAST close zoom so individual events become readable
+  tl.set("#p7-calendar-frame",
+    { rotationY: -45, scale: 0.92, opacity: 0, transformPerspective: 1400, transformOrigin: "center center" },
+    0);
+  tl.to("#p7-calendar-frame",
+    { rotationY: 0, scale: 1, opacity: 1, duration: 0.7, ease: "power2.out", overwrite: "auto" },
+    35.4);
+  // Fast close zoom: 1.0 → 1.55 over 1.4s
+  tl.to("#p7-calendar-frame img",
+    { scale: 1.55, duration: 1.4, ease: "power2.out", transformOrigin: "center center" },
+    36.10);
+  // Pan right + zoom in deeper on "And every past event" (38.0 → 39.8)
+  // Reveals the right side of the calendar (Thu/Fri/Sat events) while zooming to 1.95
+  tl.to("#p7-calendar-frame img",
+    { scale: 1.95, x: -320, duration: 1.8, ease: "power2.inOut", transformOrigin: "center center" },
+    38.0);
+  // Tag on "every single week" (37.30)
+  tl.to("#p7-tag",   { opacity: 1, duration: 0.5, ease: "power2.out" }, 37.30);
+  tl.from("#p7-tag", { y: 18, duration: 0.5, ease: "power2.out", immediateRender: false, overwrite: "auto" }, 37.30);
+  // Past-event archive badge enters on the spoken "every past event" (39.03)
+  tl.to("#p7-tag-archive", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 39.03);
+  // Subtle pulse on the archive badge during "recorded and yours forever" (40.5)
+  tl.to("#p7-tag-archive", { scale: 1.04, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 40.5);
+
+  // ═══ BUT pivot — violent-contrast slam at the spoken "But" (44.13) ═══
+  // Overlay sits on top of the endcard (z-index 105). Quick flash + rotating
+  // text slam-in, brief shake, then dissolves before the "what course is missing?" question.
+  tl.set("#pivot-but", { opacity: 0 }, 0);
+  tl.set("#pivot-but-text", { scale: 0.55, rotation: -32, opacity: 0 }, 0);
+  tl.set("#pivot-flash", { opacity: 0 }, 0);
+
+  // White flash punctuation (0.18s)
+  tl.to("#pivot-flash", { opacity: 0.55, duration: 0.10, ease: "power3.out" }, 44.10);
+  tl.to("#pivot-flash", { opacity: 0,    duration: 0.30, ease: "power2.in"  }, 44.20);
+
+  // BUT text slams in with rotation correction + scale pop
+  tl.to("#pivot-but", { opacity: 1, duration: 0.08, ease: "power3.out" }, 44.10);
+  tl.to("#pivot-but-text",
+    { scale: 1, rotation: -4, opacity: 1, duration: 0.45, ease: "back.out(2)" },
+    44.10);
+  // Quick 4-tick shake to give it weight
+  tl.to("#pivot-but-text", { x: 12,  duration: 0.04, ease: "none" }, 44.55);
+  tl.to("#pivot-but-text", { x: -12, duration: 0.04, ease: "none" }, 44.60);
+  tl.to("#pivot-but-text", { x: 6,   duration: 0.04, ease: "none" }, 44.65);
+  tl.to("#pivot-but-text", { x: 0,   duration: 0.04, ease: "none" }, 44.70);
+
+  // Dissolve — scale up + fade out as the spoken "tell me" begins
+  tl.to("#pivot-but-text",
+    { scale: 1.25, opacity: 0, duration: 0.45, ease: "power2.in" },
+    44.85);
+  tl.set("#pivot-but", { opacity: 0 }, 45.30);
+
+  // Fade out P7 + chrome (but keep Werbung badge over endcard via higher z-index)
+  tl.to("#phase7",         { opacity: 0, filter: "blur(20px)", duration: 0.5, ease: "power1.in" }, T7);
+  tl.to("#top-banner",     { opacity: 0, duration: 0.45, ease: "power1.in", overwrite: "auto" }, T7);
+  tl.to("#progress-track", { opacity: 0, duration: 0.45, ease: "power1.in" }, T7);
+
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'dynamous-promo-ig',
+    [T1, T2, T3, T4, T5, T6, T7]
+  );
+
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

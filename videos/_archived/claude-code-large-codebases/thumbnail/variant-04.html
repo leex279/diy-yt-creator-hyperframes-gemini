@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Variant 04 — Contrarian vs RAG. "RAG is dead." — struck through "RAG", orange italic on "dead". Dark theme. Cover: fig1-harness.png. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v04 — RAG is dead.</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  .headline { top: 152px; width: 800px; }
+  .headline .l1 { font-size: 196px; line-height: 0.92; letter-spacing: -6px; font-family: var(--sans-display); }
+  .headline .l2 { font-size: 110px; line-height: 1.0; letter-spacing: -2px; margin-top: 10px; }
+  .headline .l3 { font-size: 156px; line-height: 0.95; letter-spacing: -5px; }
+  /* keep strike bar dark-theme appropriate */
+  .rag-strike { position: relative; display: inline-block; }
+  .rag-strike::after {
+    content: "";
+    position: absolute;
+    left: -2%; right: -2%; top: 52%;
+    height: 12px;
+    background: var(--accent-orange);
+    transform: translateY(-50%) rotate(-3deg);
+    border-radius: 5px;
+    opacity: 0.92;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-dark">
+    <div class="overline">Anthropic · Claude Code at scale</div>
+    <div class="overline-divider"></div>
+    <h1 class="headline">
+      <span class="l1 rag-strike">RAG</span>
+      <span class="l2">is</span>
+      <em class="l3">dead.</em>
+    </h1>
+    <div class="receipt"><strong>Agentic search</strong> replaced it.<br>Here's how Claude navigates millions of lines.</div>
+    <div class="brand"><span class="dot"></span><span>diy-smartcode</span></div>
+    <div class="cover-stack">
+      <span class="cover-label">From Anthropic's Blog</span>
+      <div class="cover-frame">
+        <img src="../assets/blog/fig1-harness.png" alt="Claude Code extension layer harness">
+        <div class="cover-stamp">Part 1</div>
+      </div>
+    </div>
+  </div>
+</body></html>

@@ -1,0 +1,154 @@
+<!--
+  shared/lib/components/typewriter-line/component.html
+  Single line of text typed character-by-character with a blinking cursor.
+  Source text from [data-typing-text]. Characters are revealed progressively
+  via GSAP counter tween + onUpdate. Cursor blinks finitely (calculated from
+  total duration). After typing finishes, cursor fades on optional "enter"
+  press cue. NEVER uses repeat: -1.
+
+  SOURCE: original — no template source.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this element wherever the typed line should appear.
+     Set data-typing-text to the string you want to type out.
+-->
+
+<div class="typewriter-line" id="tw-1" data-typing-text="hello world">
+  <span class="tl-text"></span><span class="tl-cursor">|</span>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+     Font properties (size, weight, color, family) are NOT set here — inherit from parent.
+-->
+
+<style>
+  /* shared/lib/components/typewriter-line — keep this comment block */
+  .typewriter-line {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: pre;
+    line-height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  .tl-text {
+    display: inline;
+    white-space: pre;
+  }
+
+  .tl-cursor {
+    display: inline-block;
+    width: 2px;
+    /* Height derived from current font-size via em */
+    height: 1em;
+    line-height: 1;
+    /* Visible char '|' inside — will be sized to 0 width via overflow:hidden trick */
+    font-size: inherit;
+    font-weight: 300;
+    color: var(--cursor-color, rgba(255,255,255,0.85));
+    /* Blinking is driven by GSAP (finite cycles), not CSS animation */
+    vertical-align: baseline;
+    will-change: opacity;
+  }
+</style>
+
+<!--
+  3) JS — call addTypewriterLine() from the host root timeline.
+
+  SIGNATURE:
+    addTypewriterLine(tl, sel, at, opts)
+
+  PARAMETERS:
+    tl          — a paused gsap.timeline
+    sel         — CSS selector resolving to ONE .typewriter-line element
+    at          — insertion time on tl (seconds)
+    opts        — optional config object:
+      duration  = 2.0   total typing duration (seconds). Cursor blinks from
+                        start until enter press. Finite blink cycles derived
+                        from this value.
+      blinkRate = 0.5   seconds per blink on/off cycle
+
+  USAGE EXAMPLES:
+    addTypewriterLine(tl, "#tw-1", P2 + 0.5);
+    addTypewriterLine(tl, "#tw-1", P2 + 0.5, { duration: 3.0, blinkRate: 0.4 });
+
+  SFX COUPLING — pop per ~5 chars typed (0.05 volume):
+    For "hello world" (11 chars, typing over 2s → ~0.18s/char):
+      5 chars ≈ at+0.9s, 10 chars ≈ at+1.8s (2 clicks for 11 chars)
+    General formula: pop at at + (5/total_chars)*duration, at + (10/total_chars)*duration, …
+    Each pop on track 3 (sequential, non-overlapping since 0.5s apart minimum).
+
+    Example for "hello world" (11 chars, 2s duration):
+    <audio id="sfx-tw-1a" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<at+0.90>" data-duration="0.52" data-track-index="3" data-volume="0.05"></audio>
+    <audio id="sfx-tw-1b" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<at+1.80>" data-duration="0.52" data-track-index="3" data-volume="0.05"></audio>
+
+  CONSTRAINTS:
+    - Element must have data-typing-text set before this function is called.
+    - Call at most once per element.
+    - Cursor blink cycles are computed as: Math.floor(duration / blinkRate) — finite.
+    - After typing, 0.3s pause, then cursor fades out over 0.2s (enter press cue).
+-->
+
+<script>
+  function addTypewriterLine(tl, sel, at, opts) {
+    opts = opts || {};
+    var duration  = opts.duration  !== undefined ? opts.duration  : 2.0;
+    var blinkRate = opts.blinkRate !== undefined ? opts.blinkRate : 0.5;
+
+    var root = document.querySelector(sel);
+    if (!root) return;
+
+    var text   = root.getAttribute('data-typing-text') || '';
+    var total  = text.length;
+    var textEl = root.querySelector('.tl-text');
+    var cursor = root.querySelector('.tl-cursor');
+    if (!textEl || !cursor) return;
+
+    // Set initial state: empty text, cursor visible
+    gsap.set(textEl, { opacity: 1 });
+    gsap.set(cursor, { opacity: 1 });
+    textEl.textContent = '';
+
+    // Typing tween — counter object increments chars 0 → total
+    var state = { chars: 0 };
+    tl.to(state, {
+      chars: total,
+      duration: duration,
+      ease: 'none',
+      snap: { chars: 1 },
+      onUpdate: function() {
+        textEl.textContent = text.slice(0, Math.round(state.chars));
+      }
+    }, at);
+
+    // Cursor blink — finite cycles (yoyo on/off), calculated from duration
+    // Each blink cycle = blinkRate (on→off = one repeat)
+    var blinkCycles = Math.max(1, Math.floor(duration / blinkRate) - 1);
+    tl.to(cursor, {
+      opacity: 0,
+      duration: blinkRate * 0.45,
+      ease: 'none',
+      yoyo: true,
+      repeat: blinkCycles
+    }, at);
+
+    // After typing: 0.3s pause, then cursor fade-out (enter press)
+    var enterAt = at + duration + 0.3;
+    tl.to(cursor, {
+      opacity: 0,
+      duration: 0.2,
+      ease: 'power1.in'
+    }, enterAt);
+  }
+</script>

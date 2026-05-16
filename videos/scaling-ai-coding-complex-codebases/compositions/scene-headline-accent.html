@@ -1,0 +1,190 @@
+﻿<!--
+  scene-headline-accent.html â€” Two-line headline + side decay-graph visual.
+  Left: headline with Dynamous-Blue underline sweep on "doesn't scale".
+  Right: a 4-step decay graph showing the slide from clean greenfield to god components.
+-->
+<template id="scene-headline-accent-template">
+  <div data-composition-id="scene-headline-accent"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #ha-content {
+        width:100%; height:100%;
+        padding: 90px var(--pad-x) 80px;
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 60px;
+        align-items: center;
+        box-sizing:border-box;
+      }
+      #ha-left { display: flex; flex-direction: column; gap: 30px; }
+      #ha-left .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #ha-left .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #ha-left .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 110px;
+        line-height: 1.22;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+      }
+      #ha-left .headline .light {
+        font-weight: 300;
+        color: var(--ink-2);
+      }
+      #ha-left .accent-text {
+        background-image: linear-gradient(var(--accent), var(--accent));
+        background-repeat: no-repeat;
+        background-position: 0 92%;
+        background-size: 0% 28%;
+        padding: 0 8px 0 0;
+        display: inline-block;
+      }
+      #ha-left .sub {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 34px;
+        line-height: 1.35;
+        color: var(--ink-2);
+        max-width: 800px;
+      }
+
+      /* Right: decay timeline visual */
+      #ha-right { display: flex; flex-direction: column; gap: 16px; }
+      #ha-right .head {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 500;
+        font-size: 18px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .decay-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 18px;
+        align-items: center;
+        padding: 14px 18px;
+        background: rgba(255,255,255,0.04);
+        border: 1.5px solid rgba(255,255,255,0.10);
+        border-radius: 12px;
+      }
+      .decay-row .stage {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 18px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .decay-row .label {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 1.2;
+        color: var(--ink);
+      }
+      .decay-row.s2 { border-color: rgba(96, 165, 250, 0.32); }
+      .decay-row.s3 { border-color: rgba(14, 165, 233, 0.42); }
+      .decay-row.s4 { border-color: rgba(249, 115, 22, 0.55); }
+      .decay-row.s4 .stage { color: var(--accent-warn); }
+      .decay-row.s4 .label { color: var(--accent-warn); }
+      .decay-arrow {
+        display: flex; justify-content: center;
+        color: var(--muted-2);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        line-height: 0.6;
+      }
+    </style>
+
+    <div id="ha-content">
+      <div id="ha-left">
+        <div class="eyebrow" id="ha-eyebrow" style="opacity:0;visibility:hidden;">THE PROBLEM</div>
+        <h1 class="headline" id="ha-headline" style="opacity:0;visibility:hidden;">
+          <span class="light">Vibe coding</span><br/><span class="accent-text" id="ha-accent">doesn&rsquo;t scale.</span>
+        </h1>
+        <p class="sub" id="ha-sub" style="opacity:0;visibility:hidden;">
+          Every team starts simple. Every team ends in the same place.
+        </p>
+      </div>
+
+      <div id="ha-right">
+        <div class="head" id="ha-decay-head" style="opacity:0;visibility:hidden;">Six-month codebase decay</div>
+        <div class="decay-row s1" id="ha-d1" style="opacity:0;visibility:hidden;">
+          <div class="stage">Month 1</div>
+          <div class="label">Clean greenfield. One agent session ships.</div>
+        </div>
+        <div class="decay-arrow" id="ha-a1" style="opacity:0;visibility:hidden;">&darr;</div>
+        <div class="decay-row s2" id="ha-d2" style="opacity:0;visibility:hidden;">
+          <div class="stage">Month 2</div>
+          <div class="label">Two features. Three more arriving.</div>
+        </div>
+        <div class="decay-arrow" id="ha-a2" style="opacity:0;visibility:hidden;">&darr;</div>
+        <div class="decay-row s3" id="ha-d3" style="opacity:0;visibility:hidden;">
+          <div class="stage">Month 4</div>
+          <div class="label">Context bloats. The agent guesses.</div>
+        </div>
+        <div class="decay-arrow" id="ha-a3" style="opacity:0;visibility:hidden;">&darr;</div>
+        <div class="decay-row s4" id="ha-d4" style="opacity:0;visibility:hidden;">
+          <div class="stage">Month 6</div>
+          <div class="label">2,000-line god components everywhere.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#ha-eyebrow",  { y: 24 }, 0);
+      tl.set("#ha-headline", { y: 60 }, 0);
+      tl.set("#ha-sub",      { y: 24 }, 0);
+      tl.set("#ha-accent",   { backgroundSize: "0% 28%" }, 0);
+      tl.set("#ha-decay-head", { y: 16 }, 0);
+      ["#ha-d1","#ha-d2","#ha-d3","#ha-d4"].forEach(sel => tl.set(sel, { x: 24 }, 0));
+      ["#ha-a1","#ha-a2","#ha-a3"].forEach(sel => tl.set(sel, { y: -8 }, 0));
+
+      // Left side reveals
+      tl.to("#ha-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#ha-headline", { y: 0, autoAlpha: 1, duration: 0.75, ease: "power3.out" }, 0.45);
+      tl.to("#ha-sub",      { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 1.0);
+      tl.to("#ha-accent",   { backgroundSize: "100% 28%", duration: 0.7, ease: "power2.out" }, 1.6);
+
+      // Right side decay timeline reveals â€” paced ~3s apart
+      tl.to("#ha-decay-head", { y: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, 2.4);
+      tl.to("#ha-d1", { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, 2.8);
+      tl.to("#ha-a1", { y: 0, autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 5.6);
+      tl.to("#ha-d2", { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, 6.0);
+      tl.to("#ha-a2", { y: 0, autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 8.8);
+      tl.to("#ha-d3", { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, 9.2);
+      tl.to("#ha-a3", { y: 0, autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 12.0);
+      tl.to("#ha-d4", { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, 12.4);
+
+      // Mid-hold beat â€” pulse the bad row + headline
+      tl.to("#ha-d4", { boxShadow: "0 0 60px rgba(249, 115, 22, 0.45)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 14.5);
+      tl.to("#ha-headline", { scale: 1.02, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 16.5);
+
+      // Extend timeline
+      tl.set({}, {}, 18);
+      window.__timelines["scene-headline-accent"] = tl;
+    </script>
+  </div>
+</template>

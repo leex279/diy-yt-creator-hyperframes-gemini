@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code Max Tips — 5 Fixes to Stop Burning Credits</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOKENS: shared/lib/tokens/anthropic-dark.css */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 200px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* COMPONENT: shared/lib/components/ambient-radial/ */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* COMPONENT: shared/lib/components/progress-bar/ */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+  #phase6 { z-index: 6; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ── PHASE 1 — THUMBNAIL INTRO + HERO HOOK ── */
+  #p1-topic-lockup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 24px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #p1-brand-lockup { display: flex; align-items: center; gap: 20px; }
+  #p1-brand-logo { height: 90px; width: auto; display: block; }
+  #p1-topic-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 148px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  #p1-ga-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 44px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  #p1-hero-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    text-align: center;
+    gap: 24px;
+    z-index: 1;
+    opacity: 0;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+  #p1-caption {
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ── PHASE 2 — PAIN REVEAL ── */
+  #phase2 .phase-content { align-items: flex-start; justify-content: flex-start; gap: 28px; }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+  }
+  #p2-stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 32px 40px 36px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+    width: 960px;
+    min-height: 290px;
+  }
+  #p2-stat-number {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 170px;
+    line-height: 1.0;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 60px rgba(233,116,88,0.40);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p2-stat-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  #p2-sub {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 920px;
+  }
+  #p2-sub .accent { color: var(--orange); }
+
+  /* ── PHASE 3 — FIX 1 + FIX 2 ── */
+  #phase3 .phase-content { align-items: flex-start; justify-content: flex-start; gap: 22px; }
+  #p3-overline { color: var(--purple); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  /* Tip card */
+  .tip-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 28px;
+    padding: 28px 32px;
+    border-radius: 22px;
+    width: 960px;
+  }
+  .tip-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.18);
+  }
+  .tip-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.18);
+  }
+  .tip-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 10px 30px rgba(125,211,166,0.18);
+  }
+  .tip-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.18);
+  }
+  .tip-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 88px;
+    height: 88px;
+    border-radius: 18px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 48px;
+    flex-shrink: 0;
+  }
+  .tip-card.purple .tip-num { background: rgba(167,139,250,0.22); border: 1.5px solid rgba(167,139,250,0.45); color: var(--purple); }
+  .tip-card.blue .tip-num   { background: rgba(107,154,239,0.22); border: 1.5px solid rgba(107,154,239,0.45); color: var(--blue); }
+  .tip-card.green .tip-num  { background: rgba(125,211,166,0.22); border: 1.5px solid rgba(125,211,166,0.45); color: var(--green); }
+  .tip-card.orange .tip-num { background: rgba(233,116,88,0.22);  border: 1.5px solid rgba(233,116,88,0.45);  color: var(--orange); }
+  .tip-body { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .tip-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 48px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .tip-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 1px;
+  }
+  .tip-card.purple .tip-sub { color: var(--purple); }
+  .tip-card.blue .tip-sub   { color: var(--blue); }
+  .tip-card.green .tip-sub  { color: var(--green); }
+  .tip-card.orange .tip-sub { color: var(--orange); }
+
+  /* ── PHASE 4 — FIX 3 + FIX 4 ── */
+  #phase4 .phase-content { align-items: flex-start; justify-content: flex-start; gap: 22px; }
+  #p4-overline { color: var(--blue); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p4-tenbadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 16px 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.20), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.45);
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 52px;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(125,211,166,0.35);
+    opacity: 0;
+  }
+
+  /* ── PHASE 5 — FIX 5 + CONCLUSION ── */
+  #phase5 .phase-content { align-items: flex-start; justify-content: flex-start; gap: 22px; }
+  #p5-overline { color: var(--green); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p5-comparison {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 960px;
+  }
+  .compare-pill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+  .compare-pill.bad {
+    background: linear-gradient(135deg, rgba(209,67,67,0.15), rgba(209,67,67,0.05));
+    border: 2px solid rgba(209,67,67,0.35);
+  }
+  .compare-pill.good {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+  }
+  .compare-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 120px;
+    line-height: 0.9;
+    letter-spacing: -3px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .compare-pill.bad .compare-num  { color: var(--red);   text-shadow: 0 0 40px rgba(209,67,67,0.35); }
+  .compare-pill.good .compare-num { color: var(--green);  text-shadow: 0 0 40px rgba(125,211,166,0.35); }
+  .compare-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .compare-pill.bad .compare-label  { color: var(--red); }
+  .compare-pill.good .compare-label { color: var(--green); }
+  .compare-desc {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  #p5-conclusion {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.2;
+    color: var(--text);
+    max-width: 920px;
+    padding-top: 8px;
+  }
+  #p5-conclusion .accent { color: var(--green); }
+
+  /* ── PHASE 6 — FINAL THUMBNAIL CLOSE ── */
+  #phase6 .phase-content { align-items: flex-start; justify-content: center; gap: 28px; }
+  #p6-brand-lockup { display: flex; align-items: center; gap: 16px; }
+  #p6-brand-logo { height: 70px; width: auto; display: block; }
+  #p6-topic-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 148px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p6-topic-slam .accent { color: var(--orange); }
+  #p6-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  #p6-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 52px;
+    letter-spacing: 2px;
+    color: var(--text);
+    padding: 18px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+  }
+  #p6-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 40px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 46px;
+    color: var(--text);
+  }
+  #p6-cta .arrow { color: var(--orange); font-weight: 400; font-size: 52px; line-height: 0.7; }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="claude-code-max-tips"
+     data-start="0"
+     data-duration="133"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner — Claude Code logo -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══ PHASE 1 — THUMBNAIL INTRO + HERO HOOK (0-4.5s) ═══ -->
+  <div id="phase1" class="phase">
+    <!-- Beat 1a: thumbnail-grade topic lockup visible from t=0 -->
+    <div id="p1-topic-lockup">
+      <div id="p1-brand-lockup">
+        <img id="p1-brand-logo" src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+      </div>
+      <div id="p1-topic-slam">YOUR<br>CREDITS<br>ARE <span class="accent">LEAKING.</span></div>
+      <div id="p1-ga-receipt">5 FIXES · MAX PLAN · 2026</div>
+    </div>
+    <!-- Beat 1b: hook content (hidden until 2.5s) -->
+    <div id="p1-hero-content">
+      <div class="overline" id="p1-overline">Claude Max</div>
+      <div id="p1-pre">Most subscribers hit</div>
+      <div id="p1-hero">LIMIT<br>BY NOON</div>
+      <div id="p1-caption">…and never figure out why</div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 2 — PAIN REVEAL: CLAUDE.md token burn (4.5-28s) ═══ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">The hidden burn</div>
+      <div id="p2-headline">Anthropic doesn't put this on the pricing page.</div>
+      <div id="p2-stat-block">
+        <div id="p2-stat-number">5K</div>
+        <div id="p2-stat-label">tokens · before · you · type · a · word</div>
+      </div>
+      <div id="p2-sub">A bloated <span class="accent">CLAUDE.md</span> file burns tokens on <span class="accent">every single turn.</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 3 — FIX 1 + FIX 2 (28-65s) ═══ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">The fixes</div>
+      <div id="p3-headline">Two that pay off immediately.</div>
+      <div class="tip-card purple" id="p3-card-1">
+        <div class="tip-num">01</div>
+        <div class="tip-body">
+          <div class="tip-title">Trim CLAUDE.md</div>
+          <div class="tip-sub">Under 200 lines · essentials only</div>
+        </div>
+      </div>
+      <div class="tip-card blue" id="p3-card-2">
+        <div class="tip-num">02</div>
+        <div class="tip-body">
+          <div class="tip-title">.claudeignore</div>
+          <div class="tip-sub">node_modules · build · generated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 4 — FIX 3 + FIX 4 (65-86s) ═══ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Prompt and session</div>
+      <div id="p4-headline">Two more that stack on top.</div>
+      <div class="tip-card green" id="p4-card-3">
+        <div class="tip-num">03</div>
+        <div class="tip-body">
+          <div class="tip-title">Be specific</div>
+          <div class="tip-sub">10x fewer tokens · exact file + line</div>
+        </div>
+      </div>
+      <div id="p4-tenbadge">10x token reduction</div>
+      <div class="tip-card orange" id="p4-card-4">
+        <div class="tip-num">04</div>
+        <div class="tip-body">
+          <div class="tip-title">/compact early</div>
+          <div class="tip-sub">Don't wait for auto — go manual</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 5 — FIX 5 + CONCLUSION (86-122s) ═══ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">Images cost more than you think</div>
+      <div id="p5-headline">Fix five: crop before you send.</div>
+      <div id="p5-comparison">
+        <div class="compare-pill bad" id="p5-pill-bad">
+          <div class="compare-num">1,300</div>
+          <div class="compare-label">tokens</div>
+          <div class="compare-desc">Full screenshot</div>
+        </div>
+        <div class="compare-pill good" id="p5-pill-good">
+          <div class="compare-num">&lt;100</div>
+          <div class="compare-label">tokens</div>
+          <div class="compare-desc">Tight crop</div>
+        </div>
+      </div>
+      <div id="p5-conclusion">The <span class="accent">Max plan</span> gives you headroom.<br>These fixes make it count.</div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 6 — FINAL THUMBNAIL CLOSE (122-133s) ═══ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div id="p6-brand-lockup">
+        <img id="p6-brand-logo" src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+      </div>
+      <div id="p6-topic-slam">5 MAX<br>PLAN <span class="accent">FIXES</span></div>
+      <div id="p6-receipt">CREDITS · SAVED · 2026</div>
+      <div id="p6-url">dynamous.ai</div>
+      <div id="p6-cta">Follow for more<span class="arrow">&#8594;</span></div>
+    </div>
+  </div>
+
+  <!-- Narration — no class="clip" on audio per CLAUDE.md Key Rules -->
+  <audio id="narration"
+         data-start="0"
+         data-duration="132.12"
+         data-track-index="2"
+         data-volume="1"
+         src="audio/narration.wav"></audio>
+
+  <!-- SFX: cinematic-whoosh on each phase transition
+       Per DESIGN.md: whoosh fires when shape-backdrop reposition starts (sceneT - 0.4)
+       Per audio-design.md: data-duration=1.5 for natural decay tail
+       T1=4.5, T2=28, T3=65, T4=86, T5=122 → whoosh data-start = sceneT - 0.4 -->
+  <audio id="sfx-whoosh-t1" class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="4.1"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-t2" class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="27.6"
+         data-duration="1.5"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-t3" class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="64.6"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-t4" class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="85.6"
+         data-duration="1.5"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-t5" class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="121.6"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay — last child -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ── Shape backdrop — deterministic seeded scatter ──
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('claude-code-max-tips', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL_DURATION = 133;
+
+  // ── Ambient breath ──
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // ── Progress bar (133s linear fill) ──
+  tl.fromTo("#progress-fill", { width: 0 }, { width: 1080, duration: TOTAL_DURATION, ease: "none" }, 0);
+
+  // ── Top banner fade-in ──
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ════════════════════════════════════════════
+  // PHASE 1 — Thumbnail-grade intro + hero hook
+  // Beat 1a: topic lockup static at t=0 (visual-pacing-5s relaxed for opening thumbnail hold)
+  // Beat 1b: hook content at 2.5s
+  // ════════════════════════════════════════════
+  // Beat 1a fade-out at 2.4s
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.5, ease: "power2.in" }, 2.4);
+
+  // Beat 1b entrances — transcript: "Most" @ 0.046s (plays during beat 1a), beat 1b is visual layer
+  tl.to("#p1-hero-content",   { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.5);
+  tl.from("#p1-overline",     { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 2.5);
+  tl.from("#p1-pre",          { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 2.8);
+  tl.from("#p1-hero",         { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 3.2);
+  // Inline shake on slam — EFFECT: shared/lib/effects/hero-slam-shake.js
+  tl.to("#p1-hero", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 3.65);
+  tl.to("#p1-hero", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 3.70);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 3.75);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 3.80);
+  tl.from("#p1-caption",      { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 4.0);
+
+  // ─── Transition phase1 → phase2 at T1=4.5s ───
+  const T1 = 4.5;
+  tl.to("#phase1",  { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1",  { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2",  { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ════════════════════════════════════════════
+  // PHASE 2 — Pain reveal: CLAUDE.md token burn (4.5-28s)
+  // Transcript anchors: "You're" @ 5.30s, "CLAUDE.md" @ 13.17s, "Not just once" @ 17.50s, "five thousand tokens burned" @ 22.16s
+  // ════════════════════════════════════════════
+  tl.from("#p2-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.3);
+  tl.from("#p2-headline",   { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 9.6);
+  // "CLAUDE.md" first mention @ 13.17s → stat block pop
+  tl.from("#p2-stat-block", { scale: 0.85, opacity: 0, duration: 0.7, ease: "back.out(1.6)" }, 13.17);
+  // "Not just once" @ 17.50s → sub text
+  tl.from("#p2-sub",        { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 17.5);
+
+  // ─── Transition phase2 → phase3 at T2=28s ───
+  const T2 = 28.0;
+  tl.to("#phase2",  { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2",  { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3",  { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ════════════════════════════════════════════
+  // PHASE 3 — Fix 1 + Fix 2 (28-65s)
+  // Hidden-until-reveal per step-by-step-reveal.md — explicit tl.set + tl.to, NOT tl.from
+  // Transcript anchors: "Fix one" @ 29.17s, "Fix two" @ 49.56s
+  // Visual beats inserted for visual-pacing-5s.md compliance (≤5s gap between changes)
+  // ════════════════════════════════════════════
+  // Hide both cards from frame 0 — unambiguous per step-by-step-reveal.md
+  tl.set("#p3-card-1", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p3-card-2", { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, T2 + 0.8);
+  tl.from("#p3-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, T2 + 1.2);
+
+  // Card 1 reveal: "Fix one" @ 29.17s (narrator says "Trim your CLAUDE.md")
+  tl.to("#p3-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 29.17);
+
+  // Visual beats to fill 29.17 → 49.56 gap (20s — must break into ≤5s windows):
+  // Beat @ 34.72s: glow pulse on card 1 ("six hundred lines")
+  tl.to("#p3-card-1", { boxShadow: "0 0 40px rgba(167,139,250,0.50), 0 10px 30px rgba(167,139,250,0.18)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 34.72);
+  // Beat @ 39.25s: scale pulse on card 1 ("rules for testing")
+  tl.to("#p3-card-1", { scale: 1.025, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 39.25);
+  // Beat @ 43.5s: scale pulse on card 1 ("even when you're just fixing a CSS typo")
+  tl.to("#p3-card-1", { scale: 1.025, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 43.5);
+  // Beat @ 47.0s: brief glow on card 1 ("Keep only what's essential")
+  tl.to("#p3-card-1", { boxShadow: "0 0 40px rgba(167,139,250,0.40), 0 10px 30px rgba(167,139,250,0.18)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 47.0);
+
+  // Card 2 reveal: "Fix two" @ 49.56s (.claudeignore)
+  tl.to("#p3-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 49.56);
+
+  // Visual beats 49.56 → 65 (15.4s — need beats at ~54s, ~59s, ~64s):
+  // Beat @ 54.48s: glow on card 2 ("node_modules")
+  tl.to("#p3-card-2", { boxShadow: "0 0 40px rgba(107,154,239,0.50), 0 10px 30px rgba(107,154,239,0.18)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 54.48);
+  // Beat @ 59.76s: scale pulse on card 2 ("When Claude can't see those files")
+  tl.to("#p3-card-2", { scale: 1.025, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 59.76);
+  // Beat @ 63.99s: scale pulse on card 2 ("context stays clean") — just before transition
+  tl.to("#p3-card-2", { scale: 1.025, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 63.99);
+
+  // ─── Transition phase3 → phase4 at T3=65s ───
+  const T3 = 65.0;
+  tl.to("#phase3",  { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3",  { opacity: 0, duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4",  { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+
+  // ════════════════════════════════════════════
+  // PHASE 4 — Fix 3 + Fix 4 (65-86s)
+  // Hidden-until-reveal per step-by-step-reveal.md
+  // Transcript anchors: "Fix three" @ 65.24s, "ten times" @ 83.75s, "Fix four" @ 85.72s
+  // ════════════════════════════════════════════
+  tl.set("#p4-card-3", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p4-card-4", { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, T3 + 0.8);
+  tl.from("#p4-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, T3 + 1.2);
+
+  // Card 3 reveal: "Fix three" @ 65.24s → "Specific beats vague"
+  tl.to("#p4-card-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 65.6);
+
+  // Visual beats 65.6 → 83.75 (18s — need beats at ~70s, ~75s, ~80s):
+  // Beat @ 69.5s: glow on card 3 ("'Fix the bug'")
+  tl.to("#p4-card-3", { boxShadow: "0 0 40px rgba(125,211,166,0.50), 0 10px 30px rgba(125,211,166,0.18)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 69.5);
+  // Beat @ 74.25s: scale pulse on card 3 ("J W T validation")
+  tl.to("#p4-card-3", { scale: 1.025, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 74.25);
+  // Beat @ 78.5s: scale pulse on card 3 ("straight to the problem")
+  tl.to("#p4-card-3", { scale: 1.025, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 78.5);
+
+  // 10x badge: "ten times" @ 83.75s
+  tl.to("#p4-tenbadge", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 83.75);
+
+  // Card 4 reveal: "Fix four" @ 85.72s → /compact early
+  tl.to("#p4-card-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 85.72);
+
+  // ─── Transition phase4 → phase5 at T4=86s ───
+  const T4 = 86.0;
+  tl.to("#phase4",  { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4",  { opacity: 0, duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5",  { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T4 + 0.6);
+
+  // ════════════════════════════════════════════
+  // PHASE 5 — Fix 5 + Conclusion (86-122s)
+  // Hidden-until-reveal per step-by-step-reveal.md
+  // Transcript anchors: "Run slash-compact" @ 87.22s, "But by then" @ 95.75s,
+  //   "Fix five" @ 104.21s, "A full screenshot" @ 107.44s, "A tight crop" @ 112.13s,
+  //   "The Max plan" @ 118.47s
+  // ════════════════════════════════════════════
+  tl.set("#p5-pill-bad",   { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p5-pill-good",  { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p5-conclusion", { y: 24, opacity: 0 }, 0);
+
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, T4 + 0.8);
+  tl.from("#p5-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, T4 + 1.2);
+
+  // Visual beats in 86.8 → 104.21 gap (17s — need beats at ~91s, ~96s, ~100s):
+  // Beat @ 90.39s: glow on headline ("Claude Code auto-compacts")
+  tl.to("#p5-headline", { scale: 1.02, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 90.39);
+  // Beat @ 95.75s: pulse on headline ("But by then you've already paid")
+  tl.to("#p5-headline", { scale: 1.02, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 95.75);
+  // Beat @ 100.8s: pulse on headline ("Running slash-compact manually at the halfway point")
+  tl.to("#p5-headline", { scale: 1.02, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 100.8);
+
+  // "Fix five" @ 104.21s → headline slam
+  tl.to("#p5-headline", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "back.out(1.5)" }, 104.21);
+
+  // "A full screenshot" @ 107.44s → bad pill reveal
+  tl.to("#p5-pill-bad",  { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 107.44);
+  // "A tight crop" @ 112.13s → good pill reveal
+  tl.to("#p5-pill-good", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 112.13);
+  // "The Max plan" @ 118.47s → conclusion text
+  tl.to("#p5-conclusion", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 118.47);
+
+  // ─── Transition phase5 → phase6 at T5=122s ───
+  const T5 = 122.0;
+  tl.to("#phase5",  { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5",  { opacity: 0, duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase6",  { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase6",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T5 + 0.6);
+
+  // ════════════════════════════════════════════
+  // PHASE 6 — Final thumbnail-grade close (122-133s)
+  // Narration anchor: dynamous outro @ 127.65s
+  // All elements enter within 0.5s stagger then hold static ≥1.5s
+  // Per shorts-thumbnail-frames.md: visual-pacing-5s relaxed for terminal hold
+  // ════════════════════════════════════════════
+  const P6 = T5 + 0.7; // ~122.7s
+  tl.from("#p6-brand-lockup", { y: -20, opacity: 0, duration: 0.4, ease: "power2.out" }, P6 + 0.0);
+  tl.from("#p6-topic-slam",   { scale: 0.88, opacity: 0, duration: 0.6, ease: "back.out(1.7)" }, P6 + 0.2);
+  tl.from("#p6-receipt",      { y: 16, opacity: 0, duration: 0.4, ease: "power2.out" }, P6 + 0.5);
+  tl.from("#p6-url",          { scale: 0.90, opacity: 0, duration: 0.5, ease: "back.out(1.5)" }, P6 + 0.7);
+  tl.from("#p6-cta",          { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, P6 + 1.0);
+  // All entrances complete by ~124.5s. Static hold until 133s (8.5s hold, far above 1.5s minimum)
+
+  // ── Shape backdrop repositions on every phase transition (DEFAULT for Anthropic Shorts) ──
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-code-max-tips',
+    [T1, T2, T3, T4, T5]
+  );
+
+  // ── Extend timeline to full audio duration per hyperframes-pitfalls.md §1 ──
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["claude-code-max-tips"] = tl;
+</script>
+</body>
+</html>

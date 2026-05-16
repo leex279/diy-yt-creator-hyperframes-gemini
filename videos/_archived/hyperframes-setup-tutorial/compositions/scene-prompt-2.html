@@ -1,0 +1,155 @@
+<!--
+  scene-prompt-2.html — chat-bubble UI for the iteration prompt.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-prompt-2-template">
+  <div data-composition-id="scene-prompt-2"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #p2-content {
+        width:100%; height:100%;
+        padding: 80px var(--pad-x) 80px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 26px; box-sizing:border-box;
+      }
+      #p2-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:10px; text-align:center;
+      }
+      #p2-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 24px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-warn);
+      }
+      #p2-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 48px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+      .chat-stack-2 {
+        width: 1300px;
+        display:flex; flex-direction:column;
+        gap: 22px;
+      }
+      .bubble-2 {
+        max-width: 1100px;
+        padding: 22px 28px;
+        border-radius: 22px;
+        font-family: var(--sans); font-weight: 500;
+        font-size: 26px; line-height: 1.45;
+        box-shadow: 0 16px 36px rgba(0,0,0,.45);
+      }
+      .bubble-2.user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, rgba(59,130,246,.20), rgba(59,130,246,.08));
+        border: 1px solid rgba(59,130,246,.55);
+        color: var(--text);
+      }
+      .bubble-2.user .who {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 14px; letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #88b5ff;
+        display:block; margin-bottom: 6px;
+      }
+      .bubble-2.agent {
+        align-self: flex-start;
+        background: linear-gradient(135deg, rgba(249,115,22,.15), rgba(249,115,22,.04));
+        border: 1px solid rgba(249,115,22,.45);
+        color: var(--text);
+      }
+      .bubble-2.agent .who {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 14px; letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        display:block; margin-bottom: 6px;
+      }
+      .bubble-2.agent .file-line {
+        display:flex; align-items:center; gap: 12px;
+        margin-top: 10px;
+        padding: 10px 14px;
+        background: rgba(0,0,0,.45);
+        border-radius: 8px;
+        font-family: var(--mono); font-weight: 600;
+        font-size: 18px;
+      }
+      .bubble-2.agent .file-line .icon {
+        color: var(--accent-stat);
+        font-weight: 800;
+      }
+      .bubble-2.agent .file-line .file {
+        color: var(--accent-stat);
+      }
+      .bubble-2.agent .file-line .stat {
+        color: var(--text-secondary);
+        font-size: 16px;
+      }
+      .iter-badge {
+        display:inline-flex; align-items:center; gap: 12px;
+        padding: 8px 18px; border-radius: 999px;
+        background: rgba(251,188,4,.16);
+        border: 1px solid rgba(251,188,4,.55);
+        font-family: var(--mono); font-weight: 800;
+        font-size: 16px; letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #fbd649;
+      }
+    </style>
+
+    <div id="p2-content">
+      <div class="header-block">
+        <div class="overline" id="p2-overline">ITERATE &middot; STEP 9</div>
+        <div class="headline" id="p2-headline">Same flow for changes &mdash; just describe the next version</div>
+      </div>
+
+      <div class="chat-stack-2">
+        <div class="bubble-2 user" id="p2-user">
+          <span class="who">You</span>
+          Make the title bigger, and add a subtitle: <b>"Made with HyperFrames"</b>.
+        </div>
+        <div class="bubble-2 agent" id="p2-agent">
+          <span class="who">Claude</span>
+          Bumping <b>font-size</b> from 140px to 200px. Adding a subtitle below with a 0.5s delayed fade-in.
+          <div class="file-line">
+            <span class="icon">↻</span>
+            <span class="file">index.html</span>
+            <span class="stat">~12 lines changed</span>
+          </div>
+        </div>
+        <div class="iter-badge" id="p2-iter">↻ Iteration 2</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#p2-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#p2-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#p2-user",     { x: 60, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p2-agent",    { x: -60, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p2-iter",     { scale: 0.7, opacity: 0 }, 0);
+
+      // Narration anchors:
+      //   "Want changes? Just ask."                                +0.30 / +1.04
+      //   "Make the title bigger, and add a subtitle: Made with…"  +1.87
+      //   "The agent rewrites the file."                            +6.16
+      //   "The studio reloads. No build step, no rebuild loop."     +7.73 / +9.73
+      tl.to("#p2-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.to("#p2-headline", { y: 0, opacity: 1, duration: 0.5 }, 0.25);
+      tl.to("#p2-user",     { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 1.80);
+      tl.to("#p2-agent",    { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 6.10);
+      tl.to("#p2-iter",     { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, 9.65);
+
+      window.__timelines["scene-prompt-2"] = tl;
+    </script>
+  </div>
+</template>

@@ -288,13 +288,19 @@ Quick workflow checklist (the rule has full detail):
    speed_factor = 1.0; if the MP4 was ffmpeg-sped per
    [`.claude/rules/video-speedup.md`](../../rules/video-speedup.md), divide by
    that factor). Format `M:SS`. First chapter is always `0:00`. Min 10s gap.
-3. **Draft `videos/<slug>/youtube-description.md`** in the rule's prescribed
-   order: hook (keyword-front-loaded) → Dynamous block in `----` separators
-   → Key Changes bullets → `Chapters` header line + chapter list → Resources
-   with validated URLs → primary CTA (`$ claude update`) → debate question
-   (matches script's final line) → 15-25 hashtags.
+3. **Draft `videos/<slug>/youtube-description.md`** — LEAN structure per the
+   rule: SEO hook (keyword-front-loaded; pack the top 3-5 features inline as a
+   comma-separated list — NOT as a separate Key Changes bullet block) →
+   Dynamous block in `----` separators → `Chapters` header line + chapter list
+   (long-form has chapters) → Resources: with validated URLs → Hostinger
+   affiliate block in `----` separators (MANDATORY: `🏠 Self-host your AI
+   agents & projects on Hostinger (10% OFF): 👉
+   https://hostinger.com/DIYSMARTCODE`) → debate question (matches script's
+   final line) → 15-25 hashtags. **NO Key Changes / Key Concepts / Key Stats
+   bullet sections — explicitly cut.** Fold any `$ claude update` CTA into the
+   hook paragraph if needed (no standalone CTA block).
 4. **Validate every URL** with `WebFetch` — replace 404/redirect chains with
-   working URLs.
+   working URLs. Long-form descriptions should stay under ~3000 chars total.
 
 ### 15. Report to the user
 

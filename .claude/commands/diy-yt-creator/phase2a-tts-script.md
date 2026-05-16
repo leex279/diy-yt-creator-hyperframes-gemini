@@ -78,6 +78,18 @@ In **autonomous mode**: skip the confirmation; the orchestrator implies approval
 - Write numbers as words: `100` → `one hundred`
 - Expand symbols: `$` → `dollars`, `%` → `percent`, `@` → `at`
 
+### Heteronym audit (MANDATORY before writing any `.txt` file)
+
+Read `.claude/rules/tts-pronunciation.md` and grep the script for every word in its **Heteronyms** table (especially `live`, `lead`, `read`, `close`, `record`, `present`).
+
+For each hit, decide whether the spelling will read correctly in context. If ambiguous, apply the default fix from the rule's table. Common swaps for our content:
+
+- *"live today"* → *"available today"* / *"shipping today"* / *"out today"*
+- *"live on <platform>"* → *"shipping on <platform>"* / *"running on <platform>"*
+- *"a lead agent"* → *"a primary agent"* / *"a coordinator agent"*
+
+This is a 30-second grep that prevents a 7-minute regen + retime + re-render cycle. Add new heteronyms to `.claude/rules/tts-pronunciation.md` whenever a regen is forced by a mispronunciation — the list is meant to grow.
+
 ## Step 3 — Write per-scene `.txt` files
 
 For each scene in `full-script.md`, create a TTS-optimized `.txt` file in `videos/<slug>/scripts/`:

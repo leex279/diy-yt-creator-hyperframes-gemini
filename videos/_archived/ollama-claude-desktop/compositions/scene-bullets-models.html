@@ -1,0 +1,144 @@
+<!--
+  scene-bullets-models.html — 3 model rows for the Ollama Cloud lineup.
+  Each row reveals at the moment the narrator names its model
+  (transcript word starts: kimi-k2.6 @ 52.59s, gpt-oss @ 54.36s,
+  qwen3-vl @ 56.59s — relative to scene data-start 50.8s those are
+  in-scene 1.79 / 3.56 / 5.79).
+-->
+<template id="scene-bullets-models-template">
+  <div data-composition-id="scene-bullets-models"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-bullets-models-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:left; gap:36px;
+        box-sizing:border-box;
+      }
+      #scene-bullets-models-content .header {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 80px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        text-align: center;
+        max-width: 880px;
+      }
+      #scene-bullets-models-content .header .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-bullets-models-content .row-list {
+        display: flex; flex-direction: column;
+        gap: 28px; width: 920px;
+      }
+      #scene-bullets-models-content .row {
+        display: flex; align-items: center; gap: 28px;
+        padding: 24px 28px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow-warm);
+      }
+      #scene-bullets-models-content .icon {
+        flex: 0 0 auto;
+        width: 92px; height: 92px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 36px;
+        color: var(--text-on-warm);
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+      #scene-bullets-models-content .row.r1 .icon { background: var(--accent-warm); }
+      #scene-bullets-models-content .row.r2 .icon { background: var(--accent-deep); color: var(--text-on-deep); }
+      #scene-bullets-models-content .row.r3 .icon { background: var(--accent-sage); color: var(--accent-ink); }
+      #scene-bullets-models-content .body { display:flex; flex-direction:column; gap: 4px; flex:1; }
+      #scene-bullets-models-content .title {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 40px;
+        line-height: 1.05;
+        color: var(--accent-ink);
+        letter-spacing: -0.5px;
+      }
+      #scene-bullets-models-content .sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 30px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-bullets-models-content">
+      <div class="header" id="bullets-header">
+        The lineup is <span class="em">deep.</span>
+      </div>
+      <div class="row-list">
+        <div class="row r1" id="bullets-r1">
+          <div class="icon">K2</div>
+          <div class="body">
+            <div class="title">kimi-k2.6 thinking</div>
+            <div class="sub">Long-context reasoning, ready in Claude.</div>
+          </div>
+        </div>
+        <div class="row r2" id="bullets-r2">
+          <div class="icon">120</div>
+          <div class="body">
+            <div class="title">gpt-oss 120b</div>
+            <div class="sub">OpenAI's open-weight flagship.</div>
+          </div>
+        </div>
+        <div class="row r3" id="bullets-r3">
+          <div class="icon">VL</div>
+          <div class="body">
+            <div class="title">qwen3-vl 235b</div>
+            <div class="sub">Frontier-scale vision plus language.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Hide rows from t=0 — explicit set, not from(), per step-by-step-reveal rule.
+      tl.set("#bullets-r1", { x: -40, opacity: 0 }, 0);
+      tl.set("#bullets-r2", { x: -40, opacity: 0 }, 0);
+      tl.set("#bullets-r3", { x: -40, opacity: 0 }, 0);
+
+      // Header lands first (header reads "The lineup is deep.")
+      tl.set("#bullets-header", { y: 24, opacity: 0 }, 0);
+      tl.to("#bullets-header",  { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0);
+
+      // Reveal each row at its narration anchor (model name spoken).
+      // Anchors from transcript: Kimi @ 51.198 → in-scene 1.30,
+      // GPT-OSS @ 51.674 → 1.77, Qwen @ 52.603 → 2.70 (data-start 49.9).
+      tl.to("#bullets-r1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 1.30);
+      tl.to("#bullets-r2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 1.77);
+      tl.to("#bullets-r3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 2.70);
+
+      // Mid-beats — sequential icon emphasis after the row is up. The
+      // scene runs ~10s, so emphasis lands in the back half before crossfade.
+      tl.to("#bullets-r1 .icon", { scale: 1.12, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 6.5);
+      tl.to("#bullets-r2 .icon", { scale: 1.12, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 7.4);
+      tl.to("#bullets-r3 .icon", { scale: 1.12, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 8.3);
+      tl.to("#bullets-r1, #bullets-r2, #bullets-r3", { scale: 1.02, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 9.4);
+
+      window.__timelines["scene-bullets-models"] = tl;
+    </script>
+  </div>
+</template>

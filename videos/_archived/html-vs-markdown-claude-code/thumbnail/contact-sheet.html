@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!-- contact-sheet.html — preview of all 10 thumbnail variants in a 2-column grid.
+     Renders the captured variant-NN.png files at scaled-down size with index +
+     angle label so the user can pick. Capture this with agent-browser at the
+     viewport size noted on the body to produce contact-sheet.png. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>Contact sheet — html-vs-markdown-claude-code thumbnails</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@800&family=Inter:wght@400;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #16171a;
+    --card: #1f2125;
+    --border: rgba(255,255,255,0.08);
+    --accent: #ffd60a;
+    --terracotta: #C75A3F;
+    --text: #FFFFFF;
+    --text-dim: #9aa0a6;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    width: 1280px;
+    color: var(--text);
+    font-family: var(--sans);
+    padding: 48px 60px 60px;
+    box-sizing: border-box;
+  }
+  .header {
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 22px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 14px; letter-spacing: 5px; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .title {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 44px; line-height: 1.1; letter-spacing: -1px;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    font-family: var(--sans); font-weight: 400;
+    font-size: 18px; line-height: 1.45;
+    color: var(--text-dim);
+    margin: 0;
+    max-width: 980px;
+  }
+  .subtitle code {
+    font-family: var(--mono); font-size: 16px;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px; border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .cell {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+  }
+  .cell-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0a0a0a;
+    display: block;
+  }
+  .cell-img img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .cell-meta {
+    padding: 14px 18px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .cell-num {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 18px; letter-spacing: 2px;
+    color: #0a0a0a;
+    background: var(--accent);
+    padding: 6px 12px;
+    border-radius: 6px;
+    min-width: 48px;
+    text-align: center;
+  }
+  .cell-angle {
+    font-family: var(--sans); font-weight: 700;
+    font-size: 16px; line-height: 1.2;
+    color: var(--text);
+    flex: 1;
+  }
+  .cell-headline {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .footer {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-weight: 700;
+    font-size: 13px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer span.accent { color: var(--accent); }
+</style></head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Thumbnail picker · 10 variants</div>
+    <h1 class="title">Pick a thumbnail for <em style="font-style:italic; color:var(--terracotta);">html-vs-markdown-claude-code</em></h1>
+    <p class="subtitle">Each variant carries the same topic but uses a different psychological angle to stop the scroll. Pick one — the corresponding <code>variant-NN.png</code> is what gets uploaded to YouTube Studio. Re-run the skill if none land.</p>
+  </div>
+
+  <div class="grid">
+    <div class="cell"><div class="cell-img"><img src="variant-01.png" alt="v01"></div><div class="cell-meta"><div class="cell-num">01</div><div><div class="cell-angle">Death-of-default</div><div class="cell-headline">"Markdown is dying."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-02.png" alt="v02"></div><div class="cell-meta"><div class="cell-num">02</div><div><div class="cell-angle">Versus declaration</div><div class="cell-headline">"HTML beats markdown."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-03.png" alt="v03"></div><div class="cell-meta"><div class="cell-num">03</div><div><div class="cell-angle">Imperative · dark slam</div><div class="cell-headline">"Stop writing markdown."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-04.png" alt="v04"></div><div class="cell-meta"><div class="cell-num">04</div><div><div class="cell-angle">Insider receipt</div><div class="cell-headline">"Claude Code's team stopped using markdown."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-05.png" alt="v05"></div><div class="cell-meta"><div class="cell-num">05</div><div><div class="cell-angle">Strikethrough swap · white minimal</div><div class="cell-headline">"~~MARKDOWN~~ → HTML"</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-06.png" alt="v06"></div><div class="cell-meta"><div class="cell-num">06</div><div><div class="cell-angle">Cinematic dark slam</div><div class="cell-headline">"Markdown's over."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-07.png" alt="v07"></div><div class="cell-meta"><div class="cell-num">07</div><div><div class="cell-angle">Question hook</div><div class="cell-headline">"Why is your AI still printing markdown?"</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-08.png" alt="v08"></div><div class="cell-meta"><div class="cell-num">08</div><div><div class="cell-angle">Big-number social proof</div><div class="cell-headline">"751K agreed. Markdown lost."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-09.png" alt="v09"></div><div class="cell-meta"><div class="cell-num">09</div><div><div class="cell-angle">Replacement matter-of-fact</div><div class="cell-headline">"Markdown got replaced."</div></div></div></div>
+    <div class="cell"><div class="cell-img"><img src="variant-10.png" alt="v10"></div><div class="cell-meta"><div class="cell-num">10</div><div><div class="cell-angle">Data-led</div><div class="cell-headline">"2-4× the tokens. 10× the read-rate."</div></div></div></div>
+  </div>
+
+  <div class="footer">
+    <span>10 variants · pick one · re-run for more</span>
+    <span class="accent">diy-yt-creator · shorts-final-frame-thumbnail skill</span>
+  </div>
+</body></html>

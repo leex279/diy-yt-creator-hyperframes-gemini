@@ -1,0 +1,165 @@
+<!--
+  scene-install-node.html — side-by-side install paths, tightened to ~13s.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-install-node-template">
+  <div data-composition-id="scene-install-node"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #install-node-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:42px; box-sizing:border-box;
+      }
+      #install-node-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:14px; text-align:center;
+      }
+      #install-node-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-2);
+      }
+      #install-node-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 60px; line-height: 1.05;
+        letter-spacing: -1.5px; color: var(--text);
+      }
+      #install-node-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 40px;
+      }
+      .os-card {
+        width: 720px;
+        padding: 36px 40px;
+        border-radius: 24px;
+        border: 1.5px solid var(--border-bright);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        display:flex; flex-direction:column;
+        gap: 18px;
+      }
+      .os-card.win {
+        background: linear-gradient(135deg,
+                      rgba(59, 130, 246, 0.20) 0%,
+                      rgba(59, 130, 246, 0.04) 100%);
+        border-color: rgba(59, 130, 246, 0.55);
+      }
+      .os-card.linux {
+        background: linear-gradient(135deg,
+                      rgba(34, 197, 94, 0.20) 0%,
+                      rgba(34, 197, 94, 0.04) 100%);
+        border-color: rgba(34, 197, 94, 0.55);
+      }
+      .os-card .label {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .os-card.win .label { color: var(--accent-1); }
+      .os-card.linux .label { color: var(--accent-4); }
+      .os-card .title {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 30px; line-height: 1.15;
+        color: var(--text);
+      }
+      .cmd {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        line-height: 1.5;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 20px;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .cmd .prompt { color: var(--text-secondary); margin-right: 8px; }
+      .cmd .alt {
+        display: block;
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+        font-weight: 500;
+      }
+
+      #install-node-content .verify-strip {
+        display:inline-flex; align-items:center; gap: 18px;
+        padding: 14px 28px; border-radius: 999px;
+        background: rgba(251,188,4,.12);
+        border: 1px solid rgba(251,188,4,.55);
+      }
+      #install-node-content .verify-strip .lbl {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 16px; letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+      }
+      #install-node-content .verify-strip .cmd-inline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px;
+        color: var(--text);
+      }
+      #install-node-content .verify-strip .check {
+        font-family: var(--mono); font-weight: 800;
+        font-size: 22px;
+        color: var(--accent-4);
+      }
+    </style>
+
+    <div id="install-node-content">
+      <div class="header-block">
+        <div class="overline" id="inode-overline">INSTALL NODE.JS &middot; STEP 1B</div>
+        <div class="headline" id="inode-headline">Two paths &middot; same result</div>
+      </div>
+
+      <div class="row">
+        <div class="os-card win" id="inode-card-win">
+          <div class="label">Windows</div>
+          <div class="title">winget &mdash; one PowerShell command</div>
+          <div class="cmd"><span class="prompt">PS&gt;</span>winget install OpenJS.Nodejs.LTS</div>
+        </div>
+        <div class="os-card linux" id="inode-card-linux">
+          <div class="label">Linux / WSL</div>
+          <div class="title">nvm &mdash; the version-manager route</div>
+          <div class="cmd"><span class="prompt">$</span>curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash<span class="alt">$ nvm install 22</span></div>
+        </div>
+      </div>
+
+      <div class="verify-strip" id="inode-verify">
+        <span class="lbl">Verify</span>
+        <span class="cmd-inline">node --version</span>
+        <span class="check">&rarr; v22.x ✓</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#inode-overline",   { y: 22, opacity: 0 }, 0);
+      tl.set("#inode-headline",   { y: 32, opacity: 0 }, 0);
+      tl.set("#inode-card-win",   { x: -70, opacity: 0 }, 0);
+      tl.set("#inode-card-linux", { x:  70, opacity: 0 }, 0);
+      tl.set("#inode-verify",     { y: 16, scale: 0.94, opacity: 0 }, 0);
+
+      tl.to("#inode-overline",   { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0);
+      tl.to("#inode-headline",   { y: 0, opacity: 1, duration: 0.55 }, 0.25);
+      tl.to("#inode-card-win",   { x: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 0.65);
+      tl.to("#inode-card-linux", { x: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 1.15);
+      tl.to("#inode-verify",     { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 1.95);
+
+      window.__timelines["scene-install-node"] = tl;
+    </script>
+  </div>
+</template>

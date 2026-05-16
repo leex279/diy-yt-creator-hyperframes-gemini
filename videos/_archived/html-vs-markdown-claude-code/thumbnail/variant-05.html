@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!-- Variant 05 — Strikethrough swap. ~~MARKDOWN~~ → HTML. Pure white minimal, no cover. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v05 — Markdown to HTML strikethrough</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  .swap-stage {
+    position: absolute;
+    top: 52%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 880px;
+    text-align: center;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    letter-spacing: -3px;
+  }
+  .swap-stage .l1 {
+    display: block;
+    font-size: 124px;
+    line-height: 1;
+    color: var(--text-cream);
+  }
+  .swap-stage .arrow {
+    display: block;
+    font-size: 64px;
+    line-height: 1;
+    margin: 18px 0;
+    color: var(--accent-terracotta);
+    font-family: var(--serif);
+    font-weight: 800;
+  }
+  .swap-stage .l2 {
+    display: block;
+    font-size: 168px;
+    line-height: 1;
+    color: var(--accent-terracotta);
+    letter-spacing: -4px;
+  }
+  .strike-big { position: relative; display: inline-block; }
+  .strike-big::after {
+    content: ""; position: absolute;
+    left: -1%; right: -1%; top: 52%;
+    height: 11px;
+    background: var(--accent-terracotta);
+    transform: translateY(-50%) rotate(-3deg);
+    border-radius: 5px;
+  }
+  .receipt-c {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 56px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .receipt-c strong { color: var(--accent-deep-red); }
+  /* Move brand to top-right so it doesn't collide with the centered receipt */
+  .theme-white .brand {
+    left: auto;
+    bottom: auto;
+    top: 56px;
+    right: 60px;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-white">
+    <div class="overline">Using Claude Code</div>
+    <div class="overline-divider"></div>
+    <div class="swap-stage">
+      <span class="l1 strike-big">MARKDOWN</span>
+      <span class="arrow">↓</span>
+      <span class="l2">HTML</span>
+    </div>
+    <div class="receipt-c"><strong>751K read this.</strong> &nbsp;·&nbsp; The team that built Claude Code switched.</div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

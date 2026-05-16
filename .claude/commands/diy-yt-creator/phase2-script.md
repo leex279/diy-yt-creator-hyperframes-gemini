@@ -43,6 +43,27 @@ Extract: scene list, durations, key messaging, tone, visual beats, hook architec
 
 **Also extract `voice_profile`** from `videos/<slug>/research/content-brief.md` (added in Phase 0 Step 0E). Acceptable values: `tutorial`, `news-explainer`, `comparison`. If the field is missing or unrecognized, default to `news-explainer` (per `brand-voice.md` dispatcher rules). Store this value — it drives Step 3.55, Step 3.6, and Step 4c below.
 
+### Extract Thesis (anti-slop methodology)
+
+Read the brief's `## Thesis` section. This is one falsifiable sentence — a claim that could be wrong. **The script body MUST argue this thesis**, not just describe the topic. If the body never advances the thesis, Phase 2.5 Pass 4 (Arc Element 4 — Narrative Cohesion) will flag it.
+
+**How to argue a thesis in narration**:
+1. State the thesis (or its core position) early — the hook can plant it implicitly, the body must commit explicitly.
+2. Provide the evidence chain — receipts from the brief's `## Receipts` section.
+3. Address the counter-position briefly — what would make the thesis wrong, why the evidence rules that out.
+4. Close with the implication — what changes for the viewer if the thesis is true.
+
+If the thesis feels too bold, narrow it; do not soften it into a description. A bold-but-wrong thesis can be revised; a generic description is unfixable.
+
+### Extract Receipts
+
+Read the brief's `## Receipts` section. These are the linkable, verifiable artifacts the script may reference. Two rules:
+
+1. **No new authority claims**: every "according to X" or attribution in the script MUST trace to a Receipts entry OR to a brief Proof Points entry with a source URL. Inventing a new "studies show 73%" line is a Phase 2.5 Pass 5 (QG-4) FAIL.
+2. **Per-scene Receipt comments (optional but recommended)**: when a scene makes a factual claim that comes from a specific receipt, append a `<!-- Receipt: <url> -->` HTML comment after the scene's narration in `full-script.md`. Phase 2b cross-checks these against the brief's Receipts list.
+
+If the brief was waived under `topic_type: CONCEPT`, the Receipts list will be empty — but the authority-without-evidence ban (Phase 2.5 Pass 5) still applies. Script must not invent stats.
+
 ### Selected Hook Variant
 
 Confirm which hook variant was selected in Phase 1:
@@ -287,20 +308,71 @@ After writing the full script, review it through the lens of the **6 Story Locks
 
    The Gemini gold-standard line is: `"If you've noticed Claude being slow or buggy during peak hours, this is why."` Aim for the same texture, not the same words.
 
-3. **1 engagement-CTA closer** with all three components in the final scene:
-   - Rhetorical / debate question (ends with `?`)
-   - Comments-ask (`comments`, `let me know`, `tell me below`)
-   - Subscribe-ask (`subscribe`, `for more <topic> news`)
-
-   Canonical template: `"[Rhetorical question about the topic]? Let me know in the comments. And subscribe for more [topic] news."`
+**Note**: The engagement-CTA closer is enforced separately in Step 4d below and applies to ALL voice profiles (including tutorial). Step 4c's connector + direct-address checks remain news-explainer/comparison only.
 
 **Audit pass (do this BEFORE saving the script in Step 5)**:
 
 - [ ] Count connectors. Are there ≥ 3 in body scenes, with ≥ 2 unique types?
 - [ ] Find the direct-address sentence. Is there ≥ 1 in the body, in second person?
-- [ ] Read the final scene. Does it have all three CTA components in this order: question → comments-ask → subscribe-ask?
 
 If any of these are missing, REWRITE before saving. Phase 2.5 Pass 6 will FAIL the script and block TTS otherwise.
+
+## Step 4d — Apply Engagement CTA (ALL voice profiles, MANDATORY)
+
+**Applies to every video, every voice_profile, every template — no exceptions.** See [`.claude/rules/engagement-cta.md`](../../rules/engagement-cta.md) for the canonical rule.
+
+The final 3-5 seconds of the script MUST close on a **debate-sparking question** that satisfies all four HARD criteria:
+
+1. **Binary or short-list answer** — answerable in 1-5 words. `"Team A or team B?"` / `"Yes or no?"` / `"Which one are you switching to?"`. NOT `"How would you architect this differently?"` (too high-effort).
+2. **Polarizing / contrarian stance baked in** — the question takes a side, dares disagreement, OR forces side-picking. Pure-neutral `"What do you think?"` is BANNED.
+3. **References a specific claim from the video** — must build on a concrete stat, comparison, hot take, deprecation, or winner-takes-all framing the viewer just watched.
+4. **Low cost to answer** — 5 seconds from any viewer, expert or beginner.
+
+### CTA question patterns (use as templates, never copy verbatim)
+
+| Pattern | Example | When to use |
+|---|---|---|
+| Tool-vs-tool | `"Claude or Cursor — which one are you shipping with in 2026?"` | Comparison videos, ecosystem shifts |
+| Dead-or-alive | `"Is the browser-tab era actually over, or is this just hype?"` | Trend-claim videos, "X is dying" hot takes |
+| Pick-the-winner | `"Of the 15 new connectors — which one ships first to your workflow?"` | Feature-rollout videos, multi-item lists |
+| Hot-take confirm | `"Claude reading your emails — useful or terrifying?"` | Privacy/UX-controversial features |
+| Adoption deadline | `"Three months from now, will you still open tabs for these tools?"` | Predictive / forecast-style closers |
+| Stop-doing-X | `"What's the first browser tab you'd close if Claude could do that job?"` | Workflow-shift videos |
+| Hill to die on | `"Which Claude feature is the one you'd quit your job to keep?"` | Identity-tied feature highlights |
+
+Best CTAs combine TWO patterns — e.g., dead-or-alive + pick-a-side: `"Browser tabs are dying — or is this just another integration fad? Which side are you on?"`
+
+### Banned closers (zero tolerance — rewrite if found)
+
+These are AUTOMATIC FAIL on Phase 2.5 QG-2b regardless of the rest of the script:
+
+- `"What do you think?"` / `"What are your thoughts?"`
+- `"Let me know in the comments"` (without an anchoring question)
+- `"Like and subscribe if you enjoyed"`
+- `"Drop your thoughts below"`
+- `"How would you build this differently?"` (too high-effort to answer)
+- `"Did this help you?"` (yes/no with no debate value)
+- `"Anything I missed?"`
+- `"Link below."` as the sole closer
+- Any CTA that requires watching the video twice to answer
+
+### For news-explainer / comparison profiles only — keep the comments + subscribe asks
+
+When `voice_profile == news-explainer` or `comparison`, the CTA closer should ALSO include:
+- Comments-ask phrase (`comments`, `let me know`, `tell me below`, `drop your pick below`)
+- Subscribe-ask phrase (`subscribe`, `for more <topic>`, `follow for more`)
+
+These wrap around the debate question, they do NOT replace it. Phase 2.5 Pass 6 (QG-5c) enforces the comments+subscribe pair for those profiles. The debate-question itself is enforced by QG-2b (Arc 3 CTA Strength) for all profiles.
+
+### Audit pass (do this BEFORE saving the script in Step 5)
+
+- [ ] Read the final 1-2 sentences of the script. Does it ask a question (ends with `?`)?
+- [ ] Does the question satisfy all four HARD criteria (binary/short-list, polarizing, specific to video, low-cost to answer)?
+- [ ] Is the closer NOT in the banned list above?
+- [ ] If `voice_profile == news-explainer` / `comparison`: are comments-ask AND subscribe-ask also present after the question?
+- [ ] Does the question fit in ~3-5s of speech (8-14 words at 160 WPM for Shorts)?
+
+If any check fails, REWRITE before saving. Phase 2.5 QG-2b and QG-5c both backstop this gate but the cheapest place to fix a weak CTA is BEFORE TTS.
 
 ## Step 5 — Save Full Script for Review
 
@@ -312,6 +384,8 @@ Save the complete script to `videos/<slug>/scripts/full-script.md` as **plain na
 ## Scene 1: [Name]
 
 [Plain narration text for this scene. No word counts, no annotations, no TTS markup. Just the words the narrator will speak.]
+
+<!-- Receipt: https://example.com/source — only when this scene makes a factual claim sourced from a brief Receipt -->
 
 ## Scene 2: [Name]
 
@@ -327,6 +401,7 @@ Save the complete script to `videos/<slug>/scripts/full-script.md` as **plain na
 - Plain, human-readable form — no TTS optimizations yet (no pronunciation fixes, no break tags)
 - Keep scene headers simple: just `## Scene N: [Name]`
 - This is what the user will review and edit directly
+- **Per-scene Receipt comments are HTML comments** (`<!-- Receipt: ... -->`) — TTS, captions, and the user-facing review render strip them. Add ONE per factual scene whose claim comes from a brief Receipts entry. Skip on hook/CTA/transition scenes that aren't making sourced claims. Phase 2b cross-checks every Receipt URL against the brief.
 
 </process>
 

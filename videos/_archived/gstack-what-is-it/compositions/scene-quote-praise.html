@@ -1,0 +1,88 @@
+<!--
+  scene-quote-praise.html — community theme #1, praise (~12s).
+
+  Pattern: oversized opening glyph -> italic body with one accented phrase
+           -> ink rule -> generic attribution (no @handle).
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-quote-praise"].
+-->
+<template id="scene-quote-praise-template">
+  <div data-composition-id="scene-quote-praise"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-quote-praise-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:36px;
+        box-sizing:border-box;
+      }
+      #scene-quote-praise-content .glyph {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: 320px;
+        line-height: 0.6;
+        color: var(--accent-warm);
+        opacity: 0.85;
+        margin-bottom: -80px;
+      }
+      #scene-quote-praise-content .body {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 80px;
+        line-height: 1.15;
+        color: var(--accent-ink);
+        max-width: 920px;
+        letter-spacing: -1px;
+      }
+      #scene-quote-praise-content .body .em {
+        color: var(--accent-warm);
+        font-weight: 900;
+      }
+      #scene-quote-praise-content .rule {
+        width: 140px; height: 3px;
+        background: var(--accent-warm);
+        opacity: 0.9;
+      }
+      #scene-quote-praise-content .attrib {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 34px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    </style>
+
+    <div id="scene-quote-praise-content">
+      <div class="glyph"  id="qp-glyph">&ldquo;</div>
+      <div class="body"   id="qp-body">
+        Founders say it gets them from idea to plan <span class="em">faster.</span>
+      </div>
+      <div class="rule"   id="qp-rule"></div>
+      <div class="attrib" id="qp-attrib">&mdash; supporters, on github &amp; youtube</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#qp-glyph",  { y: -30, opacity: 0, duration: 0.7, ease: "power3.out" }, 0);
+      tl.from("#qp-body",   { y: 30,  opacity: 0, duration: 0.8, ease: "power3.out" }, 0.4);
+      tl.from("#qp-rule",   { scaleX: 0, opacity: 0, duration: 0.5, ease: "power2.out" }, 1.4);
+      tl.from("#qp-attrib", { y: 16,  opacity: 0, duration: 0.5, ease: "power2.out" }, 1.7);
+
+      tl.to("#scene-quote-praise-content .body .em", { scale: 1.07, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 4.5);
+      tl.to("#qp-rule", { scaleX: 1.8, opacity: 1.0, duration: 0.6, ease: "power2.inOut", yoyo: true, repeat: 1 }, 7);
+      tl.to("#qp-glyph", { scale: 1.08, opacity: 0.85, duration: 0.6, ease: "power2.inOut", yoyo: true, repeat: 1 }, 9.5);
+
+      window.__timelines["scene-quote-praise"] = tl;
+    </script>
+  </div>
+</template>

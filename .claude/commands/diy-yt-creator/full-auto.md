@@ -1,23 +1,22 @@
 ---
-description: "Full pipeline orchestrator: research → plan → script → critique → TTS-script → fact-check → (TTS handoff) → retention → (composition handoff)"
+description: "Full pipeline orchestrator (go all-in): research → plan → script → critique → TTS-script → fact-check → TTS → transcribe → retention → composition build → lint → preview"
 argument-hint: <topic | URL | brief.md> [--resume <slug>]
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, WebSearch, WebFetch
 ---
 
 <objective>
-Orchestrate the HyperFrames pipeline: phases 0 → 1 → 2 → 2.5 → 2a → 2b, then PAUSE for the user to run `npx hyperframes tts` + `npx hyperframes transcribe`, then resume with phase 3.5, then PAUSE again at the composition-build handoff.
+Orchestrate the HyperFrames pipeline end-to-end with NO handoff pauses: phases 0 → 1 → 2 → 2.5 → 2a → 2b → `npx hyperframes tts` → `npx hyperframes transcribe` → phase 3.5 → composition build (via the template playbook, e.g. `new-anthropic-short`) → lint → inspect → Phase YT (YouTube description) → Phase R (video-review quality gate) → preview.
 
-**Goal**: Go from "I have an idea" to "researched, fact-checked, retention-engineered script + per-scene retention strategy" with two explicit human-handoff pauses (TTS, composition build).
+**Goal**: Go from "I have an idea" to "previewable video composition" in one invocation. The user reviews the output in `hyperframes preview`; they do NOT shepherd the pipeline between phases.
 
-**Output**: Every artifact under `videos/<slug>/`. No auto-render, no auto-TTS, no auto-composition build.
+**Output**: Every artifact under `videos/<slug>/`, ending with a previewable composition. No auto-render — `npx hyperframes render` remains the user's call.
 
-**Critical**: This orchestrator stops twice (after Phase 2b for TTS handoff, after Phase 3.5 for composition handoff). Both stops are deliberate — the side effects (ElevenLabs credit spend, creative composition decisions) need human review.
+**Pause policy (per user feedback `feedback_full_auto_no_pauses`)**: NEVER pause for handoff. Only stop early if there's something concrete to TELL the user — a blocking gate failure (Phase 2.5 critique blocked on un-overridable gates, Phase 2b major fabrication, lint errors after the composition build, missing source, decision that genuinely needs a human). If there is nothing to tell, keep going.
 
 **This pipeline does NOT include**:
-- Phase 3 (audio generation) — handled by `npx hyperframes tts`
-- Phase 4 (composition build) — handled by `/diy-yt-creator:new-anthropic-short` (or other template skill)
-- Phase 5 (render) — handled by `npx hyperframes render`
-- YouTube description / upload — out of scope here
+- Phase 5 (render) — handled by `npx hyperframes render`, always user-triggered
+- YouTube **upload** — out of scope here
+- YouTube **description** — auto-generated as Phase YT after the composition build (see Phase YT below). NEVER skipped.
 </objective>
 
 <initial-setup>
@@ -176,15 +175,16 @@ Create or update `videos/<SLUG>/phase-status.md`:
 ```markdown
 # Phase Status: <SLUG>
 
-| Phase           | Status  | Completed |
-| --------------- | ------- | --------- |
-| 0 - Research    | pending |           |
-| 1 - Plan        | pending |           |
-| 2 - Script      | pending |           |
-| 2.5 - Critique  | pending |           |
-| 2a - TTS Script | pending |           |
-| 2b - Fact Check | pending |           |
-| 3.5 - Retention | pending |           |
+| Phase                  | Status  | Completed |
+| ---------------------- | ------- | --------- |
+| 0 - Research           | pending |           |
+| 1 - Plan               | pending |           |
+| 2 - Script             | pending |           |
+| 2.5 - Critique         | pending |           |
+| 2a - TTS Script        | pending |           |
+| 2b - Fact Check        | pending |           |
+| 3.5 - Retention        | pending |           |
+| YT - YouTube description | pending |           |
 
 **Status vocabulary**: `pending` | `in-progress` | `done` | `done <details>` | `blocked (<reason>)`
 ```
@@ -407,58 +407,37 @@ prompt: |
 ```
 
 Wait. Read `phase-status.md` row `2b - Fact Check`.
-- If `done`: log summary, proceed to TTS handoff pause.
+- If `done`: log summary, proceed immediately to TTS + transcribe (no pause).
 - If `blocked`: STOP orchestration. Surface failures + corrections needed verbatim. Tell user to fix and re-run `/diy-yt-creator:full-auto --resume <SLUG>`.
 
 ---
 
-## PAUSE 1 — TTS Handoff
+## Step A — Run TTS + transcribe (inline, no pause)
 
-After Phase 2b passes, STOP orchestration and print to user:
+After Phase 2b passes, execute the CLI commands directly. Do NOT pause for a handoff. Per `feedback_full_auto_no_pauses`, the user wants one-shot execution; the ElevenLabs credit spend is accepted as part of normal video production.
 
-```
-═══════════════════════════════════════════════════════════════
-PIPELINE PAUSED — TTS HANDOFF (1 of 2)
-═══════════════════════════════════════════════════════════════
-
-Phases 0 through 2b are complete. videos/<SLUG>/ now contains:
-  - research/content-brief.md
-  - plan.md
-  - scripts/full-script.md
-  - scripts/critique-report.md
-  - scripts/scene-NN-*.txt
-  - script.txt                  (flat — for hyperframes tts)
-  - scripts/fact-check-report.md
-  - phase-status.md
-
-Next steps (run these manually — they spend ElevenLabs credit):
-
-  npx hyperframes tts videos/<SLUG>
-  npx hyperframes transcribe videos/<SLUG>
-
-After both succeed, resume the pipeline:
-
-  /diy-yt-creator:full-auto --resume <SLUG>
-
-The resume run will execute Phase 3.5 (per-scene retention strategy) using
-videos/<SLUG>/transcript.json as input.
-
-Why we pause here: TTS spending and voice/speed/quality are decisions worth
-reviewing before committing the rest of the pipeline. The pipeline is also
-recoverable from this exact state via --resume, so no work is lost if you
-need to step away.
-═══════════════════════════════════════════════════════════════
+```bash
+npx hyperframes tts videos/<SLUG>
+npx hyperframes transcribe videos/<SLUG>
 ```
 
-End the orchestrator's run. Do NOT proceed.
+Run them sequentially via the Bash tool. After each completes:
+- Verify the expected output exists (`videos/<SLUG>/audio/narration.wav` after tts; `videos/<SLUG>/transcript.json` after transcribe).
+- Append a one-line entry to `videos/<SLUG>/orchestration-log.md` (`TTS: done — narration.wav <duration>s`, `Transcribe: done — N words`).
+
+If either command FAILS:
+- For tts errors (missing API key, rate limit, quota): STOP, surface the exact error verbatim, point user at `.env` / `setup-api-key` skill. Don't auto-retry blindly.
+- For transcribe errors (whisper missing, ffmpeg missing): STOP, surface error verbatim, recommend `npx hyperframes doctor`.
+
+If both succeed, proceed to Phase 3.5 (no pause, no message).
 
 ---
 
-## (RESUME mode) Phase 3.5 — Retention Strategy
+## Phase 3.5 — Retention Strategy
 
-**Only runs in RESUME mode**, after the user has executed TTS + transcribe.
+Runs immediately after transcribe succeeds. Also runs in RESUME mode if the orchestrator was interrupted between Phase 2b and Phase 3.5.
 
-Verify `videos/<SLUG>/transcript.json` exists. If missing, STOP and remind the user to run `npx hyperframes tts videos/<SLUG> && npx hyperframes transcribe videos/<SLUG>`.
+Verify `videos/<SLUG>/transcript.json` exists. If missing (e.g., user invoked `--resume` without TTS), STOP and remind the user to run `npx hyperframes tts videos/<SLUG> && npx hyperframes transcribe videos/<SLUG>`.
 
 ```
 subagent_type: "general-purpose"
@@ -479,52 +458,183 @@ prompt: |
   resolved, anchors with no good pick.
 ```
 
-Wait, log, proceed to composition handoff pause.
+Wait, log, proceed immediately to composition build (no pause).
 
 ---
 
-## PAUSE 2 — Composition Build Handoff
+## Phase 4 — Composition Build (inline, no pause)
 
-After Phase 3.5 completes, STOP orchestration and print to user:
+After Phase 3.5 completes, immediately dispatch the template-specific build playbook. Per `feedback_full_auto_no_pauses`, do NOT pause for handoff. The build skill reads `plan.md` + `scripts/full-script.md` + `retention-strategy.md` as authoritative inputs and edits `videos/<SLUG>/index.html`.
+
+Pick the playbook from `PARAMS.template`:
+- `shorts/anthropic` → `.claude/skills/diy-yt-creator/new-anthropic-short.md`
+- `shorts/archon` → `.claude/skills/diy-yt-creator/new-archon-short.md`
+- `shorts/standard` → `.claude/skills/diy-yt-creator/new-standard-short.md`
+- `shorts/google` → `.claude/skills/diy-yt-creator/new-google-short.md`
+- `shorts/openai` → `.claude/skills/diy-yt-creator/new-openai-short.md`
+- `shorts/game-map` → `.claude/skills/diy-yt-creator/new-game-map-short.md`
+- `shorts/claude-code-version` → `.claude/skills/diy-yt-creator/new-claude-code-version-short.md`
+- `long-form/standard` → `.claude/skills/diy-yt-creator/new-long-form-standard.md`
+- `long-form/claude-code-version` → `.claude/skills/diy-yt-creator/new-claude-code-version-longform.md`
+
+Dispatch via Task tool (`subagent_type: "general-purpose"`):
+
+```
+description: "Composition build for <SLUG>"
+prompt: |
+  Run the composition-build playbook at <playbook-path> for slug `<SLUG>`.
+
+  Read the playbook file from disk for full instructions.
+
+  Inputs already on disk (Branch A — pipeline-driven build):
+    - videos/<SLUG>/research/content-brief.md
+    - videos/<SLUG>/plan.md
+    - videos/<SLUG>/scripts/full-script.md
+    - videos/<SLUG>/script.txt
+    - videos/<SLUG>/audio/narration.wav
+    - videos/<SLUG>/transcript.json
+    - videos/<SLUG>/retention-strategy.md
+
+  Follow the playbook's Branch A path (pipeline output present):
+    - DO NOT invent a script — use full-script.md verbatim
+    - Map scenes to the template's phase archetypes per plan.md
+    - Apply retention components from retention-strategy.md
+    - Wire SFX cues automatically (sync-video-sfx.sh)
+    - Edit videos/<SLUG>/index.html
+    - Run `npx hyperframes lint videos/<SLUG>` — must end with 0 errors
+    - Run `npx hyperframes inspect videos/<SLUG>` — must end with 0 overflow
+    - **MANDATORY render-blocker check** (per `.claude/rules/hyperframes-pitfalls.md` §8):
+      After lint + inspect pass, grep for `font-family:\s*var\(--(sans|mono)` across
+      the video's index.html + compositions/*.html. If ANY matches found, apply the
+      sed fix from pitfalls §8 to replace each `var(--sans|--mono)` with its literal
+      font name BEFORE returning. This pattern is inherited from most templates and
+      blocks render even though lint passes.
+
+  When done, return <300-word summary: scene count built, phase data_start/data_duration
+  values, retention components installed (block + component names), SFX cues wired,
+  lint result (errors / warnings counts), inspect result, **font-var grep result
+  (must be empty after fix)**, any issues encountered.
+  Do NOT run `npx hyperframes preview` — the orchestrator handles that.
+```
+
+Wait for return. Append summary to `videos/<SLUG>/orchestration-log.md`. If the build returned lint errors, surface them verbatim and STOP — do not paper over real validation failures.
+
+---
+
+## Phase YT — YouTube description (MANDATORY — never skip)
+
+After Phase 4 (composition build) lints clean, generate the paste-ready YouTube metadata file. Every video MUST end the pipeline with `videos/<SLUG>/youtube-description.md` on disk — shipping without it is a defect.
+
+Dispatch as an isolated sub-agent so the orchestrator context stays small:
+
+```
+Task(
+  description: "Phase YT description for <SLUG>",
+  subagent_type: "general-purpose",
+  prompt: """
+  Generate videos/<SLUG>/youtube-description.md per .claude/rules/youtube-metadata.md.
+
+  Required sequence:
+  1. vidIQ keyword research — call mcp__claude_ai_vidiq__vidiq_keyword_research, vidiq_outliers, and vidiq_trending_videos for 3-5 topic seeds drawn from the script + plan. Save the snapshot to videos/<SLUG>/research/vidiq-keywords.md.
+  2. Read videos/<SLUG>/index.html and extract each phase wrapper's data-start. Long-form ONLY: compute chapter timestamps (M:SS). If a speed_factor applies (see .claude/rules/video-speedup.md), divide by it. Shorts: SKIP chapters entirely (the rule forbids them on vertical Shorts).
+  3. Write videos/<SLUG>/youtube-description.md in this exact LEAN order — do NOT add Key Changes / Key Concepts / Key Stats / Key Facts / About This Video / "What's in this short" bullets (these are explicitly cut from the template):
+     - SEO hook paragraph (keyword-front-loaded — top 2-3 keywords in first 200 chars; if the video has a feature inventory, pack the top 3-5 into this paragraph as a comma-separated list)
+     - Dynamous CTA block in `----` separators (MANDATORY on every video — independent of the `dynamousPromotion` flag in `meta.json`; that flag gates ON-SCREEN Dynamous promotion only):
+       ```
+       ----
+       🚀 Want to learn agentic coding with live daily events and workshops?
+       Check out Dynamous AI: https://dynamous.ai/?code=646a60
+       Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount
+       ----
+       ```
+     - Chapters — LONG-FORM ONLY (omit entirely on Shorts)
+     - Resources: (every URL validated via WebFetch, keyword-rich anchor text)
+     - Hostinger affiliate block in `----` separators (MANDATORY on every video — Shorts AND long-form):
+       ```
+       ----
+       🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
+       👉 https://hostinger.com/DIYSMARTCODE
+       ----
+       ```
+     - Engagement debate question (must match script's final spoken CTA line)
+     - 15-25 hashtags (mix specific + broad)
+  4. Validate every URL with WebFetch. Replace 404s; drop unfixable links.
+  5. The description should be SHORT and lean — if it runs longer than ~1500 chars for Shorts or ~3000 chars for long-form, you've over-padded. Trim.
+
+  When done, update videos/<SLUG>/phase-status.md row "YT - YouTube description" to "done <date>".
+  """
+)
+```
+
+Wait for return. Append the <200-word summary to `orchestration-log.md`. Confirm phase-status row updated. Proceed to Phase R.
+
+---
+
+## Phase R — Review (MANDATORY — gate before preview)
+
+After Phase YT finishes, run the comprehensive video-production review. This is the final quality gate: 5 specialized agents in parallel covering timing/pacing, render blockers, layout/typography, script/content, and YouTube metadata. Catches every defect the linter doesn't catch — visual-pacing gaps > 5s, SFX-to-visual drift, font-family render blocker, sub-comp ID mismatches, Shorts typography violations, first/last frame not thumbnail-grade, heteronym risks, engagement CTA cross-surface mismatch, chapter timestamps not adjusted for speedup, and 30+ more.
+
+Dispatch the `video-review` skill in `pre-publish` mode with `--fix safe` (apply mechanical fixes automatically, surface anything risky to the user):
+
+```
+Skill(skill: "video-review", args: "<SLUG> --mode pre-publish --fix safe")
+```
+
+The skill orchestrator:
+1. Validates the composition exists at `videos/<SLUG>/index.html`.
+2. Dispatches 5 review agents in parallel:
+   - `video-timing-pacer` — timing, pacing, SFX drift, composition duration vs narration
+   - `video-render-validator` — lint/validate/inspect + font-var blocker + sub-comp wiring
+   - `video-layout-typography` — Shorts typography + first/last frame thumbnail-grade
+   - `video-script-content` — heteronyms + engagement CTA in 3 places + source-grounded fact check
+   - `video-metadata-publish` — youtube-description.md structure + chapter timestamps post-speedup + URL validation
+3. Aggregates findings by severity (BLOCKER / HIGH / MEDIUM / LOW), applies safe auto-fixes, and saves the report to `videos/<SLUG>/qa/review-report.json` + prints a Markdown summary.
+
+**Gate condition (BLOCKING):**
+- Verdict `FAIL_BLOCKER` → STOP orchestration. Surface every BLOCKER finding verbatim and recommend specific fixes. The pipeline is NOT done — the user must address blockers and re-run `/video-review <SLUG>` (or fix + re-run full-auto with `--resume`).
+- Verdict `FAIL_HIGH` → proceed to Step Z (preview) but surface every HIGH finding in the final completion box. The composition is render-able but not publish-ready.
+- Verdict `WARN_MEDIUM`, `PASS_LOW`, or `PASS` → proceed normally; surface MEDIUM findings as advisory.
+
+Append the <200-word summary to `orchestration-log.md`. Add a row to `videos/<SLUG>/phase-status.md` titled `R - Review` with status `done <date>` and the verdict (`PASS`, `WARN_MEDIUM`, `FAIL_HIGH`, `FAIL_BLOCKER`).
+
+## Step Z — Preview
+
+If lint + inspect both passed, fire `npx hyperframes preview videos/<SLUG>` in the background and print the studio URL so the user can review the composition.
+
+```bash
+npx hyperframes preview videos/<SLUG> &
+```
+
+Print a final completion box:
 
 ```
 ═══════════════════════════════════════════════════════════════
-PIPELINE PAUSED — COMPOSITION BUILD HANDOFF (2 of 2)
+PIPELINE COMPLETE — <SLUG>
 ═══════════════════════════════════════════════════════════════
 
-Phase 3.5 is complete. videos/<SLUG>/retention-strategy.md is ready.
+All phases done. Composition is previewable at the URL printed by
+`npx hyperframes preview` (usually http://localhost:5173).
 
-The PIPELINE is now COMPLETE. Pipeline artifacts:
-  - research/content-brief.md
-  - plan.md
-  - scripts/full-script.md
-  - scripts/critique-report.md
-  - scripts/scene-NN-*.txt
-  - scripts/fact-check-report.md
-  - script.txt
-  - audio/narration.wav
-  - transcript.json
-  - retention-strategy.md
-  - phase-status.md
+Artifacts under videos/<SLUG>/:
+  research/content-brief.md
+  research/vidiq-keywords.md       ← vidIQ snapshot (Phase YT)
+  plan.md
+  scripts/full-script.md
+  scripts/critique-report.md
+  scripts/scene-NN-*.txt
+  scripts/fact-check-report.md
+  script.txt
+  audio/narration.wav
+  transcript.json
+  retention-strategy.md
+  index.html                       ← composition
+  youtube-description.md           ← paste-ready YouTube metadata (Phase YT)
+  qa/review-report.json            ← video-review findings + verdict (Phase R)
+  phase-status.md
+  orchestration-log.md
 
-Next: hand off to the composition build skill, which reads plan.md +
-retention-strategy.md as authoritative inputs:
-
-  /diy-yt-creator:new-anthropic-short <SLUG>
-
-That skill (per its updated step 4 Branch A) will:
-  - Detect that scripts/full-script.md exists → use it instead of inventing a script
-  - Map scenes to the template's phase archetypes per plan.md
-  - Apply the retention components from retention-strategy.md
-  - Edit videos/<SLUG>/index.html
-  - Lint, inspect, preview
-
-Why we pause here: composition build is creative work (logo selection, accent
-rotation, phase timing) that benefits from human-in-the-loop judgment.
-Auto-building would produce a generic output. SFX wiring **is** automated —
-new-anthropic-short reads retention-strategy.md sfx_cues, runs
-sync-video-sfx.sh, and inserts the <audio> elements per
-.claude/rules/audio-design.md.
+Next step (user-triggered):
+  npx hyperframes render videos/<SLUG> -o videos/<SLUG>/out/<SLUG>.mp4
 ═══════════════════════════════════════════════════════════════
 ```
 

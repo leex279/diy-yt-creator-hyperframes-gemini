@@ -1,0 +1,114 @@
+<!--
+  shared/lib/components/camera-flash-pop/component.html
+  Full-canvas white flash — 2-frame peak (~67ms at 30fps), 0.4s decay.
+  mix-blend-mode: screen overlay div. Optional content underneath becomes
+  visible through the flash. Subtle chromatic aberration on the frame
+  after the peak: thin red/cyan clones offset ±4px.
+
+  COMPONENT IS PASTE-IN — three sections below. Merge each section into
+  the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste the flash overlay div into your composition root
+     (above content so it renders on top, or set z-index explicitly):
+-->
+
+<div class="cfp-overlay" id="cfp-overlay"></div>
+<div class="cfp-ca-red"  id="cfp-ca-red"></div>
+<div class="cfp-ca-cyan" id="cfp-ca-cyan"></div>
+
+<!--
+  2) CSS — merge into your composition's <style> block:
+-->
+
+<style>
+  /* shared/lib/components/camera-flash-pop — keep this comment block */
+  .cfp-overlay,
+  .cfp-ca-red,
+  .cfp-ca-cyan {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .cfp-overlay {
+    background: #FFFFFF;
+    mix-blend-mode: screen;
+    z-index: 99;
+  }
+  .cfp-ca-red {
+    background: #FF0000;
+    mix-blend-mode: screen;
+    transform: translateX(4px);
+    z-index: 98;
+  }
+  .cfp-ca-cyan {
+    background: #00FFFF;
+    mix-blend-mode: screen;
+    transform: translateX(-4px);
+    z-index: 97;
+  }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addCameraFlashPop(tl, "#cfp-overlay", 8.0);
+       addCameraFlashPop(tl, "#cfp-overlay", 8.0, { duration: 0.45 });
+
+     The `sel` argument targets the overlay div. CA clones are resolved by
+     replacing the last segment of `sel` ID with `cfp-ca-red` / `cfp-ca-cyan`
+     — so if you rename IDs, pass opts.caRedSel / opts.caCyanSel explicitly.
+
+     Wire SFX in host index.html:
+       impact-slam at `at + 0.0` on track-index 3
+       glitch-zap  at `at + 0.0` on track-index 4
+     See recipe.md for the full <audio> snippets.
+-->
+
+<script>
+  function addCameraFlashPop(tl, sel, at, opts) {
+    var options      = opts || {};
+    var duration     = options.duration    !== undefined ? options.duration    : 0.45;
+    var caRedSel     = options.caRedSel    !== undefined ? options.caRedSel    : '#cfp-ca-red';
+    var caCyanSel    = options.caCyanSel   !== undefined ? options.caCyanSel   : '#cfp-ca-cyan';
+
+    // Peak: 2-frame (~0.067s) bright white, then decay to 0
+    var peakDur  = 0.067;
+    var decayDur = duration - peakDur;
+
+    // Hide at t=0 (hidden-until-reveal)
+    tl.set(sel,        { opacity: 0 }, 0);
+    tl.set(caRedSel,   { opacity: 0 }, 0);
+    tl.set(caCyanSel,  { opacity: 0 }, 0);
+
+    // Flash: instant rise to peak (1.0), then exponential decay
+    tl.to(sel, {
+      keyframes: [
+        { opacity: 1.0,  duration: peakDur,  ease: 'none' },
+        { opacity: 0.0,  duration: decayDur, ease: 'expo.in' }
+      ]
+    }, at);
+
+    // Chromatic aberration: flicker during decay frame after peak
+    var caStart = at + peakDur;
+    var caWindow = 0.12;
+    tl.to(caRedSel, {
+      keyframes: [
+        { opacity: 0.20, duration: caWindow * 0.35, ease: 'none'       },
+        { opacity: 0.00, duration: caWindow * 0.65, ease: 'power2.in'  }
+      ]
+    }, caStart);
+    tl.to(caCyanSel, {
+      keyframes: [
+        { opacity: 0.20, duration: caWindow * 0.35, ease: 'none'       },
+        { opacity: 0.00, duration: caWindow * 0.65, ease: 'power2.in'  }
+      ]
+    }, caStart);
+  }
+  // End addCameraFlashPop
+</script>

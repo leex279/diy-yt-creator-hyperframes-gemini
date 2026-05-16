@@ -1,0 +1,553 @@
+<!--
+  scene-cta.html — Stay in the loop + Dynamous handoff
+  Scene-relative duration: 87.98s. data-start in root = 395.30.
+
+  Four sequential phase-blocks (stacked vertically; each highlights at its anchor):
+    Phase A — "the real reason" pivot (0–33s)
+    Phase B — Big pull quote (33–43s)
+    Phase C — Reply chips (43–69s)
+    Phase D — CTA + Dynamous handoff (69–88s)
+
+  Beats (scene-relative):
+    0     — section "06" + overline + h2 enter
+    3.93  — "real reason he switched" — sub-line A1 enters
+    11.55 — "stopped reading the markdown plans" — A1 emphasis pulse
+    16.32 — "wall of text" — A2 enters with mono "[wall of text]" tag
+    20.74 — "leaving Claude to make every choice" — A3 emphasis
+    25.85 — "HTML versions" — A4 enters (the pivot)
+    31.55 — "back in the loop" — A4 italic emphasis
+    33.72 — "let Thariq close it" — Phase A dims; Phase B builds
+    35.22 — "Quote. I am happy" — Phase B pull-quote reveals
+    37.92 — "more in the loop than ever before" — italic accent emphasis
+    42.02 — "I hope you do too" — small attribution line
+    43.79 — "replies under the post" — Phase C begins; Phase B shrinks
+    47.98 — "already doing this" — reply chip 1
+    52.22 — "explains why Claude keeps printing" — reply chip 2
+    56.88 — "moving my whole planning" — reply chip 3
+    61.24 — "show up everywhere" — caption transition
+    64.72 — "Specs. PR writeups" — formats-list mono pills enter
+    69.65 — "editorial magazines" — final pill emphasis
+    74.62 — "Get ahead of it" — Phase D begins (Dynamous handoff)
+    75.56 — "Open one of the files in Thariq's gallery" — gallery pill emphasis
+    83.62 — "learn more about A I" — final endcard surge
+    85.72 — "dynamous dot A I community" — final pulse on URL
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #scene-cta-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+      }
+      .cta-header {
+        position: relative;
+        margin-bottom: 32px;
+        padding-left: 88px;
+      }
+      .cta-section-number {
+        position: absolute;
+        left: 0;
+        top: 6px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-1);
+      }
+      .cta-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 12px;
+      }
+      .cta-h2 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 64px;
+        color: var(--text);
+        letter-spacing: -1px;
+        line-height: 1.04;
+      }
+      .cta-h2 em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .cta-divider {
+        height: 1px;
+        background: var(--border);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      /* Phase A — pivot reasoning sub-lines */
+      .pa-block {
+        padding-left: 88px;
+        padding-right: 100px;
+        font-family: var(--serif);
+        font-size: 32px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        max-width: 1500px;
+      }
+      .pa-line {
+        opacity: 0;
+        margin-bottom: 14px;
+      }
+      .pa-line .pa-emph {
+        font-style: italic;
+        color: var(--accent-1);
+        font-weight: 700;
+      }
+      .pa-line.pa-pivot {
+        color: var(--text);
+        font-weight: 700;
+      }
+      .pa-line code {
+        font-family: var(--mono);
+        font-size: 0.85em;
+        background: var(--bg-surface);
+        color: var(--accent-2);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+
+      /* Phase B — pull-quote (typewriter) */
+      .pb-quote {
+        position: absolute;
+        left: 188px;
+        right: 188px;
+        top: 360px;
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1.1;
+        color: var(--text);
+        letter-spacing: -1px;
+        opacity: 0;
+        text-align: left;
+      }
+      .pb-quote em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      /* Typewriter character — start invisible. GSAP reveals them with
+         stagger so the quote is "typed" in sync with the narration. */
+      .pb-quote .tw-char {
+        display: inline;
+        opacity: 0;
+      }
+      /* Caret — blinks while typing, fades out when the attribution lands. */
+      .pb-quote .tw-caret {
+        display: inline-block;
+        width: 0.55ch;
+        margin-left: 0.04ch;
+        color: var(--accent-1);
+        font-weight: 700;
+        opacity: 0;
+        animation: tw-blink 0.8s steps(2, start) infinite;
+      }
+      @keyframes tw-blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0; }
+      }
+      .pb-quote .pb-attr {
+        display: block;
+        margin-top: 28px;
+        font-family: var(--mono);
+        font-style: normal;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        opacity: 0;
+      }
+
+      /* Phase C — reply chips + formats list. Right bound is 760px so the
+         block (and the wrapping format pills inside it) never extends into
+         the RIGHT 760px of frame, which is reserved for YouTube end-screen
+         "next video" cards during the last 20s of the video. */
+      .pc-block {
+        position: absolute;
+        left: 188px;
+        right: 760px;
+        top: 320px;
+        opacity: 0;
+        visibility: hidden;
+      }
+      .pc-section-h3 {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 20px;
+      }
+      .pc-replies {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+      .pc-reply {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 24px;
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 28px;
+        color: var(--text);
+        line-height: 1.4;
+        opacity: 0;
+      }
+      .pc-reply::before {
+        content: "@anon";
+        font-family: var(--mono);
+        font-style: normal;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 3px;
+        color: var(--accent-2);
+        margin-right: 14px;
+        background: var(--bg-surface);
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .pc-formats-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 6px;
+      }
+      .pc-format-pill {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 10px 22px;
+        opacity: 0;
+      }
+
+      /* Phase D — closing thought, LEFT-anchored to leave RIGHT ~720px of
+         frame clear for YouTube end-screen "next video" cards during the
+         last ~14 seconds of the video. Dynamous promotion is delivered by
+         the host-level dynamous-discount-bubble component (not in-scene). */
+      .pd-outro {
+        position: absolute;
+        left: 188px;
+        right: 760px;          /* reserves RIGHT 760px for YT end-screen cards */
+        bottom: 110px;
+        opacity: 0;
+        visibility: hidden;
+      }
+      .pd-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 14px;
+      }
+      .pd-h3 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 88px;
+        line-height: 1.0;
+        color: var(--text);
+        letter-spacing: -2px;
+      }
+      .pd-h3 em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .pd-sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 28px;
+        color: var(--text-secondary);
+        margin-top: 18px;
+        line-height: 1.3;
+        opacity: 0;
+      }
+
+      /* End-screen safe-zone placeholders — render as faint dotted outlines
+         on the RIGHT half of the frame during the closing window, so the
+         operator (and the YouTube uploader) can see at a glance which
+         pixels are reserved for "next video" cards. The outlines are
+         visible only during Phase D and are not animated themselves. */
+      .yt-safe {
+        position: absolute;
+        border: 2px dashed rgba(199, 90, 63, 0.32);
+        border-radius: 10px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .yt-safe::after {
+        content: attr(data-label);
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: rgba(199, 90, 63, 0.55);
+      }
+      #yt-safe-tr {                 /* top-right next-video card */
+        top: 80px;
+        right: 80px;
+        width: 560px;
+        height: 320px;
+      }
+      #yt-safe-br {                 /* bottom-right next-video card */
+        bottom: 110px;
+        right: 80px;
+        width: 560px;
+        height: 320px;
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <div class="cta-header" id="cta-header">
+        <div class="cta-section-number" id="cta-num">06</div>
+        <div class="cta-overline" id="cta-overline">STAY IN THE LOOP</div>
+        <div class="cta-h2" id="cta-h2">The real reason he <em class="accent-italic">switched</em>.</div>
+        <div class="cta-divider" id="cta-divider"></div>
+      </div>
+
+      <!-- Phase A — pivot reasoning -->
+      <div class="pa-block" id="pa-block">
+        <div class="pa-line pa-pivot" id="pa-line-1">It is that he <span class="pa-emph">stopped reading</span> the markdown plans.</div>
+        <div class="pa-line" id="pa-line-2">He would offload work to Claude, get back a <code>[wall of text]</code>, and just&hellip; not read it.</div>
+        <div class="pa-line" id="pa-line-3">Which meant he was <span class="pa-emph">leaving Claude to make every choice</span>. Slow way to lose the plot.</div>
+        <div class="pa-line pa-pivot" id="pa-line-4">The HTML versions &mdash; he reads them. He clicks around. He suggests changes. He is <span class="pa-emph">back in the loop</span>.</div>
+      </div>
+
+      <!-- Phase B — pull quote, typewriter-revealed.
+           Three text segments so the <em> styling on "more in the loop than
+           ever before" survives. Each segment's textContent is replaced at
+           init by per-character <span class="tw-char"> elements, then GSAP
+           stagger-reveals them across the narration window (scene-rel
+           35.25-39.60s, exactly the speech of the quote). Caret blinks via
+           CSS animation, hidden at the same beat the attribution lands. -->
+      <div class="pb-quote" id="pb-quote">
+        <span class="tw-seg" id="pb-tw-1"></span><em class="tw-seg" id="pb-tw-2"></em><span class="tw-seg" id="pb-tw-3"></span><span class="tw-caret" id="pb-tw-caret">|</span>
+        <span class="pb-attr" id="pb-attr">&mdash; THARIQ &middot; CLAUDE CODE @ ANTHROPIC</span>
+      </div>
+
+      <!-- Phase C — reply chips + formats -->
+      <div class="pc-block" id="pc-block">
+        <div class="pc-section-h3" id="pc-h3">REPLIES UNDER THE POST</div>
+        <div class="pc-replies">
+          <div class="pc-reply" id="pc-reply-1">I was already doing this &mdash; I just did not have the framing yet.</div>
+          <div class="pc-reply" id="pc-reply-2">This finally explains why Claude keeps printing HTML as artifacts.</div>
+          <div class="pc-reply" id="pc-reply-3">I am moving my whole planning workflow today.</div>
+        </div>
+        <div class="pc-section-h3" id="pc-formats-h3">YOU&rsquo;LL SEE IT EVERYWHERE</div>
+        <div class="pc-formats-row" id="pc-formats">
+          <div class="pc-format-pill" id="pc-fmt-1">SPECS</div>
+          <div class="pc-format-pill" id="pc-fmt-2">PR WRITEUPS</div>
+          <div class="pc-format-pill" id="pc-fmt-3">STATUS REPORTS</div>
+          <div class="pc-format-pill" id="pc-fmt-4">INTERNAL EXPLAINERS</div>
+          <div class="pc-format-pill" id="pc-fmt-5">EDITORIAL MAGAZINES</div>
+        </div>
+      </div>
+
+      <!-- Phase D — closing thought, LEFT-anchored. Dynamous promotion is
+           delivered by the host-level dynamous-discount-bubble component. -->
+      <div class="pd-outro" id="pd-outro">
+        <div class="pd-overline">CLOSING THOUGHT</div>
+        <div class="pd-h3">Get ahead of <em>it</em>.</div>
+        <div class="pd-sub" id="pd-sub">Open one of the files in Thariq&rsquo;s gallery. See how it reads compared to markdown.</div>
+      </div>
+
+      <!-- YouTube end-screen safe-zone placeholders — visible during last
+           ~14s only. Reserve top-right and bottom-right for "next video"
+           cards the YT uploader will configure post-upload. -->
+      <div id="yt-safe-tr" class="yt-safe" data-label="NEXT VIDEO &middot; SLOT 1"></div>
+      <div id="yt-safe-br" class="yt-safe" data-label="NEXT VIDEO &middot; SLOT 2"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // ── TYPEWRITER SETUP ────────────────────────────────────
+      // Build per-char spans for the three pull-quote segments. Splitting
+      // into segments preserves the <em> wrapper around "more in the loop
+      // than ever before". Whitespace is kept as a tw-char so spacing
+      // animates with the rest of the typing.
+      function buildTwChars(elemId, text) {
+        const el = document.getElementById(elemId);
+        if (!el) return [];
+        el.textContent = '';
+        const out = [];
+        for (const c of text) {
+          const span = document.createElement('span');
+          span.className = 'tw-char';
+          span.textContent = c;
+          el.appendChild(span);
+          out.push(span);
+        }
+        return out;
+      }
+      const twChars = [].concat(
+        buildTwChars('pb-tw-1', '“I am happy to say I feel '),
+        buildTwChars('pb-tw-2', 'more in the loop than ever before'),
+        buildTwChars('pb-tw-3', ' when using HTML.”')
+      );
+      // Total chars across the three segments (≈ 78); the per-char interval
+      // is computed from the narration window length so typing finishes as
+      // the speaker finishes saying "HTML." (scene-rel 39.60).
+      const TW_START    = 35.25;          // narration "I" word starts at 35.254
+      const TW_END      = 39.60;          // narration "HTML." word ends at 39.596
+      const TW_WINDOW   = TW_END - TW_START;
+      const TW_STAGGER  = TW_WINDOW / Math.max(1, twChars.length);
+
+      // Hidden-until-reveal
+      tl.set("#pa-line-1", { y: 12, opacity: 0 }, 0);
+      tl.set("#pa-line-2", { y: 12, opacity: 0 }, 0);
+      tl.set("#pa-line-3", { y: 12, opacity: 0 }, 0);
+      tl.set("#pa-line-4", { y: 12, opacity: 0 }, 0);
+      tl.set("#pb-quote",  { y: 16, opacity: 0 }, 0);
+      tl.set(twChars,      { opacity: 0 }, 0);
+      tl.set("#pb-tw-caret", { opacity: 0 }, 0);
+      tl.set("#pb-attr",   { opacity: 0 }, 0);
+      tl.set("#pc-block",  { opacity: 0, visibility: "hidden" }, 0);
+      tl.set("#pc-reply-1",{ y: 10, opacity: 0 }, 0);
+      tl.set("#pc-reply-2",{ y: 10, opacity: 0 }, 0);
+      tl.set("#pc-reply-3",{ y: 10, opacity: 0 }, 0);
+      ["#pc-fmt-1","#pc-fmt-2","#pc-fmt-3","#pc-fmt-4","#pc-fmt-5"].forEach(s => tl.set(s, { y: 10, opacity: 0 }, 0));
+      tl.set("#pd-outro",  { y: 24, opacity: 0, visibility: "hidden" }, 0);
+      tl.set("#pd-sub",    { y: 12, opacity: 0 }, 0);
+      tl.set("#yt-safe-tr",{ opacity: 0 }, 0);
+      tl.set("#yt-safe-br",{ opacity: 0 }, 0);
+      tl.set("#cta-divider",{ scaleX: 0 }, 0);
+
+      // Header
+      tl.from("#cta-num",      { y: 14, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.2);
+      tl.from("#cta-overline", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.4);
+      tl.from("#cta-h2",       { y: 20, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.6);
+      tl.to("#cta-divider",    { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.2);
+
+      // ── PHASE A ───────────────────────────────────────────
+      tl.to("#pa-line-1", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 3.93);
+      tl.to("#pa-line-1 .pa-emph", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 11.55);
+      tl.to("#pa-line-2", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 16.32);
+      tl.to("#pa-line-3", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 20.74);
+      tl.to("#pa-line-4", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 25.85);
+      tl.to("#pa-line-4 .pa-emph", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 31.55);
+
+      // ── PHASE B ───────────────────────────────────────────
+      // Phase A dims as B builds
+      tl.to("#pa-block", { opacity: 0.0, y: -16, duration: 0.7, ease: "power1.in" }, 33.72);
+      tl.to("#cta-h2",   { opacity: 0.4, scale: 0.96, duration: 0.6, ease: "power1.in" }, 33.72);
+
+      // Quote container fades in just before the narration "I am happy"
+      // word starts; the caret blinks while typing.
+      tl.to("#pb-quote",     { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 34.95);
+      tl.to("#pb-tw-caret",  { opacity: 1, duration: 0.2, ease: "power2.out" }, 35.05);
+
+      // Per-character reveal — staggered across the narration window
+      // (35.25-39.60s = 4.35s for ~78 chars ≈ 56ms / char). Easing "none"
+      // because each char tween is 0.04s — long enough to render but short
+      // enough to feel instant per-keystroke.
+      tl.to(twChars, {
+        opacity: 1,
+        duration: 0.04,
+        stagger: TW_STAGGER,
+        ease: "none"
+      }, TW_START);
+
+      // After the em segment ("more in the loop than ever before") finishes
+      // typing (~scene-rel 38.2), do a soft scale pulse on the whole em to
+      // reinforce the italic emphasis. Anchored just past the word "before".
+      tl.to("#pb-tw-2", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 38.5);
+
+      // Caret fades out once typing completes; attribution lands a beat
+      // later at the narration anchor for "I hope you do too." (40.52s).
+      tl.to("#pb-tw-caret", { opacity: 0, duration: 0.3, ease: "power1.in" }, TW_END + 0.2);
+      tl.to("#pb-attr",     { opacity: 1, duration: 0.5, ease: "power2.out" }, 40.50);
+
+      // ── PHASE C ───────────────────────────────────────────
+      // Phase B FULLY hides — quote was overlapping the cta-header at scene-rel 8:20
+      // when only opacity 0.45 was applied. Now opacity → 0 + visibility hidden.
+      tl.to("#pb-quote", { opacity: 0, scale: 0.85, y: -120, duration: 0.6, ease: "power1.in", transformOrigin: "left top" }, 43.79);
+      tl.set("#pb-quote", { visibility: "hidden" }, 44.40);
+      tl.to("#pb-attr",  { opacity: 0, duration: 0.3, ease: "power1.in" }, 43.79);
+      // CTA header also dims (it was visually competing with the new content)
+      tl.to("#cta-header", { opacity: 0.4, duration: 0.6, ease: "power1.in" }, 43.79);
+
+      tl.set("#pc-block", { visibility: "visible" }, 43.79);
+      tl.to("#pc-block", { opacity: 1, duration: 0.5, ease: "power2.out" }, 43.79);
+
+      tl.to("#pc-reply-1", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 47.98);
+      tl.to("#pc-reply-2", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 52.22);
+      tl.to("#pc-reply-3", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 56.88);
+
+      // Format pills — staggered as narrator lists them
+      tl.to("#pc-fmt-1", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 64.72);
+      tl.to("#pc-fmt-2", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 65.40);
+      tl.to("#pc-fmt-3", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 66.30);
+      tl.to("#pc-fmt-4", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 67.50);
+      tl.to("#pc-fmt-5", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 69.65);
+
+      // ── PHASE D ───────────────────────────────────────────
+      // Phase C FULLY hides — opacity 0.45 left replies + format pills readable behind
+      // the closing card. Now opacity → 0 + visibility hidden.
+      tl.to("#pc-block", { opacity: 0, y: -40, duration: 0.6, ease: "power1.in" }, 74.62);
+      tl.set("#pc-block", { visibility: "hidden" }, 75.25);
+      // CTA header fully fades — final beat is the LEFT outro + dynamous bubble
+      tl.to("#cta-header", { opacity: 0, duration: 0.6, ease: "power1.in" }, 74.62);
+
+      // Closing thought, LEFT-anchored (RIGHT half of frame stays clear for
+      // YouTube end-screen "next video" cards).
+      tl.set("#pd-outro", { visibility: "visible" }, 74.62);
+      tl.to("#pd-outro",  { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 74.62);
+
+      // Sub-line lands as narration says "Open one of the files…"
+      tl.to("#pd-sub",    { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, 75.56);
+
+      // YouTube end-screen safe-zone outlines — visible across the FULL
+      // last 20s of the video so the operator (and the YT uploader) sees
+      // exactly where the "next video" cards must be placed. They stay
+      // subtle (opacity 0.5) — production marker, not a hero element.
+      // Last-20s window in cta-scene-rel coords = 68.66 .. 88.66 (the
+      // host's TOTAL_DURATION is 503s, scene starts at 414.34).
+      tl.to("#yt-safe-tr", { opacity: 0.5, duration: 0.6, ease: "power1.out" }, 68.66);
+      tl.to("#yt-safe-br", { opacity: 0.5, duration: 0.6, ease: "power1.out" }, 69.26);
+
+      // Italic emphasis pulse on "it" when narration repeats the call to action.
+      tl.to("#pd-outro em", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 80.0);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

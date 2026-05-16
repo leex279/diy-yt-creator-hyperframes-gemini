@@ -1,0 +1,158 @@
+<!--
+  scene-source-cards.html — Source citation cards archetype (Anthropic long-form).
+
+  3 photo + overline + title source cards in a row, accent-rotated:
+  orange → purple → blue.
+
+  OPERATOR:
+    - Replace placeholder overline, title for each card
+    - Wire real screenshot images per card (see comments in each card)
+    - Tune SCENE_DURATION to narration length
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-src-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 32px;
+        box-sizing: border-box;
+      }
+      #src-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+      }
+      #src-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1400px;
+      }
+      .src-cards-row {
+        display: flex;
+        flex-direction: row;
+        gap: 24px;
+        width: 100%;
+      }
+      .src-card {
+        flex: 1;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        display: flex;
+        flex-direction: column;
+      }
+      .src-card.orange { border: 1.5px solid rgba(233, 116, 88, 0.40); }
+      .src-card.purple { border: 1.5px solid rgba(167, 139, 250, 0.40); }
+      .src-card.blue   { border: 1.5px solid rgba(107, 154, 239, 0.40); }
+      .src-card-img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        display: block;
+        background: var(--bg-card);
+      }
+      .src-card-meta {
+        padding: 20px 24px;
+        display: flex; flex-direction: column;
+        gap: 8px;
+        background: var(--bg-card);
+        flex: 1;
+      }
+      .src-card-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .src-card.orange .src-card-overline { color: rgba(233, 116, 88, 0.85); }
+      .src-card.purple .src-card-overline { color: rgba(167, 139, 250, 0.85); }
+      .src-card.blue   .src-card-overline { color: rgba(107, 154, 239, 0.85); }
+      .src-card-title {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 1.3;
+        color: var(--text);
+      }
+    </style>
+
+    <div id="scene-src-content">
+      <div id="src-overline">SOURCES</div>
+      <div id="src-headline">Where this story comes from</div>
+      <div class="src-cards-row">
+        <div class="src-card orange" id="src-card-1">
+          <!--
+            OPERATOR: wire real screenshot image once you have it:
+              img class="src-card-img" src="assets/screenshots/source-1.png" alt="Source 1"
+          -->
+          <div class="src-card-img"></div>
+          <div class="src-card-meta">
+            <div class="src-card-overline">ANTHROPIC</div>
+            <div class="src-card-title">Replace with source one title</div>
+          </div>
+        </div>
+        <div class="src-card purple" id="src-card-2">
+          <!--
+            OPERATOR: wire real screenshot image once you have it:
+              img class="src-card-img" src="assets/screenshots/source-2.png" alt="Source 2"
+          -->
+          <div class="src-card-img"></div>
+          <div class="src-card-meta">
+            <div class="src-card-overline">RESEARCH</div>
+            <div class="src-card-title">Replace with source two title</div>
+          </div>
+        </div>
+        <div class="src-card blue" id="src-card-3">
+          <!--
+            OPERATOR: wire real screenshot image once you have it:
+              img class="src-card-img" src="assets/screenshots/source-3.png" alt="Source 3"
+          -->
+          <div class="src-card-img"></div>
+          <div class="src-card-meta">
+            <div class="src-card-overline">DOCS</div>
+            <div class="src-card-title">Replace with source three title</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 15;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.from("#src-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#src-headline", { y: 28, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+      tl.from("#src-card-1",   { y: 36, scale: 0.95, opacity: 0, duration: 0.65, ease: "back.out(1.4)", immediateRender: false }, 1.0);
+      tl.from("#src-card-2",   { y: 36, scale: 0.95, opacity: 0, duration: 0.65, ease: "back.out(1.4)", immediateRender: false }, 1.35);
+      tl.from("#src-card-3",   { y: 36, scale: 0.95, opacity: 0, duration: 0.65, ease: "back.out(1.4)", immediateRender: false }, 1.70);
+
+      // Pin timeline
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,10 +1,9 @@
 <div id="dynamous-endcard" class="dec-root" data-composition-id="dynamous-endcard" data-start="0" data-duration="5" data-width="1080" data-height="1920">
 
-    <!-- Werbung disclosure badge — German ad-disclosure compliance -->
-    <div class="dec-werbung">Werbung</div>
-
     <!-- Glass CTA card — mirrors midroll Phase 6 stack -->
     <div class="dec-card">
+      <!-- Werbung disclosure badge — German ad-disclosure compliance -->
+      <div class="dec-werbung">Werbung</div>
       <img class="dec-wordmark" src="../assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" crossorigin="anonymous" />
       <div class="dec-headline" id="dec-headline">Join the Community</div>
 
@@ -37,17 +36,18 @@
         overflow: hidden;
       }
       .dec-werbung {
+        /* Positioned inside .dec-card (top-right corner of the glass card) so
+           the disclosure rides with the CTA, not the full 1080×1920 frame. */
         position: absolute;
-        top: 48px;
-        right: 48px;
-        background: rgba(255, 255, 255, 0.10);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #cbd5e1;
-        font-size: 32px;
-        font-weight: 700;
-        padding: 14px 28px;
-        border-radius: 12px;
-        letter-spacing: 2px;
+        top: 20px;
+        right: 24px;
+        background: #dc2626;
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 800;
+        padding: 8px 18px;
+        border-radius: 8px;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
         opacity: 0;
         z-index: 10;

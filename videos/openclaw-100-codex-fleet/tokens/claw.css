@@ -1,0 +1,50 @@
+/* ──────────────────────────────────────────────────────────────────────
+   videos/openclaw-100-codex-fleet/tokens/claw.css
+   Crab/claw palette for the OpenClaw long-form video.
+   Deep crab-red on obsidian stage with paper-white text + cyan counter.
+
+   Scoped to :root so every sub-composition wired via data-composition-src
+   inherits these vars without needing a wrapper.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface — obsidian stage ─────────────────────── */
+  --bg:             #0a0a0c;
+  --bg-elev-1:      #13131a;
+  --bg-elev-2:      #1d1d27;
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-surface:     rgba(255, 255, 255, 0.08);
+  --border:         rgba(201, 42, 42, 0.18);     /* crab-red border tint */
+  --border-bright:  rgba(201, 42, 42, 0.32);
+
+  /* ── Accents — deep crab + cyan counter ─────────── */
+  --accent-1:       #c92a2a;  /* deep crab-red — primary brand   */
+  --accent-1-hi:    #e94545;  /* hot crab — emphasis             */
+  --accent-1-lo:    #8c1d1d;  /* crab shadow / depth             */
+  --accent-2:       #22d3ee;  /* cyan — cool counter (code chips)*/
+  --accent-2-hi:    #67e8f9;
+  --accent-3:       #fbbf24;  /* amber — stat receipts           */
+  --accent-4:       #f5f1ea;  /* paper-white (used as 4th slot)  */
+  --accent-warn:    #f97316;  /* orange — warn / regression      */
+  --accent-stat:    #fcd34d;  /* warm yellow — big stat slams    */
+  --accent-ok:      #10b981;  /* green — SAFE TO CLOSE chip      */
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #f5f1ea;  /* paper-white (warm) */
+  --text-secondary: #a8a29e;  /* muted paper        */
+  --text-muted:     #57534e;
+  --text-faint:     #5a554d;
+
+  /* ── Spacing — long-form safe-zone ─────────────── */
+  --pad-top:        80px;
+  --pad-x:          100px;
+  --pad-bottom:     80px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+  --display:        'Inter', system-ui, sans-serif;
+
+  /* ── Motion — claw-snap signature ─────────────── */
+  --ease-claw:      cubic-bezier(.6, .05, .3, 1.2);
+}

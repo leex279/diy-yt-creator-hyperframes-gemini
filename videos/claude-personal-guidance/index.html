@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic Just Measured How Often Claude Tells You What You Want To Hear</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage, Anthropic aesthetic.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* Phase mutex layers — z-index escalation (template "Adding more phases" pattern) */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+  #phase6 { z-index: 6; opacity: 0; }
+  #phase7 { z-index: 7; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ───── PHASE 1 — Hero slam: 6% ───── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 380px;
+    line-height: 0.9;
+    letter-spacing: -8px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+  }
+  #p1-caption {
+    margin-top: 16px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    max-width: 920px;
+  }
+  #p1-headline {
+    margin-top: 28px;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 900px;
+    letter-spacing: -1px;
+    position: relative;
+    display: inline-block;
+  }
+  #p1-mark-1 {
+    position: absolute;
+    left: -6px;
+    bottom: 6px;
+    height: 22px;
+    width: 0;
+    background: rgba(233,116,88,0.55);
+    border-radius: 6px;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ───── Common screenshot frame for P2/P3/P4/P5 ───── */
+  .ss-frame {
+    position: relative;
+    width: 880px;
+    margin: 0 auto;
+    border-radius: 22px;
+    background: rgba(22, 27, 38, 0.85);
+    border: 2px solid rgba(233, 116, 88, 0.40);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 30px rgba(233,116,88,0.18);
+    padding: 18px;
+  }
+  .ss-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 14px;
+  }
+  .ss-frame.purple {
+    border-color: rgba(167, 139, 250, 0.40);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 30px rgba(167,139,250,0.18);
+  }
+  .ss-frame.red {
+    border-color: rgba(209, 67, 67, 0.40);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 30px rgba(209,67,67,0.18);
+  }
+  .ss-frame.green {
+    border-color: rgba(125, 211, 166, 0.40);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 30px rgba(125,211,166,0.18);
+  }
+
+  /* ───── PHASE 2 — Topic chart ───── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+  }
+  #p2-overline { color: var(--blue); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+  }
+  /* Annotation pills floating above the chart */
+  #p2-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 920px;
+    margin-top: 8px;
+  }
+  .pct-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 1px;
+    background: rgba(107, 154, 239, 0.14);
+    border: 1.5px solid rgba(107, 154, 239, 0.45);
+    color: var(--text);
+  }
+  .pct-pill .num {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--blue);
+  }
+  .pct-pill.orange {
+    background: rgba(233, 116, 88, 0.14);
+    border-color: rgba(233, 116, 88, 0.45);
+  }
+  .pct-pill.orange .num { color: var(--orange); }
+
+  /* ───── PHASE 3 — Sycophancy chart ───── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+  }
+  #p3-overline { color: var(--purple); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+  }
+  #p3-corner-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1px;
+    background: rgba(167, 139, 250, 0.16);
+    border: 1.5px solid rgba(167, 139, 250, 0.50);
+    color: var(--text);
+    margin-top: 10px;
+  }
+  #p3-corner-pill .num {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--purple);
+  }
+
+  /* ───── PHASE 4 — Pushback flip ───── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 18px;
+  }
+  #p4-overline { color: var(--red); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+  }
+  /* Counter overlay strip below the screenshot */
+  #p4-counter-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 14px;
+  }
+  .p4-pct {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 28px 30px 24px;
+    border-radius: 22px;
+    background: rgba(245, 241, 235, 0.06);
+    border: 2px solid rgba(245, 241, 235, 0.18);
+    min-height: 220px;
+  }
+  .p4-pct .num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 1.1;
+    letter-spacing: -3px;
+    color: var(--orange);
+    font-variant-numeric: tabular-nums lining-nums;
+    display: block;
+  }
+  .p4-pct .lbl {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+  }
+  .p4-pct.red {
+    border-color: rgba(209, 67, 67, 0.55);
+    background: rgba(209, 67, 67, 0.10);
+  }
+  .p4-pct.red .num { color: var(--red); }
+  #p4-arrow {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 80px;
+    color: var(--text-dim);
+    line-height: 0.9;
+  }
+  /* Hand-drawn marker-circle around 18 */
+  #p4-mark-circle {
+    position: absolute;
+    width: 220px;
+    height: 180px;
+    pointer-events: none;
+  }
+  #p4-mark-circle ellipse {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 6;
+    stroke-linecap: round;
+  }
+
+  /* ───── PHASE 5 — Research loop ───── */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 22px;
+  }
+  #p5-overline { color: var(--green); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+  }
+  /* SVG arrow overlay sized to the screenshot (3 path-draw arrows) */
+  #p5-arrows {
+    position: absolute;
+    pointer-events: none;
+  }
+  #p5-arrows path {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Loop node accent rings (drawn over the screenshot for emphasis) */
+  .p5-ring {
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border: 4px solid var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 24px rgba(125,211,166,0.55), inset 0 0 14px rgba(125,211,166,0.25);
+    pointer-events: none;
+    opacity: 0;
+  }
+  /* HALF stat pill */
+  #p5-half-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 18px 36px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.20), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.55);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.20);
+    margin-top: 16px;
+    position: relative;
+  }
+  #p5-half-pill .word {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 92px;
+    line-height: 0.9;
+    letter-spacing: -2px;
+    color: var(--green);
+    text-shadow: 0 0 36px rgba(125,211,166,0.40);
+  }
+  #p5-half-pill .lbl {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  #p5-half-mark {
+    position: absolute;
+    left: 30px;
+    bottom: 18px;
+    height: 28px;
+    width: 0;
+    background: rgba(125, 211, 166, 0.45);
+    border-radius: 6px;
+    z-index: -1;
+    pointer-events: none;
+  }
+  /* Sub-pill: Opus 4.7 vs 4.6 */
+  #p5-sub-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    color: var(--text);
+    margin-top: 8px;
+  }
+  #p5-sub-pill .v-new { color: var(--green); }
+  #p5-sub-pill .v-old { color: var(--text-dim); }
+
+  /* ───── PHASE 6 — Takeaway / synthesis ───── */
+  #phase6 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p6-overline { color: var(--orange); }
+  .p6-quote {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    position: relative;
+    display: inline-block;
+  }
+  #p6-mark-push {
+    position: absolute;
+    height: 12px;
+    background: rgba(233,116,88,0.65);
+    border-radius: 4px;
+    bottom: -4px;
+    left: -2px;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .p6-pill {
+    display: inline-block;
+    padding: 18px 32px;
+    border-radius: 22px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.16), rgba(233,116,88,0.04));
+    border: 2px solid rgba(233,116,88,0.45);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  #p6-callback-pill {
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20), 0 0 0 0 rgba(233,116,88,0);
+  }
+
+  /* ───── PHASE 7 — CTA endcard ───── */
+  #phase7 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p7-overline { color: var(--green); }
+  #p7-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    line-height: 1.35;
+    padding: 36px 50px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.45);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.25);
+    width: 960px;
+    min-height: 240px;
+    position: relative;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Hand-drawn marker-circle around URL pill */
+  #p7-mark-circle {
+    position: absolute;
+    inset: -16px;
+    pointer-events: none;
+  }
+  #p7-mark-circle ellipse {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+  #p7-subscribe {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 40px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 46px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p7-subscribe .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 0.7;
+  }
+  #p7-tagline {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    max-width: 920px;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="150"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══ PHASE 1 — Hero 6% slam (0–8.0s) ═══ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Anthropic Research</div>
+      <div id="p1-hero">6%</div>
+      <div id="p1-caption">of Claude chats are personal guidance</div>
+      <div id="p1-headline">
+        Anthropic measured how often Claude
+        <span style="position:relative; display:inline-block;">
+          tells you what you want
+          <span id="p1-mark-1"></span>
+        </span>
+        to hear.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 2 — Topic chart (8.6–32.4s) ═══ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">The 9 Domains</div>
+      <div id="p2-headline">What people ask Claude.</div>
+      <div class="ss-frame" id="p2-frame">
+        <img id="p2-img" src="assets/source-screenshots/01-guidance-topics-chart.png" alt="Topic distribution chart" />
+      </div>
+      <div id="p2-pills">
+        <div class="pct-pill" id="p2-pill-1"><span class="num">27%</span><span>Health</span></div>
+        <div class="pct-pill" id="p2-pill-2"><span class="num">26%</span><span>Career</span></div>
+        <div class="pct-pill" id="p2-pill-3"><span class="num">12%</span><span>Relationships</span></div>
+        <div class="pct-pill" id="p2-pill-4"><span class="num">11%</span><span>Finances</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 3 — Sycophancy chart twist (33.0–55.6s) ═══ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">The Twist</div>
+      <div id="p3-headline">Where Claude flatters most.</div>
+      <div class="ss-frame purple" id="p3-frame">
+        <img id="p3-img" src="assets/source-screenshots/02-sycophancy-by-topic-chart.png" alt="Sycophancy by topic chart" />
+      </div>
+      <div id="p3-corner-pill"><span class="num">9%</span><span>baseline rate</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 4 — Pushback flip (56.2–84.0s) ═══ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">The Pushback Flip</div>
+      <div id="p4-headline">Push back. Claude caves.</div>
+      <div class="ss-frame red" id="p4-frame" style="width:780px;">
+        <img id="p4-img" src="assets/source-screenshots/03-pushback-example-conversation.png" alt="Pushback conversation example" />
+      </div>
+      <div id="p4-counter-row">
+        <div class="p4-pct" id="p4-pct-9">
+          <span class="num" id="p4-num-9">9</span>
+          <span class="lbl">CALM</span>
+        </div>
+        <div id="p4-arrow">&rarr;</div>
+        <div class="p4-pct red" id="p4-pct-18">
+          <span class="num" id="p4-num-18">9</span>
+          <span class="lbl">PUSHBACK</span>
+        </div>
+        <svg id="p4-mark-circle" viewBox="0 0 220 180" preserveAspectRatio="none">
+          <ellipse cx="110" cy="90" rx="100" ry="78" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 5 — Research loop (84.6–110.95s) ═══ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">The Fix</div>
+      <div id="p5-headline">Anthropic closed the loop.</div>
+      <div class="ss-frame green" id="p5-frame">
+        <img id="p5-img" src="assets/source-screenshots/04-research-loop-diagram.png" alt="Research-to-training loop diagram" />
+        <div class="p5-ring" id="p5-ring-1"></div>
+        <div class="p5-ring" id="p5-ring-2"></div>
+        <div class="p5-ring" id="p5-ring-3"></div>
+        <svg id="p5-arrows" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path id="p5-arr-1" d="M 30 22 Q 50 14 70 22" />
+          <path id="p5-arr-2" d="M 78 38 Q 84 60 70 78" />
+          <path id="p5-arr-3" d="M 30 78 Q 16 60 22 38" />
+        </svg>
+      </div>
+      <div id="p5-half-pill">
+        <span class="word">HALF</span>
+        <span class="lbl">the sycophancy rate</span>
+        <span id="p5-half-mark"></span>
+      </div>
+      <div id="p5-sub-pill">
+        <span class="v-new">Opus 4.7</span>
+        <span>vs</span>
+        <span class="v-old">Opus 4.6</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 6 — Takeaway (111.55–128.0s) ═══ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">The Takeaway</div>
+      <div class="p6-quote" id="p6-quote-1">
+        Claude flatters you on the topics you care about most.
+      </div>
+      <div class="p6-quote" id="p6-quote-2">
+        And the moment you
+        <span style="position:relative; display:inline-block;">
+          push twice
+          <span id="p6-mark-push"></span>
+        </span>.
+      </div>
+      <div class="p6-pill" id="p6-trust-pill">
+        Now you know when to trust the answer.
+      </div>
+      <div class="p6-pill" id="p6-callback-pill">
+        And when to push twice on purpose.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 7 — CTA endcard (128.6–150.0s) ═══ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">Read the Research</div>
+      <div id="p7-url">
+        <span>anthropic.com/research/<br/>claude-personal-guidance</span>
+        <svg id="p7-mark-circle" viewBox="0 0 1000 240" preserveAspectRatio="none">
+          <ellipse cx="500" cy="120" rx="490" ry="115" />
+        </svg>
+      </div>
+      <div id="p7-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+      <div id="p7-tagline">For more AI: dynamous.ai community</div>
+    </div>
+  </div>
+
+  <!-- ═══ AUDIO — narration + SFX ═══ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="139.5"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — phase-transition whooshes only.
+       data-start = (T_n - 0.4) so the whoosh fires together with the shape-backdrop
+       reposition (which starts at sceneT - 0.4 inside repositionShapesPerPhase). -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="7.3" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="31.6" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="54.6" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="83.1" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="110.15" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="127.3" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('claude-personal-guidance', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL = 150;
+
+  // Phase boundaries (recomputed from transcript, retention-strategy.md):
+  const T1 = 7.7,   P2 = 8.6;
+  const T2 = 32.0,  P3 = 33.0;
+  const T3 = 55.0,  P4 = 56.2;
+  const T4 = 83.5,  P5 = 84.6;
+  const T5 = 110.55, P6 = 111.55;
+  const T6 = 127.7, P7 = 128.6;
+
+  // ─────────────────────────────────────────────────────
+  // Ambient: slow warm breath across full duration
+  // ─────────────────────────────────────────────────────
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL / 2, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar across full duration
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL, ease: "none" },
+    0);
+
+  // Top banner one-shot fade-in
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero 6% slam (0-8.0s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p1-headline", { opacity: 0, y: 30 }, 0);
+  tl.set("#p1-mark-1", { width: 0 }, 0);
+
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+  // Slam at "Six" t=0.046s
+  tl.from("#p1-hero", { scale: 0.78, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, 0.04);
+  // Inline shake on slam frame
+  tl.to("#p1-hero", { x: 6,  duration: 0.04, ease: "none", overwrite: "auto" }, 0.18);
+  tl.to("#p1-hero", { x: -6, duration: 0.04, ease: "none", overwrite: "auto" }, 0.22);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 0.26);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 0.30);
+  // Caption pill at "Claude" t=0.824
+  tl.from("#p1-caption", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.82);
+  // Headline at "Anthropic" t=3.692
+  tl.to("#p1-headline", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", overwrite: "auto" }, 3.69);
+  // Marker sweep at "tells" t=5.851
+  tl.to("#p1-mark-1", { width: "100%", duration: 0.55, ease: "power2.out" }, 5.85);
+
+  // ─── T1 → P2 crossfade at 7.7s ───
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Topic chart (8.6–32.4s)
+  // ═══════════════════════════════════════════════════════
+  // Hide all P2 elements at t=0
+  tl.set(["#p2-overline","#p2-headline","#p2-frame","#p2-pill-1","#p2-pill-2","#p2-pill-3","#p2-pill-4"], { opacity: 0 }, 0);
+
+  tl.fromTo("#p2-overline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, P2);
+  // Headline at "Anthropic" t=8.451
+  tl.fromTo("#p2-headline", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 8.45);
+  // Screenshot frame at "million" t=10.890
+  tl.fromTo("#p2-frame", { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, 10.89);
+
+  // 4 annotation pills enter step-by-step at narration anchors:
+  // "twenty-seven" 18.98s, "twenty-six" idx 55 -> Career time. Looking at transcript: idx 54 Career 20.95.
+  tl.fromTo("#p2-pill-1", { y: 16, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 19.57);
+  tl.fromTo("#p2-pill-2", { y: 16, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 21.29);
+  tl.fromTo("#p2-pill-3", { y: 16, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 22.73);
+  tl.fromTo("#p2-pill-4", { y: 16, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 24.75);
+
+  // Subtle scale-pulse on the 4 pills together at "buckets." (idx 70 t=27.79) to keep pacing
+  tl.to("#p2-pills", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 27.79);
+
+  // ─── T2 → P3 crossfade at 32.0s ───
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Sycophancy chart twist (33.0–55.6s)
+  // ═══════════════════════════════════════════════════════
+  tl.set(["#p3-overline","#p3-headline","#p3-frame","#p3-corner-pill"], { opacity: 0 }, 0);
+
+  // Overline "popular" idx 83 t=33.065
+  tl.fromTo("#p3-overline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 33.06);
+  // Headline at "sycophantic" idx 88 t=34.319
+  tl.fromTo("#p3-headline", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 34.32);
+  // Screenshot frame at "Across" idx 90 t=36.129
+  tl.fromTo("#p3-frame", { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, 36.13);
+
+  // Corner pill "9% baseline" at "nine" idx 98 t=38.579
+  tl.fromTo("#p3-corner-pill", { y: 16, opacity: 0, scale: 0.85 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 38.58);
+
+  // Subtle highlight pulse on chart at "But" idx 102 t=41.098 (the PIVOT word) — frame flashes
+  tl.to("#p3-frame", { scale: 1.025, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.inOut" }, 41.10);
+
+  // Subtle pulse on corner pill near the end at "most." idx 138 t=55.064 to keep <5s pacing
+  tl.to("#p3-corner-pill", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 53.5);
+
+  // ─── T3 → P4 crossfade at 55.0s ───
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0, duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Pushback flip (56.2–84.0s)
+  // ═══════════════════════════════════════════════════════
+  tl.set(["#p4-overline","#p4-headline","#p4-frame","#p4-counter-row"], { opacity: 0 }, 0);
+  tl.set("#p4-mark-circle", { opacity: 0 }, 0);
+
+  // Overline at "Now" idx 139 t=56.388
+  tl.fromTo("#p4-overline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 56.4);
+  // Headline at "pattern" t≈58
+  tl.fromTo("#p4-headline", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 57.8);
+  // Screenshot frame at "scar" idx 151 t=60.614 (the emotional anchor word)
+  tl.fromTo("#p4-frame", { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, 60.6);
+
+  // Marker sweep on "you're right" line in the screenshot at "you're" idx 169 t=68.125
+  // Counter row entrance at "sycophancy" idx 175 t=70.807
+  tl.fromTo("#p4-counter-row", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 70.8);
+
+  // Counter tween 9 -> 18 from "the moment" (idx 183 t=74.580) to "eighteen" (idx 191 t=76.623)
+  // Uses the textContent of #p4-num-18 (starts at 9, ticks to 18)
+  const counterObj = { val: 9 };
+  tl.to(counterObj, {
+    val: 18,
+    duration: 2.04,
+    ease: "power2.inOut",
+    roundProps: "val",
+    onUpdate: function() {
+      const n18 = document.getElementById("p4-num-18");
+      if (n18) n18.textContent = Math.round(counterObj.val);
+    }
+  }, 74.58);
+
+  // Color flip on 18 to red at "doubles" idx 189 t=76.159
+  tl.to("#p4-num-18", { color: "var(--red)", duration: 0.3, ease: "power2.out" }, 76.0);
+
+  // Marker-circle around 18 at "eighteen." idx 191 t=76.623
+  tl.fromTo("#p4-mark-circle ellipse",
+    { strokeDasharray: 800, strokeDashoffset: 800 },
+    { strokeDashoffset: 0, duration: 0.7, ease: "power3.out", immediateRender: false },
+    76.62);
+  tl.to("#p4-mark-circle", { opacity: 1, duration: 0.05 }, 76.6);
+
+  // Subtle scale pulse on counter-row at "tone." idx 202 t=81.256
+  tl.to("#p4-counter-row", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 81.0);
+
+  // ─── T4 → P5 crossfade at 83.5s ───
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0, duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T4 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — Research loop (84.6–110.95s)
+  // ═══════════════════════════════════════════════════════
+  tl.set(["#p5-overline","#p5-headline","#p5-frame","#p5-half-pill","#p5-sub-pill"], { opacity: 0 }, 0);
+  tl.set(["#p5-ring-1","#p5-ring-2","#p5-ring-3"], { opacity: 0, scale: 0.6 }, 0);
+  tl.set(["#p5-arr-1","#p5-arr-2","#p5-arr-3"], { strokeDasharray: 200, strokeDashoffset: 200 }, 0);
+  tl.set("#p5-half-mark", { width: 0 }, 0);
+
+  // Overline at "So" idx 71 (in this scene "So" idx 219 t≈87.67? Let me use 88.85 from 'So Anthropic')
+  // Actually "So" already at 84.9, "Anthropic" 85.26, "ran" 89.43. Use 85.2 to start scene before narration onset.
+  tl.fromTo("#p5-overline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 85.2);
+  // Headline at "research" idx 228 t=90.32 — open earlier at 88.5 to give 2s breath
+  tl.fromTo("#p5-headline", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 88.5);
+  // Screenshot frame at "loop." idx 229 t=90.717
+  tl.fromTo("#p5-frame", { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, 90.72);
+
+  // Position the rings + arrows over the 3 nodes of screenshot 04.
+  // image 550x760; rendered inside 880px-36px = 844px wide -> approx scale 1.535x.
+  // The 3 nodes appear roughly: top-left, top-right, bottom-center.
+  // Frame inner area (after 18px padding): 844x ~1166. Place rings absolutely inside #p5-frame.
+  tl.set("#p5-ring-1", { left: 110, top: 250 }, 0);
+  tl.set("#p5-ring-2", { left: 560, top: 250 }, 0);
+  tl.set("#p5-ring-3", { left: 335, top: 720 }, 0);
+  tl.set("#p5-arrows", { left: 18, top: 200, width: 844, height: 700 }, 0);
+
+  // Node ring entrances at "Understand" idx 230 t=91.901, "Find" idx 235 t=93.736, "Apply" idx 239 t=95.837
+  tl.to("#p5-ring-1", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 91.90);
+  tl.to("#p5-ring-2", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 93.74);
+  tl.to("#p5-ring-3", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 95.84);
+
+  // Path-draw arrows: arrow 1 (Understand → Find) starts after node 1, arrow 2 (Find → Apply) after node 2,
+  // arrow 3 (Apply → Understand) closes loop at "training." idx 244 t=97.276
+  tl.to("#p5-arr-1", { strokeDashoffset: 0, duration: 1.2, ease: "power2.out", immediateRender: false }, 92.50);
+  tl.to("#p5-arr-2", { strokeDashoffset: 0, duration: 1.3, ease: "power2.out", immediateRender: false }, 94.50);
+  tl.to("#p5-arr-3", { strokeDashoffset: 0, duration: 1.2, ease: "power2.out", immediateRender: false }, 96.30);
+
+  // Sub-pill Opus 4.7 vs 4.6 entrance at "Opus" idx 256 t=102.431
+  tl.fromTo("#p5-sub-pill", { y: 16, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 102.43);
+
+  // HALF stat pill entrance at "half" idx 265 t=105.752
+  tl.fromTo("#p5-half-pill", { y: 24, opacity: 0, scale: 0.85 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.5)" }, 105.7);
+
+  // Marker sweep under HALF word at "rate" idx 267 t=106.100
+  tl.to("#p5-half-mark", { width: 220, duration: 0.55, ease: "power2.out" }, 106.10);
+
+  // Subtle pulse on HALF pill at "domains." idx 281 t=110.500 to keep <5s pacing
+  tl.to("#p5-half-pill", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 109.8);
+
+  // ─── T5 → P6 crossfade at 110.55s ───
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5", { opacity: 0, duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase6", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase6", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T5 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 6 — Takeaway (111.55–128.0s)
+  // ═══════════════════════════════════════════════════════
+  tl.set(["#p6-overline","#p6-quote-1","#p6-quote-2","#p6-trust-pill","#p6-callback-pill"], { opacity: 0 }, 0);
+  tl.set("#p6-mark-push", { width: 0 }, 0);
+
+  // Overline at "Here's" idx 282 t=112.89 — open earlier at 111.89 for 1s lead
+  tl.fromTo("#p6-overline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 111.89);
+
+  // Quote 1 at "Claude" idx 287 -> use t=113.39 (the synthesis Claude word)
+  tl.fromTo("#p6-quote-1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 113.39);
+
+  // Quote 2 at "moment" idx 303 t=117.628
+  tl.fromTo("#p6-quote-2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 117.63);
+
+  // Marker on "push twice" at "push" idx 305 t=118.348
+  tl.set("#p6-mark-push", { left: -4, bottom: 4, width: 0, height: 26 }, 0);
+  tl.to("#p6-mark-push", { width: "100%", duration: 0.55, ease: "power2.out" }, 118.35);
+
+  // Trust pill at "Now" idx 307 t=120.05 (use this for visual reveal)
+  tl.fromTo("#p6-trust-pill", { y: 24, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 123.29);
+
+  // Callback pill at "push twice on purpose" — "push" idx 327 t=126.30
+  tl.fromTo("#p6-callback-pill", { y: 24, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 126.30);
+
+  // Subtle audio-reactive-glow stand-in (deterministic): sustained boxShadow yoyo on callback pill until phase end
+  tl.to("#p6-callback-pill", {
+    boxShadow: "0 14px 36px rgba(233,116,88,0.35), 0 0 24px rgba(233,116,88,0.55)",
+    duration: 0.45,
+    yoyo: true,
+    repeat: 1,
+    ease: "sine.inOut",
+  }, 126.85);
+
+  // ─── T6 → P7 crossfade at 127.7s ───
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T6);
+  tl.to("#phase6", { opacity: 0, duration: 0.4, ease: "power1.in" }, T6 + 0.3);
+  tl.set("#phase6", { visibility: "hidden" }, T6 + 0.7);
+  tl.set("#phase7", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T6 + 0.4);
+  tl.to("#phase7", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T6 + 0.4);
+  tl.to("#phase7", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T6 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 7 — CTA endcard (128.6–150.0s)
+  // ═══════════════════════════════════════════════════════
+  tl.set(["#p7-overline","#p7-url","#p7-subscribe","#p7-tagline"], { opacity: 0 }, 0);
+  tl.set("#p7-mark-circle", { opacity: 0 }, 0);
+
+  // Overline at scene start ~128.6
+  tl.fromTo("#p7-overline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 128.6);
+
+  // URL pill entrance at "this?" idx 337 t=130.34 (slight delay so it lands as Q closes)
+  tl.fromTo("#p7-url", { y: 24, opacity: 0, scale: 0.85 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 129.5);
+
+  // Marker-circle around URL pill at t=130.5
+  tl.to("#p7-mark-circle", { opacity: 1, duration: 0.05 }, 130.45);
+  tl.fromTo("#p7-mark-circle ellipse",
+    { strokeDasharray: 3000, strokeDashoffset: 3000 },
+    { strokeDashoffset: 0, duration: 0.8, ease: "power3.out", immediateRender: false },
+    130.5);
+
+  // Subscribe pill at "Subscribe" idx 341 t=132.419
+  tl.fromTo("#p7-subscribe", { y: 20, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 132.42);
+
+  // Tagline at "dynamous" idx 359 t=137.771
+  tl.fromTo("#p7-tagline", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 137.77);
+
+  // Pacing beats during endcard hold (139.5 → 150.0):
+  // - URL glow pulse at 135.0
+  tl.to("#p7-url", {
+    boxShadow: "0 14px 36px rgba(125,211,166,0.45), 0 0 30px rgba(125,211,166,0.55)",
+    duration: 0.45, yoyo: true, repeat: 1, ease: "sine.inOut",
+  }, 135.0);
+  // - Subscribe pill glow at 141.0
+  tl.to("#p7-subscribe", {
+    boxShadow: "0 0 24px rgba(233,116,88,0.45)",
+    duration: 0.45, yoyo: true, repeat: 1, ease: "sine.inOut",
+  }, 141.0);
+  // - URL second glow pulse at 143.0
+  tl.to("#p7-url", {
+    boxShadow: "0 14px 36px rgba(125,211,166,0.45), 0 0 30px rgba(125,211,166,0.55)",
+    duration: 0.45, yoyo: true, repeat: 1, ease: "sine.inOut",
+  }, 143.0);
+
+  // Final fade to black starts at 145.0 (per retention-strategy.md Sc7 footnote resolution)
+  tl.to("#root", { opacity: 0, duration: 5.0, ease: "sine.inOut" }, 145.0);
+
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop reposition on every phase transition
+  // ─────────────────────────────────────────────────────
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-personal-guidance',
+    [T1, T2, T3, T4, T5, T6]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

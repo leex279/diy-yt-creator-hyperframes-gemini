@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Dario Amodei: AI Writes All Code</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOKENS: shared/lib/tokens/anthropic-dark.css */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 180px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* COMPONENT: shared/lib/components/ambient-radial/ */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* COMPONENT: shared/lib/components/progress-bar/ */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* ─── PHASES ─── */
+  .phase {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1080px; height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+  #phase6 { z-index: 6; opacity: 0; }
+  #phase7 { z-index: 7; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ─────────────────────────────────────────────
+     PHASE 1 — THUMBNAIL INTRO + HOOK (0-6s)
+     Beat 1a: thumbnail lockup at full opacity from t=0
+     Beat 1b: hook content fades in at ~2.4s
+  ───────────────────────────────────────────── */
+  #p1-topic-lockup {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1080px; height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 24px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #p1-brand-lockup { display: flex; align-items: center; gap: 20px; }
+  #p1-brand-logo { height: 90px; width: auto; display: block; }
+  #p1-topic-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 155px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  #p1-ga-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  #p1-hero-content {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1080px; height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    text-align: center;
+    gap: 28px;
+    z-index: 1;
+    opacity: 0;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 64px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 220px;
+    line-height: 0.85;
+    letter-spacing: -6px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+  #p1-caption {
+    margin-top: 24px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ─────────────────────────────────────────────
+     PHASE 2 — THE QUOTE (6-42s)
+  ───────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 28px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-context-line {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 42px;
+    line-height: 1.25;
+    color: var(--text-dim);
+    max-width: 920px;
+  }
+  #p2-quote-card {
+    padding: 32px 36px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.14), rgba(233,116,88,0.04));
+    border: 2px solid rgba(233,116,88,0.35);
+    box-shadow: 0 14px 40px rgba(233,116,88,0.18);
+    max-width: 960px;
+  }
+  #p2-quote-text {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 50px;
+    line-height: 1.22;
+    color: var(--text);
+  }
+  #p2-quote-text .highlight { color: var(--orange); }
+  #p2-attribution {
+    margin-top: 18px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--orange);
+  }
+  #p2-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 130px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--orange);
+    text-shadow: 0 0 60px rgba(233,116,88,0.5);
+    max-width: 920px;
+  }
+  #p2-second-quote {
+    padding: 26px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(167,139,250,0.04));
+    border: 2px solid rgba(167,139,250,0.30);
+    max-width: 960px;
+  }
+  #p2-second-quote-text {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 46px;
+    line-height: 1.25;
+    color: var(--text);
+    font-style: italic;
+  }
+  #p2-second-attribution {
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--purple);
+  }
+
+  /* ─────────────────────────────────────────────
+     PHASE 3 — CONTEXT (42-82s)
+  ───────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+  #p3-overline { color: var(--blue); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 84px;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p3-headline .accent { color: var(--blue); }
+  #p3-body {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 920px;
+  }
+  #p3-body .pop { color: var(--text); font-weight: 700; }
+  #p3-analogy-card {
+    padding: 28px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.12), rgba(107,154,239,0.04));
+    border: 2px solid rgba(107,154,239,0.30);
+    max-width: 960px;
+  }
+  #p3-analogy-text {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1.3;
+    color: var(--text);
+  }
+  #p3-analogy-text .accent { color: var(--blue); }
+  #p3-shift-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 1.5px solid rgba(107,154,239,0.35);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 50px;
+    color: var(--blue);
+    letter-spacing: -1px;
+  }
+
+  /* ─────────────────────────────────────────────
+     PHASE 4 — REALITY CHECK (82-100s)
+  ───────────────────────────────────────────── */
+  #phase4 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+  #p4-overline { color: var(--red); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 105px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p4-headline .accent { color: var(--red); }
+  #p4-stat-row {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 960px;
+  }
+  .p4-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 28px 16px;
+    border-radius: 20px;
+    min-height: 200px;
+  }
+  .p4-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.35);
+  }
+  .p4-pill.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.35);
+  }
+  .p4-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 120px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .p4-pill.orange .p4-num { color: var(--orange); text-shadow: 0 0 40px rgba(233,116,88,0.35); }
+  .p4-pill.green .p4-num { color: var(--green); text-shadow: 0 0 40px rgba(125,211,166,0.35); }
+  .p4-label {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 1px;
+    text-align: center;
+    color: var(--text);
+  }
+  #p4-body {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 920px;
+  }
+  #p4-body .pop { color: var(--text); font-weight: 700; }
+
+  /* ─────────────────────────────────────────────
+     PHASE 5 — IMPLICATIONS 1 & 2 (100-135s)
+  ───────────────────────────────────────────── */
+  #phase5 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+  #p5-overline { color: var(--green); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 76px;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    color: var(--text);
+    max-width: 920px;
+  }
+  .impl-card {
+    width: 960px;
+    padding: 28px 32px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .impl-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.14), rgba(125,211,166,0.04));
+    border: 2px solid rgba(125,211,166,0.30);
+    box-shadow: 0 10px 30px rgba(125,211,166,0.12);
+  }
+  .impl-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.14), rgba(107,154,239,0.04));
+    border: 2px solid rgba(107,154,239,0.30);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.12);
+  }
+  .impl-num {
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 30px;
+    letter-spacing: 3px;
+  }
+  .impl-card.green .impl-num { color: var(--green); }
+  .impl-card.blue .impl-num { color: var(--blue); }
+  .impl-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  .impl-body {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1.35;
+    color: var(--text-dim);
+  }
+  .impl-body .pop { color: var(--text); font-weight: 700; }
+
+  /* ─────────────────────────────────────────────
+     PHASE 6 — IMPLICATION 3 (135-153s)
+  ───────────────────────────────────────────── */
+  #phase6 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+  #p6-overline { color: var(--red); }
+  #p6-headline {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p6-headline .accent { color: var(--red); }
+  .impl-card.red {
+    background: linear-gradient(135deg, rgba(209,67,67,0.14), rgba(209,67,67,0.04));
+    border: 2px solid rgba(209,67,67,0.30);
+    box-shadow: 0 10px 30px rgba(209,67,67,0.12);
+  }
+  .impl-card.red .impl-num { color: var(--red); }
+  #p6-question {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.25;
+    color: var(--text-dim);
+    max-width: 920px;
+  }
+  #p6-question .highlight { color: var(--orange); }
+
+  /* ─────────────────────────────────────────────
+     PHASE 7 — THUMBNAIL FINAL CLOSE (153-172s)
+     shorts-thumbnail-frames.md: all 5 elements
+     Entrance ≤0.5s, held still ≥1.5s
+  ───────────────────────────────────────────── */
+  #phase7 .phase-content {
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+  }
+  #p7-overline { color: var(--orange); }
+  #p7-topic-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 145px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--text);
+    max-width: 920px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p7-topic-slam .accent { color: var(--orange); }
+  #p7-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 38px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    max-width: 920px;
+  }
+  #p7-cta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 40px;
+    border-radius: 999px;
+    background: var(--orange);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 44px;
+    color: #0B0F18;
+    letter-spacing: -0.5px;
+  }
+  #p7-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 50px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  #p7-url .accent { color: var(--orange); }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="dario-amodei-ai-writes-all-code"
+     data-start="0"
+     data-duration="172"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 1 — THUMBNAIL INTRO + HOOK (0-6s)
+       Beat 1a: lockup at t=0 (YouTube thumbnail)
+       Beat 1b: hook content fades in at ~2.4s
+  ═══════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <!-- Beat 1a — visible from frame 0, no entrance animation needed -->
+    <div id="p1-topic-lockup">
+      <div id="p1-brand-lockup">
+        <img id="p1-brand-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      </div>
+      <div id="p1-topic-slam">AI WRITES<br><span class="accent">ALL CODE.</span></div>
+      <div id="p1-ga-receipt">ANTHROPIC CEO · MARCH 2025</div>
+    </div>
+    <!-- Beat 1b — hook, hidden until ~2.4s -->
+    <div id="p1-hero-content">
+      <div class="overline" id="p1-overline">BREAKING</div>
+      <div id="p1-pre">Anthropic's CEO said something that made every developer</div>
+      <div id="p1-hero">STOP.</div>
+      <div id="p1-caption">Council on Foreign Relations · March 2025</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 2 — THE QUOTE (6-42s)
+       CFR quote + "TWELVE MONTHS." + second quote
+  ═══════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">THE QUOTE</div>
+      <div id="p2-context-line">Dario Amodei, Council on Foreign Relations, March 10, 2025:</div>
+      <div id="p2-quote-card">
+        <div id="p2-quote-text">"In <span class="highlight">3-6 months</span>, AI writes <span class="highlight">90%</span> of code. In <span class="highlight">12 months</span>, AI writes essentially <span class="highlight">all of it.</span>"</div>
+        <div id="p2-attribution">— DARIO AMODEI, ANTHROPIC CEO</div>
+      </div>
+      <div id="p2-slam">TWELVE MONTHS.</div>
+      <div id="p2-second-quote">
+        <div id="p2-second-quote-text">"I don't write any code anymore. I let the model write the code, I just edit it."</div>
+        <div id="p2-second-attribution">— ANTHROPIC ENGINEERS, per Amodei · Davos 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 3 — CONTEXT: WHAT HE ACTUALLY MEANT (42-82s)
+       Engineers don't disappear. The skill shifts up a level.
+  ═══════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">THE CONTEXT</div>
+      <div id="p3-headline">The skill<br>shifts <span class="accent">up</span><br>a level.</div>
+      <div id="p3-body">Amodei wasn't saying engineers disappear. He was saying <span class="pop">what engineers spend their time on changes.</span> The programmer still needs to specify the conditions, the app, the architecture.</div>
+      <div id="p3-analogy-card">
+        <div id="p3-analogy-text">A century ago, writers spent hours retyping drafts. <span class="accent">Today writers still exist</span> — they just don't spend time on mechanical tasks. That's what Amodei is describing.</div>
+      </div>
+      <div id="p3-shift-pill">THE CRAFT SHIFTS UP</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 4 — REALITY CHECK (82-100s)
+       Timeline was wrong. But the direction is real.
+  ═══════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">REALITY CHECK</div>
+      <div id="p4-headline">The timeline<br>was <span class="accent">wrong.</span></div>
+      <div id="p4-stat-row">
+        <div class="p4-pill orange" id="p4-pill-1">
+          <div class="p4-num">84%</div>
+          <div class="p4-label">developers use AI tools</div>
+        </div>
+        <div class="p4-pill green" id="p4-pill-2">
+          <div class="p4-num">90%</div>
+          <div class="p4-label">code AI-written? Not yet.</div>
+        </div>
+      </div>
+      <div id="p4-body">6 months past the prediction — <span class="pop">widespread augmentation</span>, not near-total replacement. The prediction was real, but <span class="pop">the pace was off.</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 5 — IMPLICATIONS 1 AND 2 (100-135s)
+       First: Use AI tools now
+       Second: Systems thinking
+       Step-by-step reveal per step-by-step-reveal.md
+  ═══════════════════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">WHAT TO DO NOW</div>
+      <div id="p5-headline">So what do you do right now?</div>
+      <div class="impl-card green" id="p5-card-1">
+        <div class="impl-num">01 — FIRST</div>
+        <div class="impl-title">Stop writing code you don't need to write.</div>
+        <div class="impl-body">Claude Code, Cursor, Copilot — <span class="pop">use them.</span> Engineers using AI tools are shipping faster. The skill isn't coding anymore. It's <span class="pop">orchestrating.</span></div>
+      </div>
+      <div class="impl-card blue" id="p5-card-2">
+        <div class="impl-num">02 — SECOND</div>
+        <div class="impl-title">Go deeper on systems thinking.</div>
+        <div class="impl-body">The engineers who matter most understand <span class="pop">architecture</span>, break problems into pieces, and <span class="pop">catch when the agent goes wrong.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 6 — IMPLICATION 3 + CLOSE (135-153s)
+       Third: Stop ignoring this. Closing question.
+  ═══════════════════════════════════════════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">THE WARNING</div>
+      <div id="p6-headline">Stop<br>ignoring<br><span class="accent">this.</span></div>
+      <div class="impl-card red" id="p6-card-1">
+        <div class="impl-num">03 — THIRD</div>
+        <div class="impl-title">Companies not adapting now will scramble in two years.</div>
+        <div class="impl-body">Amodei runs one of the <span class="pop">most powerful AI labs on earth.</span> When he says developer roles change — take it seriously, even if the timeline slips.</div>
+      </div>
+      <div id="p6-question">Will AI write all the code? <span class="highlight">Probably, eventually.</span> But are you the person directing it — or the person it replaces?</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 7 — THUMBNAIL FINAL FRAME (153-172s)
+       All 5 elements per shorts-thumbnail-frames.md:
+       1. Topic statement (dominant ≥120px) — "DIRECT IT. OR GET REPLACED."
+       2. Visual anchor — brand chrome (logo in top banner)
+       3. Brand chrome — Anthropic logo persistent top banner
+       4. Outcome receipt — "AI WRITES CODE · DEVELOPERS DIRECT"
+       5. CTA pill — "Follow for more AI"
+       Entrance ≤0.5s after phase start, ≥1.5s held still
+  ═══════════════════════════════════════════════ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">THE BOTTOM LINE</div>
+      <div id="p7-topic-slam">DIRECT IT.<br>OR GET<br><span class="accent">REPLACED.</span></div>
+      <div id="p7-receipt">AI WRITES CODE · DEVELOPERS DIRECT IT</div>
+      <div id="p7-cta-pill">Follow for more AI</div>
+      <div id="p7-url"><span class="accent">dynamous.ai</span> community</div>
+    </div>
+  </div>
+
+  <!-- NARRATION — no class="clip" on audio elements per CLAUDE.md Key Rules #8 -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="172"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — cinematic-whoosh at each phase transition
+       data-start = sceneT (NOT sceneT - 0.4) per audio-design.md
+       data-duration = 1.5s for natural decay tail -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="6.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="42.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="82.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="100.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="135.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="153.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─── Shape backdrop — deterministic seeded scatter of 14 shapes ───
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('dario-code-short', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─── Ambient breath + progress bar ───
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 40, ease: "sine.inOut", yoyo: true,
+      repeat: Math.floor(172 / 80) },
+    0);
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: 172, ease: "none" },
+    0);
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ══════════════════════════════════════════════
+  // PHASE 1 — Thumbnail intro + hook (0-6s)
+  // Beat 1a: topic lockup at full opacity from t=0 (no entrance tween)
+  // visual-pacing-5s relaxed for this opening hold ≤2.5s
+  // ══════════════════════════════════════════════
+
+  // Fade lockup out as narration "developer" arrives (~3.97s)
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.5, ease: "power2.in" }, 2.4);
+
+  // Beat 1b: hook content
+  tl.to("#p1-hero-content", { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.5);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 2.6);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 2.9);
+  // Hero slam at "stop" = 4.46s
+  tl.from("#p1-hero", { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 3.8);
+  // Inline shake on slam
+  tl.to("#p1-hero", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 4.46);
+  tl.to("#p1-hero", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 4.50);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 4.54);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 4.58);
+  tl.from("#p1-caption", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 4.9);
+
+  // ─── Transition phase1 → phase2 at T1=6.0 ───
+  const T1 = 6.0;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,           duration: 0.4, ease: "power1.in" },              T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" },                                                T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2",  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2",  { filter: "blur(0px)", scale: 1,     duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T1 + 0.6);
+
+  // ══════════════════════════════════════════════
+  // PHASE 2 — The Quote (6-42s)
+  // "At the Council" = 6.13s → overline + context
+  // "I think we will be there" = 9.97s → quote card
+  // "Not someday" = 21.87s → TWELVE MONTHS slam
+  // "I don't write any code" = 32.72s → second quote
+  // ══════════════════════════════════════════════
+  const P2 = 6.8;
+
+  // Hidden until reveal — explicit tl.set at t=0
+  tl.set("#p2-overline",      { y: 20, opacity: 0 }, 0);
+  tl.set("#p2-context-line",  { y: 20, opacity: 0 }, 0);
+  tl.set("#p2-quote-card",    { y: 36, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-slam",          { scale: 0.8, opacity: 0 }, 0);
+  tl.set("#p2-second-quote",  { x: -40, opacity: 0 }, 0);
+
+  tl.to("#p2-overline",     { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P2);
+  tl.to("#p2-context-line", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P2 + 0.3);
+  // Quote card at "I think" = 9.97s
+  tl.to("#p2-quote-card",   { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.5)" }, 9.97);
+  // TWELVE MONTHS slam at "Not someday" = 21.87s
+  tl.to("#p2-slam",         { scale: 1, opacity: 1, duration: 0.75, ease: "back.out(1.7)" }, 21.87);
+  tl.to("#p2-slam", { x: 6,  duration: 0.04, ease: "none" }, 22.35);
+  tl.to("#p2-slam", { x: -6, duration: 0.04, ease: "none" }, 22.39);
+  tl.to("#p2-slam", { x: 5,  duration: 0.04, ease: "none" }, 22.43);
+  tl.to("#p2-slam", { x: 0,  duration: 0.04, ease: "none" }, 22.47);
+  // Second quote at "I don't write" = 32.72s
+  tl.to("#p2-second-quote", { x: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 32.72);
+
+  // ─── Transition phase2 → phase3 at T2=42.0 ───
+  const T2 = 42.0;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,           duration: 0.4, ease: "power1.in" },              T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" },                                                T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3",  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3",  { filter: "blur(0px)", scale: 1,     duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T2 + 0.6);
+
+  // ══════════════════════════════════════════════
+  // PHASE 3 — Context (42-82s)
+  // "Here's what he actually meant" = 42.57s → overline
+  // "Amodei wasn't saying" = 44.86s → headline
+  // "He was saying the thing" = 47.66s → body
+  // "Think of it this way" = 65.3s → analogy card
+  // "The craft shifted up" = 78.59s → shift pill
+  // ══════════════════════════════════════════════
+  const P3 = 42.8;
+
+  tl.set("#p3-overline",     { y: 20, opacity: 0 }, 0);
+  tl.set("#p3-headline",     { y: 30, opacity: 0 }, 0);
+  tl.set("#p3-body",         { y: 20, opacity: 0 }, 0);
+  tl.set("#p3-analogy-card", { x: -40, opacity: 0 }, 0);
+  tl.set("#p3-shift-pill",   { scale: 0.85, opacity: 0 }, 0);
+
+  tl.to("#p3-overline",     { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3);
+  // Headline at "Amodei wasn't saying engineers disappear" = 44.86s
+  tl.to("#p3-headline",     { y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 44.86);
+  // Body at "He was saying" = 47.66s
+  tl.to("#p3-body",         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 47.66);
+  // Analogy card at "Think of it this way" = 65.3s
+  tl.to("#p3-analogy-card", { x: 0, opacity: 1, duration: 0.65, ease: "back.out(1.5)" }, 65.3);
+  // Shift pill at "The craft shifted up" = 78.59s
+  tl.to("#p3-shift-pill",   { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 78.59);
+  // Visual beat: subtle pulse at ~80.5s
+  tl.to("#p3-shift-pill", { scale: 1.04, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, 80.7);
+
+  // ─── Transition phase3 → phase4 at T3=82.0 ───
+  const T3 = 82.0;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,           duration: 0.4, ease: "power1.in" },              T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" },                                                T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4",  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4",  { filter: "blur(0px)", scale: 1,     duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T3 + 0.6);
+
+  // ══════════════════════════════════════════════
+  // PHASE 4 — Reality Check (82-100s)
+  // "But the timeline was wrong" = 82.44s → headline
+  // "eighty-four percent" = 89.28s → pill 1
+  // (90% as counter-pill showing expected-vs-actual)
+  // "The prediction was real" = 96.42s → body
+  // ══════════════════════════════════════════════
+  const P4 = 82.8;
+
+  tl.set("#p4-overline", { y: 20, opacity: 0 }, 0);
+  tl.set("#p4-headline", { y: 30, opacity: 0 }, 0);
+  tl.set("#p4-pill-1",   { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p4-pill-2",   { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p4-body",     { y: 20, opacity: 0 }, 0);
+
+  tl.to("#p4-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P4);
+  // Headline at "timeline was wrong" = 82.71s
+  tl.to("#p4-headline", { y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 82.71);
+  // Pills at "eighty-four percent" = 89.28s
+  tl.to("#p4-pill-1",   { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 89.28);
+  tl.to("#p4-pill-2",   { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 90.29);
+  // Body at "The prediction was real" = 96.42s
+  tl.to("#p4-body",     { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 96.42);
+
+  // ─── Transition phase4 → phase5 at T4=100.0 ───
+  const T4 = 100.0;
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0,           duration: 0.4, ease: "power1.in" },              T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" },                                                T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5",  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5",  { filter: "blur(0px)", scale: 1,     duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T4 + 0.6);
+
+  // ══════════════════════════════════════════════
+  // PHASE 5 — Implications 1 & 2 (100-135s)
+  // "So what should you do right now?" = 99.61s → overline + headline
+  // "First:" = 102.4s → card 1 (step-by-step reveal)
+  // "It's orchestrating" = 115.68s → pulse beat
+  // "Second:" = 117.44s → card 2 (15s after card 1)
+  // That's not a skill AI replaces = 130.78s
+  // ══════════════════════════════════════════════
+  const P5 = 100.7;
+
+  tl.set("#p5-overline", { y: 20, opacity: 0 }, 0);
+  tl.set("#p5-headline", { y: 30, opacity: 0 }, 0);
+  tl.set("#p5-card-1",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p5-card-2",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+  tl.to("#p5-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P5);
+  tl.to("#p5-headline", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, P5 + 0.3);
+  // Card 1 at "First:" = 102.4s (~15s after p5 starts)
+  tl.to("#p5-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 102.4);
+  // Visual beat: pulse on "orchestrating" = 115.68s
+  tl.to("#p5-card-1", { scale: 1.02, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, 115.68);
+  // Card 2 at "Second:" = 117.44s (15s after card 1 at 102.4s = step-by-step reveal)
+  tl.to("#p5-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 117.44);
+
+  // ─── Transition phase5 → phase6 at T5=135.0 ───
+  const T5 = 135.0;
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5", { opacity: 0,           duration: 0.4, ease: "power1.in" },              T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" },                                                T5 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase6",  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase6",  { filter: "blur(0px)", scale: 1,     duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T5 + 0.6);
+
+  // ══════════════════════════════════════════════
+  // PHASE 6 — Implication 3 + Close (135-153s)
+  // "Third: stop ignoring this" = 135.23s → headline slam
+  // "The companies not adapting now" = 137.47s → card 3
+  // "Will AI write all the code?" = 153.49s (in P7)
+  // Question shown at 147s as visual beat
+  // ══════════════════════════════════════════════
+  const P6 = 135.7;
+
+  tl.set("#p6-overline",  { y: 20, opacity: 0 }, 0);
+  tl.set("#p6-headline",  { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p6-card-1",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p6-question",  { y: 24, opacity: 0 }, 0);
+
+  tl.to("#p6-overline",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P6);
+  // Headline slams at "Third: stop ignoring this" = 135.88s
+  tl.to("#p6-headline",  { scale: 1, opacity: 1, duration: 0.75, ease: "back.out(1.7)" }, 135.88);
+  // Card at "The companies not adapting" = 137.47s
+  tl.to("#p6-card-1",    { x: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 137.47);
+  // Question at "Will AI write all the code" — appears as visual beat before transition
+  // "Will AI write all the code?" = 153.49s (in next phase), so show question ~3s early
+  tl.to("#p6-question",  { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 147.0);
+
+  // ─── Transition phase6 → phase7 at T6=153.0 ───
+  const T6 = 153.0;
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T6);
+  tl.to("#phase6", { opacity: 0,           duration: 0.4, ease: "power1.in" },              T6 + 0.3);
+  tl.set("#phase6", { visibility: "hidden" },                                                T6 + 0.7);
+  tl.set("#phase7", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T6 + 0.4);
+  tl.to("#phase7",  { opacity: 1,           duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T6 + 0.4);
+  tl.to("#phase7",  { filter: "blur(0px)", scale: 1,     duration: 0.5, ease: "power1.out",  overwrite: "auto" }, T6 + 0.6);
+
+  // ══════════════════════════════════════════════
+  // PHASE 7 — Thumbnail final close (153-172s)
+  // "Will AI write all the code?" = 153.49s
+  // "Let me know what you think in the comments" = 164.67s
+  // "dynamous.ai community" = 170.09s ends at 171.72s
+  // All entrances complete by ~154.3s → ~17.7s of held still
+  // shorts-thumbnail-frames.md: ≥1.5s static hold ✓
+  // visual-pacing-5s relaxed for terminal thumbnail hold ✓
+  // ══════════════════════════════════════════════
+  const P7 = 153.7;
+
+  tl.set("#p7-overline",    { y: 20, opacity: 0 }, 0);
+  tl.set("#p7-topic-slam",  { y: 30, scale: 0.92, opacity: 0 }, 0);
+  tl.set("#p7-receipt",     { y: 20, opacity: 0 }, 0);
+  tl.set("#p7-cta-pill",    { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p7-url",         { y: 20, opacity: 0 }, 0);
+
+  // All entrances within 0.5s of phase start (thumbnail rule)
+  tl.to("#p7-overline",   { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },         P7);
+  tl.to("#p7-topic-slam", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, P7 + 0.08);
+  tl.to("#p7-receipt",    { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },          P7 + 0.22);
+  tl.to("#p7-cta-pill",   { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.5)" },   P7 + 0.32);
+  tl.to("#p7-url",        { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },          P7 + 0.42);
+  // Settled by ~154.22s → held still through 171.72s = 17.5s ≥ 1.5s requirement ✓
+
+  // Extend timeline to full narration length (hyperframes-pitfalls.md §1)
+  tl.set({}, {}, 172);
+
+  // Shape backdrop rearranges on every phase transition
+  // Paired with cinematic-whoosh SFX per DESIGN.md audio rules
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'dario-code-short',
+    [T1, T2, T3, T4, T5, T6]
+  );
+
+  window.__timelines["dario-amodei-ai-writes-all-code"] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>How Two LLMs Together Beat One — Speculative Decoding</title>
+<link rel="stylesheet" href="tokens/editorial-short.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;0,8..60,800;0,8..60,900;1,8..60,400;1,8..60,700;1,8..60,800;1,8..60,900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--serif);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #grain-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+  }
+  #top-banner-wordmark {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 29px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    display: inline-block;
+  }
+  #top-banner-rule {
+    width: 80px;
+    height: 1.5px;
+    background: var(--accent-2);
+    margin: 8px auto 0;
+    opacity: 0.6;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 4px;
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+  }
+
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 1;
+  }
+  /* Z-index ESCALATION (anthropic pattern) — each scene stacks above all
+     previous ones. Once a scene fades in, it stays visible at opacity 1
+     forever, providing a fully-opaque "floor" for every subsequent
+     transition. The next scene fades in ON TOP, never replacing the
+     previous one — bg shapes can never leak through during a crossfade. */
+  #scene-hook-wrap     { z-index: 1; opacity: 1; }
+  #scene-problem-wrap  { z-index: 2; opacity: 0; visibility: hidden; }
+  #scene-insight-wrap  { z-index: 3; opacity: 0; visibility: hidden; }
+  #scene-fix-wrap      { z-index: 4; opacity: 0; visibility: hidden; }
+  #scene-numbers-wrap  { z-index: 5; opacity: 0; visibility: hidden; }
+  #scene-when-wrap     { z-index: 6; opacity: 0; visibility: hidden; }
+  #scene-gemma-wrap    { z-index: 7; opacity: 0; visibility: hidden; }
+  #scene-use-it-wrap   { z-index: 8; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap      { z-index: 9; opacity: 0; visibility: hidden; }
+
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="172.0"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <span id="top-banner-wordmark">Speculative Decoding</span>
+    <div id="top-banner-rule"></div>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Each scene wrapper carries data-duration covering its full visible
+       window — from its mount until the end of the video. With the anthropic
+       z-stacking pattern, every scene stays mounted forever after first
+       appearing (it's the "floor" for all subsequent transitions). Without
+       data-duration the framework unmounts the wrapper as soon as the child
+       GSAP timeline finishes (~8s in), causing bg shapes to leak through. -->
+  <!-- Each scene wrapper gets its OWN track-index. Anthropic z-stacking
+       requires scenes to stay mounted until end of video, which means they
+       overlap in time. HyperFrames disallows clip overlap on the same track,
+       so we put each scene on a unique track (6-14, skipping 12 for the
+       dynamous endcard). Z-INDEX (CSS, controls visual stacking) and
+       track-index (HyperFrames, controls clip allocation) are independent
+       — both happen to escalate here. -->
+  <div id="scene-hook-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0" data-duration="172"
+       data-width="1080" data-height="1920"
+       data-track-index="6"></div>
+
+  <div id="scene-problem-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-problem"
+       data-composition-src="compositions/scene-problem.html"
+       data-start="9.86" data-duration="162.14"
+       data-width="1080" data-height="1920"
+       data-track-index="7"></div>
+
+  <div id="scene-insight-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-insight"
+       data-composition-src="compositions/scene-insight.html"
+       data-start="31.18" data-duration="140.82"
+       data-width="1080" data-height="1920"
+       data-track-index="8"></div>
+
+  <div id="scene-fix-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-fix"
+       data-composition-src="compositions/scene-fix.html"
+       data-start="51.33" data-duration="120.67"
+       data-width="1080" data-height="1920"
+       data-track-index="9"></div>
+
+  <div id="scene-numbers-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-numbers"
+       data-composition-src="compositions/scene-numbers.html"
+       data-start="80.18" data-duration="91.82"
+       data-width="1080" data-height="1920"
+       data-track-index="10"></div>
+
+  <div id="scene-when-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-when"
+       data-composition-src="compositions/scene-when.html"
+       data-start="97.10" data-duration="74.90"
+       data-width="1080" data-height="1920"
+       data-track-index="11"></div>
+
+  <div id="scene-gemma-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-gemma"
+       data-composition-src="compositions/scene-gemma.html"
+       data-start="118.27" data-duration="53.73"
+       data-width="1080" data-height="1920"
+       data-track-index="13"></div>
+
+  <div id="scene-use-it-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-use-it"
+       data-composition-src="compositions/scene-use-it.html"
+       data-start="138.58" data-duration="33.42"
+       data-width="1080" data-height="1920"
+       data-track-index="14"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="156.90" data-duration="15.10"
+       data-width="1080" data-height="1920"
+       data-track-index="15"></div>
+
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="166.0"
+       data-duration="5"
+       data-track-index="12"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="171.0"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Whoosh + shape reposition + crossfade all fire together at the
+       new scene's data-start (= when the next narration begins). -->
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="9.86"   data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="31.18"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="51.33"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="80.18"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="97.10"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="118.27" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="138.58" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="156.90" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-hero-1" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="0.05"   data-duration="0.7" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-hero-2" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="2.88"   data-duration="0.6" data-track-index="4" data-volume="0.12"></audio>
+  <audio id="sfx-hero-3" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="51.33"  data-duration="0.7" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-hero-4" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="84.50"  data-duration="0.6" data-track-index="4" data-volume="0.12"></audio>
+  <audio id="sfx-hero-5" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="118.27" data-duration="0.7" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-hero-6" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="162.89" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-hero-7" class="clip" src="assets/sfx/pop.mp3"
+         data-start="140.03" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
+
+  <div id="source-url">
+    <span class="source-url-label">arXiv 2211.17192</span>
+    <span class="source-url-text">2022 · Leviathan et al.</span>
+  </div>
+
+  <svg id="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="11" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#grain-filter)" fill="#2B2A28" />
+  </svg>
+</div>
+
+<style>
+  #source-url {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(28, 26, 24, 0.06);
+    border: 1px solid rgba(28, 26, 24, 0.20);
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    font-family: var(--mono);
+  }
+  #source-url .source-url-label {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: var(--accent-2);
+    text-transform: uppercase;
+  }
+  #source-url .source-url-text {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+</style>
+
+<script>
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // repositionStartTimes are now ABSOLUTE timeline positions for the
+  // shape-reposition tween (was sceneT - 0.4 in v1). Caller controls when
+  // shapes move so they can align with the new crossfade timing.
+  function repositionShapesPerScene(tl, container, seedPrefix, repositionStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !repositionStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    repositionStartTimes.forEach((startT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.0,
+        ease: 'power2.inOut',
+      }, startT);
+    });
+  }
+
+  // CROSSFADE — z-stacked overlay then explicit hide.
+  //
+  //   1. toSel z-stacks ABOVE fromSel via CSS z-index escalation. It fades in
+  //      from opacity 0 → 1 over 0.5s. fromSel stays at opacity 1 underneath
+  //      throughout the fade — no transparent gap, never see-through to bg.
+  //   2. AFTER toSel fully covers fromSel (atTime + 0.55), fromSel is hidden
+  //      (opacity 0 + visibility hidden). No visual change at that moment
+  //      because toSel is fully opaque on top covering fromSel.
+  //   3. fromSel stays MOUNTED (data-duration keeps it alive) — only
+  //      visually hidden, so the framework doesn't tear down the DOM and
+  //      we don't get content reverting to initial GSAP-set state.
+  //
+  // Result: at every frame, exactly ONE scene is fully visible — no bg
+  // shapes leak through transitions, no scene-content layering bugs.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.set(toSel,   { opacity: 0, filter: "blur(6px)", visibility: "visible" }, atTime);
+    tl.to(toSel,    { opacity: 1, duration: 0.5, ease: "power2.out" }, atTime);
+    tl.to(toSel,    { filter: "blur(0px)", duration: 0.6, ease: "power2.out" }, atTime);
+    tl.set(fromSel, { opacity: 0, visibility: "hidden" }, atTime + 0.55);
+  }
+
+  spawnShapes('spec-decoding-short', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 172.0;
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Shape reposition aligns with crossfade + whoosh — fires at each new
+  // scene's data-start (= when its narration begins). Shapes are at z=0
+  // behind everything, but with the new opaque scene-wrapper bg, shapes
+  // are only visible during the brief 0.5s fade-in window — fine.
+  repositionShapesPerScene(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'spec-decoding-short',
+    [9.86, 31.18, 51.33, 80.18, 97.10, 118.27, 138.58, 156.90]
+  );
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+  tl.to("#source-url", { opacity: 1, duration: 0.6, ease: "power2.out" }, 0.6);
+
+  // Crossfade start = previous-scene narration END (last spoken word + tail).
+  // Shapes still reposition at sceneT - 0.4 (separate function); they sit at
+  // z-index 0 behind every scene wrapper, so they can move whenever — the
+  // foreground content is never replaced by bare backdrop.
+  // Outgoing-scene last-word end times (from transcript.json + audio dur):
+  //   hook    "today."     → ~9.20    (next 9.86)
+  //   problem "word."      → ~30.65   (next 31.18)
+  //   insight "parts."     → ~50.70   (next 51.33)
+  //   fix     "pass."      → ~80.05   (next 80.18)   tight, only 0.13s gap
+  //   numbers "X X L."     → ~96.75   (next 97.10)   tight, only 0.35s gap
+  //   when    "ask."       → ~117.75  (next 118.27)
+  //   gemma   "itself."    → ~137.95  (next 138.58)
+  // Crossfade times = each toSel scene's data-start. The wrapper isn't
+  // rendered by the framework before data-start, so attempting to fade it
+  // in earlier would briefly leave NO scene visible (previous scene already
+  // hidden, next not yet active). Aligning to data-start keeps the previous
+  // scene visible right up until the next scene begins narrating.
+  crossfadeScenes(tl, "#scene-hook-wrap",     "#scene-problem-wrap",   9.86);
+  crossfadeScenes(tl, "#scene-problem-wrap",  "#scene-insight-wrap",  31.18);
+  crossfadeScenes(tl, "#scene-insight-wrap",  "#scene-fix-wrap",      51.33);
+  crossfadeScenes(tl, "#scene-fix-wrap",      "#scene-numbers-wrap",  80.18);
+  crossfadeScenes(tl, "#scene-numbers-wrap",  "#scene-when-wrap",     97.10);
+  crossfadeScenes(tl, "#scene-when-wrap",     "#scene-gemma-wrap",   118.27);
+  crossfadeScenes(tl, "#scene-gemma-wrap",    "#scene-use-it-wrap",  138.58);
+  crossfadeScenes(tl, "#scene-use-it-wrap",   "#scene-cta-wrap",     156.90);
+
+  tl.to({}, { duration: 0.01 }, TOTAL_DURATION - 0.01);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

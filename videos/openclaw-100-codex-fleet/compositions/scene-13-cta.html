@@ -1,0 +1,253 @@
+<!--
+  scene-13-cta.html — Engagement CTA + thumbnail-grade final frame
+  (29.8s, comp-time 542.24-572.01).
+
+  Per .claude/rules/engagement-cta.md: debate-sparking question lives here.
+  Per shorts-thumbnail-frames.md (applied for long-form spirit): final 5s
+  held still — all motion ENDS by t≈25s scene-internal (≈ comp 567s).
+  From t≈25s onward, NO scale yoyos, NO glow pulses, NO marker sweeps.
+
+  Scene-internal anchors (audio - 502.244):
+     0.0   "So here's the debate."
+     3.2   "tokens don't matter"
+    12.3   "Telegram"
+    17.0   "So here's the question."
+    18.0   The debate question itself spoken
+    22.7   "Yes, no, or hell no"
+    24.3   "Drop your verdict"
+    25.0+  HELD STILL (thumbnail-grade final frame)
+-->
+<template id="scene-13-cta-template">
+  <div data-composition-id="scene-13-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s13-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #s13-brand-row {
+        position: absolute;
+        top: 40px; left: 0; right: 0;
+        display:flex; align-items:center; justify-content:center;
+        gap: 16px;
+      }
+      #s13-brand-row img {
+        height: 56px;
+        width: auto;
+      }
+      #s13-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s13-topic {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 140px;
+        line-height: 0.95;
+        letter-spacing: -3px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1700px;
+      }
+      #s13-topic .crab { color: var(--accent-1); }
+      #s13-receipt {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      #s13-recap-row {
+        display:flex; gap: 18px; flex-wrap: wrap;
+        justify-content: center;
+      }
+      .s13-recap-pill {
+        display:inline-flex; align-items:center; gap: 8px;
+        padding: 14px 26px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1.5px solid var(--border-bright);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 1.5px;
+        color: var(--text);
+      }
+      .s13-recap-pill.crab { color: var(--accent-1); border-color: rgba(201, 42, 42, 0.45); }
+      .s13-recap-pill.cyan { color: var(--accent-2); border-color: rgba(34, 211, 238, 0.45); }
+      .s13-recap-pill.amber { color: var(--accent-stat); border-color: rgba(252, 211, 77, 0.45); }
+      #s13-question {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.15;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1620px;
+        padding: 24px 40px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(201, 42, 42, 0.16) 0%, rgba(201, 42, 42, 0.04) 100%);
+        border: 2px solid rgba(201, 42, 42, 0.55);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        position: relative;
+      }
+      #s13-question-circle {
+        position: absolute;
+        inset: -16px;
+        border: 4px solid var(--accent-1);
+        border-radius: 32px;
+        pointer-events: none;
+        opacity: 0;
+      }
+      #s13-chips {
+        display:flex; gap: 22px;
+      }
+      .s13-chip {
+        padding: 22px 38px;
+        border-radius: 999px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 42px;
+        letter-spacing: 1px;
+        border: 2px solid;
+      }
+      .s13-chip.yes {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: var(--accent-ok);
+        color: var(--accent-ok);
+      }
+      .s13-chip.no {
+        background: rgba(252, 211, 77, 0.15);
+        border-color: var(--accent-stat);
+        color: var(--accent-stat);
+      }
+      .s13-chip.hellno {
+        background: rgba(201, 42, 42, 0.18);
+        border-color: var(--accent-1);
+        color: var(--accent-1-hi);
+      }
+      #s13-verdict {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 3px;
+        color: var(--text);
+        text-transform: uppercase;
+      }
+      #s13-verdict .arrow { color: var(--accent-1); margin-right: 12px; }
+    </style>
+
+    <div id="s13-content">
+      <div id="s13-brand-row">
+        <img src="assets/claw-mark.svg" alt="" />
+        <img src="assets/openclaw-wordmark.svg" alt="OpenClaw" />
+      </div>
+
+      <div id="s13-overline">THE DEBATE</div>
+
+      <div id="s13-topic">
+        100 AGENTS.<br>
+        <span class="crab">ONE DEV.</span>
+      </div>
+
+      <div id="s13-receipt">3 OSS tools &middot; Codex &middot; deepsec &middot; the fleet</div>
+
+      <div id="s13-recap-row">
+        <div class="s13-recap-pill crab" id="s13-pill-1">clawsweeper</div>
+        <div class="s13-recap-pill cyan" id="s13-pill-2">crabbox.sh</div>
+        <div class="s13-recap-pill amber" id="s13-pill-3">clawpatch.ai</div>
+      </div>
+
+      <div id="s13-question">
+        <div id="s13-question-circle"></div>
+        Would you let an AI agent log into <em>your</em> Telegram to make a PR demo?
+      </div>
+
+      <div id="s13-chips">
+        <div class="s13-chip yes"     id="s13-chip-yes">YES</div>
+        <div class="s13-chip no"      id="s13-chip-no">NO</div>
+        <div class="s13-chip hellno"  id="s13-chip-hellno">HELL NO</div>
+      </div>
+
+      <div id="s13-verdict"><span class="arrow">&darr;</span>Drop your verdict</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        // Hide all from t=0
+        tl.set("#s13-brand-row", { opacity: 0, y: -16 }, 0);
+        tl.set("#s13-overline", { opacity: 0, y: 16 }, 0);
+        tl.set("#s13-topic", { opacity: 0, y: 30, scale: 0.96 }, 0);
+        tl.set("#s13-receipt", { opacity: 0, y: 16 }, 0);
+        tl.set("#s13-pill-1", { opacity: 0, y: 16, scale: 0.9 }, 0);
+        tl.set("#s13-pill-2", { opacity: 0, y: 16, scale: 0.9 }, 0);
+        tl.set("#s13-pill-3", { opacity: 0, y: 16, scale: 0.9 }, 0);
+        tl.set("#s13-question", { opacity: 0, y: 30, scale: 0.96 }, 0);
+        tl.set("#s13-question-circle", { opacity: 0, scale: 0.96 }, 0);
+        tl.set("#s13-chip-yes", { opacity: 0, scale: 0.7 }, 0);
+        tl.set("#s13-chip-no", { opacity: 0, scale: 0.7 }, 0);
+        tl.set("#s13-chip-hellno", { opacity: 0, scale: 0.7 }, 0);
+        tl.set("#s13-verdict", { opacity: 0, y: 16 }, 0);
+
+        // Brand chrome enters first
+        tl.to("#s13-brand-row", { opacity: 1, y: 0, duration: 0.5 }, 0);
+        tl.to("#s13-overline",  { opacity: 1, y: 0, duration: 0.5 }, 0.3);
+
+        // Topic slam at "tokens don't matter" (t=3.2) — links back to thesis
+        tl.to("#s13-topic", { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.5)" }, 2.5);
+        tl.to("#s13-receipt", { opacity: 1, y: 0, duration: 0.6 }, 4.0);
+
+        // REAL-CONTENT BEATS — recap pills (3 OSS tools) reveal step-by-step
+        // Sourced: content-brief Section 3 (the three custom tools — names verbatim)
+        // pill-1 (clawsweeper) at narration "The most polarizing piece of it" @ 6.36s
+        tl.to("#s13-pill-1", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 6.0);
+        // pill-2 (crabbox.sh) at narration "An AI agent leasing a fresh machine" @ 9.97s
+        tl.to("#s13-pill-2", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 9.0);
+        // pill-3 (clawpatch.ai) at narration "logging into your Telegram" @ 12.26s
+        tl.to("#s13-pill-3", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 12.0);
+
+        // Topic re-emphasis pulse during Telegram callout (t=12.3)
+        tl.to("#s13-topic .crab", { scale: 1.05, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.5);
+
+        // Question card at "So here's the question." (t=17.0)
+        tl.to("#s13-question", { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.4)" }, 16.8);
+        // Marker circle around the question shortly after
+        tl.to("#s13-question-circle", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 18.5);
+
+        // Chips at "Yes, no, or hell no" (t=22.7) — quick stagger
+        tl.to("#s13-chip-yes",    { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 22.6);
+        tl.to("#s13-chip-no",     { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 23.0);
+        tl.to("#s13-chip-hellno", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 23.4);
+
+        // Verdict prompt at "Drop your verdict" (t=24.3)
+        tl.to("#s13-verdict", { opacity: 1, y: 0, duration: 0.5 }, 24.1);
+
+        // ALL animations END by t≈25s — final 4.8s held still for thumbnail-grade frame
+        // No scale yoyos, no glow pulses, no marker sweeps from here.
+
+        tl.set({}, {}, 29.8);
+        window.__timelines["scene-13-cta"] = tl;
+      })();
+    </script>
+  </div>
+</template>

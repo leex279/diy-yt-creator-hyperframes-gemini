@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Long-form Screencap-Dubbed Template — Demo</title>
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080 dark stage. Forked from
+     templates/long-form/standard/. The screencap scene
+     is the bulk of the runtime — title + CTA bookend it.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient wash — visible during title + CTA bookends.
+     The full-bleed screencap fully covers it in the middle. */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 20%, rgba(59, 130, 246, 0.08), transparent 55%),
+      radial-gradient(circle at 78% 78%, rgba(139, 92, 246, 0.06), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(6, 182, 212, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.045;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain — sits on top so it tints the screencap too.
+     Subtle (0.025) so it never competes with screen-recording text. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+  }
+
+  /* ──────────────────────────────────────────────────
+     CORNER WATERMARK — small brand chrome that stays
+     visible even during the full-bleed screencap.
+     Top-right so it never collides with app UI which
+     usually lives top-left.
+     ────────────────────────────────────────────────── */
+  #corner-watermark {
+    position: absolute;
+    top: 36px;
+    right: 48px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.55));
+  }
+  #corner-watermark img {
+    height: 44px;
+    width: auto;
+    display: block;
+    opacity: 0.88;
+  }
+
+  /* Slim progress bar — bottom edge, above everything except noise */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.55);
+  }
+
+  /* Scene wrappers — title + CTA sit on z-index 1,
+     screencap sits on z-index 2 so it covers ambient
+     + shapes when active. */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+  }
+  #scene-title-wrap     { z-index: 1; opacity: 1; }
+  #scene-screencap-wrap { z-index: 2; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="120"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Ambient + shape backdrop — visible during title + CTA bookends -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Corner watermark — persistent brand chrome across all scenes -->
+  <div id="corner-watermark">
+    <img src="assets/anthropic-logo-light.svg" alt="Brand" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — 3-scene flow
+
+       Bare-template demo timing (replace per video using
+       phase0-ingest-recording outputs):
+
+         0    → title       (5s)
+         4.5  → screencap   (~100s — replace with recording length)
+         105  → cta         (10s)
+         115  → end
+
+       The screencap wrapper has data-track-index=2 so the
+       full-bleed recording paints over the ambient + shape
+       backdrop; title + CTA stay on track 1.
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-title-wrap" class="scene-wrapper"
+       data-composition-id="scene-title"
+       data-composition-src="compositions/scene-title.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-screencap-wrap" class="scene-wrapper"
+       data-composition-id="scene-screencap"
+       data-composition-src="compositions/scene-screencap.html"
+       data-start="4.5"
+       data-track-index="2"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="105"
+       data-track-index="1"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUDIO BED — operator wires when narration is in audio/.
+       Lint stays clean on the bare template. Uncomment and
+       tune data-* values per video.
+
+       Track 2: narration (the DUBBED TTS output — replaces
+       the recording's original voice). NEVER use class="clip"
+       on audio.
+
+       NO bg-music block here. Screencap-dubbed tutorials read
+       cleaner with narration alone; the recording itself often
+       includes ambient UI sounds (clicks, page transitions)
+       that bg-music would muddy. If a specific video needs
+       a music bed, mirror the standard template's 3-segment block.
+
+       The screen-recording's original audio MUST be muted —
+       the AI-voice narration plays on track 2 instead.
+
+  Narration (TTS dub of the user's transcript):
+    audio id="narration"
+           src="audio/narration.wav"
+           data-start="4.5"
+           data-duration="100"
+           data-track-index="2"
+           data-volume="1"
+
+  Optional cinematic-whoosh on the two scene transitions
+  (title to screencap at t=4.5, screencap to CTA at t=105).
+  Sync first via: bash scripts/sync-video-sfx.sh videos/<slug>
+
+    audio id="sfx-whoosh-1"
+           src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="4.5"  data-duration="1.5"
+           data-track-index="3"  data-volume="0.11"
+
+    audio id="sfx-whoosh-2"
+           src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="105"  data-duration="1.5"
+           data-track-index="3"  data-volume="0.11"
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 10 shapes.
+  // Fewer than standard's 14 because the title + CTA are short and
+  // the screencap covers the field for the bulk of the runtime.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 10, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Subtle ambient drift — finite repeat count for deterministic seek.
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  spawnShapes('long-form-screencap-dubbed', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 120;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath — slow yoyo across full duration
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'long-form-screencap-dubbed', TOTAL_DURATION);
+
+  // Linear progress fill across the composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Corner watermark — one-shot fade in at t=0.2
+  tl.from("#corner-watermark", { opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ─── Scene labels — anchors so duration changes don't cascade ───
+  tl.addLabel("title",     0)
+    .addLabel("screencap", 4.5)
+    .addLabel("cta",       105);
+
+  // ─── Crossfades between scenes ───
+  // title → screencap at 4.5s (fires at scene_start - 0.4 per crossfadeScenes pattern)
+  crossfadeScenes(tl, "#scene-title-wrap",     "#scene-screencap-wrap", "screencap-=0.4");
+  // screencap → cta at 105s
+  crossfadeScenes(tl, "#scene-screencap-wrap", "#scene-cta-wrap",       "cta-=0.4");
+
+  // Pad timeline to the full composition duration so the renderer captures
+  // the trailing static frames of the CTA scene.
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

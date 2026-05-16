@@ -1,0 +1,109 @@
+<!--
+  shared/lib/components/counter-blast/component.html
+  Number flips rapidly through values, then slams and locks on the target.
+  Element markup: <span class="counter-blast" data-target="64">0</span>
+
+  SOURCE: Original — no template extraction. Authored for shared/lib.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition.
+
+  ── HOW TO USE ──────────────────────────────────────────────────────────
+
+  1) HTML — paste the <span> wherever the counter should appear in your
+     composition. Set data-target to the final number.
+-->
+
+<span class="counter-blast" data-target="64">0</span>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/counter-blast — keep this comment block */
+  .counter-blast {
+    font-family: var(--sans, 'Inter', system-ui, sans-serif);
+    font-weight: 900;
+    font-size: var(--counter-blast-size, 160px);
+    line-height: 1.0;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--accent, #E97458);
+    text-shadow:
+      0 0 60px rgba(233, 116, 88, 0.45),
+      0 8px 24px rgba(0, 0, 0, 0.6);
+    display: inline-block;
+    transform-origin: center center;
+  }
+</style>
+
+<!--
+  3) JS — paste this function into the host <script> and call it against
+     your composition's GSAP timeline.
+
+     addCounterBlast(tl, sel, at, opts)
+       tl   — the host GSAP timeline (paused)
+       sel  — CSS selector for the .counter-blast <span>
+       at   — timeline position (seconds) when the flip starts
+       opts — { target: number, duration: number }
+                 target   — final locked number (default: reads data-target attr)
+                 duration — total animation length in seconds (default: 1.2)
+
+     SFX wiring (host must add <audio> elements — see recipe.md):
+       10 × pop     at at + 0.0, 0.1, 0.2 … 0.9   (track 3, sequential — no overlap)
+        1 × impact-slam  at at + 1.0                (track 4)
+     11 <audio> elements total.
+-->
+
+<script>
+  function addCounterBlast(tl, sel, at, opts) {
+    var o = opts || {};
+    var el = document.querySelector(sel);
+    var target = (o.target !== undefined) ? o.target
+               : (el ? parseInt(el.getAttribute('data-target'), 10) : 100);
+    var duration = (o.duration !== undefined) ? o.duration : 1.2;
+    var lockAt = at + (duration - 0.2);
+
+    // Hide at t=0 — explicit hidden-until-reveal pattern
+    tl.set(sel, { opacity: 0, scale: 0.85 }, 0);
+
+    // Tick phase — GSAP object tween writes to innerHTML
+    var proxy = { val: 0 };
+    tl.to(proxy, {
+      val: target,
+      duration: duration - 0.2,
+      ease: 'none',
+      onUpdate: function () {
+        if (el) el.textContent = Math.round(proxy.val);
+      }
+    }, at);
+
+    // Fade in with the first tick
+    tl.to(sel, { opacity: 1, duration: 0.15, ease: 'power1.out' }, at);
+
+    // Lock + slam at lockAt
+    tl.set(sel, {}, lockAt); // ensure target val is written
+    tl.to(sel, {
+      scale: 1.12,
+      duration: 0.08,
+      ease: 'power2.in'
+    }, lockAt);
+    tl.to(sel, {
+      scale: 1.0,
+      duration: 0.25,
+      ease: 'back.out(2.2)'
+    }, lockAt + 0.08);
+    // Glow flash on lock
+    tl.to(sel, {
+      textShadow: '0 0 120px rgba(233,116,88,0.9), 0 8px 24px rgba(0,0,0,0.6)',
+      duration: 0.1,
+      ease: 'power2.out'
+    }, lockAt);
+    tl.to(sel, {
+      textShadow: '0 0 60px rgba(233,116,88,0.45), 0 8px 24px rgba(0,0,0,0.6)',
+      duration: 0.4,
+      ease: 'power2.in'
+    }, lockAt + 0.1);
+  }
+</script>

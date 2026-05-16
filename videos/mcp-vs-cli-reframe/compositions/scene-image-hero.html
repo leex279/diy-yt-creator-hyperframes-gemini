@@ -1,0 +1,341 @@
+<!--
+  scene-image-hero.html — "Where the debate started" (~38s).
+  Narration anchors (t_rel):
+    0.0   "This is where it started"            → overline
+    2.2   "In November 2024, Anthropic         → headline word-by-word
+          published..."
+   12.9   "The M C P camp pushed typed         → MCP camp swings in (3D door)
+          contracts"
+   19.7   "The C L I camp said"                 → CLI camp swings in
+   24.8   "The fights looked like…"             → vs-axis pulse
+   30.6   "How tool definitions get loaded"     → synth line reveal
+-->
+<template id="scene-image-hero-template">
+  <div data-composition-id="scene-image-hero"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden; perspective:2000px;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-image-hero-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        gap:36px;
+        box-sizing:border-box;
+        position: relative;
+        transform-style: preserve-3d;
+      }
+      #scene-image-hero-content .top {
+        display:flex; flex-direction:column;
+        align-items:flex-start; gap:14px;
+        transform-style: preserve-3d;
+      }
+      #scene-image-hero-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: flex; align-items: center; gap: 14px;
+      }
+      #scene-image-hero-content .overline .dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--accent-2);
+        box-shadow: 0 0 12px var(--glow-cyan);
+      }
+      #scene-image-hero-content .overline .ts { color: var(--text-secondary); font-weight: 500; }
+      #scene-image-hero-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 72px;
+        line-height: 1.05;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1500px;
+      }
+      #scene-image-hero-content .headline .w {
+        display: inline-block;
+        transform-style: preserve-3d;
+      }
+      #scene-image-hero-content .headline .red { color: var(--accent-warn); }
+
+      #scene-image-hero-content .split {
+        display: grid;
+        grid-template-columns: 1fr 140px 1fr;
+        align-items: center;
+        flex: 1;
+        gap: 0;
+        transform-style: preserve-3d;
+      }
+      .camp-col {
+        padding: 36px 44px;
+        display: flex; flex-direction: column;
+        gap: 18px;
+        position: relative;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      .camp-col .term-bar {
+        display: flex; align-items: center; gap: 12px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .camp-col .term-bar .dots { display: flex; gap: 5px; }
+      .camp-col .term-bar .dots span {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: rgba(255,255,255,0.16);
+      }
+      .camp-col.mcp .term-bar { color: var(--accent-2); }
+      .camp-col.cli .term-bar { color: var(--accent-3); }
+
+      .camp-col .camp-id {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 110px;
+        line-height: 0.95;
+        letter-spacing: -5px;
+        text-shadow: 0 8px 30px rgba(0,0,0,0.6);
+        transform-style: preserve-3d;
+      }
+      .camp-col.mcp .camp-id { color: var(--accent-2); text-shadow: 0 0 60px var(--glow-cyan), 0 8px 30px rgba(0,0,0,0.6); }
+      .camp-col.cli .camp-id { color: var(--accent-3); text-shadow: 0 0 60px var(--glow-violet), 0 8px 30px rgba(0,0,0,0.6); }
+
+      .camp-col .camp-tag {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .camp-col .camp-claim {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        max-width: 580px;
+      }
+      .camp-col .camp-receipts {
+        list-style: none;
+        display: flex; flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 17px;
+        color: var(--text-secondary);
+      }
+      .camp-col .camp-receipts li {
+        display: flex; align-items: center; gap: 12px;
+      }
+      .camp-col .camp-receipts li::before {
+        content: "›";
+        font-weight: 800;
+        font-size: 20px;
+      }
+      .camp-col.mcp .camp-receipts li::before { color: var(--accent-2); }
+      .camp-col.cli .camp-receipts li::before { color: var(--accent-3); }
+      .camp-col .camp-receipts li b { color: var(--text); font-weight: 700; }
+
+      .vs-axis {
+        height: 100%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 18px;
+        position: relative;
+      }
+      .vs-axis .line {
+        flex: 1;
+        width: 1px;
+        background: linear-gradient(to bottom, transparent 0%, var(--border-bright) 40%, var(--border-bright) 60%, transparent 100%);
+        transform-origin: center center;
+      }
+      .vs-axis .vs-mark {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 52px;
+        letter-spacing: -2px;
+        color: var(--accent-warn);
+        background: var(--bg);
+        padding: 14px 8px;
+        text-shadow: 0 0 30px var(--glow-orange);
+      }
+      .vs-axis .vs-mark .sl { color: var(--text-dim); margin: 0 -4px; }
+      .vs-axis .axis-note {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 70px);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 2px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        text-align: center;
+      }
+
+      #scene-image-hero-content .synth {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+        text-align: center;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+      }
+      #scene-image-hero-content .synth .dim { color: var(--text-secondary); }
+    </style>
+
+    <div id="scene-image-hero-content">
+      <div class="top">
+        <div class="overline" id="image-hero-overline">
+          <span class="dot"></span>
+          <span>NOV 2024 → DEC 2025</span>
+          <span class="ts">· 12 MONTHS</span>
+        </div>
+        <div class="headline" id="image-hero-headline">
+          <span class="w" data-w="0">Two</span>
+          <span class="w" data-w="1">camps</span>
+          <span class="w" data-w="2">formed</span>
+          <span class="w" data-w="3">inside</span>
+          <span class="w" data-w="4">a</span>
+          <span class="w" data-w="5">year</span>
+          <span class="w" data-w="6">—</span>
+          <span class="w" data-w="7">and</span>
+          <span class="w" data-w="8">the</span>
+          <span class="w red" data-w="9">fight</span>
+          <span class="w red" data-w="10">wasn't</span>
+          <span class="w red" data-w="11">real</span><span class="w" data-w="12">.</span>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="camp-col mcp" id="camp-mcp">
+          <div class="term-bar" id="camp-mcp-bar"><div class="dots"><span></span><span></span><span></span></div> <span>$ mcp-camp.manifest</span></div>
+          <div class="camp-id" id="camp-mcp-id">MCP</div>
+          <div class="camp-tag" id="camp-mcp-tag">Anthropic · Nov 2024</div>
+          <div class="camp-claim" id="camp-mcp-claim">"Typed contracts. OAuth. Audit trails. The protocol pays for itself."</div>
+          <ul class="camp-receipts">
+            <li id="mcp-r1">multi-tenant <b>safety</b></li>
+            <li id="mcp-r2">known <b>output shapes</b></li>
+            <li id="mcp-r3">runtime tool <b>discovery</b></li>
+          </ul>
+        </div>
+
+        <div class="vs-axis" id="image-hero-vs">
+          <div class="line" id="vs-line-top"></div>
+          <div class="vs-mark" id="vs-mark">vs<span class="sl">/</span></div>
+          <div class="line" id="vs-line-bot"></div>
+          <div class="axis-note" id="vs-note">REAL FIGHT · <span style="color: var(--accent-warn);">CONTEXT WINDOW</span></div>
+        </div>
+
+        <div class="camp-col cli" id="camp-cli">
+          <div class="term-bar" id="camp-cli-bar"><div class="dots"><span></span><span></span><span></span></div> <span>$ cli-camp.manifest</span></div>
+          <div class="camp-id" id="camp-cli-id">CLI</div>
+          <div class="camp-tag" id="camp-cli-tag">"just give it a shell"</div>
+          <div class="camp-claim" id="camp-cli-claim">"The model already knows bash. The protocol is paying tax."</div>
+          <ul class="camp-receipts">
+            <li id="cli-r1">zero <b>schema cost</b></li>
+            <li id="cli-r2">everything on <b>$PATH</b></li>
+            <li id="cli-r3">lazy <b>loading</b> built-in</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="synth" id="image-hero-synth">
+        <span class="dim">// the debate was about</span> &nbsp; HOW TOOLS GET LOADED INTO CONTEXT
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ══════════ HIDE EVERYTHING AT t=0 ══════════
+      tl.set("#image-hero-overline", { opacity: 0, y: -16 }, 0);
+      tl.set("#image-hero-headline .w", { opacity: 0, y: 24, rotationX: 60, transformOrigin: "center bottom" }, 0);
+      tl.set("#camp-mcp",            { opacity: 0, rotationY: -90, x: -160, transformOrigin: "right center" }, 0);
+      tl.set("#camp-cli",            { opacity: 0, rotationY: 90,  x:  160, transformOrigin: "left center" }, 0);
+      tl.set("#vs-line-top",         { scaleY: 0, transformOrigin: "center bottom" }, 0);
+      tl.set("#vs-line-bot",         { scaleY: 0, transformOrigin: "center top" }, 0);
+      tl.set("#vs-mark",             { opacity: 0, scale: 0.4, rotationZ: -90 }, 0);
+      tl.set("#vs-note",             { opacity: 0, y: 10 }, 0);
+      tl.set("#image-hero-synth",    { opacity: 0, y: 18 }, 0);
+      // Hide camp inner content separately so we can stage them after the door swings
+      tl.set("#camp-mcp-id",   { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#camp-mcp-tag",  { opacity: 0, y: 10 }, 0);
+      tl.set("#camp-mcp-claim",{ opacity: 0, y: 14 }, 0);
+      tl.set("#mcp-r1, #mcp-r2, #mcp-r3", { opacity: 0, x: -16 }, 0);
+      tl.set("#camp-cli-id",   { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#camp-cli-tag",  { opacity: 0, y: 10 }, 0);
+      tl.set("#camp-cli-claim",{ opacity: 0, y: 14 }, 0);
+      tl.set("#cli-r1, #cli-r2, #cli-r3", { opacity: 0, x: 16 }, 0);
+
+      // ══════════ NARRATION-SYNCED REVEALS ══════════
+
+      // 0.0s — overline appears
+      tl.to("#image-hero-overline", { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.0);
+
+      // 2.2–6.5s — headline word stagger
+      const wTimes = [2.2, 2.5, 2.8, 3.1, 3.4, 3.7, 4.0, 4.3, 4.6, 5.0, 5.3, 5.6, 5.9];
+      wTimes.forEach((t, i) => {
+        tl.to(`#image-hero-headline .w[data-w="${i}"]`,
+          { opacity: 1, y: 0, rotationX: 0, duration: 0.5, ease: "power3.out" }, t);
+      });
+
+      // 12.9s — MCP camp swings in from left (3D door opening)
+      tl.to("#camp-mcp", { opacity: 1, rotationY: 0, x: 0, duration: 1.0, ease: "back.out(1.3)" }, 12.9);
+      // MCP content lands progressively as the door settles + narration mentions traits
+      tl.to("#camp-mcp-id",    { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 13.4);
+      tl.to("#camp-mcp-tag",   { opacity: 1, y: 0,    duration: 0.45, ease: "power2.out" }, 13.7);
+      tl.to("#camp-mcp-claim", { opacity: 1, y: 0,    duration: 0.55, ease: "power3.out" }, 14.1);
+      // The 3 receipts ("typed contracts. OAuth. Audit trails.") — staggered with narration
+      tl.to("#mcp-r1", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 14.8);
+      tl.to("#mcp-r2", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 15.6);
+      tl.to("#mcp-r3", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 16.4);
+
+      // 18.5s — VS axis builds: lines draw from center, mark scales+rotates in
+      tl.to("#vs-line-top", { scaleY: 1, duration: 0.5, ease: "power2.out" }, 18.5);
+      tl.to("#vs-line-bot", { scaleY: 1, duration: 0.5, ease: "power2.out" }, 18.5);
+      tl.to("#vs-mark",     { opacity: 1, scale: 1, rotationZ: 0, duration: 0.6, ease: "back.out(1.8)" }, 18.7);
+
+      // 19.7s — CLI camp swings in from right
+      tl.to("#camp-cli", { opacity: 1, rotationY: 0, x: 0, duration: 1.0, ease: "back.out(1.3)" }, 19.7);
+      tl.to("#camp-cli-id",    { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 20.2);
+      tl.to("#camp-cli-tag",   { opacity: 1, y: 0,    duration: 0.45, ease: "power2.out" }, 20.5);
+      tl.to("#camp-cli-claim", { opacity: 1, y: 0,    duration: 0.55, ease: "power3.out" }, 20.9);
+      tl.to("#cli-r1", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 21.6);
+      tl.to("#cli-r2", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 22.4);
+      tl.to("#cli-r3", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 23.2);
+
+      // 24.8s — vs-mark pulse on "The fights looked like..."
+      tl.to("#vs-mark",
+        { textShadow: "0 0 60px rgba(251, 146, 60, 0.9)", scale: 1.12,
+          duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.8);
+
+      // 27.0s — vs-note reveals "REAL FIGHT · CONTEXT WINDOW"
+      tl.to("#vs-note", { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 27.0);
+
+      // 30.6s — synth line slides up with clip-reveal (mask-like via x slide)
+      tl.to("#image-hero-synth", { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 30.6);
+
+      // 33.0s — synth emphasis on "that distinction is the whole story"
+      tl.to("#image-hero-synth", { scale: 1.02, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 33.0);
+
+      window.__timelines["scene-image-hero"] = tl;
+    </script>
+  </div>
+</template>

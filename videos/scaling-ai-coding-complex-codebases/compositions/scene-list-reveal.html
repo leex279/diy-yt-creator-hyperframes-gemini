@@ -1,0 +1,146 @@
+﻿<!--
+  scene-list-reveal.html â€” Enumerated list with step-by-step reveal.
+
+  Step-by-step reveal (per .claude/rules/step-by-step-reveal.md) â€” each row
+  enters on its own beat ~3-4s apart, paced for narration. Number chips on
+  the left, label + descriptor on the right. Optional accent marker sweep
+  under the active row at each step.
+
+  Default 6 rows / 20s. Operator can shrink to 4-5 rows for a shorter
+  scene; retime by changing the entrance times in the script.
+-->
+<template id="scene-list-reveal-template">
+  <div data-composition-id="scene-list-reveal"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #list-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 60px;
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:center;
+        gap: 18px;
+        box-sizing:border-box;
+      }
+      #list-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #list-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #list-content .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 58px;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+        max-width: 1500px;
+      }
+      #list-content .rows {
+        display: flex; flex-direction: column;
+        gap: 12px;
+        margin-top: 8px;
+        width: 1640px;
+      }
+      .list-row {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 28px;
+        align-items: center;
+        padding: 16px 28px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        position: relative;
+      }
+      .list-row .num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 36px;
+        color: var(--accent);
+        text-align: center;
+      }
+      .list-row .body { display: flex; flex-direction: column; gap: 4px; }
+      .list-row .label {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 38px;
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .list-row .desc {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: 24px;
+        line-height: 1.32;
+        color: var(--muted);
+      }
+      .list-row .marker {
+        position: absolute;
+        left: 0; bottom: -1px;
+        width: 0%;
+        height: 3px;
+        background: var(--accent-2);
+        box-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
+      }
+    </style>
+
+    <div id="list-content">
+      <div class="eyebrow" id="lr-eyebrow" style="opacity:0;visibility:hidden;">SIX STRATEGIES</div>
+      <h2 class="headline" id="lr-headline" style="opacity:0;visibility:hidden;">Every brownfield day uses these six moves.</h2>
+      <div class="rows" id="lr-rows">
+        <div class="list-row" id="lr-r1" style="opacity:0;visibility:hidden;"><div class="num">01</div><div class="body"><div class="label">Vertical slice architecture.</div><div class="desc">One folder per feature. Types, tests, code together.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r2" style="opacity:0;visibility:hidden;"><div class="num">02</div><div class="body"><div class="label">Brownfield Day One.</div><div class="desc">Sub-agents derive the AI layer from the existing codebase.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r3" style="opacity:0;visibility:hidden;"><div class="num">03</div><div class="body"><div class="label">Context management.</div><div class="desc">Global rules under three hundred lines. Skills carry the rest.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r4" style="opacity:0;visibility:hidden;"><div class="num">04</div><div class="body"><div class="label">Focused prime commands.</div><div class="desc">One per feature, not one for everything.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r5" style="opacity:0;visibility:hidden;"><div class="num">05</div><div class="body"><div class="label">Parallel worktrees.</div><div class="desc">Two agents, isolated copies, zero collisions.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r6" style="opacity:0;visibility:hidden;"><div class="num">06</div><div class="body"><div class="label">Coupling over line count.</div><div class="desc">Audit imports, not LOC. God components are the fire.</div></div><div class="marker"></div></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial hidden state in CSS inline; bake position offsets only.
+      tl.set("#lr-eyebrow",  { y: 20 }, 0);
+      tl.set("#lr-headline", { y: 24 }, 0);
+      ["#lr-r1","#lr-r2","#lr-r3","#lr-r4","#lr-r5","#lr-r6"].forEach(sel => {
+        tl.set(sel, { x: -36 }, 0);
+        tl.set(sel + " .marker", { width: "0%" }, 0);
+      });
+
+      tl.to("#lr-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#lr-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
+
+      // Step-by-step reveal â€” ~2.8s apart, paced for narration to name each item.
+      const rowTimes = [1.8, 4.6, 7.4, 10.2, 13.0, 15.8];
+      ["#lr-r1","#lr-r2","#lr-r3","#lr-r4","#lr-r5","#lr-r6"].forEach((sel, i) => {
+        tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)" }, rowTimes[i]);
+        tl.to(sel + " .marker", { width: "100%", duration: 0.55, ease: "power2.out" }, rowTimes[i] + 0.25);
+      });
+
+      // Tail-hold settle pulse across all rows ~1.5s before scene end
+      tl.to("#lr-rows", { scale: 1.01, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 18.5);
+
+      // Extend timeline to full slot duration
+      tl.set({}, {}, 20);
+      window.__timelines["scene-list-reveal"] = tl;
+    </script>
+  </div>
+</template>

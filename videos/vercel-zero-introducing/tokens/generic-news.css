@@ -1,0 +1,59 @@
+/* generic-news-template — brand-neutral tech-news shorts palette.
+ *
+ * The full token system lives inline inside index.html on the #root element
+ * (this is how the source design was authored, and how the cinematic chrome
+ * references them with sub-second timing). This file is the canonical
+ * extracted copy so future variants can fork via copy-from per
+ * shared/lib/README.md.
+ *
+ * To re-skin a video forked from this template, edit the matching block
+ * inside videos/<slug>/index.html (#root rule, lines ~62-80). The CSS
+ * variable names are stable across all generic-news-template forks.
+ */
+#root {
+  /* Stage */
+  --bg:           #0B0F18;   /* canvas base */
+  --bg-deep:      #060810;   /* deep gradient stop */
+  --card:         #0E121A;   /* card background */
+  --text:         #F5F1EB;   /* primary off-white */
+  --text-dim:     #9A958D;   /* secondary text */
+
+  /* Four rotating accents — used by hero slams, charts, code-diff badges,
+     pill rows. Default = spectrum-drift (cyan / purple / blue / amber). */
+  --orange:       #06b6d4;   /* primary accent (cyan) */
+  --purple:       #c084fc;   /* secondary accent (purple) */
+  --blue:         #60a5fa;   /* tertiary accent (blue) */
+  --green:        #fbbf24;   /* quaternary accent (amber) */
+
+  --red:          #D14343;   /* destructive / warning */
+  --red-soft:     #FF7C7C;
+
+  /* Chrome */
+  --pill-bg:      rgba(245, 241, 235, 0.08);
+  --pill-border:  rgba(245, 241, 235, 0.18);
+
+  /* Spacing */
+  --pad-top:      240px;     /* mobile UI safe zone */
+  --pad-x:        60px;
+  --pad-bottom:   720px;
+
+  /* Type — note: the inline #root rule inside index.html uses the literal
+     font names ('Inter' / 'JetBrains Mono') NOT var(--sans|--mono) to avoid
+     the render-blocker described in .claude/rules/hyperframes-pitfalls.md §8.
+     These vars are exposed for sub-composition / script authors who do their
+     own CSS resolution at runtime. */
+  --mono:         'JetBrains Mono', ui-monospace, monospace;
+  --sans:         'Inter', system-ui, sans-serif;
+}
+
+/* ── Alt palette: frontier-green (ChatGPT-mint) ──────────────────────────
+ * Drop into #root to swap to the alt accent set. See _alt/frontier-green.html
+ * for the full rendered variant.
+ *
+ * #root.frontier-green {
+ *   --orange: #10a37f;   // mint
+ *   --purple: #19c37d;
+ *   --blue:   #74e8c0;
+ *   --green:  #5eead4;
+ * }
+ */

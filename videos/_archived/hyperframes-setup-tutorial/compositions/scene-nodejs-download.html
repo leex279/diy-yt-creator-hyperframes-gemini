@@ -1,0 +1,192 @@
+<!--
+  scene-nodejs-download.html — 3D-tilted browser-chrome screenshot reveal.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-nodejs-download-template">
+  <div data-composition-id="scene-nodejs-download"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-nodejs-content {
+        position:relative; z-index:1;
+        width:100%; height:100%;
+        padding: 80px 100px 90px;
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr auto;
+        column-gap: 60px;
+        row-gap: 24px;
+        box-sizing:border-box;
+        align-items: center;
+      }
+      #scene-nodejs-content .copy {
+        grid-column: 1; grid-row: 1 / span 3;
+        display:flex; flex-direction:column;
+        justify-content:center; gap: 22px;
+      }
+      #scene-nodejs-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-4);
+      }
+      #scene-nodejs-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 76px; line-height: 1.02;
+        letter-spacing: -2px; color: var(--text);
+        max-width: 840px;
+      }
+      #scene-nodejs-content .url-pill {
+        display: inline-flex; align-items: center; gap: 12px;
+        padding: 14px 26px; border-radius: 999px;
+        background: rgba(34, 197, 94, 0.16);
+        border: 1.5px solid rgba(34, 197, 94, 0.55);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; color: var(--accent-4);
+        align-self: flex-start;
+      }
+      #scene-nodejs-content .url-pill::before { content: "🔗"; font-size: 22px; }
+      #scene-nodejs-content .os-strip {
+        display:flex; flex-direction:column; gap: 12px;
+      }
+      #scene-nodejs-content .os-chip {
+        display:flex; align-items:center; gap: 14px;
+        padding: 14px 18px; border-radius: 12px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.12);
+      }
+      #scene-nodejs-content .os-chip .lbl {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 14px; letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 4px 10px; border-radius: 5px;
+        flex-shrink: 0; min-width: 88px; text-align: center;
+      }
+      #scene-nodejs-content .os-chip.win .lbl   { background: rgba(59,130,246,.22); color: var(--accent-1); }
+      #scene-nodejs-content .os-chip.linux .lbl { background: rgba(34,197,94,.22);   color: var(--accent-4); }
+      #scene-nodejs-content .os-chip.mac .lbl   { background: rgba(139,92,246,.30); color: #b599fa; }
+      #scene-nodejs-content .os-chip code {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 19px; color: var(--text);
+        background: rgba(0,0,0,.45); padding: 6px 12px; border-radius: 6px;
+        word-break: break-all;
+      }
+
+      /* 3D screenshot stage */
+      #scene-nodejs-content .stage-3d {
+        grid-column: 2; grid-row: 1 / span 3;
+        position: relative;
+        width: 100%; height: 100%;
+        perspective: 2200px;
+        perspective-origin: 50% 50%;
+        display:flex; align-items:center; justify-content:center;
+      }
+      .browser-card {
+        position: relative;
+        width: 880px; height: 600px;
+        transform-style: preserve-3d;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(10,14,22,.92);
+        border: 1px solid rgba(255,255,255,.10);
+        box-shadow:
+          0 60px 130px rgba(0,0,0,.7),
+          0 30px 60px rgba(0,0,0,.5),
+          inset 0 1px 0 rgba(255,255,255,.06);
+      }
+      .browser-card .chrome {
+        height: 44px;
+        background: linear-gradient(180deg, rgba(34,40,54,.98), rgba(22,26,38,.98));
+        display: flex; align-items: center;
+        padding: 0 14px; gap: 8px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+      }
+      .browser-card .dot { width: 13px; height: 13px; border-radius: 50%; }
+      .browser-card .dot.r { background: #ff5f57; }
+      .browser-card .dot.y { background: #febc2e; }
+      .browser-card .dot.g { background: #28c840; }
+      .browser-card .urlbar {
+        flex: 1; height: 28px; margin-left: 18px;
+        background: rgba(255,255,255,.06);
+        border-radius: 8px;
+        display: flex; align-items: center;
+        padding: 0 14px;
+        font-family: var(--mono); font-size: 14px;
+        color: var(--text-secondary);
+      }
+      .browser-card .urlbar .lock { margin-right: 10px; opacity: .8; }
+      .browser-card .shot {
+        display: block;
+        width: 100%; height: calc(100% - 44px);
+        object-fit: cover; object-position: top center;
+      }
+      .browser-glow {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 1100px; height: 720px;
+        transform: translate(-50%, -50%) translateZ(-260px);
+        background: radial-gradient(ellipse at center,
+                      rgba(34,197,94,.32) 0%,
+                      rgba(34,197,94,.10) 35%,
+                      rgba(11,15,26,0) 65%);
+        filter: blur(50px);
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+
+    <div id="scene-nodejs-content">
+      <div class="copy">
+        <div class="overline" id="nodejs-overline">STEP 1A &middot; GET NODE</div>
+        <div class="headline" id="nodejs-headline">Download the JavaScript runtime.</div>
+        <div class="url-pill" id="nodejs-url">nodejs.org/download</div>
+        <div class="os-strip" id="nodejs-osstrip">
+          <div class="os-chip win"><span class="lbl">Windows</span><code>winget install OpenJS.Nodejs.LTS</code></div>
+          <div class="os-chip linux"><span class="lbl">Linux</span><code>nvm install 22</code></div>
+          <div class="os-chip mac"><span class="lbl">macOS</span><code>nvm install 22</code></div>
+        </div>
+      </div>
+
+      <div class="stage-3d">
+        <div class="browser-glow" id="nodejs-glow"></div>
+        <div class="browser-card" id="nodejs-card">
+          <div class="chrome">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="urlbar"><span class="lock">🔒</span>nodejs.org/en/download</span>
+          </div>
+          <img class="shot" src="assets/screenshots/nodejs-download.png" alt="nodejs.org download page" />
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#nodejs-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#nodejs-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#nodejs-url",      { y: 18, scale: 0.94, opacity: 0 }, 0);
+      tl.set("#nodejs-osstrip .os-chip", { y: 18, opacity: 0 }, 0);
+      tl.set("#nodejs-card",     { rotateY: -32, rotateX: 6, scale: 0.82, z: -300, opacity: 0, transformPerspective: 2200, transformOrigin: "50% 50%" }, 0);
+      tl.set("#nodejs-glow",     { opacity: 0 }, 0);
+
+      // 3D card lands first — it's the hero
+      tl.to("#nodejs-card",     { rotateY: 0, rotateX: 0, scale: 1, z: 0, opacity: 1, duration: 1.2, ease: "power3.out" }, 0.0);
+      tl.to("#nodejs-glow",     { opacity: 1, duration: 1.0, ease: "power2.out" }, 0.15);
+      tl.to("#nodejs-overline", { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0.45);
+      tl.to("#nodejs-headline", { y: 0, opacity: 1, duration: 0.55 }, 0.7);
+      tl.to("#nodejs-url",      { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 1.15);
+      tl.to("#nodejs-osstrip .os-chip", { y: 0, opacity: 1, duration: 0.45, stagger: 0.18, ease: "back.out(1.4)" }, 1.55);
+
+      // Subtle parallax drift to keep the scene alive
+      tl.to("#nodejs-card", { rotateY: -3, rotateX: 1.2, duration: 4.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.6);
+      tl.to("#nodejs-glow", { opacity: 0.78, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.6);
+
+      window.__timelines["scene-nodejs-download"] = tl;
+    </script>
+  </div>
+</template>

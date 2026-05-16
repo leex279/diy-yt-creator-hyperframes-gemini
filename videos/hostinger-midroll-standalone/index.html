@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Hostinger Midroll — Standalone</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* Standalone wrapper: pure black canvas, midroll mounts at t=1, runs to t=21.
+     1s of black on either side gives the editor crossfade runway when this
+     MP4 is dropped into another video. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Manrope', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Mount surface for the midroll sub-composition. */
+  #hostinger-midroll-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 10;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="24"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Midroll narration — track 2, starts at t=1 (after the 1s lead-in). -->
+  <audio id="narration"
+         class="clip"
+         src="audio/hostinger-midroll-narration.wav"
+         data-start="1"
+         data-duration="22"
+         data-track-index="2"
+         data-volume="1.0"></audio>
+
+  <!-- Hostinger midroll sub-composition. Mounts at t=1, runs through t=23,
+       leaves 1s of black at t=23..24 as the tail-out cushion. -->
+  <div id="hostinger-midroll-mount"
+       data-composition-id="hostinger-midroll"
+       data-composition-src="compositions/hostinger-midroll.html"
+       data-start="1"
+       data-duration="22"
+       data-track-index="20"
+       data-width="1920"
+       data-height="1080"></div>
+</div>
+
+<script>
+  // Root timeline is intentionally near-empty — the midroll sub-composition's
+  // internal timeline owns every animation during t=1..23. The wrapper only
+  // needs to exist + be paused + pin to the full 24s duration so the renderer
+  // captures the trailing black frame.
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  tl.set({}, {}, 24);
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

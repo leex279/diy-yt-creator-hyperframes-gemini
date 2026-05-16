@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Platform on AWS</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ROOT TOKENS */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 200px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Ambient orange/purple wash */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* AWS logo — force fully white silhouette on dark stage */
+  img[src*="aws-logo.png"] { filter: brightness(0) invert(1); }
+
+  /* TOP CHROME — Anthropic + AWS lockup */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  }
+  #top-banner-logo {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #top-banner-divider {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 36px;
+    font-weight: 400;
+    color: rgba(245,241,235,0.35);
+    line-height: 1;
+  }
+  #top-banner-aws {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+
+  /* Slim progress bar */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: #E97458;
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* PHASES */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; visibility: hidden; }
+  #phase3 { z-index: 3; opacity: 0; visibility: hidden; }
+  #phase4 { z-index: 4; opacity: 0; visibility: hidden; }
+  #phase5 { z-index: 5; opacity: 0; visibility: hidden; }
+  #phase6 { z-index: 6; opacity: 0; visibility: hidden; }
+  #phase7 { z-index: 7; opacity: 0; visibility: hidden; }
+  #phase8 { z-index: 8; opacity: 0; visibility: hidden; }
+  #phase9 { z-index: 9; opacity: 0; visibility: hidden; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: 240px 60px 200px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Shared overline style */
+  .overline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 1 — HOOK: Bedrock lag pain (0-6.59s)
+     Beat 1a (0-2.5s): thumbnail-grade topic lockup (first frame)
+     Beat 1b (2.5-6.59s): pain hook — "WEEKS LATE."
+     ═══════════════════════════════════════════ */
+  #phase1 .phase-content {
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  /* ── Beat 1a: thumbnail-grade topic lockup ── */
+  #p1-topic-lockup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 240px 60px 200px;
+    gap: 28px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  /* #p1-brand-lockup removed — top-banner already shows Anthropic × AWS persistently */
+  #p1-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: #F5F1EB;
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: #E97458; }
+  #p1-ga-receipt {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 44px;
+    color: #9A958D;
+    letter-spacing: 2px;
+  }
+
+  /* ── Beat 1b: pain hook elements ── */
+  #p1-overline { color: #E97458; }
+  #p1-main-line {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 68px;
+    line-height: 1.1;
+    color: #F5F1EB;
+    max-width: 960px;
+  }
+  #p1-slam-wrap {
+    display: inline-block;
+  }
+  #p1-slam {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.88;
+    letter-spacing: -4px;
+    color: #A78BFA;
+    text-shadow: 0 0 80px rgba(167,139,250,0.55), 0 8px 24px rgba(0,0,0,0.6);
+  }
+  #p1-late-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  #p1-marker {
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    height: 10px;
+    width: 0;
+    border-radius: 5px;
+    background: #A78BFA;
+    box-shadow: 0 0 20px rgba(167,139,250,0.6);
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 2 — PIVOT REVEAL (6.59-14.0s)
+     ═══════════════════════════════════════════ */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p2-slam {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.85;
+    letter-spacing: -6px;
+    color: #A78BFA;
+    text-shadow: 0 0 100px rgba(167,139,250,0.6), 0 8px 32px rgba(0,0,0,0.7);
+    max-width: 960px;
+  }
+  #p2-title {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 88px;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: #F5F1EB;
+    max-width: 940px;
+  }
+  #p2-date-chip {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 44px;
+    letter-spacing: 2px;
+    color: #0B0F18;
+    background: #E97458;
+    padding: 16px 36px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 3 — NOT A REBRAND SPLIT (14.0-26.88s)
+     ═══════════════════════════════════════════ */
+  #phase3 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 20px;
+  }
+  #p3-overline { color: #E97458; }
+  #p3-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 80px;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: #F5F1EB;
+    max-width: 960px;
+    margin-bottom: 8px;
+  }
+  #p3-cols {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 960px;
+  }
+  .p3-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+  .p3-col.dim {
+    background: linear-gradient(135deg, rgba(107,154,239,0.10), rgba(107,154,239,0.03));
+    border: 1.5px solid rgba(107,154,239,0.25);
+  }
+  .p3-col.bright {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.04));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.15);
+  }
+  .p3-col-header {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .p3-col.dim .p3-col-header { color: #6B9AEF; }
+  .p3-col.bright .p3-col-header { color: #E97458; }
+  .p3-row {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 1.3;
+    color: #9A958D;
+  }
+  .p3-col.bright .p3-row { color: #F5F1EB; }
+  #p3-day-zero-wrap {
+    display: inline-block;
+    position: relative;
+  }
+  #p3-day-zero {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 52px;
+    letter-spacing: -1px;
+    color: #E97458;
+  }
+  #p3-day-zero-marker {
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    height: 7px;
+    width: 0;
+    border-radius: 4px;
+    background: #E97458;
+    box-shadow: 0 0 16px rgba(233,116,88,0.6);
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 4 — 8-BETA PILL CLUSTER (26.88-45.79s)
+     ═══════════════════════════════════════════ */
+  #phase4 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+  #p4-overline { color: #E97458; }
+  #p4-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 96px;
+    line-height: 0.92;
+    letter-spacing: -3px;
+    color: #E97458;
+    text-shadow: 0 0 60px rgba(233,116,88,0.40);
+    max-width: 960px;
+    margin-bottom: 4px;
+  }
+  #p4-subhead {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: #9A958D;
+    margin-bottom: 8px;
+  }
+  #p4-pills-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 960px;
+  }
+  .p4-pill-row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+  }
+  .p4-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 1.5px solid rgba(233,116,88,0.35);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    color: #F5F1EB;
+    text-align: center;
+    line-height: 1.1;
+  }
+  #p4-sub-card {
+    width: 960px;
+    padding: 16px 24px;
+    border-radius: 14px;
+    background: rgba(233,116,88,0.06);
+    border: 1px solid rgba(233,116,88,0.20);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 32px;
+    color: #E97458;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 5 — AWS INTEGRATION RECEIPTS (45.79-66.21s)
+     ═══════════════════════════════════════════ */
+  #phase5 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+  #p5-overline { color: #6B9AEF; }
+  #p5-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 58px;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    color: #F5F1EB;
+    max-width: 960px;
+  }
+  #p5-url-pill {
+    width: 960px;
+    padding: 22px 26px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.04));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.15);
+    position: relative;
+    min-height: 120px;
+  }
+  #p5-url-text {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 38px;
+    color: #F5F1EB;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+  #p5-url-marker {
+    position: absolute;
+    bottom: 12px;
+    left: 26px;
+    height: 5px;
+    width: 0;
+    border-radius: 3px;
+    background: #6B9AEF;
+    box-shadow: 0 0 16px rgba(107,154,239,0.6);
+  }
+  #p5-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 960px;
+  }
+  .p5-chip {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 26px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.12), rgba(107,154,239,0.03));
+    border: 1.5px solid rgba(107,154,239,0.30);
+  }
+  .p5-chip-icon {
+    font-size: 40px;
+    min-width: 48px;
+    text-align: center;
+  }
+  .p5-chip-body { display: flex; flex-direction: column; gap: 4px; }
+  .p5-chip-text {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 44px;
+    color: #F5F1EB;
+    line-height: 1.1;
+  }
+  .p5-chip-sub {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 32px;
+    color: #9A958D;
+    letter-spacing: 1px;
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 6 — 18 REGIONS SLAM (66.21-73.54s)
+     ═══════════════════════════════════════════ */
+  #phase6 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 12px;
+  }
+  #p6-overline { color: #E97458; }
+  #p6-counter-wrap {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 4px;
+  }
+  #p6-counter {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 280px;
+    line-height: 0.85;
+    letter-spacing: -8px;
+    color: #E97458;
+    text-shadow: 0 0 120px rgba(233,116,88,0.55), 0 8px 32px rgba(0,0,0,0.6);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p6-counter-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.1;
+    color: #F5F1EB;
+    text-align: left;
+    max-width: 260px;
+  }
+  #p6-map {
+    width: 900px;
+    height: 300px;
+    position: relative;
+    margin-top: 4px;
+  }
+  #p6-map-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.15;
+  }
+  .p6-dot {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #E97458;
+    box-shadow: 0 0 16px rgba(233,116,88,0.9);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  #p6-tail {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 30px;
+    color: #9A958D;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 7 — CUSTOMER TRUST ROW (73.81-87.56s)
+     ═══════════════════════════════════════════ */
+  #phase7 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+  #p7-overline { color: #9A958D; }
+  #p7-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    color: #F5F1EB;
+    max-width: 960px;
+  }
+  .p7-wordmark-card {
+    width: 960px;
+    padding: 30px 34px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #p7-wm-1 {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.04));
+    border: 2px solid rgba(167,139,250,0.35);
+  }
+  #p7-wm-2 {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.04));
+    border: 2px solid rgba(107,154,239,0.35);
+  }
+  #p7-wm-3 {
+    background: linear-gradient(135deg, rgba(125,211,166,0.15), rgba(125,211,166,0.04));
+    border: 2px solid rgba(125,211,166,0.35);
+  }
+  .p7-wm-logo {
+    height: 80px;
+    width: auto;
+    max-width: 400px;
+    object-fit: contain;
+    object-position: left center;
+    display: block;
+  }
+  /* ReliaQuest and OpenRouter logos are dark-on-light — invert to white on dark stage */
+  #p7-wm-1 .p7-wm-logo,
+  #p7-wm-2 .p7-wm-logo {
+    filter: brightness(0) invert(1);
+  }
+  /* Emergent logo is already white — no filter needed */
+  #p7-wm-3 .p7-wm-logo {
+    filter: none;
+  }
+  .p7-wm-sector {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 32px;
+    color: #9A958D;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 8 — DECISION MATRIX (87.56-99.31s)
+     ═══════════════════════════════════════════ */
+  #phase8 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+  #p8-overline { color: #9A958D; }
+  #p8-headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 120px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: #F5F1EB;
+  }
+  #p8-cols {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 960px;
+    margin-top: 4px;
+  }
+  .p8-col {
+    padding: 26px 26px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #p8-col-left {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.45);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  #p8-col-right {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.15);
+  }
+  .p8-q {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 34px;
+    color: #9A958D;
+    letter-spacing: 1px;
+  }
+  .p8-a {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 60px;
+    letter-spacing: -1px;
+    line-height: 1.0;
+  }
+  #p8-col-left .p8-a { color: #E97458; }
+  #p8-col-right .p8-a { color: #6B9AEF; }
+  .p8-detail {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    color: #9A958D;
+    line-height: 1.3;
+  }
+  #p8-inside-aws-wrap {
+    position: relative;
+    display: inline;
+  }
+  #p8-marker {
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    height: 5px;
+    width: 0;
+    border-radius: 3px;
+    background: #6B9AEF;
+    box-shadow: 0 0 14px rgba(107,154,239,0.6);
+  }
+
+  /* ═══════════════════════════════════════════
+     PHASE 9 — THUMBNAIL HOLD (99.31-109.68s)
+     ALL 5 REQUIRED ELEMENTS — ≥9.67s static hold
+     ═══════════════════════════════════════════ */
+  #phase9 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 28px;
+  }
+  /* #p9-brand removed — top-banner already shows Anthropic × AWS persistently */
+  /* TOPIC STATEMENT — dominant element, ≥120px (160px) */
+  #p9-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: #F5F1EB;
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p9-topic-slam .accent { color: #E97458; }
+  /* VISUAL ANCHOR — GA badge chip */
+  #p9-ga-chip {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 48px;
+    letter-spacing: 2px;
+    color: #0B0F18;
+    background: #E97458;
+    padding: 18px 40px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  /* OUTCOME RECEIPT line — 44px */
+  #p9-outcome {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 44px;
+    color: #9A958D;
+    letter-spacing: 2px;
+    line-height: 1.4;
+    max-width: 960px;
+  }
+  /* SUBORDINATE CTA pill — 46px */
+  #p9-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 44px;
+    border-radius: 999px;
+    background: #F5F1EB;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 46px;
+    color: #0B0F18;
+    letter-spacing: 0.5px;
+  }
+  /* Marker circle overlay */
+  #p9-marker-circle {
+    position: absolute;
+    top: 580px;
+    left: 48px;
+    width: 700px;
+    height: 196px;
+    border: 5px solid #E97458;
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: 0 0 28px rgba(233,116,88,0.35);
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="111"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient warm wash -->
+  <div id="ambient"></div>
+
+  <!-- Shape backdrop — 14 deterministic Anthropic-style shapes -->
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner — Anthropic + AWS lockup -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+    <span id="top-banner-divider">·</span>
+    <img id="top-banner-aws" src="assets/aws-logo.png" alt="AWS" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — Hook: Bedrock lag pain
+       data_start=0.0, data_duration=6.59
+       BEAT 1a (0.0-2.5s): thumbnail-grade topic lockup — first frame is thumbnail-grade
+         per shorts-thumbnail-frames.md (both first AND last frame required).
+       BEAT 1b (2.5-6.59s): pain hook "WEEKS LATE." fades in as topic fades to banner.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <!-- Beat 1a: thumbnail-grade topic lockup (visible from t=0, dominant until ~2.5s) -->
+    <div id="p1-topic-lockup">
+      <!-- Brand chrome is the persistent #top-banner (Anthropic × AWS) — no duplicate needed here -->
+      <!-- Topic slam — dominant, 160px, thumbnail-grade -->
+      <div id="p1-topic-slam">CLAUDE<br>PLATFORM<br><span class="accent">ON AWS.</span></div>
+      <!-- Outcome receipt -->
+      <div id="p1-ga-receipt">GA · MAY 11, 2026 · 18 REGIONS</div>
+    </div>
+    <!-- Beat 1b: pain hook (enters at ~2.5s as topic lockup fades) -->
+    <div class="phase-content" id="p1-pain-content" style="position:absolute;top:0;left:0;z-index:1;opacity:0;">
+      <div class="overline" id="p1-overline">AWS DEVS, READ THIS</div>
+      <div id="p1-main-line">Bedrock gets the new features…</div>
+      <div id="p1-slam-wrap">
+        <div id="p1-slam">WEEKS<br><span id="p1-late-wrap">LATE.<span id="p1-marker"></span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — Pivot reveal
+       data_start=6.59, data_duration=7.41
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div id="p2-slam">BUT<br>TODAY.</div>
+      <div id="p2-title">CLAUDE PLATFORM ON AWS</div>
+      <div id="p2-date-chip">GA · MAY 11, 2026</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — Not-a-rebrand split
+       data_start=14.0, data_duration=12.88
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">THE PART MOST WILL MISS</div>
+      <div id="p3-headline">NOT A<br>REBRAND.</div>
+      <div id="p3-cols">
+        <div class="p3-col dim" id="p3-col-left">
+          <div class="p3-col-header">Claude on Bedrock</div>
+          <div class="p3-row">Data inside AWS</div>
+          <div class="p3-row">Feature subset</div>
+          <div class="p3-row">Weeks behind</div>
+        </div>
+        <div class="p3-col bright" id="p3-col-right">
+          <div class="p3-col-header">Platform on AWS</div>
+          <div class="p3-row">Full native API</div>
+          <div class="p3-row">100% features</div>
+          <div id="p3-day-zero-wrap">
+            <div id="p3-day-zero">DAY ZERO.</div>
+            <div id="p3-day-zero-marker"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — 8-beta pill cluster
+       data_start=26.88, data_duration=18.91
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">WHICH BETAS?</div>
+      <div id="p4-headline">8 BETAS.<br>DAY ZERO.</div>
+      <div id="p4-subhead">ENTIRE BETA SURFACE — NOW ON AWS</div>
+      <div id="p4-pills-grid">
+        <div class="p4-pill-row">
+          <div class="p4-pill" id="p4-pill-1">Managed Agents</div>
+          <div class="p4-pill" id="p4-pill-2">Advisor</div>
+        </div>
+        <div class="p4-pill-row">
+          <div class="p4-pill" id="p4-pill-3">Skills</div>
+          <div class="p4-pill" id="p4-pill-4">Files</div>
+        </div>
+        <div class="p4-pill-row">
+          <div class="p4-pill" id="p4-pill-5">MCP Connector</div>
+          <div class="p4-pill" id="p4-pill-6">Code Execution</div>
+        </div>
+        <div class="p4-pill-row">
+          <div class="p4-pill" id="p4-pill-7">Web Search</div>
+          <div class="p4-pill" id="p4-pill-8">Claude Console</div>
+        </div>
+      </div>
+      <div id="p4-sub-card">prompt improver · generator · evals UI</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — AWS integration receipts
+       data_start=45.79, data_duration=20.42
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">THROUGH YOUR AWS ACCOUNT</div>
+      <div id="p5-headline">The endpoint, the auth,<br>the billing.</div>
+      <div id="p5-url-pill">
+        <div id="p5-url-text"></div>
+        <div id="p5-url-marker"></div>
+      </div>
+      <div id="p5-chips">
+        <div class="p5-chip" id="p5-chip-1">
+          <div class="p5-chip-icon">🔐</div>
+          <div class="p5-chip-body">
+            <div class="p5-chip-text">IAM auth</div>
+            <div class="p5-chip-sub">AWS-native identity</div>
+          </div>
+        </div>
+        <div class="p5-chip" id="p5-chip-2">
+          <div class="p5-chip-icon">📋</div>
+          <div class="p5-chip-body">
+            <div class="p5-chip-text">CloudTrail audit</div>
+            <div class="p5-chip-sub">Every call logged</div>
+          </div>
+        </div>
+        <div class="p5-chip" id="p5-chip-3">
+          <div class="p5-chip-icon">💳</div>
+          <div class="p5-chip-body">
+            <div class="p5-chip-text">AWS Marketplace billing</div>
+            <div class="p5-chip-sub">Retires against commitment</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 6 — 18 regions slam
+       data_start=66.21, data_duration=7.33
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">COVERAGE AT GA</div>
+      <div id="p6-counter-wrap">
+        <div id="p6-counter">0</div>
+        <div id="p6-counter-label">AWS<br>REGIONS</div>
+      </div>
+      <div id="p6-map">
+        <svg id="p6-map-svg" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#F5F1EB" stroke="none">
+            <!-- North America simplified -->
+            <path d="M40,55 L145,35 L185,55 L205,98 L175,138 L150,158 L118,178 L85,195 L55,185 L35,155 L25,115 Z"/>
+            <!-- South America -->
+            <path d="M105,218 L148,198 L168,218 L172,268 L157,295 L125,275 L80,245 Z"/>
+            <!-- Europe -->
+            <path d="M358,38 L418,28 L448,48 L458,88 L438,108 L398,118 L368,98 L348,68 Z"/>
+            <!-- Africa -->
+            <path d="M375,128 L438,118 L468,138 L478,198 L468,255 L438,278 L398,288 L368,258 L355,218 L345,158 Z"/>
+            <!-- Asia -->
+            <path d="M468,18 L598,8 L718,28 L778,58 L798,98 L778,138 L718,155 L648,165 L578,155 L518,135 L478,105 L458,65 Z"/>
+            <!-- Australia -->
+            <path d="M678,205 L758,195 L798,215 L808,265 L788,290 L738,295 L688,275 L658,245 L655,220 Z"/>
+          </g>
+        </svg>
+        <!-- 18 region dots — positioned relative to 900x300 map container -->
+        <!-- US (6) -->
+        <div class="p6-dot" id="d1"  style="left:9%;top:38%"></div>
+        <div class="p6-dot" id="d2"  style="left:13%;top:48%"></div>
+        <div class="p6-dot" id="d3"  style="left:17%;top:40%"></div>
+        <div class="p6-dot" id="d4"  style="left:7%;top:52%"></div>
+        <div class="p6-dot" id="d5"  style="left:20%;top:52%"></div>
+        <div class="p6-dot" id="d6"  style="left:4%;top:44%"></div>
+        <!-- Canada (2) -->
+        <div class="p6-dot" id="d7"  style="left:11%;top:22%"></div>
+        <div class="p6-dot" id="d8"  style="left:16%;top:16%"></div>
+        <!-- EU: FRA/IRL/STO/LON (4) -->
+        <div class="p6-dot" id="d9"  style="left:42%;top:34%"></div>
+        <div class="p6-dot" id="d10" style="left:40%;top:22%"></div>
+        <div class="p6-dot" id="d11" style="left:47%;top:16%"></div>
+        <div class="p6-dot" id="d12" style="left:44%;top:26%"></div>
+        <!-- APAC: TYO/SIN/SYD (3) -->
+        <div class="p6-dot" id="d13" style="left:82%;top:32%"></div>
+        <div class="p6-dot" id="d14" style="left:73%;top:60%"></div>
+        <div class="p6-dot" id="d15" style="left:87%;top:72%"></div>
+        <!-- Brazil (1) -->
+        <div class="p6-dot" id="d16" style="left:23%;top:75%"></div>
+        <!-- South Africa (1) -->
+        <div class="p6-dot" id="d17" style="left:43%;top:87%"></div>
+        <!-- Bahrain (1) -->
+        <div class="p6-dot" id="d18" style="left:57%;top:50%"></div>
+      </div>
+      <div id="p6-tail">BROADER THAN MOST CLAUDE ROUTES AT LAUNCH</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 7 — Customer trust row
+       data_start=73.81, data_duration=13.75
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">LAUNCH CUSTOMERS</div>
+      <div id="p7-headline">3 named customers,<br>day one.</div>
+      <div class="p7-wordmark-card" id="p7-wm-1" style="opacity:0">
+        <img class="p7-wm-logo" src="assets/reliaquest-logo.svg" alt="ReliaQuest" />
+        <div class="p7-wm-sector">Cybersecurity</div>
+      </div>
+      <div class="p7-wordmark-card" id="p7-wm-2" style="opacity:0">
+        <img class="p7-wm-logo" src="assets/openrouter-logo.svg" alt="OpenRouter" />
+        <div class="p7-wm-sector">AI Routing · AWS IAM</div>
+      </div>
+      <div class="p7-wordmark-card" id="p7-wm-3" style="opacity:0">
+        <img class="p7-wm-logo" src="assets/emergent-logo.svg" alt="Emergent" />
+        <div class="p7-wm-sector">Day-one · Every Model</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 8 — Decision matrix: when to pick which
+       data_start=87.56, data_duration=11.75
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">SO WHEN DO YOU PICK WHICH?</div>
+      <div id="p8-headline">WHICH<br>ONE?</div>
+      <div id="p8-cols">
+        <div class="p8-col" id="p8-col-left" style="opacity:0">
+          <div class="p8-q">Every beta from day one?</div>
+          <div class="p8-a">Platform on AWS</div>
+          <div class="p8-detail">Full native API · data outside AWS</div>
+        </div>
+        <div class="p8-col" id="p8-col-right" style="opacity:0">
+          <div class="p8-q">Data MUST stay inside AWS?</div>
+          <div class="p8-a">Bedrock</div>
+          <div class="p8-detail">Data-resident · <span id="p8-inside-aws-wrap">inside AWS<div id="p8-marker"></div></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 9 — Thumbnail-grade final frame
+       data_start=99.31, data_duration=10.37 (→109.68s)
+       5 MANDATORY ELEMENTS: topic slam + anchor + brand + outcome + CTA
+       STATIC HOLD ≥9.67s — visual-pacing-5s EXPLICITLY RELAXED for terminal hold
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase9" class="phase">
+    <!-- Marker circle overlay sits outside phase-content to avoid padding constraints -->
+    <div id="p9-marker-circle"></div>
+    <div class="phase-content">
+      <!-- Brand chrome is the persistent #top-banner (Anthropic × AWS) — no duplicate needed here -->
+      <!-- TOPIC STATEMENT — dominant, 160px -->
+      <div id="p9-topic-slam">CLAUDE<br>PLATFORM.<br><span class="accent">ON AWS.</span></div>
+      <!-- VISUAL ANCHOR — GA badge -->
+      <div id="p9-ga-chip">GA · MAY 11, 2026</div>
+      <!-- OUTCOME RECEIPT -->
+      <div id="p9-outcome">8 betas · 18 regions · Day zero.</div>
+      <!-- SUBORDINATE CTA -->
+      <div id="p9-cta">Follow for more →</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION (109.68s ElevenLabs narration)
+       ═══════════════════════════════════════════════════════ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="109.68"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SFX — cinematic-whoosh at each phase boundary
+       HARD RULE (audio-design.md 2026-05-10):
+         data-start = sceneT (exact visual swap moment)
+         data-duration = 1.5s (full decay tail)
+         data-volume = 0.11
+       ═══════════════════════════════════════════════════════ -->
+  <!-- T1: phase1 → phase2 at 6.59s -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="6.59" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T2: phase2 → phase3 at 14.0s -->
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="14.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T3: phase3 → phase4 at 26.88s -->
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="26.88" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T4: phase4 → phase5 at 45.79s -->
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="45.79" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T5: phase5 → phase6 at 66.49s -->
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="66.49" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T6: phase6 → phase7 at 73.81s -->
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="73.81" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T7: phase7 → phase8 at 87.56s -->
+  <audio id="sfx-whoosh-t7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="87.56" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T8: phase8 → phase9 at 99.31s -->
+  <audio id="sfx-whoosh-t8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="99.31" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay — last child, tints everything via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter (no Math.random / Date.now)
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(function(img) {
+      return {
+        left: parseFloat(img.style.left),
+        top:  parseFloat(img.style.top),
+        size: parseFloat(img.style.width),
+      };
+    });
+    phaseStartTimes.forEach(function(sceneT, sceneIdx) {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map(function(img, i) {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t2 = 0; t2 < MAX_TRIES; t2++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: function(i) { return positions[i].x; },
+        y: function(i) { return positions[i].y; },
+        rotation: function(i) { return positions[i].rot; },
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('claude-platform-on-aws', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  var tl = gsap.timeline({ paused: true });
+
+  // ─── Ambient breath + progress bar ───────────────────
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 55, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: 111, ease: "none" },
+    0);
+
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 1 — Hook: Bedrock lag pain (0.0 – 6.59s)
+  // BEAT 1a (0.0-2.5s): thumbnail-grade topic lockup — satisfies
+  //   shorts-thumbnail-frames.md FIRST-FRAME requirement.
+  //   Topic lockup is at full opacity from t=0 (no fade-in delay).
+  //   visual-pacing-5s explicitly relaxed for 2.5s opening hold.
+  //   Anchors: "Every"=0.046 (narration starts), "pain."=2.473 (pivot transition)
+  // BEAT 1b (2.5-6.59s): pain hook reveals as lockup fades out.
+  //   Anchors: "Bedrock"=3.727, "weeks"=5.051, "late."=5.318
+  // ═══════════════════════════════════════════════════════════
+
+  // Beat 1a: topic lockup — already visible (no entrance animation needed, immediate state)
+  // Hold static until ~2.5s, then fade out as beat 1b fades in
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.5, ease: "power2.in" }, 2.4);
+
+  // Beat 1b: pain hook fades in at ~2.5s (after "knows this pain." at 2.473)
+  tl.to("#p1-pain-content", { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.5);
+  tl.from("#p1-overline",  { y: 20, duration: 0.4, ease: "power2.out" }, 2.5);
+  tl.from("#p1-main-line", { y: 30, duration: 0.5, ease: "power3.out" }, 2.8);
+  tl.from("#p1-slam",      { scale: 0.82, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, 5.051);
+  // Inline shake on slam
+  tl.to("#p1-slam", { x: 5,  duration: 0.04, ease: "none" }, 5.72);
+  tl.to("#p1-slam", { x: -5, duration: 0.04, ease: "none" }, 5.76);
+  tl.to("#p1-slam", { x: 4,  duration: 0.04, ease: "none" }, 5.80);
+  tl.to("#p1-slam", { x: 0,  duration: 0.04, ease: "none" }, 5.84);
+  // Marker sweep at word "late." = 5.318s
+  tl.to("#p1-marker", { width: "100%", duration: 0.5, ease: "back.out(1.7)" }, 5.318);
+
+  // ─── T1: phase1 → phase2 at 6.59s ───────────────────
+  var T1 = 6.59;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 2 — Pivot reveal (6.59 – 14.0s)
+  // Anchors: "But"=6.594, "Claude"=9.752, "Generally"=12.352
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p2-slam",      { scale: 0.75, opacity: 0, duration: 0.55, ease: "back.out(1.7)" }, 6.594);
+  tl.to("#p2-slam",        { x: 6,  duration: 0.04, ease: "none", overwrite: "auto" }, 7.15);
+  tl.to("#p2-slam",        { x: -6, duration: 0.04, ease: "none", overwrite: "auto" }, 7.19);
+  tl.to("#p2-slam",        { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 7.23);
+  tl.to("#p2-slam",        { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 7.27);
+  // Slam fades out as product title reveals
+  tl.to("#p2-slam",        { opacity: 0, y: -20, duration: 0.35, ease: "power2.in" }, 9.35);
+  tl.from("#p2-title",     { y: 40, opacity: 0, duration: 0.7, ease: "back.out(1.5)" }, 9.752);
+  tl.from("#p2-date-chip", { scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.5)" }, 12.352);
+
+  // ─── T2: phase2 → phase3 at 14.0s ───────────────────
+  var T2 = 14.0;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 3 — Not-a-rebrand split (14.0 – 26.88s)
+  // Anchors: "And"=14.001, "This"=16.729, "Bedrock"=18.784,
+  //          "Platform-on-A"=21.837, "Day"=25.831, "zero."=26.017
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 14.001);
+  tl.from("#p3-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 16.729);
+  // HIDDEN-UNTIL-REVEAL: explicit tl.set at t=0 + tl.to at reveal time
+  tl.set("#p3-col-left",     { opacity: 0, x: -30 }, 0);
+  tl.set("#p3-col-right",    { opacity: 0, x: 30  }, 0);
+  tl.set("#p3-day-zero-wrap",{ opacity: 0 }, 0);
+  tl.to("#p3-col-left",  { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.5)" }, 18.784);
+  tl.to("#p3-col-right", { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.5)" }, 21.837);
+  tl.to("#p3-day-zero-wrap", { opacity: 1, duration: 0.4, ease: "power2.out" }, 25.831);
+  tl.to("#p3-day-zero-marker", { width: "100%", duration: 0.5, ease: "back.out(1.7)" }, 26.017);
+
+  // ─── T3: phase3 → phase4 at 26.88s ──────────────────
+  var T3 = 26.88;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0, duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 4 — 8-beta pill cluster (26.88 – 45.79s)
+  // Anchors from transcript.json word.start (retention-strategy.md):
+  //   Managed=31.345, Advisor=32.239, Skills=32.797, Files=33.354,
+  //   MCP=33.888, Code=35.920, Web=36.941, Console=38.149
+  //   Sub-card @ "The"=41.864 (9th visual beat — satisfies 5s pacing cap)
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 26.876);
+  tl.from("#p4-headline", { scale: 0.88, opacity: 0, duration: 0.6, ease: "back.out(1.5)" }, 27.352);
+  tl.from("#p4-subhead",  { y: 16, opacity: 0, duration: 0.4, ease: "power2.out" }, 28.176);
+  // HIDDEN-UNTIL-REVEAL for all 8 pills + sub-card
+  tl.set("#p4-pill-1",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-2",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-3",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-4",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-5",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-6",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-7",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-pill-8",   { opacity: 0, y: 20, scale: 0.92 }, 0);
+  tl.set("#p4-sub-card", { opacity: 0, y: 16 }, 0);
+  tl.to("#p4-pill-1", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 31.345);
+  tl.to("#p4-pill-2", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 32.239);
+  tl.to("#p4-pill-3", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 32.797);
+  tl.to("#p4-pill-4", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 33.354);
+  tl.to("#p4-pill-5", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 33.888);
+  tl.to("#p4-pill-6", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 35.920);
+  tl.to("#p4-pill-7", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 36.941);
+  tl.to("#p4-pill-8", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 38.149);
+  // 9th visual beat at 41.864s — satisfies visual-pacing-5s rule (gap from 38.149 to 41.864 = 3.7s < 5s)
+  tl.to("#p4-sub-card", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 41.864);
+
+  // ─── T4: phase4 → phase5 at 45.79s ──────────────────
+  var T4 = 45.79;
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0, duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T4 + 0.6);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 5 — AWS integration receipts (45.79 – 66.21s)
+  // Anchors: "And"=45.788, "The"=49.561, marker@52.557, "Auth"=55.958,
+  //          "Every"=58.327, "Billing"=60.927
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 45.788);
+  tl.from("#p5-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 46.461);
+  tl.from("#p5-url-pill", { scale: 0.96, opacity: 0, duration: 0.5, ease: "power2.out" }, 49.561);
+
+  // gsap-typewriter: type the URL character by character (deterministic via tl.call)
+  (function() {
+    var fullURL = "aws-external-anthropic\n.<region>.api.aws";
+    var el = document.getElementById('p5-url-text');
+    el.textContent = "";
+    var chars = fullURL.split('');
+    var typeStart = 49.8;
+    var typeDuration = 2.8; // completes ~52.6s
+    chars.forEach(function(ch, i) {
+      var t = typeStart + (i / chars.length) * typeDuration;
+      tl.call(function(c) { el.textContent += c; }, [ch], t);
+    });
+  })();
+
+  // Marker sweeps under "aws-external-anthropic" host portion
+  tl.to("#p5-url-marker", { width: "340px", duration: 0.5, ease: "power2.out" }, 52.557);
+
+  // HIDDEN-UNTIL-REVEAL chips
+  tl.set("#p5-chip-1", { opacity: 0, x: -30 }, 0);
+  tl.set("#p5-chip-2", { opacity: 0, x: -30 }, 0);
+  tl.set("#p5-chip-3", { opacity: 0, x: -30 }, 0);
+  tl.to("#p5-chip-1", { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.5)" }, 55.947);
+  tl.to("#p5-chip-2", { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.5)" }, 59.023);
+  tl.to("#p5-chip-3", { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.5)" }, 61.171);
+
+  // ─── T5: phase5 → phase6 at 66.49s ──────────────────
+  var T5 = 66.49;
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5", { opacity: 0, duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase6", { visibility: "visible" }, T5 + 0.39);
+  tl.fromTo("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.6, ease: "power1.out" }, T5 + 0.4);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 6 — 18 regions slam (66.49 – 73.81s)
+  // Anchor: "Plus,"=66.488, counter tween 67.114→68.186,
+  //         18 dots 66.88–69.21s quick stagger, "That's"=70.691
+  // FACT-CHECK ENFORCED: 18 regions (NOT 17)
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p6-overline",      { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 66.488);
+  tl.from("#p6-counter-label", { x: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 66.78);
+  tl.from("#p6-map",           { opacity: 0, duration: 0.6, ease: "power2.out" }, 66.488);
+
+  // Counter tween 0→18 (object-based, deterministic — no onUpdate captures external state)
+  var counterProxy = { val: 0 };
+  var counterEl = document.getElementById('p6-counter');
+  tl.to(counterProxy, {
+    val: 18,
+    duration: 1.072,
+    ease: "power2.out",
+    onUpdate: function() { counterEl.textContent = Math.round(counterProxy.val); },
+  }, 67.114);
+
+  // 18 region dots — quick stagger (narration says "eighteen AWS regions" as one phrase)
+  ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10','d11','d12','d13','d14','d15','d16','d17','d18'].forEach(function(id, i) {
+    tl.to('#' + id, { scale: 1, opacity: 1, duration: 0.25, ease: "back.out(2)" }, 66.88 + i * 0.13);
+  });
+
+  tl.from("#p6-tail", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 70.691);
+
+  // ─── T6: phase6 → phase7 at 73.81s ──────────────────
+  var T6 = 73.81;
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T6);
+  tl.to("#phase6", { opacity: 0, duration: 0.4, ease: "power1.in" }, T6 + 0.3);
+  tl.set("#phase6", { visibility: "hidden" }, T6 + 0.7);
+  tl.set("#phase7", { visibility: "visible" }, T6 + 0.39);
+  tl.fromTo("#phase7", { filter: "blur(20px)", scale: 0.97, opacity: 0 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.6, ease: "power1.out" }, T6 + 0.4);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 7 — Customer trust row (73.81 – 87.56s)
+  // Anchors: "Three"=73.814, ReliaQuest=76.913, OpenRouter=79.084, Emergent=83.728
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p7-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 73.814);
+  tl.from("#p7-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 74.313);
+  // p7-wm-* start hidden via inline HTML opacity:0; use fromTo (exempt from gsap_css_transform_conflict)
+  tl.fromTo("#p7-wm-1", { x: -40, scale: 0.95, opacity: 0 }, { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 76.913);
+  tl.fromTo("#p7-wm-2", { x: -40, scale: 0.95, opacity: 0 }, { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 79.084);
+  tl.fromTo("#p7-wm-3", { x: -40, scale: 0.95, opacity: 0 }, { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 83.728);
+
+  // ─── T7: phase7 → phase8 at 87.56s ──────────────────
+  var T7 = 87.56;
+  tl.to("#phase7", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T7);
+  tl.to("#phase7", { opacity: 0, duration: 0.4, ease: "power1.in" }, T7 + 0.3);
+  tl.set("#phase7", { visibility: "hidden" }, T7 + 0.7);
+  tl.set("#phase8", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T7 + 0.4);
+  tl.to("#phase8", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T7 + 0.4);
+  tl.to("#phase8", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T7 + 0.6);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 8 — Decision matrix (87.56 – 99.31s)
+  // Anchors: "So"=87.560, left col "If"=88.999, right col "If"=93.527, marker "A"=94.967
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#p8-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 87.560);
+  tl.from("#p8-headline", { scale: 0.88, opacity: 0, duration: 0.6, ease: "back.out(1.5)", immediateRender: false }, 88.140);
+  // p8-col-* start hidden via inline HTML opacity:0; use fromTo (exempt from gsap_css_transform_conflict)
+  tl.fromTo("#p8-col-left",  { y: 24, opacity: 0 }, { opacity: 1, y: 0, duration: 0.55, ease: "back.out(1.5)" }, 88.999);
+  tl.fromTo("#p8-col-right", { y: 24, opacity: 0 }, { opacity: 1, y: 0, duration: 0.55, ease: "back.out(1.5)" }, 93.527);
+  // Blue marker sweep on "inside AWS" at word "A"=94.967s
+  tl.to("#p8-marker", { width: "100%", duration: 0.5, ease: "back.out(1.7)" }, 94.967);
+
+  // ─── T8: phase8 → phase9 at 99.31s ──────────────────
+  var T8 = 99.31;
+  tl.to("#phase8", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T8);
+  tl.to("#phase8", { opacity: 0, duration: 0.4, ease: "power1.in" }, T8 + 0.3);
+  tl.set("#phase8", { visibility: "hidden" }, T8 + 0.7);
+  tl.set("#phase9", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T8 + 0.4);
+  tl.to("#phase9", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T8 + 0.4);
+  tl.to("#phase9", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T8 + 0.6);
+
+  // ═══════════════════════════════════════════════════════════
+  // PHASE 9 — Thumbnail-grade final frame (99.31 – 109.68s)
+  // All 5 required elements enter within 0.5s composite stagger at 99.309s
+  // Entrances finish by ~100.01s → 9.67s completely static hold
+  // visual-pacing-5s EXPLICITLY RELAXED for this terminal hold
+  // ═══════════════════════════════════════════════════════════
+  // #p9-brand removed — top-banner provides persistent brand chrome
+  tl.from("#p9-topic-slam", { scale: 0.88, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 99.309);
+  tl.from("#p9-ga-chip",    { scale: 0.85, opacity: 0, duration: 0.45, ease: "back.out(1.5)" }, 99.509);
+  tl.from("#p9-outcome",    { y: 20, opacity: 0, duration: 0.45, ease: "power2.out" }, 99.609);
+  tl.from("#p9-cta",        { y: 20, opacity: 0, duration: 0.45, ease: "power2.out" }, 99.709);
+  // Marker circle draws on "ON AWS." after elements settle at 100.01s
+  tl.fromTo("#p9-marker-circle", { scale: 0.88, rotation: -3 }, { opacity: 1, scale: 1, rotation: -3, duration: 0.6, ease: "power2.out" }, 100.01);
+  // Phase 9 stays fully visible — narration runs under the static hold
+
+  // ─── Shape reposition at every phase transition ───────
+  // Paired with cinematic-whoosh SFX per audio-design.md DEFAULT
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-platform-on-aws',
+    [T1, T2, T3, T4, T5, T6, T7, T8]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

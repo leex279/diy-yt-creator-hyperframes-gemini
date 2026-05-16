@@ -1,0 +1,1 @@
+So how did one fork-PR own Tan Stack? Here's the smoking gun. A workflow file called bundle-size dot yamel ran on the pull request target trigger. That single line means fork code runs with main-repo permissions. Then it checked out the merge commit of the attacker's PR. Fork code. Real secrets. Same runner. The attacker closed the PR moments later. The damage was already cached.

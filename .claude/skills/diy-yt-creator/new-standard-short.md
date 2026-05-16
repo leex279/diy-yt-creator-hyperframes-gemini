@@ -193,9 +193,13 @@ Run in background. Capture the URL it prints (typically `http://localhost:5173`)
 
 Same as anthropic.
 
+### 11.7. Generate YouTube description (MANDATORY — never skip)
+
+Same step as in [`new-anthropic-short.md`](./new-anthropic-short.md) §11.7. Follow [`.claude/rules/youtube-metadata.md`](../../rules/youtube-metadata.md) end-to-end. LEAN structure: vidIQ keyword research → write `videos/<slug>/youtube-description.md` (SEO hook → Dynamous block in `----` **MANDATORY on every Short** (independent of `dynamousPromotion` in `meta.json`, which only gates ON-SCREEN promotion) → Resources: → Hostinger affiliate block in `----` MANDATORY → engagement question → 15-25 hashtags) → validate every URL with `WebFetch`. **Shorts skip the Chapters section entirely. NO Key Changes / Key Concepts / Key Stats / "What's in this short" bullet sections — explicitly cut.**
+
 ### 12. Report to the user
 
-Same fields as anthropic, plus:
+Same fields as anthropic (including `YouTube description: videos/<slug>/youtube-description.md`), plus:
 
 - **Template**: `standard` (so the user knows which aesthetic is in play).
 

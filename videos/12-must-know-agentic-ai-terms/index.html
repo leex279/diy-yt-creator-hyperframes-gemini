@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>12 Must-Know Agentic AI Terms (2026)</title>
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080 dark stage. Full design system
+     in DESIGN.md. Edit values per video; keep families.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient wash — slow breath under all scenes */
+  /* COMPONENT: shared/lib/components/ambient-radial/ (adapted) */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 20%, rgba(59, 130, 246, 0.08), transparent 55%),
+      radial-gradient(circle at 78% 78%, rgba(139, 92, 246, 0.06), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(6, 182, 212, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — 14 deterministic shapes scattered at 5% opacity. */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.045;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay — fractal noise via SVG feTurbulence, blended over
+     the entire stack to break up gradient banding. Highest z-index above
+     scenes but below captions/UI chrome. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — persistent banner across all scenes.
+     ────────────────────────────────────────────────── */
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  #top-banner {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 1920px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Slim progress bar — bottom edge */
+  /* COMPONENT: shared/lib/components/progress-bar/ */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.55);
+  }
+
+  /* Sub-composition wrappers — each scene's container div.
+     Initially invisible; the root timeline crossfades them in/out.
+     The first scene starts visible (no incoming crossfade needed). */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-hook-wrap         { z-index: 1; opacity: 1; }
+  #scene-image-hero-wrap   { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-side-by-side-wrap { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-stat-pill-row-wrap{ z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-source-cards-wrap { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-video-embed-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-arch-stack-wrap   { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap          { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Captions wrapper sits above scenes, below noise overlay */
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="473"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Ambient + shape backdrop — sit behind scenes -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner. Swappable logo from shared/logos/ -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Brand" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS
+       Each wrapper points at an external sub-composition file.
+       data-track-index="1" (scene layer); NO data-duration —
+       the sub-comp's internal timeline owns its length.
+       Scene timing (data-start, seconds):
+         0   → hook
+         12  → image-hero
+         32  → side-by-side
+         55  → stat-pill-row
+         70  → source-cards
+         90  → video-embed
+         105 → architecture-stack
+         115 → cta
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-arch-stack-wrap" class="scene-wrapper"
+       data-composition-id="scene-architecture-stack"
+       data-composition-src="compositions/scene-architecture-stack.html"
+       data-start="25.2"
+       data-track-index="1"></div>
+
+  <div id="scene-side-by-side-wrap" class="scene-wrapper"
+       data-composition-id="scene-side-by-side"
+       data-composition-src="compositions/scene-side-by-side.html"
+       data-start="49.6"
+       data-track-index="1"></div>
+
+  <div id="scene-source-cards-wrap" class="scene-wrapper"
+       data-composition-id="scene-source-cards"
+       data-composition-src="compositions/scene-source-cards.html"
+       data-start="122.4"
+       data-track-index="1"></div>
+
+  <div id="scene-stat-pill-row-wrap" class="scene-wrapper"
+       data-composition-id="scene-stat-pill-row"
+       data-composition-src="compositions/scene-stat-pill-row.html"
+       data-start="207.6"
+       data-track-index="1"></div>
+
+  <div id="scene-image-hero-wrap" class="scene-wrapper"
+       data-composition-id="scene-image-hero"
+       data-composition-src="compositions/scene-image-hero.html"
+       data-start="274.2"
+       data-track-index="1"></div>
+
+  <div id="scene-video-embed-wrap" class="scene-wrapper"
+       data-composition-id="scene-video-embed"
+       data-composition-src="compositions/scene-video-embed.html"
+       data-start="360.2"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="411.5"
+       data-track-index="1"></div>
+
+  <!-- Captions sub-composition — populated by `npx hyperframes transcribe`.
+       Sits on track 9, above scenes but below the noise overlay z-index. -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <!-- Narration — single stem on track 2. Draft voice = edge-tts en-US-AndrewNeural +10%. -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="472"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 14 shapes.
+  // Mirrors templates/shorts/anthropic/index.html spawnShapes() but tuned for
+  // 1920x1080 horizontal canvas. No Math.random / Date.now — uses xmur3-style hash.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Subtle ambient drift — each shape gets a slow yoyo translate + rotation.
+  // Finite repeat count for deterministic seek.
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  // EFFECT: shared/lib/effects/phase-crossfade.js (adapted to scene wrappers)
+  // Both wrappers must have explicit z-index so the incoming paints on top
+  // during the overlap window. The total span is 1.1s.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  spawnShapes('long-form-standard', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 473;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath across full duration (slow sine yoyo)
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Drift the shapes
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'long-form-standard', TOTAL_DURATION);
+
+  // Linear progress fill across the composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in — one-shot
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ─── Scene labels — anchors so duration changes don't cascade ───
+  tl.addLabel("hook",          0)
+    .addLabel("arch-stack",    25.2)
+    .addLabel("side-by-side",  49.6)
+    .addLabel("source-cards",  122.4)
+    .addLabel("stat-pills",    207.6)
+    .addLabel("image-hero",    274.2)
+    .addLabel("video-embed",   360.2)
+    .addLabel("cta",           411.5);
+
+  // ─── Crossfades between adjacent scenes ───
+  // Each crossfade fires ~0.4s before the next scene's data-start so the
+  // incoming wrapper is already coming up when the sub-comp begins playing.
+  crossfadeScenes(tl, "#scene-hook-wrap",          "#scene-arch-stack-wrap",   "arch-stack-=0.4");
+  crossfadeScenes(tl, "#scene-arch-stack-wrap",    "#scene-side-by-side-wrap", "side-by-side-=0.4");
+  crossfadeScenes(tl, "#scene-side-by-side-wrap",  "#scene-source-cards-wrap", "source-cards-=0.4");
+  crossfadeScenes(tl, "#scene-source-cards-wrap",  "#scene-stat-pill-row-wrap","stat-pills-=0.4");
+  crossfadeScenes(tl, "#scene-stat-pill-row-wrap", "#scene-image-hero-wrap",   "image-hero-=0.4");
+  crossfadeScenes(tl, "#scene-image-hero-wrap",    "#scene-video-embed-wrap",  "video-embed-=0.4");
+  crossfadeScenes(tl, "#scene-video-embed-wrap",   "#scene-cta-wrap",          "cta-=0.4");
+
+  // Pad timeline to the full composition duration so the renderer captures
+  // the trailing static frames of the last scene.
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

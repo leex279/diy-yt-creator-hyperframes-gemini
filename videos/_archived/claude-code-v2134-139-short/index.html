@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code v2.1.134-v2.1.139 — Short</title>
+<link rel="stylesheet" href="tokens/claude-code-dark.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(88, 166, 255, 0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(163, 113, 247, 0.07), transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(63, 185, 80, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 720px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #version-branding {
+    position: absolute;
+    inset: 0;
+    opacity: 1.0;
+    pointer-events: none;
+    z-index: 9;
+  }
+  #version-branding .vb-logos {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-end;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.55));
+  }
+  #version-branding .vb-logos img {
+    width: 240px;
+    height: auto;
+  }
+  #version-branding .vb-version {
+    position: absolute;
+    bottom: 24px;
+    left: 30px;
+    right: 30px;
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.55);
+  }
+
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    gap: 28px;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* PHASE 1 — STATS OPENER WITH VERSION HEADER */
+  #phase1 .phase-content { text-align: center; }
+  #p1-overline { color: var(--accent-warn); }
+  #p1-version {
+    font-family: var(--sans);
+    font-weight: 900;
+    /* Range strings (e.g. "v2.1.134 -> v2.1.139") are wider than a single
+       tag. Drop from 150px to 96px so the full range fits on one line
+       inside the 1000px max-width. */
+    font-size: 96px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--accent-1);
+    text-shadow: 0 0 60px rgba(88,166,255,0.45), 0 6px 18px rgba(0,0,0,0.55);
+    max-width: 1000px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p1-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p1-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .stat-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    width: 920px;
+    padding: 32px 40px;
+    border-radius: 28px;
+  }
+  .stat-pill.cyan {
+    background: linear-gradient(135deg, rgba(88,166,255,0.20), rgba(88,166,255,0.05));
+    border: 2px solid rgba(88,166,255,0.45);
+    box-shadow: 0 14px 36px rgba(88,166,255,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.20), rgba(163,113,247,0.05));
+    border: 2px solid rgba(163,113,247,0.45);
+    box-shadow: 0 14px 36px rgba(163,113,247,0.20);
+  }
+  .stat-pill.green {
+    background: linear-gradient(135deg, rgba(63,185,80,0.20), rgba(63,185,80,0.05));
+    border: 2px solid rgba(63,185,80,0.45);
+    box-shadow: 0 14px 36px rgba(63,185,80,0.20);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 140px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+    min-width: 220px;
+    text-align: right;
+  }
+  .stat-pill.cyan   .stat-num { color: var(--accent-1); text-shadow: 0 0 60px rgba(88,166,255,0.45); }
+  .stat-pill.purple .stat-num { color: var(--accent-3); text-shadow: 0 0 60px rgba(163,113,247,0.45); }
+  .stat-pill.green  .stat-num { color: var(--accent-4); text-shadow: 0 0 60px rgba(63,185,80,0.45); }
+  .stat-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text);
+    text-align: left;
+    flex: 1;
+  }
+
+  /* PHASE 2 — HIGHLIGHT CARDS (2 SETS) */
+  #phase2 .phase-content { text-align: center; gap: 36px; }
+  #p2-overline { color: var(--text); }
+  #p2-card-stack {
+    position: relative;
+    width: 940px;
+    height: 720px;
+  }
+  #p2-set-a, #p2-set-b, #p2-set-c {
+    position: absolute;
+    inset: 0;
+  }
+  #p2-set-b, #p2-set-c { opacity: 0; }
+  .highlight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 940px;
+  }
+  .hl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 26px 32px;
+    border-radius: 20px;
+  }
+  .hl-card.cyan {
+    background: linear-gradient(135deg, rgba(88,166,255,0.16), rgba(88,166,255,0.05));
+    border: 2px solid rgba(88,166,255,0.45);
+    box-shadow: 0 10px 30px rgba(88,166,255,0.20);
+  }
+  .hl-card.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.16), rgba(163,113,247,0.05));
+    border: 2px solid rgba(163,113,247,0.45);
+    box-shadow: 0 10px 30px rgba(163,113,247,0.20);
+  }
+  .hl-card.green {
+    background: linear-gradient(135deg, rgba(63,185,80,0.16), rgba(63,185,80,0.05));
+    border: 2px solid rgba(63,185,80,0.45);
+    box-shadow: 0 10px 30px rgba(63,185,80,0.20);
+  }
+  .hl-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    height: 96px;
+    border-radius: 18px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 48px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .hl-card.cyan   .hl-num { background: var(--accent-1); }
+  .hl-card.purple .hl-num { background: var(--accent-3); }
+  .hl-card.green  .hl-num { background: var(--accent-4); }
+  .hl-body { display: flex; flex-direction: column; gap: 8px; flex: 1; text-align: left; }
+  .hl-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    /* Per .claude/rules/shorts-typography.md: list-item primary min 48px,
+       recommended 52-64px. Bumped from 38px (template legacy) to 52px so
+       the title is readable on phone (~19px rendered at 0.36x). */
+    font-size: 52px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .hl-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    /* List-item descriptor min 30px, recommended 32-36px. Bumped from
+       26px to 32px to clear the typography minimum. */
+    font-size: 32px;
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+  .hl-card.cyan   .hl-sub { color: var(--accent-1); }
+  .hl-card.purple .hl-sub { color: var(--accent-3); }
+  .hl-card.green  .hl-sub { color: var(--accent-4); }
+
+  /* PHASE 3 — DEBATE CTA. Question + 3 option chips + "Drop a comment" pill. */
+  #phase3 .phase-content { text-align: center; gap: 40px; }
+  #p3-question {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 84px;
+    line-height: 0.95;
+    color: var(--accent-warn);
+    letter-spacing: -2px;
+    max-width: 1000px;
+    text-shadow: 0 0 60px rgba(247, 129, 102, 0.35), 0 6px 18px rgba(0,0,0,0.55);
+  }
+  #p3-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    align-items: center;
+  }
+  .cta-chip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    padding: 22px 56px;
+    border-radius: 999px;
+    min-width: 640px;
+    justify-content: center;
+  }
+  .cta-chip.cyan {
+    background: linear-gradient(135deg, rgba(88,166,255,0.22), rgba(88,166,255,0.06));
+    border: 2px solid rgba(88,166,255,0.60);
+    box-shadow: 0 12px 30px rgba(88,166,255,0.22);
+  }
+  .cta-chip.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.22), rgba(163,113,247,0.06));
+    border: 2px solid rgba(163,113,247,0.60);
+    box-shadow: 0 12px 30px rgba(163,113,247,0.22);
+  }
+  .cta-chip.green {
+    background: linear-gradient(135deg, rgba(63,185,80,0.22), rgba(63,185,80,0.06));
+    border: 2px solid rgba(63,185,80,0.60);
+    box-shadow: 0 12px 30px rgba(63,185,80,0.22);
+  }
+  .cc-num {
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 44px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cta-chip.cyan   .cc-num { color: var(--accent-1); }
+  .cta-chip.purple .cc-num { color: var(--accent-3); }
+  .cta-chip.green  .cc-num { color: var(--accent-4); }
+  .cc-text {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  #p3-cta-pill {
+    display: inline-block;
+    padding: 26px 64px;
+    background: var(--accent-warn);
+    color: var(--bg);
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 60px;
+    letter-spacing: -1px;
+    border-radius: 999px;
+    box-shadow: 0 18px 40px rgba(247, 129, 102, 0.45),
+                0 0 60px rgba(247, 129, 102, 0.25);
+    margin-top: 12px;
+  }
+
+  /* Dynamous endcard owns the last 5s. */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* Dynamous badge — persistent bottom-left brand mark, fades in at t=3.0s. */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 360px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="109"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Dynamous badge — bottom-left, idle opacity 0.55, fades in at t=3.0s. -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner" style="display:none;">
+    <span id="top-banner-logo"></span>
+  </div>
+
+  <div id="version-branding">
+    <div class="vb-logos">
+      <img src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      <img src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+    </div>
+    <div class="vb-version" id="vb-version-string">github.com/anthropics/claude-code/releases  |  v2.1.134 - v2.1.139</div>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- PHASE 1 — STATS OPENER WITH VERSION HEADER -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Claude Code Update</div>
+      <div id="p1-version">v2.1.134 &rarr; v2.1.139</div>
+      <div id="p1-headline">The receipts.</div>
+      <div id="p1-pills">
+        <div class="stat-pill cyan" id="p1-pill-1">
+          <div class="stat-num">9</div>
+          <div class="stat-label">features</div>
+        </div>
+        <div class="stat-pill purple" id="p1-pill-2">
+          <div class="stat-num">73</div>
+          <div class="stat-label">fixes</div>
+        </div>
+        <div class="stat-pill green" id="p1-pill-3">
+          <div class="stat-num">14</div>
+          <div class="stat-label">improved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 — HIGHLIGHT CARDS (2 SETS) -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">Six releases &middot; the receipts</div>
+      <div id="p2-card-stack">
+        <div id="p2-set-a" class="highlight-list">
+          <div class="hl-card cyan" id="p2-card-1">
+            <div class="hl-num">01</div>
+            <div class="hl-body">
+              <div class="hl-title">Agent view ships</div>
+              <div class="hl-sub">claude agents &middot; all sessions</div>
+            </div>
+          </div>
+          <div class="hl-card purple" id="p2-card-2">
+            <div class="hl-num">02</div>
+            <div class="hl-body">
+              <div class="hl-title">/goal runs across turns</div>
+              <div class="hl-sub">set a condition, walk away</div>
+            </div>
+          </div>
+          <div class="hl-card green" id="p2-card-3">
+            <div class="hl-num">03</div>
+            <div class="hl-body">
+              <div class="hl-title">hard_deny lands</div>
+              <div class="hl-sub">auto-mode rules that never bend</div>
+            </div>
+          </div>
+        </div>
+        <div id="p2-set-b" class="highlight-list">
+          <div class="hl-card cyan" id="p2-card-4">
+            <div class="hl-num">04</div>
+            <div class="hl-body">
+              <div class="hl-title">Transcript by keyboard</div>
+              <div class="hl-sub">? &middot; { } &middot; v &mdash; jump anywhere</div>
+            </div>
+          </div>
+          <div class="hl-card purple" id="p2-card-5">
+            <div class="hl-num">05</div>
+            <div class="hl-body">
+              <div class="hl-title">Plugin price tags</div>
+              <div class="hl-sub">claude plugin details &middot; token cost</div>
+            </div>
+          </div>
+          <div class="hl-card green" id="p2-card-6">
+            <div class="hl-num">06</div>
+            <div class="hl-body">
+              <div class="hl-title">MCP OAuth tokens stay</div>
+              <div class="hl-sub">no more daily re-auth</div>
+            </div>
+          </div>
+        </div>
+        <div id="p2-set-c" class="highlight-list">
+          <div class="hl-card cyan" id="p2-card-7">
+            <div class="hl-num">07</div>
+            <div class="hl-body">
+              <div class="hl-title">Smarter context trimming</div>
+              <div class="hl-sub">user intent kept on compaction</div>
+            </div>
+          </div>
+          <div class="hl-card purple" id="p2-card-8">
+            <div class="hl-num">08</div>
+            <div class="hl-body">
+              <div class="hl-title">Auth deadlock fixed</div>
+              <div class="hl-sub">claude auth login no longer hangs</div>
+            </div>
+          </div>
+          <div class="hl-card green" id="p2-card-9">
+            <div class="hl-num">09</div>
+            <div class="hl-body">
+              <div class="hl-title">/mcp hot reload</div>
+              <div class="hl-sub">.mcp.json edits, no restart</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 — DEBATE CTA (visualizes the spoken "Which patch matters most?" beat). -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div id="p3-question">WHICH PATCH<br>MATTERS MOST?</div>
+      <div id="p3-chips">
+        <div class="cta-chip cyan" id="p3-chip-1">
+          <span class="cc-num">01</span><span class="cc-text">Agent view</span>
+        </div>
+        <div class="cta-chip purple" id="p3-chip-2">
+          <span class="cc-num">02</span><span class="cc-text">/goal</span>
+        </div>
+        <div class="cta-chip green" id="p3-chip-3">
+          <span class="cc-num">03</span><span class="cc-text">hard_deny</span>
+        </div>
+      </div>
+      <div id="p3-cta-pill">Drop a comment &darr;</div>
+    </div>
+  </div>
+
+  <!-- DYNAMOUS ENDCARD — last 5s of the Short. -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="104.0"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="109"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — cinematic-whoosh on each phase transition. -->
+  <audio id="sfx-whoosh-t1"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="9.0"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-tb"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="42.5"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-tc"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="69.05"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-tp3"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="96.9"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="103.5"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  function addDynamousBadgeEntrance(tl) {
+    tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+  }
+
+  spawnShapes('claude-code-v2134-139-short', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL_DURATION = 109.0;
+
+  // Ambient breath across full duration (yoyo half-cycle ~ TOTAL/2).
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 54, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar linear fill.
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // VersionBranding fades in at 0.4s.
+  tl.from("#version-branding", { opacity: 0, duration: 0.8, ease: "power2.out" }, 0.4);
+
+  // Dynamous badge fades in at 3.0s (after the hook).
+  addDynamousBadgeEntrance(tl);
+
+  // PHASE 1 — Stats opener. Narration: "9"@0.10, "73"@0.98, "14"@2.08.
+  tl.from("#p1-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.0);
+  tl.from("#p1-pill-1",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 0.0);
+  tl.from("#p1-pill-2",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 0.85);
+  tl.from("#p1-pill-3",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 1.95);
+
+  // Transition phase1 -> phase2 at T1=9.0.
+  const T1 = 9.0;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // PHASE 2 — 6 cards in 2 sets. Each card lands just before its spoken ordinal.
+  const P2 = T1 + 0.4;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+
+  // Set A — cards 1-3 (hidden until reveal).
+  tl.set("#p2-card-1", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-2", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-3", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.to("#p2-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 9.4);
+  tl.to("#p2-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 19.5);
+  tl.to("#p2-card-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 30.9);
+
+  // Set A -> Set B crossfade between "for." @42.13 and "Fourth." @43.05.
+  const P2_SET_B_AT = 42.5;
+  tl.to("#p2-set-a", { opacity: 0, duration: 0.5, ease: "power1.in" }, P2_SET_B_AT);
+  tl.to("#p2-set-b", { opacity: 1, duration: 0.5, ease: "power1.out" }, P2_SET_B_AT);
+
+  // Set B — cards 4-6.
+  tl.set("#p2-card-4", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-5", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-6", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.to("#p2-card-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 42.9);
+  tl.to("#p2-card-5", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 53.2);
+  tl.to("#p2-card-6", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 60.7);
+
+  // Set B -> Set C crossfade (tight gap: "over." @69.24 -> "Seventh." @69.38).
+  // 0.35s crossfade overlapping tail of "over." for clean handoff.
+  // overwrite:"auto" needed because Set A->B already targeted #p2-set-b.opacity.
+  const P2_SET_C_AT = 69.05;
+  tl.to("#p2-set-b", { opacity: 0, duration: 0.35, ease: "power1.in", overwrite: "auto" }, P2_SET_C_AT);
+  tl.to("#p2-set-c", { opacity: 1, duration: 0.35, ease: "power1.out" }, P2_SET_C_AT);
+
+  // Set C — cards 7-9.
+  tl.set("#p2-card-7", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-8", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-9", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.to("#p2-card-7", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 69.3);  // "Seventh." @69.38
+  tl.to("#p2-card-8", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 78.45); // "Eighth." @78.60
+  tl.to("#p2-card-9", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 87.85); // "Ninth." @87.95
+
+  // Phase 2 -> Phase 3 transition at 96.9 (just before "Which" @97.24).
+  // The debate question gets a visual: question text + 3 highlighted chips + CTA pill.
+  const T_PHASE3 = 96.9;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.4, ease: "power1.in" }, T_PHASE3);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.35, ease: "power1.in" }, T_PHASE3 + 0.2);
+  tl.set("#phase2", { visibility: "hidden" }, T_PHASE3 + 0.6);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T_PHASE3 + 0.3);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T_PHASE3 + 0.3);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T_PHASE3 + 0.5);
+
+  // Phase 3 internal animation — question + 3 option chips + CTA pill.
+  tl.from("#p3-question", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, T_PHASE3 + 0.35);
+  tl.set("#p3-chip-1",   { x: -40, scale: 0.95, opacity: 0 }, T_PHASE3);
+  tl.set("#p3-chip-2",   { x: -40, scale: 0.95, opacity: 0 }, T_PHASE3);
+  tl.set("#p3-chip-3",   { x: -40, scale: 0.95, opacity: 0 }, T_PHASE3);
+  tl.set("#p3-cta-pill", { scale: 0.85, opacity: 0 }, T_PHASE3);
+  // Chips reveal as each option is spoken:
+  //   "Agent"   @98.66  -> chip-1 enter at 98.5
+  //   "Slash"   @99.44  -> chip-2 enter at 99.3
+  //   "hard"    @101.44 -> chip-3 enter at 101.3
+  //   "Drop"    @102.90 -> CTA pill at 102.75 with subtle pulse
+  tl.to("#p3-chip-1",   { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 98.5);
+  tl.to("#p3-chip-2",   { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 99.3);
+  tl.to("#p3-chip-3",   { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 101.3);
+  tl.to("#p3-cta-pill", { scale: 1,    opacity: 1, duration: 0.5,  ease: "back.out(1.8)" }, 102.75);
+  tl.to("#p3-cta-pill", { scale: 1.05, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1, overwrite: "auto" }, 103.15);
+
+  // Phase 3 fade out at T2=103.5 (0.5s before endcard at 104.0).
+  const T2 = 103.5;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T2 + 0.7);
+
+  // Hide persistent chrome at T2 so the Mastery wordmark owns the close.
+  tl.to("#version-branding", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, T2);
+  tl.to("#progress-track",   { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, T2);
+  tl.to("#dynamous-badge",   { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, T2);
+
+  // Shape backdrop re-scatter on each phase / set transition.
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-code-v2134-139-short',
+    [T1, P2_SET_B_AT, P2_SET_C_AT, T_PHASE3, T2]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

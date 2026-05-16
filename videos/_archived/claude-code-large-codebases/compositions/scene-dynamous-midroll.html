@@ -1,0 +1,103 @@
+<!--
+  scene-dynamous-midroll.html — Scene 11 / Dynamous midroll (5.445s).
+  Brand-locked spoken line: "If you want to learn more about A I, check out the dynamous dot A I community."
+-->
+<template id="scene-dynamous-midroll-template">
+  <div data-composition-id="scene-dynamous-midroll"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-midroll-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center; gap: 28px;
+        box-sizing: border-box;
+      }
+      #midroll-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #midroll-wordmark {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 160px;
+        line-height: 0.88;
+        letter-spacing: -5px;
+        color: var(--text);
+        text-shadow: 0 0 80px rgba(233, 116, 88, 0.35),
+                     0 8px 24px rgba(0, 0, 0, 0.6);
+      }
+      #midroll-tagline {
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 32px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        max-width: 1200px;
+      }
+      #midroll-url {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 40px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        border: 2px solid rgba(233, 116, 88, 0.50);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 36px;
+        letter-spacing: 2px;
+        color: var(--text);
+      }
+      #midroll-url .url-dot { color: var(--accent-1); }
+    </style>
+
+    <div id="scene-midroll-content">
+      <div id="midroll-overline">COMMUNITY SPOTLIGHT</div>
+      <div id="midroll-wordmark">DYNAMOUS</div>
+      <div id="midroll-tagline">Learn more about AI &mdash; live daily events and workshops.</div>
+      <div id="midroll-url">dynamous<span class="url-dot">.</span>ai</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 5.445;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.set("#midroll-overline", { y: 18, opacity: 0 }, 0);
+      tl.set("#midroll-wordmark", { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#midroll-tagline",  { y: 18, opacity: 0 }, 0);
+      tl.set("#midroll-url",      { scale: 0.9, opacity: 0 }, 0);
+
+      tl.to("#midroll-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.0);
+      tl.to("#midroll-wordmark", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 0.2);
+      // wordmark inline shake
+      tl.to("#midroll-wordmark", { x: 5, duration: 0.04, ease: "none" }, 0.5);
+      tl.to("#midroll-wordmark", { x: -5, duration: 0.04, ease: "none" }, 0.55);
+      tl.to("#midroll-wordmark", { x: 3, duration: 0.04, ease: "none" }, 0.60);
+      tl.to("#midroll-wordmark", { x: 0, duration: 0.04, ease: "none" }, 0.65);
+      tl.to("#midroll-tagline",  { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 1.0);
+      tl.to("#midroll-url",      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 1.5);
+      // Finite URL pulse (2 cycles, 1.0s each, finite)
+      tl.to("#midroll-url", { boxShadow: "0 0 0 6px rgba(233, 116, 88, 0.25)", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 2 }, 2.6);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-dynamous-midroll"] = tl;
+    </script>
+  </div>
+</template>

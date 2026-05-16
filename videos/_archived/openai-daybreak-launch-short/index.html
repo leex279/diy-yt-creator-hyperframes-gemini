@@ -1,0 +1,2013 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>OpenAI Daybreak — Frontier AI for Cyber Defenders</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="tokens/openai-mono.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 OpenAI monochrome stage.
+     Monochrome editorial surface with a single mint
+     accent. Phase mutex layout (only one phase visible
+     per frame; blur+crossfade between). Forked from
+     the Google shorts template; palette, chrome, and
+     accent rotation reworked to match the OpenAI
+     brand's quieter editorial feel.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ──────────────────────────────────────────────────
+     THEME BACKGROUNDS (quiet / cinematic / editorial)
+     Default = theme-quiet (flat off-black, no glows —
+     the OpenAI editorial default). The other two are
+     opt-in via the class on #root.
+     ────────────────────────────────────────────────── */
+  #root.theme-quiet {
+    background: linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
+  }
+  #root.theme-cinematic {
+    /* Single soft mint corner glow — for hero/launch moments where the
+       quiet surface needs a hint of warmth. */
+    background:
+      radial-gradient(circle at 50% 22%, rgba(16,163,127,0.16) 0%, transparent 42%),
+      radial-gradient(ellipse 90% 30% at 50% 100%, rgba(16,163,127,0.08) 0%, transparent 60%),
+      linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
+  }
+  #root.theme-editorial {
+    background: linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
+  }
+  #root.theme-editorial::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Inner safe-area card stroke — subtle hairline frame on the
+     canvas edges. Carries the editorial-magazine feel. */
+  #slide-frame {
+    position: absolute;
+    inset: 32px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* OpenAI shape backdrop — 12 SVG shape instances (spirograph / sunrise / hex).
+     Reorders on every phase + sub-slide transition, paired with cinematic-whoosh. */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.06;
+    object-fit: contain;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
+  /* Hero figure (Phase 1 X-post screenshot) — premium card with mint glow. */
+  #p1-figure {
+    width: 940px;
+    margin: 8px auto 0;
+    will-change: transform, opacity, filter;
+  }
+  #p1-figure img {
+    border-radius: 28px;
+  }
+
+  /* "Daybreak" hero word — amber chromatic-shadow halo for the slam moment. */
+  #p1-headline {
+    text-shadow:
+      0 0 60px rgba(240, 184, 110, 0.0),
+      0 0 0 rgba(167, 139, 250, 0);
+    will-change: text-shadow, transform, filter;
+  }
+
+  /* Hand-drawn underline SVG beneath "Daybreak" — drawn-on stroke effect. */
+  #p1-underline {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 560px;
+    height: 64px;
+    pointer-events: none;
+    z-index: 3;
+    overflow: visible;
+  }
+  #p1-underline path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 760;
+    stroke-dashoffset: 760;
+    filter: drop-shadow(0 0 14px rgba(240, 184, 110, 0.55));
+    will-change: stroke-dashoffset;
+  }
+
+  /* Bigstat counter — tabular nums so the 0→2.4M roll doesn't jitter. */
+  #p3b-bigstat .num {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* ──────────────────────────────────────────────────
+     Phase 1 sub-slides (1A hero + 1B Mythos comparison)
+     ────────────────────────────────────────────────── */
+  .p1-stage { position: relative; padding: 0; }
+  .p1-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p1-slide.is-default-visible { opacity: 1; visibility: visible; }
+
+  /* Mythos vs Daybreak comparison card (1B) */
+  .vs-row {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    width: 900px;
+    margin: 0 auto;
+  }
+  .vs-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 20px;
+    background: rgba(20, 20, 20, 0.85);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 22px;
+    min-height: 290px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .vs-card .vs-logo {
+    height: 86px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.6));
+  }
+  .vs-card .vs-label {
+    font-family: var(--sans);
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--ink-100);
+    line-height: 1;
+  }
+  .vs-card .vs-source {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .vs-divider {
+    align-self: center;
+    font-family: var(--mono);
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--accent);
+    padding: 0 4px;
+  }
+  .vs-partners {
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .vs-partners strong {
+    color: var(--accent);
+    font-weight: 800;
+  }
+  .vs-question {
+    margin-top: 16px;
+    font-family: var(--sans);
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--ink-100);
+    text-shadow: 0 0 30px var(--accent-glow);
+  }
+
+  /* Partner-chip layout (Phase 3A — logo + name) */
+  .partner-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 18px 24px;
+    background: rgba(20, 20, 20, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-left: 4px solid var(--accent);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    min-height: 160px;
+    text-align: center;
+  }
+  .partner-chip img {
+    height: 64px;
+    width: auto;
+    max-width: 92%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+  }
+  .partner-chip .partner-name {
+    font-family: var(--sans);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink-100);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .partner-chip.text-only .partner-name {
+    font-size: 44px;
+    font-weight: 800;
+  }
+  .partner-chip.text-only::before {
+    content: "";
+    display: block;
+    height: 64px;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+    width: 70%;
+    max-width: 200px;
+    margin: 0 auto 8px;
+    border-radius: 4px;
+    height: 6px;
+  }
+
+  /* Mythos contrast block (3C — "Mythos hunts. Daybreak ships.") */
+  .contrast-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 920px;
+    margin: 8px auto 0;
+  }
+  .contrast-line {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 30px;
+    background: rgba(20, 20, 20, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    text-align: left;
+  }
+  .contrast-line .ct-mark {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    min-width: 220px;
+  }
+  .contrast-line .ct-body {
+    font-family: var(--sans);
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--ink-100);
+    line-height: 1.1;
+    flex: 1;
+  }
+  .contrast-line.mythos { border-left: 4px solid var(--oai-lavender); }
+  .contrast-line.mythos .ct-mark { color: var(--oai-lavender); }
+  .contrast-line.daybreak { border-left: 4px solid var(--accent); }
+  .contrast-line.daybreak .ct-mark { color: var(--accent); }
+  .contrast-footer {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--ink-60);
+  }
+  .contrast-footer strong {
+    color: var(--ink-100);
+    font-weight: 800;
+  }
+
+  /* Phase 4 mini-pill (REQUEST A SCAN) */
+  #p4-scan-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 38px;
+    border-radius: 999px;
+    background: rgba(20, 20, 20, 0.78);
+    border: 1.5px solid var(--accent);
+    font-family: var(--mono);
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ink-100);
+    box-shadow: 0 0 50px -10px var(--accent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  #p4-scan-pill .arrow { color: var(--accent); font-size: 44px; }
+
+  /* ChatGPT spirograph + brand name lockup (top-left) */
+  #brand-mark {
+    position: absolute;
+    top: 68px;
+    left: 60px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  #brand-mark img {
+    height: 84px;
+    width: auto;
+    filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.55));
+    flex-shrink: 0;
+  }
+  #brand-mark-name {
+    font-family: var(--sans);
+    font-size: 46px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--ink-100);
+    line-height: 1;
+  }
+
+  /* Bottom progress rail — 5 mint dots (single accent, no rotation).
+     Active dot lights mint with a soft glow; inactive dots are dim
+     off-white. Phase mapping: INTRO → BUILD → SIGNAL → SHIFT → CTA. */
+  #progress-rail {
+    position: absolute;
+    bottom: 110px;
+    left: 80px;
+    right: 80px;
+    z-index: 4;
+    pointer-events: none;
+  }
+  #progress-rail .rail-track {
+    position: relative;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 2px;
+  }
+  #progress-rail .rail-dots {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+  }
+  #progress-rail .rail-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+  #progress-rail .rail-dot .dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1C1C1C;
+    border: 2px solid #2E2E2E;
+    transition: none;
+  }
+  #progress-rail .rail-dot.active .dot {
+    width: 32px;
+    height: 32px;
+    border-color: transparent;
+    box-shadow: 0 0 22px var(--accent-glow);
+    background: var(--accent);
+  }
+  #progress-rail .rail-dot .label {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ink-40);
+    position: absolute;
+    top: 44px;
+    white-space: nowrap;
+  }
+  #progress-rail .rail-dot.active .label {
+    color: var(--accent);
+  }
+
+  /* Slim progress bar — bottom edge */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — full-bleed, layered. Phase 1 visible by
+     default; phases 2-4 start at opacity 0.
+     ────────────────────────────────────────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+
+  .phase-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Eyebrow / headline / subhead common blocks */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--accent);
+    margin-bottom: 32px;
+  }
+  .headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -2px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 32px;
+  }
+  .headline.xl { font-size: 148px; }
+  .headline.l  { font-size: 128px; }
+  .headline.m  { font-size: 104px; }
+  .headline.s  { font-size: 88px;  }
+  .subhead {
+    font-family: var(--sans);
+    font-size: 46px;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-60);
+    margin: 0 0 60px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — HERO (eyebrow + xl headline + subhead)
+     Scroll-stop hook; mint eyebrow, INTRO rail dot active.
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — TERMINAL / CLI moment
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  .terminal {
+    position: relative;
+    width: 920px;
+    background: #0D0D0D;
+    border: 1px solid var(--border-bright);
+    border-radius: 18px;
+    padding: 36px 40px;
+    font-family: var(--mono);
+    font-size: 38px;
+    line-height: 1.5;
+    color: var(--ink-80);
+    overflow: hidden;
+    text-align: left;
+  }
+  /* Monochrome rim instead of four-color: mint hairline only. */
+  .terminal.with-rim::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  }
+  .terminal .prompt { color: var(--ink-40); margin-right: 12px; }
+  .terminal .cmd    { color: var(--accent); }
+  .terminal .arg    { color: var(--ink-100); }
+  .terminal .flag   { color: var(--oai-amber); }
+  .terminal .kw     { color: var(--oai-lavender); }
+  .terminal .str    { color: #C4C4C4; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — INFO GRID (eyebrow + m headline + 2x2 chip grid)
+     All chips share the mint accent. The data-color attr
+     remains for shared/lib compat — every value resolves
+     to mint via the alias chain in tokens/openai-mono.css.
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  .chip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    width: 920px;
+  }
+  .chip {
+    position: relative;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    padding: 28px 32px;
+    background: var(--card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    text-align: left;
+  }
+  .chip::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 18px; bottom: 18px;
+    width: 4px;
+    background: var(--chip-color, var(--accent));
+    border-radius: 0 4px 4px 0;
+  }
+  /* Single-accent default; data-color attrs all resolve to mint
+     unless an operator explicitly overrides for a Sora/DALL·E video. */
+  .chip[data-color="mint"]     { --chip-color: var(--oai-mint); }
+  .chip[data-color="lavender"] { --chip-color: var(--oai-lavender); }
+  .chip[data-color="amber"]    { --chip-color: var(--oai-amber); }
+  .chip[data-color="coral"]    { --chip-color: var(--oai-coral); }
+  .chip[data-color="blue"]     { --chip-color: var(--accent); }
+  .chip[data-color="red"]      { --chip-color: var(--oai-coral); }
+  .chip[data-color="yellow"]   { --chip-color: var(--oai-amber); }
+  .chip[data-color="green"]    { --chip-color: var(--accent); }
+  .chip .chip-label {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--chip-color, var(--accent));
+    margin-bottom: 8px;
+  }
+  .chip .chip-value {
+    font-family: var(--sans);
+    font-size: 50px;
+    font-weight: 700;
+    color: var(--ink-100);
+    line-height: 1.05;
+  }
+
+  /* Big stat (alternate Phase 3 archetype) — monochrome mint gradient */
+  .bigstat {
+    text-align: center;
+  }
+  .bigstat .num {
+    font-family: var(--sans);
+    font-size: 360px;
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -10px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--oai-mint-hi) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(16, 163, 127, 0.30));
+  }
+  .bigstat .num-suffix {
+    font-size: 140px;
+    font-weight: 700;
+  }
+  .bigstat .label {
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 34px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — SHIFT / CTA (light theme variant + quote + CTA pill)
+     Toggle: add class theme-light on #phase4 to use the bright
+     "the shift" surface, or leave default for monochrome dark.
+     ────────────────────────────────────────────────── */
+  #phase4.phase {
+    background: transparent;
+  }
+  #phase4.theme-light {
+    background:
+      radial-gradient(circle at 50% 18%, rgba(16,163,127,0.10) 0%, transparent 40%),
+      linear-gradient(180deg, #F4F4F2 0%, #EAEAE6 100%);
+  }
+  #phase4.theme-light .headline { color: var(--ink-on-light); }
+  #phase4.theme-light .subhead  { color: #4A4A4A; }
+
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  .quote {
+    position: relative;
+    padding: 6px 0 6px 24px;
+    border-left: 4px solid var(--accent);
+    text-align: left;
+    width: 920px;
+  }
+  .quote .q-mark {
+    font-family: var(--sans);
+    font-size: 200px;
+    font-weight: 800;
+    line-height: 0.5;
+    color: var(--accent);
+    opacity: 0.3;
+  }
+  .quote .q-text {
+    font-family: var(--sans);
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink-100);
+    text-wrap: balance;
+  }
+  #phase4.theme-light .quote .q-text { color: var(--ink-on-light); }
+  #phase4.theme-light .quote .q-mark { color: var(--accent); opacity: 0.4; }
+
+  .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 32px 64px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--accent);
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--ink-100);
+    box-shadow: 0 0 60px -10px var(--accent);
+  }
+  .cta-pill .cta-label {
+    font-family: var(--mono);
+    font-size: 24px;
+    letter-spacing: 5px;
+    color: var(--ink-40);
+    text-transform: uppercase;
+    display: block;
+  }
+  .cta-pill .cta-value { color: var(--ink-100); font-size: 48px; }
+
+  /* ──────────────────────────────────────────────────
+     VIDEO_CONFIG opt-in overlays (Dynamous promotion).
+     Mirrors templates/long-form/claude-code-version pattern,
+     repositioned for vertical 1080x1920 canvas. The guard
+     script removes elements when disabled in video.config.js.
+     ────────────────────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    top: 68px;
+    right: 60px;
+    z-index: 11;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 22px 12px 14px;
+    background: rgba(15, 23, 42, 0.78);
+    border: 1.5px solid rgba(168, 85, 247, 0.35);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0.92;
+    box-shadow:
+      0 6px 22px rgba(0, 0, 0, 0.55),
+      0 0 28px rgba(168, 85, 247, 0.20);
+  }
+  #dynamous-badge-mark { height: 56px; width: auto; display: block; }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.6px;
+    color: #f1f5f9;
+  }
+
+  #dynamous-discount-bubble {
+    position: absolute;
+    bottom: 220px;
+    left: 60px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 28px;
+    height: 28px;
+    display: block;
+    background-image: url('assets/dynamous-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #ddb-url      { font-weight: 700; font-size: 22px; color: #e2e8f0; letter-spacing: 0.3px; }
+  #ddb-discount {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 20px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer  { font-weight: 600; font-size: 20px; color: #94a3b8; }
+
+  /* Dynamous endcard mount — full-frame overlay during the last 5s.
+     Sub-comp lives in compositions/dynamous-endcard.html. */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* ──────────────────────────────────────────────────
+     OPT-IN PATTERN: Hero figure card (Phase 1 image moments).
+     Use to feature a screenshot / tweet / reference image in
+     the hero phase. Replace the .subhead with .hero-figure.
+     Animate with: tl.from('#p1-figure', {y:40, scale:0.94, opacity:0,
+     duration:0.8, ease:"power3.out"}, 1.7);
+     ────────────────────────────────────────────────── */
+  .hero-figure {
+    position: relative;
+    width: 920px;
+    margin: 16px auto 0;
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 28px 100px -20px rgba(16, 163, 127, 0.35),
+      0 0 80px rgba(16, 163, 127, 0.12);
+    background: var(--card-bright);
+  }
+  .hero-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+    z-index: 2;
+  }
+  .hero-figure img { width: 100%; height: auto; display: block; }
+  .hero-figure figcaption {
+    font-family: var(--mono);
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+    padding: 16px 28px 18px;
+    text-align: left;
+    border-top: 1px solid var(--border);
+    background: rgba(15, 15, 15, 0.85);
+  }
+  .hero-figure figcaption .src-handle { color: var(--accent); }
+
+  /* ──────────────────────────────────────────────────
+     OPT-IN PATTERN: Multi-sub-slide stage (any phase).
+     Same wiring shape as the google template — wrap the
+     phase-content with .pX-stage, add .pX-slide blocks,
+     and the first slide gets .is-default-visible.
+     ────────────────────────────────────────────────── */
+  .p2-stage, .p3-stage, .p4-stage { position: relative; padding: 0; }
+  .p2-slide, .p3-slide, .p4-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p2-slide.is-default-visible,
+  .p3-slide.is-default-visible,
+  .p4-slide.is-default-visible { opacity: 1; visibility: visible; }
+  /* Sub-slide accent slots — all default to mint; reserve lavender/amber
+     for explicit Sora/DALL·E flavored videos. */
+  .p3-slide[data-color="mint"]     { --slot-color: var(--oai-mint);     --slot-glow: rgba(16,163,127,0.35); }
+  .p3-slide[data-color="lavender"] { --slot-color: var(--oai-lavender); --slot-glow: rgba(167,139,250,0.35); }
+  .p3-slide[data-color="amber"]    { --slot-color: var(--oai-amber);    --slot-glow: rgba(240,184,110,0.35); }
+  .p3-slide[data-color="coral"]    { --slot-color: var(--oai-coral);    --slot-glow: rgba(255,110,90,0.35); }
+
+  /* OPT-IN: numbered slot (Phase 3 sub-slides "01 / FEATURE NAME") */
+  .p3-slot-num {
+    font-family: var(--mono);
+    font-size: 96px;
+    font-weight: 800;
+    color: var(--slot-color, var(--accent));
+    line-height: 1;
+    letter-spacing: -2px;
+    text-shadow: 0 0 50px var(--slot-glow, var(--accent-glow));
+    margin-bottom: -8px;
+  }
+  .p3-slide .p3-eyebrow {
+    color: var(--slot-color, var(--accent));
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .p3-slide .p3-headline,
+  .p2-slide .p2-c-headline,
+  .p4-slide .p4-perf-headline {
+    font-family: var(--sans);
+    font-size: 88px;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -1.5px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 12px;
+  }
+  .p3-slide .p3-headline { font-size: 92px; }
+
+  /* OPT-IN: bullet/pill list (used by Phase 2C, 3, and 4A) */
+  .p3-bullets, .p2-c-bullets, .p4-pills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+  }
+  .p3-bullets li, .p2-c-bullets li, .p4-pills li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 18px 28px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--slot-color, var(--accent));
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    will-change: opacity, transform;
+  }
+  .p4-pills li[data-color="mint"]     { --slot-color: var(--oai-mint); }
+  .p4-pills li[data-color="lavender"] { --slot-color: var(--oai-lavender); }
+  .p4-pills li[data-color="amber"]    { --slot-color: var(--oai-amber); }
+  .p4-pills li[data-color="coral"]    { --slot-color: var(--oai-coral); }
+  .bullet-tag, .pill-tag {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--slot-color, var(--accent));
+    min-width: 140px;
+  }
+  .bullet-detail, .pill-detail {
+    flex: 1;
+    font-family: var(--sans);
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--ink-100);
+    line-height: 1.25;
+  }
+  .p3-bullets code, .p2-c-bullets code {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink-80);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+
+  /* OPT-IN: Phase 4A pill-list eyebrow (distinct from Phase 3) */
+  .p4-perf-eyebrow {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--accent);
+  }
+
+  /* OPT-IN: Phase 2B settings-screenshot card */
+  .settings-figure {
+    position: relative;
+    width: 960px;
+    max-height: 1280px;
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 24px 80px -20px rgba(16, 163, 127, 0.35),
+      0 0 60px rgba(16, 163, 127, 0.12);
+    background: var(--card-bright);
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+    z-index: 2;
+  }
+  .settings-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    flex: 0 1 auto;
+    min-height: 0;
+    object-fit: contain;
+  }
+  .settings-figure figcaption {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink-100);
+    padding: 22px 32px 24px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: rgba(15, 15, 15, 0.9);
+  }
+  .inline-mono {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(16, 163, 127, 0.12);
+    padding: 2px 12px;
+    border-radius: 8px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     Font-size bumps per .claude/rules/shorts-typography.md
+     MUST appear after base declarations to win cascade.
+     ────────────────────────────────────────────────── */
+  .chip .chip-label  { font-size: 32px; letter-spacing: 3.5px; }
+  .chip .chip-value  { font-size: 54px; }
+  .bullet-tag, .pill-tag { font-size: 32px; min-width: 200px; }
+  .bullet-detail, .pill-detail { font-size: 36px; line-height: 1.22; }
+  .hero-figure figcaption { font-size: 30px; padding: 22px 34px 22px; }
+</style>
+</head>
+<body>
+<script src="video.config.js"></script>
+<div id="root"
+     class="theme-quiet"
+     style="--accent: var(--oai-amber); --accent-glow: rgba(240,184,110,0.35);"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="140.0"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- OpenAI shape backdrop (12 SVG instances, reorders on every transition) -->
+  <div id="shape-backdrop"></div>
+
+  <!-- Inner safe-area card stroke -->
+  <div id="slide-frame"></div>
+
+  <!-- Brand lockup: spirograph + "OpenAI" name (top-left) -->
+  <div id="brand-mark">
+    <img src="assets/chatgpt-mark.svg" alt="OpenAI" />
+    <span id="brand-mark-name">OpenAI</span>
+  </div>
+
+  <!-- Slim progress bar at the very bottom -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Bottom progress rail — 5 mint dots (single accent, no rotation).
+       Labels: INTRO → BUILD → SIGNAL → SHIFT → CTA. -->
+  <div id="progress-rail">
+    <div class="rail-track"></div>
+    <div class="rail-dots">
+      <div class="rail-dot" data-step="0"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">INTRO</div></div>
+      <div class="rail-dot" data-step="1"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">BUILD</div></div>
+      <div class="rail-dot" data-step="2"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">SIGNAL</div></div>
+      <div class="rail-dot" data-step="3"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">SHIFT</div></div>
+      <div class="rail-dot" data-step="4"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">CTA</div></div>
+    </div>
+  </div>
+
+  <!-- ── VIDEO_CONFIG opt-in Dynamous overlays ────────────────
+       Removed by the guard script when disabled in video.config.js. -->
+
+  <!-- Dynamous badge — persistent, no class="clip" (full duration) -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Dynamous discount bubble — time-bounded to CTA scene (timing set by guard) -->
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="0"
+       data-duration="6"
+       data-track-index="10">
+    <span id="ddb-mark"></span>
+    <span id="ddb-url">Dynamous.ai</span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-pointer">in the link &darr;</span>
+  </div>
+
+  <!-- Dynamous module interstitial — 3s sub-composition at first scene transition -->
+  <div id="dynamous-module-interstitial-wrap"
+       data-composition-id="dynamous-module-interstitial"
+       data-composition-src="compositions/dynamous-module-interstitial.html"
+       data-start="5.6"
+       data-track-index="11"></div>
+
+  <!-- Dynamous endcard — 5s contextual community CTA card on top of everything.
+       Guard auto-wires data-start to (root data-duration - 5) unless
+       endcardStart is overridden in video.config.js. -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="19"
+       data-duration="5"
+       data-track-index="12"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO (0-24.3s) — INTRO rail dot
+       Sub-slides:
+         1A  Daybreak hero slam + X-post screenshot     0   → 11.8s
+         1B  Mythos vs Daybreak comparison ("twist")    11.8 → 24.3s
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content p1-stage">
+
+      <!-- 1A — Daybreak hero + X-post screenshot -->
+      <div id="p1-slide-a" class="p1-slide is-default-visible">
+        <div class="eyebrow" id="p1-eyebrow">FRONTIER AI · CYBER DEFENSE</div>
+        <div id="p1-hero-wrap" style="position: relative; display: flex; flex-direction: column; align-items: center;">
+          <h1 class="headline xl" id="p1-headline" style="margin-bottom: 18px;">Daybreak.</h1>
+          <svg id="p1-underline" viewBox="0 0 760 64" xmlns="http://www.w3.org/2000/svg" style="top: 178px;">
+            <path d="M 20 36 Q 200 14, 380 26 T 740 30" />
+          </svg>
+        </div>
+        <figure class="hero-figure" id="p1-figure" style="width: 940px; margin-top: 28px;">
+          <img src="assets/x-post-daybreak.png" alt="@OpenAI: Introducing Daybreak — frontier AI for cyber defenders" />
+          <figcaption><span class="src-handle">@OpenAI</span> · 2.4M VIEWS · 10H</figcaption>
+        </figure>
+      </div>
+
+      <!-- 1B — Mythos comparison ("but here's the twist...") -->
+      <div id="p1-slide-b" class="p1-slide" style="gap: 18px;">
+        <div class="eyebrow" id="p1b-eyebrow" style="color: var(--oai-coral); margin-bottom: 0;">BUT HERE'S THE TWIST</div>
+        <div class="vs-row" id="p1b-vs">
+          <div class="vs-card" id="p1b-card-mythos">
+            <img class="vs-logo" src="assets/claude-logo.svg" alt="Claude" />
+            <div class="vs-label" data-layout-allow-overflow="true">MYTHOS</div>
+            <div class="vs-source" data-layout-allow-overflow="true">Apr 7 · Anthropic</div>
+          </div>
+          <div class="vs-divider" id="p1b-vs-divider">VS</div>
+          <div class="vs-card" id="p1b-card-daybreak">
+            <!-- OpenAI spirograph — inline SVG avoids the white-background PNG issue -->
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 0 2406 2406" fill="#ECECEC"
+                 style="width:80px;height:80px;flex-shrink:0;filter:drop-shadow(0 4px 14px rgba(0,0,0,0.5));">
+              <path id="p1b-petal" d="M1107.3 299.1c-197.999 0-373.9 127.3-435.2 315.3L650 743.5v427.9c0 21.4 11 40.4 29.4 51.4l344.5 198.515V833.3h.1v-27.9L1372.7 604c33.715-19.52 70.44-32.857 108.47-39.828L1447.6 450.3C1361 353.5 1237.1 298.5 1107.3 299.1zm0 117.5-.6.6c79.699 0 156.3 27.5 217.6 78.4-2.5 1.2-7.4 4.3-11 6.1L952.8 709.3c-18.4 10.4-29.4 30-29.4 51.4V1248l-155.1-89.4V755.8c-.1-187.099 151.601-338.9 339-339.2z"/>
+              <use xlink:href="#p1b-petal" transform="rotate(60 1203 1203)"/>
+              <use xlink:href="#p1b-petal" transform="rotate(120 1203 1203)"/>
+              <use xlink:href="#p1b-petal" transform="rotate(180 1203 1203)"/>
+              <use xlink:href="#p1b-petal" transform="rotate(240 1203 1203)"/>
+              <use xlink:href="#p1b-petal" transform="rotate(300 1203 1203)"/>
+            </svg>
+            <div class="vs-label" style="color: var(--accent);" data-layout-allow-overflow="true">DAYBREAK</div>
+            <div class="vs-source" data-layout-allow-overflow="true">May 11 · OpenAI</div>
+          </div>
+        </div>
+        <div class="vs-partners" id="p1b-partners" style="margin-top: 6px;">
+          <span>SHARED PARTNERS</span>
+          <strong>· CISCO · CROWDSTRIKE</strong>
+        </div>
+        <div class="vs-question" id="p1b-question" style="margin-top: 8px;">Same? Or different?</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — BUILD (11.3 → 68.2s) — BUILD rail dot
+       Sub-slides:
+         2A intro (Daybreak + Codex fusion)         11.3 → 17s
+         2B 3 GPT-5.5 variants (3 tier cards)       17  → 45.7s
+         2C 6 capabilities (defender toolset)       45.7→ 58s
+         2D Codex Security punchline               58  → 68.2s
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content p2-stage">
+
+      <!-- 2A — Intro / fusion -->
+      <div id="p2-slide-a" class="p2-slide is-default-visible">
+        <div class="eyebrow" id="p2a-eyebrow">WHAT IT IS</div>
+        <h2 class="headline m" id="p2a-headline">Frontier models meet Codex.</h2>
+        <p class="subhead" id="p2a-subhead">One stack. Pointed at the patch pipeline.</p>
+      </div>
+
+      <!-- 2B — 3 GPT-5.5 variants -->
+      <div id="p2-slide-b" class="p2-slide">
+        <div class="eyebrow p3-eyebrow" id="p2b-eyebrow">THREE TIERS · ONE MISSION</div>
+        <h2 class="p3-headline" id="p2b-headline">3 models behind Daybreak.</h2>
+        <ul class="p3-bullets" id="p2b-bullets" style="max-width: 940px;">
+          <li id="p2b-tier-1" data-color="amber" style="border-left-color: var(--oai-amber);">
+            <span class="bullet-tag" style="color: var(--oai-amber);">GPT-5.5</span>
+            <span class="bullet-detail">Standard model. Everyday secure development inside your own repos.</span>
+          </li>
+          <li id="p2b-tier-2" data-color="amber" style="border-left-color: var(--oai-amber);">
+            <span class="bullet-tag" style="color: var(--oai-amber);">+ TRUSTED ACCESS</span>
+            <span class="bullet-detail">Verified defensive work, inside authorized environments only.</span>
+          </li>
+          <li id="p2b-tier-3" data-color="amber" style="border-left-color: var(--oai-amber);">
+            <span class="bullet-tag" style="color: var(--oai-amber);">5.5-CYBER</span>
+            <span class="bullet-detail">Permissive model for red teaming and controlled penetration testing.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 2C — 6 defender capabilities -->
+      <div id="p2-slide-c" class="p2-slide">
+        <div class="eyebrow" id="p2c-eyebrow">DEFENDER TOOLSET</div>
+        <h2 class="headline s" id="p2c-headline">Everything, in the loop.</h2>
+        <div class="chip-grid" id="p2c-chips" style="width: 940px;">
+          <div class="chip" data-color="amber" id="p2c-chip-1">
+            <div class="chip-label">REVIEW</div>
+            <div class="chip-value">Secure code</div>
+          </div>
+          <div class="chip" data-color="amber" id="p2c-chip-2">
+            <div class="chip-label">MODEL</div>
+            <div class="chip-value">Threats</div>
+          </div>
+          <div class="chip" data-color="amber" id="p2c-chip-3">
+            <div class="chip-label">VALIDATE</div>
+            <div class="chip-value">Patches</div>
+          </div>
+          <div class="chip" data-color="amber" id="p2c-chip-4">
+            <div class="chip-label">ANALYZE</div>
+            <div class="chip-value">Dependencies</div>
+          </div>
+          <div class="chip" data-color="amber" id="p2c-chip-5">
+            <div class="chip-label">DETECT</div>
+            <div class="chip-value">Intrusions</div>
+          </div>
+          <div class="chip" data-color="amber" id="p2c-chip-6">
+            <div class="chip-label">GUIDE</div>
+            <div class="chip-value">Remediation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2D — Codex Security punchline -->
+      <div id="p2-slide-d" class="p2-slide">
+        <div class="eyebrow" id="p2d-eyebrow">CODEX SECURITY · AT THE CENTER</div>
+        <h2 class="headline m" id="p2d-headline">The patch is written before the headline.</h2>
+        <p class="subhead" id="p2d-subhead">Not a separate dashboard. Inside the development loop.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — SIGNAL (81.2 → 109.7s) — SIGNAL rail dot
+       Sub-slides:
+         3A 8 launch partners (logo+name chips)   81.2 → 96.0s
+         3B 2.4M views bigstat                   96.0 → 102.0s
+         3C Mythos vs Daybreak contrast         102.0 → 109.7s
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content p3-stage">
+
+      <!-- 3A — Launch partners (logo+name layout) -->
+      <div id="p3-slide-a" class="p3-slide is-default-visible">
+        <div class="eyebrow" id="p3a-eyebrow">LAUNCH PARTNERS</div>
+        <h2 class="headline s" id="p3a-headline" style="font-size: 76px;">8 defenders. Already shipping.</h2>
+        <div class="chip-grid" id="p3a-chips" style="width: 940px; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px;">
+          <div class="partner-chip" id="p3a-chip-1">
+            <img src="assets/partners/akamai.svg" alt="Akamai" />
+            <div class="partner-name">Akamai</div>
+          </div>
+          <div class="partner-chip" id="p3a-chip-2">
+            <img src="assets/partners/cisco.svg" alt="Cisco" />
+            <div class="partner-name">Cisco</div>
+          </div>
+          <div class="partner-chip" id="p3a-chip-3">
+            <img src="assets/partners/cloudflare.png" alt="Cloudflare" style="filter: none;" />
+            <div class="partner-name">Cloudflare</div>
+          </div>
+          <div class="partner-chip text-only" id="p3a-chip-4">
+            <div class="partner-name">CrowdStrike</div>
+          </div>
+          <div class="partner-chip" id="p3a-chip-5">
+            <img src="assets/partners/fortinet.svg" alt="Fortinet" />
+            <div class="partner-name">Fortinet</div>
+          </div>
+          <div class="partner-chip" id="p3a-chip-6">
+            <img src="assets/partners/oracle.svg" alt="Oracle" />
+            <div class="partner-name">Oracle</div>
+          </div>
+          <div class="partner-chip" id="p3a-chip-7">
+            <img src="assets/partners/paloaltonetworks.svg" alt="Palo Alto Networks" />
+            <div class="partner-name" style="font-size: 30px;">Palo Alto</div>
+          </div>
+          <div class="partner-chip text-only" id="p3a-chip-8">
+            <div class="partner-name">Zscaler</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3B — Signal stat (2.4M views) -->
+      <div id="p3-slide-b" class="p3-slide">
+        <div class="eyebrow" id="p3b-eyebrow">THE SIGNAL</div>
+        <div class="bigstat" id="p3b-bigstat">
+          <div class="num"><span id="p3b-num-value">0.0</span><span class="num-suffix">M</span></div>
+          <div class="label" style="font-size: 38px;">VIEWS IN 10 HOURS</div>
+        </div>
+        <p class="subhead" id="p3b-subhead" style="font-size: 44px; max-width: 880px;">Not a developer-niche reveal. This one travelled.</p>
+      </div>
+
+      <!-- 3C — Mythos vs Daybreak contrast -->
+      <div id="p3-slide-c" class="p3-slide">
+        <div class="eyebrow" id="p3c-eyebrow" style="color: var(--oai-lavender);">THE REAL DIFFERENCE</div>
+        <h2 class="headline s" id="p3c-headline" style="font-size: 72px;">Opposite ends of the same fight.</h2>
+        <div class="contrast-row" id="p3c-rows">
+          <div class="contrast-line mythos" id="p3c-line-mythos">
+            <span class="ct-mark">MYTHOS</span>
+            <span class="ct-body">Hunts the zero-day.</span>
+          </div>
+          <div class="contrast-line daybreak" id="p3c-line-daybreak">
+            <span class="ct-mark">DAYBREAK</span>
+            <span class="ct-body">Ships the patch.</span>
+          </div>
+        </div>
+        <div class="contrast-footer" id="p3c-footer">SAME BATTLEFIELD · <strong>OPPOSITE ENDS</strong></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — SHIFT (110.1 → ~135s, endcard takes over last 5s)
+       Eyebrow + headline → quote line 1 → REQUEST A SCAN mini-pill →
+       quote line 2 → endcard fade-in.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="eyebrow" id="p4-eyebrow">THE SHIFT</div>
+      <h2 class="headline m" id="p4-headline">Defense moves at attack speed.</h2>
+      <div class="quote" id="p4-quote" data-layout-allow-overflow="true" style="min-height: 280px;">
+        <div class="q-text" id="p4-quote-1" style="font-size: 44px; margin-bottom: 18px; line-height: 1.14;">Rolling out broader, with industry and government.</div>
+        <div class="q-text" id="p4-quote-2" style="font-size: 46px; line-height: 1.12;">Software stops being secure the day it ships. Now it's continuously secured.</div>
+      </div>
+      <div id="p4-scan-pill">
+        <span>REQUEST A SCAN</span>
+        <span class="arrow">→</span>
+      </div>
+      <!-- MANDATORY: debate-sparking CTA question per .claude/rules/engagement-cta.md
+           Must match the spoken closing line and the youtube-description.md closing paragraph. -->
+      <div id="p4-cta-question"
+           style="font-family: var(--sans); font-weight: 800; font-size: 52px;
+                  line-height: 1.12; letter-spacing: -1px; color: var(--accent);
+                  text-align: center; max-width: 920px; margin-top: 18px;">
+        Daybreak or Mythos — which one ships to your org first?
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Narration — single track, 0 → 138.55s ── -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="138.55"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- ── Per-cue SFX — track 3 (sequential, no overlap).
+       Volumes per .claude/rules/audio-design.md (cap 0.25). ── -->
+
+  <!-- Phase 1A hero "Daybreak" slam at 6.35s -->
+  <audio id="sfx-impact-p1"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="6.35"
+         data-duration="0.6"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <!-- 1A → 1B sub-slide whoosh (the "twist") -->
+  <audio id="sfx-whoosh-sub-1ab"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="11.8"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+
+  <!-- T1: phase1 → phase2 (cinematic-whoosh) -->
+  <audio id="sfx-whoosh-t1"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="24.075"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- 2A → 2B sub-slide whoosh -->
+  <audio id="sfx-whoosh-sub-2ab"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="29.3"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.09"></audio>
+
+  <!-- Phase 2B first GPT-5.5 tier reveal at "standard" anchor 33.37s -->
+  <audio id="sfx-scale-p2b"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="33.20"
+         data-duration="0.6"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <!-- 2B → 2C sub-slide whoosh -->
+  <audio id="sfx-whoosh-sub-2bc"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="59.0"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.09"></audio>
+
+  <!-- 2C → 2D sub-slide whoosh -->
+  <audio id="sfx-whoosh-sub-2cd"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="71.0"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.09"></audio>
+
+  <!-- T2: phase2 → phase3 (cinematic-whoosh) -->
+  <audio id="sfx-whoosh-t2"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="80.777"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Phase 3A first partner "Akamai" at 86.69s -->
+  <audio id="sfx-spring-p3a"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="86.50"
+         data-duration="0.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- 3A → 3B sub-slide whoosh -->
+  <audio id="sfx-whoosh-sub-3ab"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="96.5"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.09"></audio>
+
+  <!-- 3B → 3C sub-slide whoosh -->
+  <audio id="sfx-whoosh-sub-3bc"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="102.0"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.09"></audio>
+
+  <!-- T3: phase3 → phase4 (cinematic-whoosh) -->
+  <audio id="sfx-whoosh-t3"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="109.720"
+         data-duration="1.5"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- Phase 4 REQUEST A SCAN pill entrance -->
+  <audio id="sfx-pop-cta"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="122.60"
+         data-duration="0.5"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+
+  <!-- VIDEO_CONFIG guard — runs synchronously before HyperFrames scans
+       the DOM. Removes disabled overlay elements so they never appear
+       in the clip list or sub-composition queue. Auto-wires the
+       discount bubble's data-start to the CTA phase boundary. -->
+  <script>
+  (function () {
+    var d = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+    if (!d.badge) {
+      var e = document.getElementById('dynamous-badge');
+      if (e) e.remove();
+    }
+    if (!d.moduleInterstitial) {
+      var e = document.getElementById('dynamous-module-interstitial-wrap');
+      if (e) e.remove();
+    }
+    if (!d.discountBubble) {
+      var e = document.getElementById('dynamous-discount-bubble');
+      if (e) e.remove();
+    } else {
+      var bubble = document.getElementById('dynamous-discount-bubble');
+      // Phase 4 (CTA) starts at ~18.4s in the default 24s template.
+      // Operators retiming the composition should pass discountBubbleStart
+      // explicitly in video.config.js to override.
+      var ctaStart = d.discountBubbleStart != null ? d.discountBubbleStart : 18.4;
+      if (bubble) {
+        bubble.dataset.start    = String(ctaStart);
+        bubble.dataset.duration = String(d.discountBubbleDuration || 6);
+      }
+    }
+    if (!d.endcard) {
+      var e = document.getElementById('dynamous-endcard-mount');
+      if (e) e.remove();
+    } else {
+      var mount = document.getElementById('dynamous-endcard-mount');
+      var root  = document.getElementById('root');
+      var total = parseFloat((root && root.getAttribute('data-duration')) || '24');
+      // Default: endcard fires at totalDuration - 5 so its 5s window
+      // lands flush at composition end. Override per-video by setting
+      // endcardStart in video.config.js.
+      var ecStart = d.endcardStart != null ? d.endcardStart : Math.max(0, total - 5);
+      if (mount) {
+        mount.dataset.start = String(ecStart);
+      }
+    }
+  })();
+  </script>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // OpenAI shape backdrop — 12 deterministic SVG shape instances.
+  // Rejection-sampled scatter; reorders on every phase + sub-slide transition.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 12, w = 1080, h = 1920, minSize = 200, sizeRange = 240;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:'  + (best.cy - best.size / 2) + 'px;' +
+        'width:'  + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+  spawnShapes('openai-daybreak', document.getElementById('shape-backdrop'));
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction — Daybreak (140.0s)
+  // Phase boundaries from transcript.json:
+  //   P1: 0      → T1=24.075  (last word "different" ends 24.275s)
+  //   P2: 24.475 → T2=80.777  (last word "written" ends 80.977s)
+  //   P3: 81.177 → T3=109.720 (last word "ends" ends 109.920s)
+  //   P4: 110.120 → narration ends 138.549s, total 140.0s
+  // Sub-slides:
+  //   1A→1B at 11.8s ("twist" anchor)
+  //   2A→2B at 29.3s, 2B→2C at 59.0s, 2C→2D at 71.0s
+  //   3A→3B at 96.5s, 3B→3C at 102.0s
+  // ─────────────────────────────────────────────────────
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 140.0;
+  const tl = gsap.timeline({ paused: true });
+
+  // Backdrop breath — gentle global yoyo on the shape field (opacity + scale)
+  tl.fromTo("#shape-backdrop",
+    { opacity: 0.85, scale: 1.0, transformOrigin: "50% 50%" },
+    { opacity: 1.0,  scale: 1.04, duration: 70.0, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar fills linearly across full duration
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Brand mark + rail entrance
+  tl.from("#brand-mark",    { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.3);
+  tl.from("#progress-rail", { opacity: 0, duration: 0.6, ease: "power2.out" }, 0.5);
+
+  // Helper — activate a rail dot at a given absolute time, deactivating others.
+  // Uses tl.set() so the change is deterministic and reversible.
+  function activateRailDot(atTime, stepIndex) {
+    tl.set("#progress-rail .rail-dot", { className: "rail-dot" }, atTime);
+    if (stepIndex >= 0) {
+      tl.set("#progress-rail .rail-dot:nth-child(" + (stepIndex + 1) + ")",
+        { className: "rail-dot active" }, atTime);
+    }
+  }
+
+  // Sub-slide crossfade helper (flicker-free: tl.set + tl.to).
+  function subCrossfade(outSel, inSel, at) {
+    tl.to(outSel, { opacity: 0, scale: 0.96, filter: "blur(12px)", duration: 0.4, ease: "power2.in" }, at - 0.30);
+    tl.set(outSel, { visibility: "hidden" }, at + 0.10);
+    tl.set(inSel,  { visibility: "visible", opacity: 0, scale: 0.97, filter: "blur(12px)" }, at - 0.10);
+    tl.to(inSel,   { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }, at - 0.05);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero (0 → 24.3s): rail dot 0 (INTRO)
+  // 1A: Daybreak hero slam + X-post screenshot (0 → 11.8s)
+  // 1B: Mythos vs Daybreak comparison (11.8 → 24.3s)
+  // ═══════════════════════════════════════════════════════
+  activateRailDot(0.4, 0);
+
+  // 1A — Eyebrow rise
+  tl.from("#p1-eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.9);
+
+  // 1A — Hero "Daybreak" slam at narration anchor 6.443s ("Daybreak" spoken)
+  tl.set("#p1-headline", { y: 80, scale: 0.78, opacity: 0, filter: "blur(18px)" }, 0);
+  tl.to("#p1-headline", {
+    y: 0, scale: 1, opacity: 1, filter: "blur(0px)",
+    duration: 0.8, ease: "back.out(1.7)"
+  }, 6.30);
+  // Chromatic amber halo blooms 0.1s after the slam lands
+  tl.to("#p1-headline", {
+    textShadow: "0 0 60px rgba(240, 184, 110, 0.55), 0 0 0 rgba(167, 139, 250, 0)",
+    duration: 0.6, ease: "sine.out"
+  }, 6.80);
+  // 4-tick micro-jitter (pairs with impact-slam SFX retimed to 6.35s)
+  tl.to("#p1-headline", { x: -4, duration: 0.06, ease: "none", overwrite: "auto" }, 6.35);
+  tl.to("#p1-headline", { x:  4, duration: 0.06, ease: "none", overwrite: "auto" }, 6.41);
+  tl.to("#p1-headline", { x: -3, duration: 0.06, ease: "none", overwrite: "auto" }, 6.47);
+  tl.to("#p1-headline", { x:  0, duration: 0.08, ease: "power2.out", overwrite: "auto" }, 6.53);
+
+  // 1A — Underline draw-on (stroke-dashoffset 760 → 0)
+  tl.set("#p1-underline", { opacity: 1 }, 0);
+  tl.set("#p1-underline path", { strokeDashoffset: 760 }, 0);
+  tl.to("#p1-underline path", {
+    strokeDashoffset: 0,
+    duration: 0.9, ease: "power2.out"
+  }, 6.95);
+
+  // 1A — X-post screenshot leads the intro — appears at 1.5s as the immediate visual hook.
+  // The "Daybreak" headline slams ON TOP at 6.30s when narration names it.
+  tl.set("#p1-figure", { y: 55, scale: 0.94, opacity: 0 }, 0);
+  tl.to("#p1-figure", {
+    y: 0, scale: 1, opacity: 1,
+    duration: 0.75, ease: "power3.out"
+  }, 1.5);
+
+  // 1A → 1B sub-slide crossfade at 11.8s ("twist" anchor 12.561s)
+  subCrossfade("#p1-slide-a", "#p1-slide-b", 11.8);
+
+  // 1B — Mythos comparison card. Hide all interior elements at t=0,
+  // reveal at narration anchors.
+  tl.set("#p1b-eyebrow",          { y: 20, opacity: 0 }, 0);
+  tl.set("#p1b-card-mythos",      { x: -50, opacity: 0, scale: 0.92 }, 0);
+  tl.set("#p1b-card-daybreak",    { x:  50, opacity: 0, scale: 0.92 }, 0);
+  tl.set("#p1b-vs-divider",       { scale: 0.3, opacity: 0, rotate: -30 }, 0);
+  tl.set("#p1b-partners",         { y: 16, opacity: 0 }, 0);
+  tl.set("#p1b-question",         { y: 20, opacity: 0 }, 0);
+
+  tl.to("#p1b-eyebrow",   { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 12.0);
+  // Anthropic Mythos card slides in from left at "Anthropic" anchor 13.107s
+  tl.to("#p1b-card-mythos", { x: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.5)" }, 13.0);
+  // VS divider — elastic spin pop
+  tl.to("#p1b-vs-divider", { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: "elastic.out(1.1, 0.4)" }, 14.0);
+  tl.to("#p1b-vs-divider", { textShadow: "0 0 40px var(--accent)", duration: 0.25, yoyo: true, repeat: 1 }, 14.55);
+  // Daybreak card slides in from right — spirograph inside spins on entry
+  tl.to("#p1b-card-daybreak", { x: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.5)" }, 14.4);
+  tl.set("#p1b-card-daybreak svg", { rotate: -180, scale: 0.55 }, 14.35);
+  tl.to("#p1b-card-daybreak svg",  { rotate: 0, scale: 1, duration: 1.0, ease: "back.out(1.4)" }, 14.5);
+  // Shared-partners row enters at "partners" anchor 17.229s
+  tl.to("#p1b-partners",  { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 17.0);
+  // Curiosity question line enters at ~19.5s ("So is Daybreak just...")
+  tl.to("#p1b-question",  { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 19.8);
+  // Subtle scale-pulse on the question at "different?" anchor 23.75s
+  tl.to("#p1b-question", { scale: 1.04, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 23.4);
+
+  // ─── Transition phase1 → phase2 at T1 = 24.075s ───
+  const T1 = 24.075;
+  tl.to("#phase1", { filter: "blur(18px)", scale: 1.04, opacity: 0, duration: 0.42, ease: "power2.in" }, T1);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.42);
+  tl.set("#phase2", { filter: "blur(24px)", scale: 1.03, opacity: 0, visibility: "visible" }, T1 + 0.40);
+  tl.to("#phase2", { opacity: 1, duration: 0.16, ease: "power3.out", overwrite: "auto" }, T1 + 0.40);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.55, ease: "expo.out", overwrite: "auto" }, T1 + 0.44);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — BUILD (24.5 → 80.8s): rail dot 1 (BUILD)
+  // Sub-slides: 2A intro → 2B 3 tiers → 2C 6 caps → 2D punchline
+  // ═══════════════════════════════════════════════════════
+  const P2 = 24.475;
+  activateRailDot(P2, 1);
+
+  // 2A — Intro / fusion (P2 → 29.3s)
+  tl.from("#p2a-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.2);
+  tl.from("#p2a-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.6);
+  tl.from("#p2a-subhead",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 1.4);
+  // Scale-pulse the headline at "Codex" anchor 27.26s
+  tl.to("#p2a-headline", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 27.10);
+
+  // 2A → 2B crossfade at 29.3s (just before "3 GPT five point five variants" at 29.71s)
+  subCrossfade("#p2-slide-a", "#p2-slide-b", 29.3);
+
+  // 2B — 3 GPT-5.5 tier cards (29.3 → 59.0s)
+  // Tier cards: perspective flip-in from below (rotateX 30° → 0°)
+  tl.set("#p2b-tier-1", { rotateX: 30, y: 28, opacity: 0, transformPerspective: 900, transformOrigin: "50% 0%" }, 0);
+  tl.set("#p2b-tier-2", { rotateX: 30, y: 28, opacity: 0, transformPerspective: 900, transformOrigin: "50% 0%" }, 0);
+  tl.set("#p2b-tier-3", { rotateX: 30, y: 28, opacity: 0, transformPerspective: 900, transformOrigin: "50% 0%" }, 0);
+  tl.from("#p2b-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 29.7);
+  tl.from("#p2b-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 30.2);
+  // Tier reveals — hinge down into place
+  tl.to("#p2b-tier-1", { rotateX: 0, y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 33.20);
+  tl.to("#p2b-tier-2", { rotateX: 0, y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 39.05);
+  tl.to("#p2b-tier-3", { rotateX: 0, y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 48.75);
+  // "3 tiers. 1 mission." beat (~57.2s) — pulse all 3 tiers
+  tl.to("#p2b-tier-1", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 57.0);
+  tl.to("#p2b-tier-2", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 57.2);
+  tl.to("#p2b-tier-3", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 57.4);
+
+  // 2B → 2C crossfade at 59.0s (just before "Together they cover" at 59.19s)
+  subCrossfade("#p2-slide-b", "#p2-slide-c", 59.0);
+
+  // 2C — 6 defender capability chips (59.0 → 71.0s)
+  for (var i = 1; i <= 6; i++) {
+    tl.set("#p2c-chip-" + i, { y: 28, scale: 0.94, opacity: 0 }, 0);
+  }
+  tl.from("#p2c-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 59.4);
+  tl.from("#p2c-headline", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 59.8);
+  // Capability chips at narration anchors
+  tl.to("#p2c-chip-1", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 62.05);  // "Secure"      62.27
+  tl.to("#p2c-chip-2", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 63.30);  // "Threat"      63.53
+  tl.to("#p2c-chip-3", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 64.10);  // "Patch"       64.30
+  tl.to("#p2c-chip-4", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 65.90);  // "Dependency"  66.14
+  tl.to("#p2c-chip-5", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 67.45);  // "Detection"   67.68
+  tl.to("#p2c-chip-6", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 68.40);  // "remediation" 68.63
+
+  // 2C → 2D crossfade at 71.0s (just before "sits inside" at 71.12s)
+  subCrossfade("#p2-slide-c", "#p2-slide-d", 71.0);
+
+  // 2D — Codex Security punchline (71.0 → 80.8s)
+  tl.from("#p2d-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 71.4);
+  tl.from("#p2d-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 71.8);
+  tl.from("#p2d-subhead",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 72.6);
+  // Pulse the headline at "the patch is already written" (~78s)
+  tl.to("#p2d-headline", { scale: 1.03, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 78.0);
+
+  // ─── Transition phase2 → phase3 at T2 = 80.777s ───
+  const T2 = 80.777;
+  tl.to("#phase2", { filter: "blur(18px)", scale: 1.04, opacity: 0, duration: 0.42, ease: "power2.in" }, T2);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.42);
+  tl.set("#phase3", { filter: "blur(24px)", scale: 1.03, opacity: 0, visibility: "visible" }, T2 + 0.40);
+  tl.to("#phase3", { opacity: 1, duration: 0.16, ease: "power3.out", overwrite: "auto" }, T2 + 0.40);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.55, ease: "expo.out", overwrite: "auto" }, T2 + 0.44);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — SIGNAL (81.2 → 109.7s): rail dot 2 (SIGNAL)
+  // 3A 8-partner logo chips → 3B 2.4M bigstat → 3C Mythos contrast
+  // ═══════════════════════════════════════════════════════
+  const P3 = 81.177;
+  activateRailDot(P3, 2);
+
+  // 3A — Launch partner logo chips
+  for (var i = 1; i <= 8; i++) {
+    tl.set("#p3a-chip-" + i, { y: 24, scale: 0.94, opacity: 0 }, 0);
+  }
+  tl.from("#p3a-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.3);
+  tl.from("#p3a-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P3 + 0.8);
+  // Partner chips at narration anchors (rapid recitation 86.69 → 92.43)
+  tl.to("#p3a-chip-1", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 86.50);  // Akamai      86.69
+  tl.to("#p3a-chip-2", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 87.08);  // Cisco       87.27
+  tl.to("#p3a-chip-3", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 87.65);  // Cloudflare  87.83
+  tl.to("#p3a-chip-4", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 88.20);  // CrowdStrike 88.38
+  tl.to("#p3a-chip-5", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 88.80);  // Fortinet    88.99
+  tl.to("#p3a-chip-6", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 90.25);  // Oracle      90.45
+  tl.to("#p3a-chip-7", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 91.00);  // Palo Alto   91.19
+  tl.to("#p3a-chip-8", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 92.25);  // Zscaler     92.43
+
+  // 3A → 3B crossfade at 96.5s (after "All 8 integrating Daybreak under the Trusted Access for Cyber program")
+  subCrossfade("#p3-slide-a", "#p3-slide-b", 96.5);
+
+  // 3B — 2.4M bigstat with counter roll (96.5 → 102.0s)
+  tl.from("#p3b-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 96.9);
+  // Bigstat slams in from scale 0.5 with amber color, settles white
+  tl.from("#p3b-bigstat .num", { scale: 0.5, opacity: 0, color: "var(--accent)", duration: 0.7, ease: "back.out(1.8)", immediateRender: false }, 99.0);
+  tl.to("#p3b-bigstat .num",   { color: "var(--ink-100)", duration: 0.55, ease: "power2.in" }, 100.5);
+  const counterProxy = { v: 0 };
+  tl.set(counterProxy, { v: 0 }, 99.0);
+  tl.to(counterProxy, {
+    v: 2.4,
+    duration: 1.4, ease: "power2.out",
+    onUpdate: function () {
+      var el = document.getElementById('p3b-num-value');
+      if (el) el.textContent = counterProxy.v.toFixed(1);
+    }
+  }, 99.0);
+  tl.from("#p3b-bigstat .label", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 100.1);
+  tl.from("#p3b-subhead",  { y: 24, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, 100.5);
+  // Amber glow burst on the 2.4 number landing
+  tl.fromTo("#p3b-bigstat .num",
+    { filter: "drop-shadow(0 0 40px rgba(240, 184, 110, 0.30))" },
+    { filter: "drop-shadow(0 0 80px rgba(240, 184, 110, 0.85))",
+      duration: 0.6, ease: "sine.out", yoyo: true, repeat: 1 },
+    100.2);
+
+  // 3B → 3C crossfade at 102.0s (just before "So here's the real difference" at 102.62s)
+  subCrossfade("#p3-slide-b", "#p3-slide-c", 102.0);
+
+  // 3C — Mythos vs Daybreak contrast (102.0 → 109.7s)
+  tl.set("#p3c-line-mythos",   { x: -55, skewX:  7, opacity: 0 }, 0);
+  tl.set("#p3c-line-daybreak", { x:  55, skewX: -7, opacity: 0 }, 0);
+  tl.set("#p3c-footer",        { y: 16, opacity: 0 }, 0);
+  tl.from("#p3c-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 102.3);
+  tl.from("#p3c-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 102.8);
+  // Mythos line enters at "Mythos hunts" 103.49s
+  tl.to("#p3c-line-mythos",   { x: 0, skewX: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 103.30);
+  // Daybreak line enters at "Daybreak ships" 105.98s
+  tl.to("#p3c-line-daybreak", { x: 0, skewX: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 105.80);
+  // Footer ("Same battlefield. Opposite ends.") at "battlefield" 107.51s
+  tl.to("#p3c-footer", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 107.3);
+  // Bold pulse on "Opposite ends" word at 108.98s
+  tl.to("#p3c-footer strong", { scale: 1.06, color: "var(--accent)", duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 108.8);
+
+  // ─── Transition phase3 → phase4 at T3 = 109.720s ───
+  const T3 = 109.720;
+  tl.to("#phase3", { filter: "blur(18px)", scale: 1.04, opacity: 0, duration: 0.42, ease: "power2.in" }, T3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.42);
+  tl.set("#phase4", { filter: "blur(24px)", scale: 1.03, opacity: 0, visibility: "visible" }, T3 + 0.40);
+  tl.to("#phase4", { opacity: 1, duration: 0.16, ease: "power3.out", overwrite: "auto" }, T3 + 0.40);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.55, ease: "expo.out", overwrite: "auto" }, T3 + 0.44);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — SHIFT (110.1 → ~135s, endcard takes over last 5s)
+  // SHIFT dot at headline → CTA dot when REQUEST-A-SCAN pill appears
+  // ═══════════════════════════════════════════════════════
+  const P4 = 110.120;
+  activateRailDot(P4, 3);                        // SHIFT lights first
+  activateRailDot(122.7, 4);                     // CTA lights when scan-pill appears
+  // Hide reveal targets at t=0
+  tl.set("#p4-quote-1",      { y: 24, opacity: 0 }, 0);
+  tl.set("#p4-quote-2",      { y: 24, opacity: 0 }, 0);
+  tl.set("#p4-scan-pill",    { y: 24, scale: 0.92, opacity: 0 }, 0);
+  tl.set("#p4-cta-question", { y: 20, opacity: 0 }, 0);
+  tl.from("#p4-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.3);
+  tl.from("#p4-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P4 + 0.7);
+  // Scale-pulse on "outpaced" anchor (113.17s) — punctuates the shift
+  tl.to("#p4-headline", { scale: 1.03, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 113.0);
+  // Quote line 1 enters at "broader" anchor 117.61s
+  tl.to("#p4-quote-1", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 117.40);
+  // REQUEST A SCAN mini-pill enters at "vulnerability scan" 122.80s
+  tl.to("#p4-scan-pill", { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, 122.60);
+  // Soft amber glow pulse on the pill (1 yoyo)
+  tl.to("#p4-scan-pill", {
+    boxShadow: "0 0 0 8px var(--accent-glow)",
+    duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1
+  }, 123.30);
+  // Quote line 2 enters at "Software" anchor 129.58s — the philosophical close
+  tl.to("#p4-quote-2", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 129.30);
+  // Debate-sparking CTA question enters at ~132.5s (spoken in narration close, before endcard at 135s)
+  tl.to("#p4-cta-question", { y: 0, opacity: 1, duration: 0.65, ease: "power2.out" }, 132.5);
+
+  // Reposition shape backdrop at every phase + sub-slide transition.
+  // Each entry pairs with a cinematic-whoosh SFX below.
+  repositionShapesPerPhase(tl, document.getElementById('shape-backdrop'), 'openai-daybreak',
+    [11.8, T1, 29.3, 59.0, 71.0, T2, 96.5, 102.0, T3]);
+
+  // ─── VIDEO_CONFIG opt-in GSAP wiring ───
+  var _dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+  if (_dyn.badge) {
+    tl.fromTo('#dynamous-badge', { opacity: 0, x: 14 }, { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out' }, 3.0);
+  }
+  if (_dyn.discountBubble) {
+    var _ctaStart = _dyn.discountBubbleStart != null ? _dyn.discountBubbleStart : 122.6;
+    var _bubDur   = _dyn.discountBubbleDuration || 5.5;
+    tl.from('#dynamous-discount-bubble', { y: 16, opacity: 0, duration: 0.5, ease: 'power2.out' }, _ctaStart);
+    tl.to(  '#dynamous-discount-bubble', { opacity: 0, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, _ctaStart + _bubDur - 0.4);
+  }
+  if (_dyn.endcard) {
+    // Endcard takes over the last 5s. Fade competing chrome 0.5s before it
+    // fires so the endcard owns the frame cleanly.
+    var _ecStart = _dyn.endcardStart != null ? _dyn.endcardStart : Math.max(0, TOTAL_DURATION - 5);
+    var _fadeAt  = Math.max(0, _ecStart - 0.5);
+    tl.to('#phase4',         { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#dynamous-badge', { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#progress-rail',  { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#brand-mark',     { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+  }
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

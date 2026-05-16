@@ -1,0 +1,186 @@
+<!--
+  shared/lib/components/magnet-snap-letters/component.html
+  Per-character entrance animation: letters fly in from random positions and
+  snap to their rest position with a magnetic spring feel. Source text comes
+  from [data-snap-text] on the root element. Offsets are seeded via mulberry32
+  (seed 0xFEED) so every render produces the same starting positions.
+  The "lock" micro-shudder (scale 0.95 → 1.05 → 1.0 in the last 0.15s) sells
+  the magnetic snap without over-engineering.
+
+  SOURCE: original — no template source.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this element wherever the snapping text should appear.
+     Set data-snap-text to the string you want to animate.
+     The inner text is the visible fallback before JS initialises.
+-->
+
+<span class="magnet-snap-letters" id="snap-1" data-snap-text="Hello World">Hello World</span>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+     Font properties are NOT set here — inherit from the parent rule.
+-->
+
+<style>
+  /* shared/lib/components/magnet-snap-letters — keep this comment block */
+  .magnet-snap-letters {
+    display: inline-block;
+    /* Preserve whitespace so spaces render correctly after split */
+    white-space: pre;
+    line-height: inherit;
+    letter-spacing: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  .magnet-snap-letters .msl-char {
+    display: inline-block;
+    /* will-change for compositor promotion during the entrance burst */
+    will-change: transform, opacity;
+  }
+
+  /* Space characters stay inline, never animated */
+  .magnet-snap-letters .msl-space {
+    display: inline-block;
+    white-space: pre;
+    opacity: 1;
+  }
+</style>
+
+<!--
+  3) JS — call addMagnetSnapLetters() from the host root timeline.
+
+  SIGNATURE:
+    addMagnetSnapLetters(tl, sel, at, opts)
+
+  PARAMETERS:
+    tl         — a paused gsap.timeline
+    sel        — CSS selector resolving to ONE .magnet-snap-letters element
+    at         — insertion time on tl (seconds)
+    opts       — optional config object:
+      duration   = 1.4    total envelope from first letter departure to last lock
+      stagger    = 0.025  delay between consecutive letter entrances (seconds)
+      range      = 300    max fly-in offset in px (both X and Y axes)
+
+  USAGE EXAMPLES:
+    // Default settings — text from data-snap-text attribute
+    addMagnetSnapLetters(tl, "#snap-1", P1 + 1.0);
+
+    // Tighter stagger, wider range for a dramatic burst
+    addMagnetSnapLetters(tl, "#snap-1", P1 + 1.0, { stagger: 0.02, range: 400 });
+
+  CONSTRAINTS:
+    - The element must have data-snap-text set before this function is called.
+    - Call at most once per element — subsequent calls re-initialise innerHTML.
+    - Spaces in the text are skipped (no animation), preserving word gaps.
+    - Works on inline elements; parent must have adequate width for the rendered text.
+    - Seed 0xFEED: changing range OR the text string changes visual offset positions
+      but preserves the same mulberry32 sequence — characters get reproducible,
+      text-length-determined offsets.
+
+  LOCK MICRO-SHUDDER (the "magnetic snap"):
+    In the last 0.15s of each letter's 0.5s fly-in tween, a scale dip
+    0.95 → 1.05 → 1.0 runs as a separate 2-tick yoyo. This fires as the letter
+    arrives at its rest position — viewers feel it as tactile, physical contact.
+-->
+
+<script>
+  function addMagnetSnapLetters(tl, sel, at, opts) {
+    opts = opts || {};
+    var duration = opts.duration !== undefined ? opts.duration : 1.4;
+    var stagger  = opts.stagger  !== undefined ? opts.stagger  : 0.025;
+    var range    = opts.range    !== undefined ? opts.range    : 300;
+
+    // ── mulberry32 PRNG ──────────────────────────────────────────────────────
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    var el = document.querySelector(sel);
+    if (!el) return;
+
+    var text = el.getAttribute('data-snap-text') || el.textContent || '';
+
+    // ── Split text into per-character spans ──────────────────────────────────
+    var html = '';
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (ch === ' ') {
+        html += '<span class="msl-space">&nbsp;</span>';
+      } else {
+        // Escape HTML special chars
+        var escaped = ch
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        html += '<span class="msl-char" id="' + (el.id || 'msl') + '-c' + i + '">' + escaped + '</span>';
+      }
+    }
+    el.innerHTML = html;
+
+    var chars = el.querySelectorAll('.msl-char');
+    var rand  = mulberry32(0xFEED);
+
+    // ── Set initial hidden state for all chars ───────────────────────────────
+    for (var i = 0; i < chars.length; i++) {
+      var dx  = (rand() * 2 - 1) * range;
+      var dy  = (rand() * 2 - 1) * range;
+      var rot = (rand() * 2 - 1) * 30;
+      // Store offsets on the element for the tween phase
+      chars[i]._mslDx  = dx;
+      chars[i]._mslDy  = dy;
+      chars[i]._mslRot = rot;
+      gsap.set(chars[i], { x: dx, y: dy, rotation: rot, opacity: 0, scale: 1 });
+    }
+
+    // ── Animate each character ───────────────────────────────────────────────
+    var innerTl = gsap.timeline();
+    var flyDur  = 0.5; // core fly-in tween duration
+
+    for (var i = 0; i < chars.length; i++) {
+      var charAt = i * stagger; // entrance offset along the stagger chain
+      var c      = chars[i];
+
+      // Phase 1: fly from offset to rest — back.out(2.5) for spring overshoot
+      innerTl.to(c, {
+        x: 0, y: 0, rotation: 0, opacity: 1,
+        duration: flyDur,
+        ease: 'back.out(2.5)'
+      }, charAt);
+
+      // Phase 2: micro-shudder at lock — fires 0.15s before fly-in completes.
+      // scale 0.95 → 1.05 → 1.0 over 0.075s × 2 ticks.
+      var lockAt = charAt + flyDur - 0.15;
+      innerTl.to(c, {
+        scale: 0.95,
+        duration: 0.04,
+        ease: 'power2.in'
+      }, lockAt);
+      innerTl.to(c, {
+        scale: 1.05,
+        duration: 0.04,
+        ease: 'power2.out'
+      }, lockAt + 0.04);
+      innerTl.to(c, {
+        scale: 1.0,
+        duration: 0.07,
+        ease: 'power2.inOut'
+      }, lockAt + 0.08);
+    }
+
+    tl.add(innerTl, at);
+  }
+</script>

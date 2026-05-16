@@ -3,6 +3,12 @@
 **/out/
 **/renders/
 
+# Scratch / tmp — never commit (often holds large MP4s and intermediate artifacts)
+tmp/
+
+# Per-video archive folders (old version renders, often >100MB MP4 — GitHub hard limit)
+videos/*/_archive-*/
+
 # Pipeline intermediate artifacts (commit final outputs, not logs)
 videos/*/orchestration-log.md
 videos/*/.phase-cache/

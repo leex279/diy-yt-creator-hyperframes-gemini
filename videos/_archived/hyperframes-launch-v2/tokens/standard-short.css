@@ -1,0 +1,64 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/standard/tokens/standard-short.css
+   Generic standard short (1080x1920) palette + spacing + typography tokens.
+
+   Brand-neutral baseline for any topic. Dark navy + 4-accent rotation
+   (blue/cyan/purple/green) — mirrors templates/long-form/standard/ for
+   channel coherence across vertical and horizontal formats.
+
+   Per-video overrides go on a more specific selector (e.g. inside #root,
+   or a per-phase scope) — never edit this file in a video copy.
+
+   Scoped to :root (NOT #root) so every sub-composition wired via
+   data-composition-src inherits these vars without needing a wrapper.
+
+   USAGE:
+     - Linked once from index.html <head>:
+         <link rel="stylesheet" href="tokens/standard-short.css">
+     - Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #0B0F1A;
+  --bg-card:        rgba(255, 255, 255, 0.05);
+  --bg-surface:     rgba(255, 255, 255, 0.08);
+  --border:         rgba(255, 255, 255, 0.10);
+  --border-bright:  rgba(255, 255, 255, 0.18);
+
+  /* ── Accents (4-tier rotation, project-swappable) ──── */
+  --accent-1:       #3B82F6;  /* blue   — primary lead */
+  --accent-2:       #06B6D4;  /* cyan   — secondary    */
+  --accent-3:       #8B5CF6;  /* purple — tertiary     */
+  --accent-4:       #22C55E;  /* green  — success      */
+  --accent-warn:    #F97316;  /* orange — caution      */
+  --accent-stat:    #FBBC04;  /* yellow — hero stats   */
+
+  /* Convenience aliases — keep names that mirror anthropic-dark so lib
+     entries authored against either system stay portable. Override per
+     video by changing --accent-1..4 above; aliases follow automatically. */
+  --primary:        var(--accent-1);
+  --secondary:      var(--accent-2);
+  --tertiary:       var(--accent-3);
+  --success:        var(--accent-4);
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #F1F3F4;
+  --text-dim:       #9AA0A6;
+  --text-muted:     #64748B;
+
+  /* ── Pill chrome (rounded chips, CTA pills) ────────── */
+  --pill-bg:        rgba(241, 243, 244, 0.07);
+  --pill-border:    rgba(241, 243, 244, 0.18);
+
+  /* ── Spacing (1080x1920 safe-zone for vertical Shorts) ─── */
+  /* Top/bottom 240px reserves space for the persistent banner and
+     mobile UI overlay (YouTube Shorts player chrome). */
+  --pad-top:        240px;
+  --pad-x:          60px;
+  --pad-bottom:     240px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

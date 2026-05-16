@@ -1,0 +1,148 @@
+<!--
+  scene-studio-v2.html — full-bleed studio frame showing the v2 demo result.
+  Real captured frame after iteration (bigger title + subtitle).
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-studio-v2-template">
+  <div data-composition-id="scene-studio-v2"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #sv2-content {
+        width:100%; height:100%;
+        padding: 70px var(--pad-x) 60px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 22px; box-sizing:border-box;
+      }
+      #sv2-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:8px; text-align:center;
+      }
+      #sv2-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-2);
+      }
+      #sv2-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 44px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+      .studio-frame-2 {
+        position: relative;
+        width: 1480px; height: 720px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #0B0F1A;
+        border: 2px solid var(--border-bright);
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+      }
+      .studio-frame-2 .chrome {
+        position: absolute; top: 0; left: 0; right: 0;
+        height: 44px; z-index: 2;
+        background: linear-gradient(180deg, rgba(34,40,54,.98), rgba(22,26,38,.98));
+        display: flex; align-items: center;
+        padding: 0 16px; gap: 10px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+      }
+      .studio-frame-2 .chrome .dot { width: 13px; height: 13px; border-radius: 50%; }
+      .studio-frame-2 .chrome .dot.r { background: #ff5f57; }
+      .studio-frame-2 .chrome .dot.y { background: #febc2e; }
+      .studio-frame-2 .chrome .dot.g { background: #28c840; }
+      .studio-frame-2 .chrome .urlbar {
+        flex: 1; height: 28px; margin-left: 18px;
+        background: rgba(255,255,255,.06);
+        border-radius: 8px;
+        display:flex; align-items:center;
+        padding: 0 14px;
+        font-family: var(--mono); font-size: 14px;
+        color: var(--text-secondary);
+      }
+      .studio-frame-2 .chrome .badge {
+        display:inline-flex; align-items:center; gap:8px;
+        padding: 4px 12px; border-radius: 999px;
+        background: rgba(251,188,4,.20);
+        border: 1px solid rgba(251,188,4,.55);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 12px; letter-spacing: 1px;
+        color: #fbd649;
+      }
+      .studio-frame-2 .chrome .badge .reload-icon {
+        font-weight: 900;
+      }
+      .studio-frame-2 .canvas {
+        position: absolute; inset: 44px 0 0 0;
+        background: #0B0F1A;
+      }
+      .studio-frame-2 .canvas img {
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center;
+        display: block;
+      }
+      .studio-tag-2 {
+        display:inline-flex; align-items:center; gap: 14px;
+        padding: 10px 20px; border-radius: 12px;
+        background: rgba(251,188,4,.10);
+        border: 1px solid rgba(251,188,4,.55);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 18px; color: #fbd649;
+      }
+      .studio-tag-2 .label {
+        font-size: 13px; letter-spacing: 2px;
+        color: var(--text-secondary); text-transform: uppercase;
+      }
+    </style>
+
+    <div id="sv2-content">
+      <div class="header-block">
+        <div class="overline" id="sv2-overline">STUDIO &middot; ITERATION 2</div>
+        <div class="headline" id="sv2-headline">Same five seconds &middot; bigger, with subtitle</div>
+      </div>
+
+      <div class="studio-frame-2" id="sv2-frame">
+        <div class="chrome">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="urlbar">localhost:3003 &middot; HyperFrames Studio &middot; my-video</span>
+          <span class="badge"><span class="reload-icon">↻</span>RELOADED</span>
+        </div>
+        <div class="canvas">
+          <img id="sv2-img" src="assets/screenshots/demo-v2.png" alt="Hello HyperFrames v2 with subtitle" />
+        </div>
+      </div>
+
+      <div class="studio-tag-2" id="sv2-tag">
+        <span class="label">v2</span>
+        <span>200px title &middot; "Made with HyperFrames" subtitle</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sv2-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#sv2-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#sv2-frame",    { y: 40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#sv2-img",      { opacity: 0 }, 0);
+      tl.set("#sv2-tag",      { y: 16, opacity: 0 }, 0);
+
+      // Narration anchors:
+      //   "Iteration two."                                          +0.30
+      //   "Bigger title. Subtitle below."                            +2.15
+      //   "Same five-second intro, in seconds, by talking to your agent." +4.27
+      tl.to("#sv2-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.to("#sv2-headline", { y: 0, opacity: 1, duration: 0.5 }, 0.25);
+      tl.to("#sv2-frame",    { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.3)" }, 0.40);
+      tl.to("#sv2-img",      { opacity: 1, duration: 0.55, ease: "power2.out" }, 0.85);
+      tl.to("#sv2-tag",      { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 4.20);
+
+      window.__timelines["scene-studio-v2"] = tl;
+    </script>
+  </div>
+</template>

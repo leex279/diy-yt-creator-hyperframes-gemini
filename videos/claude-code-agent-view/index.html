@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code Agent View</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ─────────── PHASE 1 — X-post trust card hero ─────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-source-card {
+    position: relative;
+    width: 900px;
+    margin-top: 24px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #p1-source-chrome {
+    width: 100%;
+    background: rgba(28, 32, 44, 0.96);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    padding: 14px 22px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.78);
+    text-align: left;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  }
+  #p1-source-chrome::before {
+    content: "● ● ●";
+    color: rgba(255,255,255,0.30);
+    font-size: 14px;
+    letter-spacing: 5px;
+    margin-right: 16px;
+  }
+  #p1-source-img {
+    width: 900px;
+    height: auto;
+    display: block;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    background: #000;
+  }
+  #p1-caption {
+    margin-top: 36px;
+    padding: 16px 32px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ─────────── PHASE 2 — Stat pill row ─────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    margin-top: 60px;
+  }
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 460px;
+    min-height: 300px;
+    padding: 44px 24px;
+    border-radius: 24px;
+  }
+  .stat-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .stat-pill.orange .stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.40); }
+  .stat-pill.purple .stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .stat-label {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+  }
+
+  /* ─────────── PHASE 3 — 3 modes (screenshot + timeline cards) ─────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p3-overline { color: var(--orange); }
+  #p3-screenshot {
+    width: 940px;
+    margin-top: 16px;
+    border-radius: 18px;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.55);
+    background: #000;
+    display: block;
+    height: auto;
+  }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 940px;
+    margin-top: 12px;
+  }
+  .tl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 22px 28px;
+    border-radius: 20px;
+  }
+  .tl-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .tl-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .tl-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .tl-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 168px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 30px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+    text-transform: uppercase;
+  }
+  .tl-card.orange .tl-date { background: var(--orange); }
+  .tl-card.purple .tl-date { background: var(--purple); }
+  .tl-card.blue   .tl-date { background: var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .tl-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .tl-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: 1px;
+  }
+  .tl-card.orange .tl-sub { color: var(--orange); }
+  .tl-card.purple .tl-sub { color: var(--purple); }
+  .tl-card.blue   .tl-sub { color: var(--blue); }
+  .tl-index {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 30px;
+    line-height: 1;
+  }
+  .tl-card.orange .tl-index { background: rgba(233,116,88,0.20); border: 1.5px solid rgba(233,116,88,0.40); color: var(--orange); }
+  .tl-card.purple .tl-index { background: rgba(167,139,250,0.20); border: 1.5px solid rgba(167,139,250,0.40); color: var(--purple); }
+  .tl-card.blue   .tl-index { background: rgba(107,154,239,0.20); border: 1.5px solid rgba(107,154,239,0.40); color: var(--blue); }
+
+  /* ─────────── PHASE 4 — Video clip + use-pattern pills ─────────── */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-video-wrap {
+    width: 1000px;
+    height: 562px;
+    margin-top: 16px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    background: #000;
+  }
+  #p4-video {
+    width: 1000px;
+    height: 562px;
+    object-fit: cover;
+    display: block;
+  }
+  #p4-use-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 940px;
+    margin-top: 8px;
+  }
+  .use-pill {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 18px 26px;
+    border-radius: 18px;
+    background: rgba(245,241,235,0.06);
+    border: 1.5px solid rgba(245,241,235,0.18);
+    text-align: left;
+  }
+  .use-pill .use-icon {
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 1;
+  }
+  .use-pill.green .use-icon  { background: rgba(125,211,166,0.18); color: var(--green);  border: 1.5px solid rgba(125,211,166,0.45); }
+  .use-pill.orange .use-icon { background: rgba(233,116,88,0.18);  color: var(--orange); border: 1.5px solid rgba(233,116,88,0.45); }
+  .use-pill.purple .use-icon { background: rgba(167,139,250,0.18); color: var(--purple); border: 1.5px solid rgba(167,139,250,0.45); }
+  .use-pill.blue   .use-icon { background: rgba(107,154,239,0.18); color: var(--blue);   border: 1.5px solid rgba(107,154,239,0.45); }
+  .use-pill .use-text {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--text);
+    flex: 1;
+  }
+
+  /* ─────────── PHASE 5 — Availability + CTA ─────────── */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p5-overline { color: var(--green); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-top: 12px;
+  }
+  #p5-plan-pills {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 60px;
+    width: 940px;
+  }
+  .plan-pill {
+    padding: 22px 36px;
+    border-radius: 999px;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 44px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.45);
+    box-shadow: 0 10px 28px rgba(125,211,166,0.20);
+  }
+  #p5-cmd {
+    margin-top: 80px;
+    padding: 26px 44px;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 56px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.45);
+    border-radius: 20px;
+    box-shadow: 0 14px 36px rgba(233,116,88,0.25);
+  }
+  #p5-cmd .cmd-prompt {
+    color: var(--orange);
+    margin-right: 14px;
+  }
+
+  /* ─────────── Dynamous badge (persistent) ─────────── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 340px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* ─────────── Dynamous endcard mount ─────────── */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="77.4"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <div id="ambient"></div>
+
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — X-post trust card (0 → 8.37s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Announced · May 11</div>
+      <div id="p1-source-card">
+        <div id="p1-source-chrome">x.com/claudeai · 34.2K views</div>
+        <img id="p1-source-img" src="assets/x-announcement.png" alt="@claudeai announcement" crossorigin="anonymous" />
+      </div>
+      <div id="p1-caption">Available today · Research Preview</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — Before / Stat row (8.57 → 17.32s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">Before agent view</div>
+      <div id="p2-headline">Terminal tabs. Tmux grids.<br>Mental ledger.</div>
+      <div id="p2-pills">
+        <div class="stat-pill orange" id="p2-pill-1">
+          <div class="stat-num">3</div>
+          <div class="stat-label">modes</div>
+        </div>
+        <div class="stat-pill purple" id="p2-pill-2">
+          <div class="stat-num">5</div>
+          <div class="stat-label">plans</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — How it works (17.72 → 43.97s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">How it works</div>
+      <img id="p3-screenshot" src="assets/agent-view-screen1.png" alt="Agent view session list" crossorigin="anonymous" />
+      <div class="timeline-list">
+        <div class="tl-card orange" id="p3-card-1">
+          <div class="tl-date">SEE</div>
+          <div class="tl-body">
+            <div class="tl-title">Press ← or claude agents</div>
+            <div class="tl-sub">Every session at a glance</div>
+          </div>
+          <div class="tl-index">01</div>
+        </div>
+        <div class="tl-card purple" id="p3-card-2">
+          <div class="tl-date">PEEK</div>
+          <div class="tl-body">
+            <div class="tl-title">Read the last turn. Reply inline.</div>
+            <div class="tl-sub">No context switch</div>
+          </div>
+          <div class="tl-index">02</div>
+        </div>
+        <div class="tl-card blue" id="p3-card-3">
+          <div class="tl-date">BG</div>
+          <div class="tl-body">
+            <div class="tl-title">/bg · claude --bg [task]</div>
+            <div class="tl-sub">Push or launch into the view</div>
+          </div>
+          <div class="tl-index">03</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — Video clip + 4 use patterns (44.37 → 62.61s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">How devs use it</div>
+      <div id="p4-video-wrap">
+        <video id="p4-video" src="assets/agent-view-clip.mp4" muted playsinline preload="auto"
+               data-start="44.37" data-duration="15.0" data-track-index="1"></video>
+      </div>
+      <div id="p4-use-list">
+        <div class="use-pill green" id="p4-use-1">
+          <div class="use-icon">→</div>
+          <div class="use-text">Dispatch ideas, return to PRs ready for review</div>
+        </div>
+        <div class="use-pill orange" id="p4-use-2">
+          <div class="use-icon">⟳</div>
+          <div class="use-text">Babysit long-running jobs with next-run time</div>
+        </div>
+        <div class="use-pill purple" id="p4-use-3">
+          <div class="use-icon">↔</div>
+          <div class="use-text">Bounce between sessions without losing context</div>
+        </div>
+        <div class="use-pill blue" id="p4-use-4">
+          <div class="use-icon">✓</div>
+          <div class="use-text">Scan status indicators to see what shipped</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — Availability + run command (63.01 → 71.9s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">Available today</div>
+      <div id="p5-headline">Opt in with one command.</div>
+      <div id="p5-plan-pills">
+        <div class="plan-pill" id="p5-plan-1">Pro</div>
+        <div class="plan-pill" id="p5-plan-2">Max</div>
+        <div class="plan-pill" id="p5-plan-3">Team</div>
+        <div class="plan-pill" id="p5-plan-4">Enterprise</div>
+        <div class="plan-pill" id="p5-plan-5">Claude API</div>
+      </div>
+      <div id="p5-cmd"><span class="cmd-prompt">$</span>claude agents</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Dynamous endcard (last 5s) — covers from 72.4 → 77.4
+       ═══════════════════════════════════════════════════════ -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="72.4"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Narration + SFX
+       ═══════════════════════════════════════════════════════ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="76"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="8.17" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="17.32" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="43.97" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="62.61" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─── seeded deterministic shape backdrop ───
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  function addDynamousBadgeEntrance(tl) {
+    tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+  }
+
+  spawnShapes('claude-code-agent-view', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─── Timeline anchors (computed from transcript.json) ───
+  const TOTAL = 77.4;
+  const T1 = 8.17, T2 = 17.32, T3 = 43.97, T4 = 62.61;
+  const P2 = T1 + 0.4;   // 8.57
+  const P3 = T2 + 0.4;   // 17.72
+  const P4 = T3 + 0.4;   // 44.37
+  const P5 = T4 + 0.4;   // 63.01
+
+  // Ambient slow breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL / 2, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Progress bar fills linearly across the composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Dynamous badge entrance — t=3.0s (post-hook, locked)
+  addDynamousBadgeEntrance(tl);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — X-post trust card (0 → 8.17s)
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+  tl.fromTo("#p1-source-card",
+    { y: 24, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.7, ease: "power2.out", immediateRender: false },
+    0.7);
+  tl.from("#p1-caption", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 6.4);
+
+  // ─── Phase 1 → 2 transition at T1 = 8.17s ───
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Stat row (8.57 → 17.32s)
+  // narration word anchors: "Now there is one place." = 15.15s, "3 modes." = 16.33s, "5 plans." = 16.93s
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  // Hide stat pills explicitly from t=0 so they don't flash before reveal
+  tl.set("#p2-pill-1", { opacity: 0, scale: 0.85 }, 0);
+  tl.set("#p2-pill-2", { opacity: 0, scale: 0.85 }, 0);
+  tl.to("#p2-pill-1", { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.7)" }, 16.30);
+  tl.to("#p2-pill-2", { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.7)" }, 16.90);
+
+  // ─── Phase 2 → 3 transition at T2 = 17.32s ───
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — 3 modes (17.72 → 43.97s)
+  // narration word anchors: "First" = 18.44s, "Second" = 28.88s, "Third" = 35.61s
+  // intermediate beats: "(left) arrow" = 20.50s, "(answer) inline" = 34.78s
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.from("#p3-screenshot", { y: 30, opacity: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, P3 + 0.3);
+
+  // Hide all 3 mode cards explicitly from t=0
+  tl.set("#p3-card-1", { x: -40, opacity: 0, scale: 0.95 }, 0);
+  tl.set("#p3-card-2", { x: -40, opacity: 0, scale: 0.95 }, 0);
+  tl.set("#p3-card-3", { x: -40, opacity: 0, scale: 0.95 }, 0);
+  // Reveal each at the narration anchor naming it
+  tl.to("#p3-card-1", { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 18.44);
+  tl.to("#p3-card-2", { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 28.88);
+  tl.to("#p3-card-3", { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 35.61);
+  // Mid-phase beats to honor visual-pacing-5s rule (no static gap > 5s)
+  // Card 1 lands ~19s. Card 2 enters at 28.88s. Bridge with a screenshot glow at 23.5s
+  // and a card-1 scale pulse at 26.5s.
+  tl.to("#p3-screenshot", { boxShadow: "0 18px 48px rgba(233,116,88,0.55)", duration: 0.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 23.5);
+  tl.to("#p3-card-1", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut", overwrite: "auto" }, 26.5);
+  // Bridge between Card 2 (lands 29.4) and Card 3 (35.61): pulse card 2 at 32.5s
+  tl.to("#p3-card-2", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut", overwrite: "auto" }, 32.5);
+  // Card 3 lands ~36.2s. Phase exit at T3=43.97. Bridge with screenshot glow at 40s.
+  tl.to("#p3-screenshot", { boxShadow: "0 18px 48px rgba(107,154,239,0.55)", duration: 0.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 40.0);
+
+  // ─── Phase 3 → 4 transition at T3 = 43.97s ───
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Video clip + use-pattern pills (44.37 → 62.61s)
+  // narration word anchors: "Dispatch" = 47.20s, "Babysit" = 52.16s, "Bounce" = 56.71s, "Scan" = 60.75s
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p4-overline",    { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P4 + 0.0);
+  tl.from("#p4-video-wrap",  { y: 24, opacity: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, P4 + 0.3);
+
+  // Hide all 4 use-pattern pills from t=0
+  tl.set("#p4-use-1", { x: -30, opacity: 0 }, 0);
+  tl.set("#p4-use-2", { x: -30, opacity: 0 }, 0);
+  tl.set("#p4-use-3", { x: -30, opacity: 0 }, 0);
+  tl.set("#p4-use-4", { x: -30, opacity: 0 }, 0);
+  // Reveal each at the narration anchor naming it
+  tl.to("#p4-use-1", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 47.20);
+  tl.to("#p4-use-2", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 52.16);
+  tl.to("#p4-use-3", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 56.71);
+  tl.to("#p4-use-4", { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 60.75);
+
+  // ─── Phase 4 → 5 transition at T4 = 62.61s ───
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T4 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — Availability + run command (63.01 → 71.9s)
+  // narration word anchors: "Pro" = 64.87s, "Max" = 65.36s, "Team" = 65.81s, "Enterprise" = 66.31s, "Claude" = 67.50s
+  // "Opt in by running claude agents" = 69.51s
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P5 + 0.0);
+  tl.from("#p5-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, P5 + 0.3);
+
+  // Hide plan pills from t=0
+  tl.set("#p5-plan-1", { y: 16, opacity: 0, scale: 0.9 }, 0);
+  tl.set("#p5-plan-2", { y: 16, opacity: 0, scale: 0.9 }, 0);
+  tl.set("#p5-plan-3", { y: 16, opacity: 0, scale: 0.9 }, 0);
+  tl.set("#p5-plan-4", { y: 16, opacity: 0, scale: 0.9 }, 0);
+  tl.set("#p5-plan-5", { y: 16, opacity: 0, scale: 0.9 }, 0);
+  tl.to("#p5-plan-1", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 64.85);
+  tl.to("#p5-plan-2", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 65.34);
+  tl.to("#p5-plan-3", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 65.79);
+  tl.to("#p5-plan-4", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 66.29);
+  tl.to("#p5-plan-5", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 67.48);
+
+  // Run-command pill enters when narration says "Opt in by running claude agents"
+  tl.set("#p5-cmd", { y: 20, opacity: 0, scale: 0.9 }, 0);
+  tl.to("#p5-cmd",  { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 69.45);
+
+  // ─── Dynamous endcard handoff: fade phase5 + badge at TOTAL - 5.5 = 71.9 ───
+  tl.to("#phase5",         { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL - 5.5);
+  tl.to("#dynamous-badge", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL - 5.5);
+  tl.to("#top-banner",     { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL - 5.5);
+  tl.to("#progress-track", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL - 5.5);
+
+  // ─── Reposition shape backdrop on every phase transition ───
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-code-agent-view',
+    [T1, T2, T3, T4]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

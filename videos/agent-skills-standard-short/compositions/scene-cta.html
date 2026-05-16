@@ -1,0 +1,159 @@
+<!--
+  scene-cta.html — Closing CTA (~7s).
+
+  Pattern: kicker overline → "Read more at" → URL frame → subscribe pill.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-cta"].
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-cta-content {
+        width:100%; height:100%;
+        /* CTA has 6 elements; needs more vertical room than other scenes.
+           Override --pad-bottom locally (300 instead of 820). */
+        padding: var(--pad-top) var(--pad-x) 300px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:26px;
+        box-sizing:border-box;
+      }
+      #scene-cta-content .kicker {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 42px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-cta-content .topic-slam {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: 180px;
+        line-height: 0.95;
+        letter-spacing: -4px;
+        color: var(--accent-ink);
+        max-width: 960px;
+        margin-bottom: 4px;
+      }
+      #scene-cta-content .topic-slam .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-cta-content .outcome {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 44px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+        max-width: 920px;
+      }
+      #scene-cta-content .url {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 68px;
+        letter-spacing: 1px;
+        color: var(--text-on-warm);
+        line-height: 1.0;
+        padding: 28px 48px;
+        border-radius: 24px;
+        background: var(--accent-warm);
+        max-width: 940px;
+      }
+      #scene-cta-content .subscribe {
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        padding: 22px 42px;
+        border-radius: 999px;
+        background: var(--bg-card);
+        border: 2.5px solid var(--accent-deep);
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 46px;
+        color: var(--accent-deep);
+        letter-spacing: 0.5px;
+      }
+      #scene-cta-content .subscribe .arrow {
+        color: var(--accent-warm);
+        font-family: var(--sans);
+        font-weight: 400;
+        font-size: 56px;
+        line-height: 0.7;
+      }
+      /* MANDATORY debate-sparking CTA question per .claude/rules/engagement-cta.md */
+      #scene-cta-content .cta-question {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 60px;
+        line-height: 1.12;
+        letter-spacing: -1px;
+        color: var(--accent-deep);
+        text-align: center;
+        max-width: 940px;
+        margin-top: 12px;
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <div class="kicker"    id="cta-kicker">The open standard</div>
+      <!-- Topic-slam — thumbnail-grade dominant element per .claude/rules/shorts-thumbnail-frames.md -->
+      <div class="topic-slam" id="cta-topic">Skills <span class="em">or</span> MCP?</div>
+      <!-- Outcome receipt — what the viewer learned -->
+      <div class="outcome"   id="cta-outcome">An open format for AI agent capabilities &mdash; ~100 tokens to advertise, ~5,000 to run.</div>
+      <!-- URL pill — visual anchor, agentskills.io -->
+      <div class="url"       id="cta-url">agentskills.io</div>
+      <!-- Subscribe pill -->
+      <div class="subscribe" id="cta-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+      <!-- MANDATORY debate-sparking CTA question per .claude/rules/engagement-cta.md -->
+      <div class="cta-question" id="cta-question">Which earns the spot in your stack first?</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance — retimed to narration anchors (scene-relative).
+      // Kicker enters first at "So one question"
+      tl.from("#cta-kicker", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+
+      // Hide elements until their narration anchor
+      tl.set("#cta-topic",    { y: 30, scale: 0.92, opacity: 0 }, 0);
+      tl.set("#cta-question", { y: 28, opacity: 0 }, 0);
+      tl.set("#cta-outcome",  { y: 20, opacity: 0 }, 0);
+      tl.set("#cta-url",      { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#cta-subscribe",{ y: 24, opacity: 0 }, 0);
+
+      // "Skills, or MCP?" (anchor 0.91s) — topic-slam reveals
+      tl.to("#cta-topic", { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.4)" }, 0.9);
+
+      // "Which earns the spot in your stack first?" (anchor 2.71s) — debate question reveals
+      tl.to("#cta-question", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 2.7);
+
+      // After "comments" (anchor 6.46s) — outcome line + URL slam in together
+      tl.to("#cta-outcome", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 6.8);
+      tl.to("#cta-url",     { scale: 1, opacity: 1, duration: 0.7, ease: "expo.out" }, 7.0);
+
+      // Subscribe pill lands a beat after URL (~ scene-rel 8.0s, narration "agentskills dot io")
+      tl.to("#cta-subscribe", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 8.0);
+
+      // After narration ends (scene-rel ~9s), settle the thumbnail-grade final frame
+      // Subtle scale emphasis on the topic at narration close
+      tl.to("#cta-topic", { scale: 1.03, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 9.2);
+      // URL pill emphasis
+      tl.to("#cta-url",   { scale: 1.025, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 10.5);
+      // Arrow nudge in the silent hold
+      tl.to("#cta-subscribe .arrow", { x: 8, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 11.8);
+      // From scene-rel ~12.5s on: held still — thumbnail-grade final frame
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

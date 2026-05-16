@@ -1,0 +1,153 @@
+<!--
+  shared/lib/components/heartbeat-pulse/component.html
+  Element pulses on a heartbeat rhythm — lub-dub, two-beat, one cycle = 1.2s.
+    Lub at cycle+0.0s: scale 1.0 → 1.06 → 1.0 over 0.25s (stronger)
+    Dub at cycle+0.4s: scale 1.0 → 1.04 → 1.0 over 0.20s (weaker)
+    Rest: 0.6s silence until the next lub.
+  Cycle count is FINITE: Math.floor(totalDuration / 1.2) — never -1.
+  A red glow (box-shadow) pulses on the lub beat and fades over 0.4s.
+
+  SOURCE: original — no template source.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — wrap the element you want to pulse in a .heartbeat-pulse div.
+
+  SFX COUPLING (per cycle):
+    Lub beat: cue=pop  data-volume=0.10  track-index=3  offset=at + cycle*1.2 + 0.0
+    Dub beat: cue=pop  data-volume=0.06  track-index=4  offset=at + cycle*1.2 + 0.4
+
+  For 4 cycles (totalDuration=4.8s), that is 8 <audio> elements total.
+  Track 3 carries all lub beats; track 4 carries all dub beats.
+  Lub pops must not overlap on track 3 (1.2s apart; pop is 0.52s — fine).
+  Dub pops must not overlap on track 4 (same spacing).
+
+  Template snippet (4 cycles):
+
+    <!-- Lub beats: track 3 -->
+    <audio id="sfx-hb-lub-0" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 0.0>" data-duration="0.52" data-track-index="3" data-volume="0.10"></audio>
+    <audio id="sfx-hb-lub-1" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 1.2>" data-duration="0.52" data-track-index="3" data-volume="0.10"></audio>
+    <audio id="sfx-hb-lub-2" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 2.4>" data-duration="0.52" data-track-index="3" data-volume="0.10"></audio>
+    <audio id="sfx-hb-lub-3" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 3.6>" data-duration="0.52" data-track-index="3" data-volume="0.10"></audio>
+    <!-- Dub beats: track 4 (quieter: 0.06) -->
+    <audio id="sfx-hb-dub-0" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 0.4>" data-duration="0.52" data-track-index="4" data-volume="0.06"></audio>
+    <audio id="sfx-hb-dub-1" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 1.6>" data-duration="0.52" data-track-index="4" data-volume="0.06"></audio>
+    <audio id="sfx-hb-dub-2" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 2.8>" data-duration="0.52" data-track-index="4" data-volume="0.06"></audio>
+    <audio id="sfx-hb-dub-3" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<AT + 3.2>" data-duration="0.52" data-track-index="4" data-volume="0.06"></audio>
+
+  ALIGNMENT CHECK:
+    Each lub SFX fires at at + cycle*1.2. Each dub SFX fires at at + cycle*1.2 + 0.4.
+    Match GSAP tween times exactly. Drift ≤ 0.05s (percussive beats).
+-->
+
+<div class="heartbeat-pulse" data-hb id="hb-1"><!-- [your content] --></div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/heartbeat-pulse — keep this comment block */
+  .heartbeat-pulse {
+    display: inline-block;
+    will-change: transform, box-shadow;
+    /* Default heart glow color — override via --heart CSS var */
+    --heart: var(--heart-color, #FF4070);
+  }
+</style>
+
+<!--
+  3) JS — call addHeartbeatPulse() from the host root timeline.
+
+  SIGNATURE:
+    addHeartbeatPulse(tl, sel, at, opts)
+
+  PARAMETERS:
+    tl             — a paused gsap.timeline
+    sel            — CSS selector resolving to ONE .heartbeat-pulse element
+    at             — insertion time on tl (seconds)
+    opts           — optional config object:
+      totalDuration  = 4.8    how long the heartbeat runs (seconds)
+      color          = 'var(--heart, #FF4070)'  glow color
+
+  CYCLE MATH:
+    cycles = Math.floor(totalDuration / 1.2)
+    Each cycle: lub at t=0 + dub at t=0.4 + rest until t=1.2.
+    For totalDuration=4.8 → 4 cycles (4.8s of animation).
+    For totalDuration=6.0 → 5 cycles.
+
+  USAGE:
+    addHeartbeatPulse(tl, "#stat-value", P2 + 1.0);
+    addHeartbeatPulse(tl, "#stat-value", P2 + 1.0, { totalDuration: 6.0, color: '#FF6B35' });
+
+  CONSTRAINTS:
+    - Glow uses box-shadow. If the element has overflow:hidden on a parent,
+      the glow may be clipped. Ensure parent allows overflow.
+    - Wire pop <audio> elements manually — see SFX COUPLING in the top comment.
+    - Scale tweens use overwrite: "auto" to compose safely with entrance tweens.
+-->
+
+<script>
+  function addHeartbeatPulse(tl, sel, at, opts) {
+    opts = opts || {};
+    var totalDuration = opts.totalDuration !== undefined ? opts.totalDuration : 4.8;
+    var color         = opts.color         !== undefined ? opts.color         : 'var(--heart, #FF4070)';
+
+    var cycles = Math.floor(totalDuration / 1.2);
+    if (cycles < 1) cycles = 1;
+
+    for (var i = 0; i < cycles; i++) {
+      var base = at + i * 1.2;
+
+      // ── Lub (stronger, at cycle+0.0) ─────────────────────────────────────
+      // Scale up
+      tl.to(sel, {
+        scale: 1.06,
+        duration: 0.10,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      }, base + 0.0);
+      // Scale back + glow on
+      tl.to(sel, {
+        scale: 1.0,
+        boxShadow: '0 0 24px 8px ' + color,
+        duration: 0.15,
+        ease: 'power2.in',
+        overwrite: 'auto'
+      }, base + 0.10);
+      // Glow fade out over 0.4s
+      tl.to(sel, {
+        boxShadow: '0 0 0px 0px ' + color,
+        duration: 0.40,
+        ease: 'power2.out'
+      }, base + 0.25);
+
+      // ── Dub (weaker, at cycle+0.4) ────────────────────────────────────────
+      tl.to(sel, {
+        scale: 1.04,
+        duration: 0.08,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      }, base + 0.40);
+      tl.to(sel, {
+        scale: 1.0,
+        duration: 0.12,
+        ease: 'power2.in',
+        overwrite: 'auto'
+      }, base + 0.48);
+    }
+  }
+</script>

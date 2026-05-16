@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Ollama × Claude Desktop</title>
+<link rel="stylesheet" href="tokens/standard-short.css" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 warm cream paper stage.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 18%, rgba(224, 122, 95, 0.10), transparent 55%),
+      radial-gradient(circle at 80% 75%, rgba(242, 204, 143, 0.13), transparent 60%),
+      radial-gradient(circle at 50% 105%, rgba(244, 151, 142, 0.08), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  #grain-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.045;
+    mix-blend-mode: multiply;
+  }
+
+  /* TOP BANNER — Ollama llama × Claude wordmark, both real brand assets. */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+  }
+  #top-banner-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+    padding: 14px 36px;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-warm);
+  }
+  #banner-ollama {
+    height: 60px;
+    width: auto;
+    display: block;
+  }
+  #banner-cross {
+    font-family: var(--mono);
+    font-weight: 300;
+    font-size: 38px;
+    color: var(--accent-warm);
+    line-height: 1;
+  }
+  #banner-claude {
+    height: 38px;
+    width: auto;
+    display: block;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(43, 42, 40, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-warm);
+    box-shadow: 0 0 12px rgba(224, 122, 95, 0.55);
+  }
+
+  /* SCENE WRAPPERS — first wrapper visible, rest start hidden. */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 1;
+  }
+  #scene-image-card-tweet-wrap   { z-index: 1; opacity: 1; }
+  #scene-marker-wrap             { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-code-block-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-image-card-cowork-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-image-card-code-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-bullets-models-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-bullets-limits-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap                { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* DYNAMOUS PERSISTENT BADGE — bottom-left mark, idle 0.55 opacity,
+     fades in once at t=3.0s after the 3-second hook. Per
+     shared/lib/components/dynamous-badge/component.html. */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 360px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* DYNAMOUS ENDCARD MOUNT — covers everything else for the trailing 5s. */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="82"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Warm radial wash + ink shape backdrop sit behind scenes -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- DYNAMOUS persistent badge (fires at t=3.0s, never before) -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Top banner — Ollama llama icon × Claude wordmark -->
+  <div id="top-banner">
+    <div id="top-banner-text">
+      <img id="banner-ollama" src="assets/ollama-logo.png" alt="Ollama" crossorigin="anonymous" />
+      <span id="banner-cross">&times;</span>
+      <img id="banner-claude" src="assets/claude-logo-dark.svg" alt="Claude" crossorigin="anonymous" />
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — eight, paced to transcript.json word starts.
+
+       data-start = (label_word.start - 0.4s), so each wrapper mounts
+       at the moment the crossfade STARTS (label - 0.4s). The scene's
+       internal entrance animations land just as crossfade completes.
+
+          0.0  → tweet         "Ollama just shipped..."           (Ollama @ 0.05)
+          7.0  → marker        "Here is what just unlocked..."    (Here @ 7.40)
+         18.4  → code-block    "First, export your..."            (First @ 18.77)
+         28.0  → cowork        "Switch to Claude Cowork..."       (Switch @ 28.37)
+         39.9  → code-shot     "Same thing in Claude Code..."     (Same @ 40.29)
+         49.9  → models        "The lineup is deep..."            (The @ 50.26)
+         60.4  → limits        "Two limits to know..."            (Two @ 60.75)
+         68.7  → cta           "Full setup walkthrough..."        (Full @ 69.07)
+         74.0  → endcard       "Join the Dynamous AI community..." (Join @ 74.36)
+       Endcard runs 74.0 → 81.5 (7.5s — covers the full Dynamous outro
+       narration ending at 80.86, then a 0.5s fade-to-black 81.0–81.5).
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-image-card-tweet-wrap" class="scene-wrapper"
+       data-composition-id="scene-image-card-tweet"
+       data-composition-src="compositions/scene-image-card-tweet.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-marker-wrap" class="scene-wrapper"
+       data-composition-id="scene-marker"
+       data-composition-src="compositions/scene-marker.html"
+       data-start="7.0"
+       data-track-index="1"></div>
+
+  <div id="scene-code-block-wrap" class="scene-wrapper"
+       data-composition-id="scene-code-block"
+       data-composition-src="compositions/scene-code-block.html"
+       data-start="18.4"
+       data-track-index="1"></div>
+
+  <div id="scene-image-card-cowork-wrap" class="scene-wrapper"
+       data-composition-id="scene-image-card-cowork"
+       data-composition-src="compositions/scene-image-card-cowork.html"
+       data-start="28.0"
+       data-track-index="1"></div>
+
+  <div id="scene-image-card-code-wrap" class="scene-wrapper"
+       data-composition-id="scene-image-card-code"
+       data-composition-src="compositions/scene-image-card-code.html"
+       data-start="39.9"
+       data-track-index="1"></div>
+
+  <div id="scene-bullets-models-wrap" class="scene-wrapper"
+       data-composition-id="scene-bullets-models"
+       data-composition-src="compositions/scene-bullets-models.html"
+       data-start="49.9"
+       data-track-index="1"></div>
+
+  <div id="scene-bullets-limits-wrap" class="scene-wrapper"
+       data-composition-id="scene-bullets-limits"
+       data-composition-src="compositions/scene-bullets-limits.html"
+       data-start="60.4"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="68.7"
+       data-track-index="1"></div>
+
+  <!-- DYNAMOUS endcard — last 7.5s. Mounts at 74.0s right as narration
+       says "Join the Dynamous AI community" (74.36). Replaces the closing
+       CTA hold; the endcard owns the final fade-to-black at 81.0-81.5. -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="74.0"
+       data-duration="7.5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Paper-grain overlay — last visual layer so it tints everything below -->
+  <svg id="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="11" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#grain-filter)" fill="#2B2A28" />
+  </svg>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUDIO STACK
+       Track 2 = narration. Track 3 = SFX (sequential, no overlap).
+       Per .claude/rules/audio-design.md.
+       ═══════════════════════════════════════════════════════ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="80.86"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- impact-slam @ "exploded." (transcript word start = 3.69) -->
+  <audio id="sfx-impact-slam-1"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="3.69"
+         data-duration="0.6"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <!-- cinematic-whoosh × 8 — fires AT each scene's data-start (also the
+       crossfade fire time). Pairs with the shape-rearrange-on-whoosh
+       motion so the whoosh audio peaks as the shapes settle. -->
+  <audio id="sfx-whoosh-marker"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="7.0"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-code"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="18.4"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-cowork"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="28.0"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-code-shot"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="39.9"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-models"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="49.9"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- spring-pop × 3 — model row reveals (Kimi, GPT-OSS, Qwen). -->
+  <audio id="sfx-pop-kimi"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="51.198"
+         data-duration="0.4"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-pop-gpt"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="51.674"
+         data-duration="0.4"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-pop-qwen"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="52.603"
+         data-duration="0.4"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-limits"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="60.4"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-cta"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="68.7"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <!-- whoosh into endcard handoff @ 74.0 (Dynamous outro begins) -->
+  <audio id="sfx-whoosh-endcard"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="74.0"
+         data-duration="0.8"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter. Re-seeds on every
+  // scene transition (shape-rearrange-on-whoosh pattern, paired with
+  // cinematic-whoosh SFX). Replaces the older animateShapeDrift loop.
+  // ─────────────────────────────────────────────────────
+  const SHAPE_SVGS = [
+    // Llama silhouette — friendly Ollama-style stack of head + ears + body
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><ellipse cx="340" cy="180" rx="55" ry="125" fill="#0A0A0A"/><ellipse cx="660" cy="180" rx="55" ry="125" fill="#0A0A0A"/><ellipse cx="500" cy="380" rx="270" ry="200" fill="#0A0A0A"/><ellipse cx="500" cy="720" rx="320" ry="230" fill="#0A0A0A"/></svg>',
+    // Terminal prompt cursor `>_`
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M 250 240 L 590 500 L 250 760" stroke="#0A0A0A" stroke-width="90" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="610" y="700" width="240" height="80" rx="40" fill="#0A0A0A"/></svg>',
+    // Cumulus cloud — Ollama Cloud reference
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M 240 720 Q 100 720 100 580 Q 100 460 230 440 Q 250 300 400 300 Q 510 300 560 380 Q 630 320 740 340 Q 870 360 880 500 Q 950 520 950 620 Q 950 720 850 720 Z" fill="#0A0A0A"/></svg>',
+  ];
+  const SHAPE_DATA_URIS = SHAPE_SVGS.map(svg => 'data:image/svg+xml;utf8,' + encodeURIComponent(svg));
+
+  function placeShapes(seedPrefix) {
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      positions.push({
+        left: best.cx - best.size / 2,
+        top: best.cy - best.size / 2,
+        size: best.size,
+        rot: best.rot,
+        shapeIndex: i % SHAPE_DATA_URIS.length
+      });
+    }
+    return positions;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const positions = placeShapes(seedPrefix);
+    positions.forEach((p) => {
+      const img = document.createElement('img');
+      img.src = SHAPE_DATA_URIS[p.shapeIndex];
+      img.style.cssText = 'left:' + p.left + 'px;top:' + p.top + 'px;width:' + p.size + 'px;height:' + p.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: p.rot });
+    });
+  }
+
+  // Rearrange the existing 14 shapes to a new seeded layout. Called at
+  // each scene transition (paired with cinematic-whoosh SFX). The 1.0s
+  // tween lands as the new scene paints in, giving every scene its own
+  // distinct background composition without spawning new DOM nodes.
+  function rearrangeShapes(tl, container, newSeedPrefix, atTime) {
+    const newPositions = placeShapes(newSeedPrefix);
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      if (i >= newPositions.length) return;
+      const p = newPositions[i];
+      tl.to(img, {
+        left: p.left + 'px',
+        top: p.top + 'px',
+        width: p.size + 'px',
+        height: p.size + 'px',
+        rotation: p.rot,
+        duration: 1.0,
+        ease: 'power2.inOut'
+      }, atTime);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level. Tight
+  // 0.4s simultaneous fade so transitions don't read as empty gaps —
+  // the OUT scene fades + lightly blurs while the IN scene fades +
+  // un-blurs over the SAME 0.4s window.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { opacity: 0, filter: "blur(10px)", duration: 0.4, ease: "power2.in" }, atTime);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.4);
+    tl.set(toSel,   { opacity: 0, filter: "blur(10px)", scale: 1, visibility: "visible" }, atTime);
+    tl.to(toSel,    { opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out", overwrite: "auto" }, atTime);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  const shapeContainer = document.getElementById('shape-backdrop');
+  spawnShapes('ollama-scene-1-tweet', shapeContainer);
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 82;
+  const tl = gsap.timeline({ paused: true });
+
+  // Slow ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Linear progress bar across the full composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner reveal — explicit set+to (hidden-until-reveal pattern from
+  // .claude/rules/step-by-step-reveal.md). Avoids the tl.from() flash
+  // where the element shows briefly then snaps invisible then animates.
+  tl.set("#top-banner", { y: -16, opacity: 0 }, 0);
+  tl.to("#top-banner",  { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Dynamous badge — strict t=3.0s entrance, hidden from frame 0.
+  // Per shared/lib/components/dynamous-badge/component.html (Hook Test:
+  // first 3 seconds of video have NO Dynamous branding).
+  tl.set("#dynamous-badge", { opacity: 0, x: -12 }, 0);
+  tl.to("#dynamous-badge",  { opacity: 0.55, x: 0, duration: 0.6, ease: "power2.out" }, 3.0);
+
+  // Scene labels — anchored to transcript word starts (anchor - 0.2s
+  // so the new scene is fully visible right before its narration word).
+  tl.addLabel("tweet",       0)
+    .addLabel("marker",      7.4)
+    .addLabel("code-block", 18.8)
+    .addLabel("cowork",     28.4)
+    .addLabel("code-shot",  40.3)
+    .addLabel("models",     50.3)
+    .addLabel("limits",     60.8)
+    .addLabel("cta",        69.1);
+
+  // Crossfades between adjacent scenes — fire 0.4s before label so the
+  // crossfade ends AT the label and matches each wrapper's data-start.
+  crossfadeScenes(tl, "#scene-image-card-tweet-wrap",   "#scene-marker-wrap",            "marker-=0.4");
+  crossfadeScenes(tl, "#scene-marker-wrap",             "#scene-code-block-wrap",        "code-block-=0.4");
+  crossfadeScenes(tl, "#scene-code-block-wrap",         "#scene-image-card-cowork-wrap", "cowork-=0.4");
+  crossfadeScenes(tl, "#scene-image-card-cowork-wrap",  "#scene-image-card-code-wrap",   "code-shot-=0.4");
+  crossfadeScenes(tl, "#scene-image-card-code-wrap",    "#scene-bullets-models-wrap",    "models-=0.4");
+  crossfadeScenes(tl, "#scene-bullets-models-wrap",     "#scene-bullets-limits-wrap",    "limits-=0.4");
+  crossfadeScenes(tl, "#scene-bullets-limits-wrap",     "#scene-cta-wrap",               "cta-=0.4");
+
+  // Shape rearrange on every scene transition (paired with cinematic-whoosh).
+  // Each call seeds a fresh deterministic layout so the 14 background
+  // shapes drift to new positions every time the whoosh fires.
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-2-marker',     "marker-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-3-code-block', "code-block-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-4-cowork',     "cowork-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-5-code-shot',  "code-shot-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-6-models',     "models-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-7-limits',     "limits-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'ollama-scene-8-cta',        "cta-=0.4");
+
+  // Endcard handoff — fade out CTA scene + Dynamous badge 0.5s before
+  // the endcard fires (endcard mounts at 74.0). This gives a clean
+  // 0.5s overlap for the visual handoff. Hard-kill set() calls at the
+  // endcard mount time keep non-linear seeks deterministic.
+  tl.to("#scene-cta-wrap",  { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 73.5);
+  tl.to("#dynamous-badge",  { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 73.5);
+  tl.set("#scene-cta-wrap", { opacity: 0, visibility: "hidden" }, 74.0);
+  tl.set("#dynamous-badge", { opacity: 0 }, 74.0);
+
+  // Pad timeline so the renderer captures the closing endcard's tail.
+  tl.to({}, { duration: 0.01 }, TOTAL_DURATION - 0.01);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

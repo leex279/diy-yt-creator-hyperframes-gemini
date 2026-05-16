@@ -1,0 +1,252 @@
+<!--
+  scene-studio-v1.html — split layout: real `npx hyperframes preview` terminal
+  output (left) + the resulting studio frame with v1 demo render (right).
+  Real captured terminal text from `tmp/demo-capture/my-video`.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-studio-v1-template">
+  <div data-composition-id="scene-studio-v1"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #sv1-content {
+        width:100%; height:100%;
+        padding: 60px var(--pad-x) 60px;
+        display:grid;
+        grid-template-columns: 600px 1fr;
+        grid-template-rows: auto 1fr auto;
+        column-gap: 36px;
+        row-gap: 18px;
+        box-sizing:border-box;
+        align-items: stretch;
+      }
+      #sv1-content .header-block {
+        grid-column: 1 / span 2; grid-row: 1;
+        display:flex; flex-direction:column;
+        align-items:center; gap:8px; text-align:center;
+      }
+      #sv1-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-2);
+      }
+      #sv1-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 40px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+
+      .preview-term {
+        grid-column: 1; grid-row: 2;
+        background: rgba(0, 0, 0, 0.85);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 14px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        font-family: var(--mono);
+        align-self: stretch;
+      }
+      .preview-term .term-bar {
+        background: rgba(255,255,255,0.06);
+        padding: 9px 16px;
+        font-weight: 700; font-size: 12px;
+        letter-spacing: 2px; text-transform: uppercase;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+        display:flex; align-items:center; gap: 8px;
+      }
+      .preview-term .dot {
+        display:inline-block; width:11px; height:11px; border-radius:50%;
+        background:#ff5f57; margin-right:5px;
+      }
+      .preview-term .dot.y { background:#febc2e; }
+      .preview-term .dot.g { background:#28c840; }
+      .preview-term .term-body {
+        padding: 18px 22px;
+        font-size: 15px; line-height: 1.55;
+        color: #e9ecf3;
+      }
+      .preview-term .prompt { color: var(--text-secondary); margin-right: 8px; }
+      .preview-term .cmd-text { color: var(--accent-stat); font-weight: 700; }
+      .preview-term .out { display:block; color: #e9ecf3; }
+      .preview-term .out.head-render { color: var(--accent-2); font-weight: 700; }
+      .preview-term .out.head-render::before { content: "◆  "; }
+      .preview-term .out.head-ok { color: var(--accent-4); font-weight: 800; }
+      .preview-term .out.head-ok::before { content: "◇  "; }
+      .preview-term .out.label-row {
+        display:flex; gap: 18px; align-items: baseline;
+      }
+      .preview-term .out.label-row .lab {
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 12px;
+        min-width: 70px;
+      }
+      .preview-term .out.label-row .val { color: var(--text); font-weight: 700; }
+      .preview-term .out.label-row .val.url { color: var(--accent-2); }
+      .preview-term .out.dim { color: #828c9e; }
+      .preview-term .blank { display:block; height: 6px; }
+
+      .studio-frame {
+        grid-column: 2; grid-row: 2;
+        position: relative;
+        align-self: stretch;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #0B0F1A;
+        border: 2px solid var(--border-bright);
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+      }
+      .studio-frame .chrome {
+        position: absolute; top: 0; left: 0; right: 0;
+        height: 40px; z-index: 2;
+        background: linear-gradient(180deg, rgba(34,40,54,.98), rgba(22,26,38,.98));
+        display: flex; align-items: center;
+        padding: 0 14px; gap: 8px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+      }
+      .studio-frame .chrome .dot { width: 12px; height: 12px; border-radius: 50%; }
+      .studio-frame .chrome .dot.r { background: #ff5f57; }
+      .studio-frame .chrome .dot.y { background: #febc2e; }
+      .studio-frame .chrome .dot.g { background: #28c840; }
+      .studio-frame .chrome .urlbar {
+        flex: 1; height: 26px; margin-left: 16px;
+        background: rgba(255,255,255,.06);
+        border-radius: 7px;
+        display:flex; align-items:center;
+        padding: 0 12px;
+        font-family: var(--mono); font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .studio-frame .chrome .badge {
+        display:inline-flex; align-items:center; gap:8px;
+        padding: 4px 12px; border-radius: 999px;
+        background: rgba(34,197,94,.20);
+        border: 1px solid rgba(34,197,94,.55);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 12px; letter-spacing: 1px;
+        color: #58e5a0;
+      }
+      .studio-frame .chrome .badge .live-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #58e5a0;
+        box-shadow: 0 0 8px rgba(88,229,160,.7);
+      }
+      .studio-frame .canvas {
+        position: absolute; inset: 40px 0 0 0;
+        background: #0B0F1A;
+      }
+      .studio-frame .canvas img {
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center;
+        display: block;
+      }
+
+      .studio-tag {
+        grid-column: 1 / span 2; grid-row: 3;
+        justify-self: center;
+        display:inline-flex; align-items:center; gap: 14px;
+        padding: 10px 20px; border-radius: 12px;
+        background: rgba(94,229,207,.10);
+        border: 1px solid rgba(94,229,207,.45);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 18px; color: #5ee5cf;
+      }
+      .studio-tag .label {
+        font-size: 13px; letter-spacing: 2px;
+        color: var(--text-secondary); text-transform: uppercase;
+      }
+    </style>
+
+    <div id="sv1-content">
+      <div class="header-block">
+        <div class="overline" id="sv1-overline">STUDIO &middot; ITERATION 1</div>
+        <div class="headline" id="sv1-headline">Save &rarr; auto-reload &rarr; first result</div>
+      </div>
+
+      <div class="preview-term" id="sv1-term">
+        <div class="term-bar">
+          <span class="dot"></span><span class="dot y"></span><span class="dot g"></span>
+          &nbsp; PowerShell &mdash; my-video &mdash; preview
+        </div>
+        <div class="term-body">
+          <span id="sv1-l-cmd"><span class="prompt">PS my-video&gt;</span><span class="cmd-text">npx hyperframes preview</span></span>
+          <span class="blank"></span>
+          <span id="sv1-l-head" class="out head-render">hyperframes preview</span>
+          <span class="blank"></span>
+          <span id="sv1-l-running" class="out head-ok">Studio running</span>
+          <span class="blank"></span>
+          <span id="sv1-l-proj" class="out label-row"><span class="lab">Project</span><span class="val">my-video</span></span>
+          <span id="sv1-l-url"  class="out label-row"><span class="lab">Studio</span><span class="val url">http://localhost:3003</span></span>
+          <span class="blank"></span>
+          <span id="sv1-l-dim1" class="out dim">Edit with your AI agent &mdash;</span>
+          <span id="sv1-l-dim2" class="out dim">it has HyperFrames skills installed.</span>
+          <span id="sv1-l-dim3" class="out dim">Changes reload automatically.</span>
+        </div>
+      </div>
+
+      <div class="studio-frame" id="sv1-frame">
+        <div class="chrome">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="urlbar">localhost:3003 &middot; HyperFrames Studio &middot; my-video</span>
+          <span class="badge"><span class="live-dot"></span>LIVE</span>
+        </div>
+        <div class="canvas">
+          <img id="sv1-img" src="assets/screenshots/demo-v1.png" alt="Hello HyperFrames v1" />
+        </div>
+      </div>
+
+      <div class="studio-tag" id="sv1-tag">
+        <span class="label">v1</span>
+        <span>Hello HyperFrames &middot; centered &middot; fade-in</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sv1-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#sv1-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#sv1-term",     { x: -30, scale: 0.97, opacity: 0 }, 0);
+      tl.set("#sv1-frame",    { x: 30, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#sv1-img",      { opacity: 0 }, 0);
+      tl.set("#sv1-tag",      { y: 16, opacity: 0 }, 0);
+      const lines = ["#sv1-l-cmd","#sv1-l-head","#sv1-l-running","#sv1-l-proj","#sv1-l-url","#sv1-l-dim1","#sv1-l-dim2","#sv1-l-dim3"];
+      lines.forEach(sel => tl.set(sel, { x: -8, opacity: 0 }, 0));
+
+      // Header reveal
+      tl.to("#sv1-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.to("#sv1-headline", { y: 0, opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#sv1-term",     { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 0.4);
+
+      // Narration: "Run npx hyperframes preview" at +0.30s
+      tl.to("#sv1-l-cmd",     { x: 0, opacity: 1, duration: 0.3 }, 0.35);
+      tl.to("#sv1-l-head",    { x: 0, opacity: 1, duration: 0.3 }, 1.7);
+      // "in another terminal." +1.97s
+      tl.to("#sv1-l-running", { x: 0, opacity: 1, duration: 0.3 }, 2.2);
+      tl.to("#sv1-l-proj",    { x: 0, opacity: 1, duration: 0.3 }, 2.7);
+      tl.to("#sv1-l-url",     { x: 0, opacity: 1, duration: 0.3 }, 3.0);
+
+      // "The studio opens in your browser." narration at +3.83s
+      tl.to("#sv1-frame",     { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 3.8);
+      tl.to("#sv1-img",       { opacity: 1, duration: 0.5, ease: "power2.out" }, 4.3);
+      tl.to("#sv1-l-dim1",    { x: 0, opacity: 1, duration: 0.25 }, 5.0);
+      tl.to("#sv1-l-dim2",    { x: 0, opacity: 1, duration: 0.25 }, 5.3);
+
+      // "Every time the agent saves, the canvas reloads." at +5.69s
+      tl.to("#sv1-l-dim3",    { x: 0, opacity: 1, duration: 0.25 }, 5.7);
+
+      // "Here's our first result..." at +9.17s
+      tl.to("#sv1-tag",       { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 9.1);
+
+      window.__timelines["scene-studio-v1"] = tl;
+    </script>
+  </div>
+</template>

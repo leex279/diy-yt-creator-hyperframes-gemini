@@ -1,0 +1,208 @@
+<!--
+  scene-source-cards.html — 3 photo + overline + title cards in a row.
+
+  Each card: top half is a 16:9 photo crop, bottom half is a meta block
+  with mono overline + sans title. Cards stagger in with 0.5s offset and
+  rotate accents (blue → cyan → purple).
+
+  Operator drops their own assets/screenshots/source-{1,2,3}.png. Lint
+  warns (not errors) until they ship. Wrapper card div carries class="clip"
+  AND the inner <img> also carries class="clip" — both get framework
+  visibility control.
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-source-cards-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:48px;
+        box-sizing:border-box;
+      }
+      #scene-source-cards-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-source-cards-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #scene-source-cards-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 52px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      #scene-source-cards-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 32px;
+      }
+      .source-card {
+        width: 520px;
+        height: 540px;
+        border-radius: 20px;
+        border: 1px solid var(--border-bright);
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        display:flex; flex-direction:column;
+      }
+      .source-card.a {
+        background: linear-gradient(135deg,
+                      rgba(59, 130, 246, 0.13) 0%,
+                      rgba(59, 130, 246, 0.04) 100%);
+      }
+      .source-card.b {
+        background: linear-gradient(135deg,
+                      rgba(6, 182, 212, 0.13) 0%,
+                      rgba(6, 182, 212, 0.04) 100%);
+      }
+      .source-card.c {
+        background: linear-gradient(135deg,
+                      rgba(139, 92, 246, 0.13) 0%,
+                      rgba(139, 92, 246, 0.04) 100%);
+      }
+      .source-card .photo-wrap {
+        width: 100%;
+        height: 62%;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      .source-card.a .photo-wrap {
+        background: radial-gradient(circle at 50% 50%, rgba(59,130,246,0.22), rgba(59,130,246,0.03));
+      }
+      .source-card.b .photo-wrap {
+        background: radial-gradient(circle at 50% 50%, rgba(6,182,212,0.22), rgba(6,182,212,0.03));
+      }
+      .source-card.c .photo-wrap {
+        background: radial-gradient(circle at 50% 50%, rgba(139,92,246,0.22), rgba(139,92,246,0.03));
+      }
+      .source-card .photo-wrap .term {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 72px;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .source-card .photo-wrap .citation {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 18px;
+        margin-top: 12px;
+        letter-spacing: 0.06em;
+        color: var(--text-secondary);
+      }
+      .source-card .meta {
+        padding: 24px 28px;
+        display:flex; flex-direction:column;
+        gap: 8px;
+        flex: 1;
+      }
+      .source-card .meta .ovl {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      /* Brighter accent variants for AA contrast at 18px on translucent
+         gradient card backgrounds (the dim accents fail AA at small sizes). */
+      .source-card.a .meta .ovl { color: #93C5FD; }
+      .source-card.b .meta .ovl { color: #67E8F9; }
+      .source-card.c .meta .ovl { color: #C4B5FD; }
+      .source-card .meta .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.15;
+        color: var(--text);
+      }
+    </style>
+
+    <div id="scene-source-cards-content">
+      <div class="header-block">
+        <div class="overline" id="src-overline">REASONING &middot; QUADRANT 02</div>
+        <div class="headline" id="src-headline">How the agent thinks</div>
+      </div>
+
+      <div class="row">
+        <div class="source-card a" id="src-card-1">
+          <div class="photo-wrap">
+            <div>
+              <div class="term">Agent Loop</div>
+              <div class="citation">ReAct &middot; arXiv:2210.03629</div>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="ovl">Perceive &middot; Plan &middot; Act &middot; Observe</div>
+            <div class="ttl">Interleaved reasoning beats either alone</div>
+          </div>
+        </div>
+        <div class="source-card b" id="src-card-2">
+          <div class="photo-wrap">
+            <div>
+              <div class="term">Grounding</div>
+              <div class="citation">Anthropic Citations API &middot; Jun 2025</div>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="ovl">Endex &middot; 10% &rarr; 0% hallucinations</div>
+            <div class="ttl">Tether every claim to a source span</div>
+          </div>
+        </div>
+        <div class="source-card c" id="src-card-3">
+          <div class="photo-wrap">
+            <div>
+              <div class="term">Context Window</div>
+              <div class="citation">Lost-in-the-Middle &middot; arXiv:2307.03172</div>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="ovl">1M tokens &middot; middle gets ignored</div>
+            <div class="ttl">More context is not always better</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.55 }
+      });
+
+      tl.from("#src-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#src-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+
+      tl.from("#src-card-1", { y: 40, scale: 0.96, opacity: 0, duration: 0.55, ease: "back.out(1.4)", immediateRender: false }, 0.7);
+      tl.from("#src-card-2", { y: 40, scale: 0.96, opacity: 0, duration: 0.55, ease: "back.out(1.4)", immediateRender: false }, 1.2);
+      tl.from("#src-card-3", { y: 40, scale: 0.96, opacity: 0, duration: 0.55, ease: "back.out(1.4)", immediateRender: false }, 1.7);
+
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

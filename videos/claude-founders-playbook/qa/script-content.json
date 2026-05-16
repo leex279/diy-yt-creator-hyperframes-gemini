@@ -1,0 +1,80 @@
+{
+  "agent": "video-script-content",
+  "video_slug": "claude-founders-playbook",
+  "review_date": "2026-05-16",
+  "review_pass": "final-extended-9-scene",
+  "verdict": "PASS",
+  "script_metrics": {
+    "scenes": 9,
+    "total_words": 360,
+    "narration_duration_s": 143.22,
+    "wpm": 151.0,
+    "wpm_band": "healthy (140-165)"
+  },
+  "heteronym_audit": {
+    "rule": ".claude/rules/tts-pronunciation.md",
+    "candidates_checked": ["live", "lead", "read", "close", "record"],
+    "violations": 0,
+    "notes": "Scene 5 introduces no new heteronyms. 'live' verb form not used. All clear."
+  },
+  "source_grounding": {
+    "rule": "feedback_no_fabrication_source_only",
+    "claims_extracted_total_cumulative": 23,
+    "claims_extracted_scene5_new": 4,
+    "claims_verified": 23,
+    "claims_violations": 0,
+    "scene5_new_claims": [
+      {
+        "claim": "Idea stage killer: Mistaking building for validating",
+        "source": "research/source-playbook.pdf p.10",
+        "verified": true
+      },
+      {
+        "claim": "MVP stage killer: Agentic technical debt",
+        "source": "research/source-playbook.pdf p.16",
+        "verified": true
+      },
+      {
+        "claim": "Launch stage killer: The founder becomes the bottleneck",
+        "source": "research/source-playbook.pdf p.23",
+        "verified": true
+      },
+      {
+        "claim": "Scale stage killer: Delegating the operational layer",
+        "source": "research/source-playbook.pdf p.26",
+        "verified": true
+      }
+    ]
+  },
+  "hook_score": {
+    "rule": ".claude/skills/engagement-hooks-framework/",
+    "score": 9.2,
+    "scale": 10,
+    "delta_vs_8_scene": "+0.2",
+    "notes": "Hook unchanged; bonus +0.2 for 'Four named killers' mid-video re-hook adding stakes spike."
+  },
+  "engagement_cta_audit": {
+    "rule": ".claude/rules/engagement-cta.md",
+    "spoken_closer": "Are you running this playbook, or still validating with vibes? Drop your stage in the comments.",
+    "on_screen_cta": "Running this playbook, or still validating with vibes?",
+    "description_closer": "Are you running this playbook, or still validating with vibes? Drop your stage in the comments.",
+    "binary_or_short_list": true,
+    "polarizing": true,
+    "references_specific_claim": true,
+    "low_cost_to_answer": true,
+    "anchor_words_match": ["playbook", "vibes"],
+    "all_three_places_aligned": true,
+    "verdict": "PASS"
+  },
+  "narration_arc_integrity": {
+    "scenes_8_to_9_extension": "PASS",
+    "notes": "Scene 5 inserts before previous Three Claudes scene. Krieger -> compass -> killers -> surfaces -> Vulcan -> CLAUDE.md -> CTA flows cleanly. Stakes spike in S5 lands before S6's solution-table arrives.",
+    "regressions": 0
+  },
+  "findings": {
+    "blocker": [],
+    "high": [],
+    "medium": [],
+    "low": []
+  }
+}

@@ -1,0 +1,292 @@
+<!--
+  scene-gemma.html — GEMMA 4 CALLBACK (118.27–138.58s, scene-rel 0–20.31)
+  Word anchors (scene-rel = abs - 118.27):
+    0.00  "And it is not just a trick anymore"
+    1.87  "It is becoming architecture"  → big "ARCHITECTURE" reveal
+    4.21  "Google's Gemma 4 ships its own drafter built in"  → Gemma 4 hero card
+    7.62  "Multi token prediction head"   → MTP HEAD label inside card
+    9.23  "Seventy six million parameters"→ 76M stat
+   11.91  "Sharing the target model's K V cache"  → KV-share badge
+   14.19  "That is speculative decoding evolving"
+   16.76  "From an inference hack"        → "hack" tag
+   17.95  "Into the model itself"          → "→ architecture" arrow
+-->
+<template id="scene-gemma-template">
+  <div data-composition-id="scene-gemma"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sg-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .sg-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sg-h {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 96px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sg-h .em { color: var(--accent-1); }
+      .sg-card {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 22px;
+        padding: 26px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 14px 32px rgba(199, 90, 63, 0.16);
+      }
+      .sg-card-tag {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sg-card-title {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 96px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sg-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .sg-target-box {
+        flex: 1 1 auto;
+        background: rgba(199, 90, 63, 0.08);
+        border: 2px solid var(--accent-1);
+        border-radius: 16px;
+        padding: 18px 20px;
+        text-align: center;
+      }
+      .sg-target-box .lab {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      .sg-target-box .nm {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -1px;
+      }
+      .sg-mtp {
+        flex: 0 0 auto;
+        background: rgba(86, 111, 79, 0.16);
+        border: 2px solid var(--accent-3);
+        border-radius: 16px;
+        padding: 14px 18px;
+        width: 280px;
+        text-align: center;
+      }
+      .sg-mtp .lab {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: 3px;
+        color: var(--accent-3);
+        text-transform: uppercase;
+      }
+      .sg-mtp .nm {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 44px;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -1px;
+      }
+      .sg-mtp .sub {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 20px;
+        color: var(--text-secondary);
+        letter-spacing: 1px;
+        margin-top: 4px;
+      }
+      .sg-stats {
+        display: flex;
+        gap: 14px;
+      }
+      .sg-stat {
+        flex: 1;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
+        border-radius: 14px;
+        padding: 16px 18px;
+      }
+      .sg-stat .lab {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sg-stat .val {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1;
+        color: var(--accent-1);
+        letter-spacing: -1px;
+      }
+      .sg-stat .sub {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+      .sg-pivot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 4px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 30px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      .sg-pivot .from {
+        background: rgba(28, 26, 24, 0.05);
+        border: 1.5px solid var(--border-bright);
+        color: var(--text-secondary);
+        padding: 12px 20px;
+        border-radius: 12px;
+      }
+      .sg-pivot .arrow {
+        color: var(--accent-1);
+        font-size: 36px;
+      }
+      .sg-pivot .to {
+        background: var(--accent-1);
+        color: var(--text-on-warm);
+        padding: 12px 20px;
+        border-radius: 12px;
+      }
+    </style>
+
+    <div id="sg-content">
+      <div class="sg-overline" id="sg-overline">2026 · LANDED IN GEMMA 4</div>
+
+      <div class="sg-h" id="sg-h">Not a trick anymore. <span class="em">Architecture.</span></div>
+
+      <div class="sg-card" id="sg-card">
+        <div class="sg-card-tag" id="sg-tag">GOOGLE &middot; GEMMA 4 E2B</div>
+        <div class="sg-card-title" id="sg-title">Built-in drafter.</div>
+
+        <div class="sg-row">
+          <div class="sg-target-box" id="sg-target">
+            <div class="lab">TARGET</div>
+            <div class="nm">Gemma 4</div>
+          </div>
+          <div class="sg-mtp" id="sg-mtp">
+            <div class="lab">MTP HEAD</div>
+            <div class="nm">drafter</div>
+            <div class="sub">attached</div>
+          </div>
+        </div>
+
+        <div class="sg-stats">
+          <div class="sg-stat" id="sg-stat-1">
+            <div class="lab">PARAMS</div>
+            <div class="val">76M</div>
+            <div class="sub">vs 2B target</div>
+          </div>
+          <div class="sg-stat" id="sg-stat-2">
+            <div class="lab">KV CACHE</div>
+            <div class="val">SHARED</div>
+            <div class="sub">cross-attends to target</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sg-pivot" id="sg-pivot">
+        <span class="from" id="sg-from">Inference hack</span>
+        <span class="arrow" id="sg-arrow">&rarr;</span>
+        <span class="to" id="sg-to">Architecture</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sg-overline", { y: -8, opacity: 0 }, 0);
+      tl.set("#sg-h",        { y: 24, opacity: 0 }, 0);
+      tl.set("#sg-card",     { y: 32, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#sg-tag",      { opacity: 0 }, 0);
+      tl.set("#sg-title",    { opacity: 0, y: 12 }, 0);
+      tl.set("#sg-target",   { opacity: 0, x: -24, scale: 0.9 }, 0);
+      tl.set("#sg-mtp",      { opacity: 0, x: 24, scale: 0.9 }, 0);
+      tl.set("#sg-stat-1",   { opacity: 0, y: 16 }, 0);
+      tl.set("#sg-stat-2",   { opacity: 0, y: 16 }, 0);
+      tl.set("#sg-from",     { opacity: 0, x: -16 }, 0);
+      tl.set("#sg-arrow",    { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#sg-to",       { opacity: 0, x: 16, scale: 0.8 }, 0);
+
+      tl.to("#sg-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#sg-h",        { y: 0, opacity: 1, duration: 0.55 }, 0.20);
+      tl.to("#sg-h",        { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1 }, 1.87);
+
+      // Gemma 4 card lands at "Google's Gemma 4 ships its own drafter built in"
+      tl.to("#sg-card",  { y: 0, opacity: 1, scale: 1, duration: 0.65, ease: "back.out(1.4)" }, 4.21);
+      tl.to("#sg-tag",   { opacity: 1, duration: 0.4 }, 4.50);
+      tl.to("#sg-title", { y: 0, opacity: 1, duration: 0.5 }, 4.80);
+
+      // Target box + MTP head reveal at "Multi token prediction head"
+      tl.to("#sg-target", { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 7.62);
+      tl.to("#sg-mtp",    { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 7.95);
+
+      // 76M stat at "Seventy six million parameters"
+      tl.to("#sg-stat-1", { y: 0, opacity: 1, duration: 0.5 }, 9.23);
+
+      // KV cache stat at "Sharing the target model's K V cache"
+      tl.to("#sg-stat-2", { y: 0, opacity: 1, duration: 0.5 }, 11.91);
+
+      // From → To pivot at "From an inference hack / Into the model itself"
+      tl.to("#sg-from",  { x: 0, opacity: 1, duration: 0.45 }, 16.76);
+      tl.to("#sg-arrow", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 17.20);
+      tl.to("#sg-to",    { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 17.95);
+      tl.to("#sg-to",    { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1 }, 18.55);
+
+      window.__timelines["scene-gemma"] = tl;
+    </script>
+  </div>
+</template>

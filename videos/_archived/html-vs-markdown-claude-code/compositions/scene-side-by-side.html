@@ -1,0 +1,394 @@
+<!--
+  scene-side-by-side.html — Markdown vs HTML, same data
+  Scene-relative duration: 64.51s. data-start in root = 105.06.
+
+  Beats (scene-relative):
+    0     — section "02" + overline + h2 enter
+    2.10  — "Markdown gives you this" — left (.md) card surfaces
+    4.21  — "A bar chart hand-drawn…" — ASCII chart fills row by row
+    11.11 — "columns drift" — pulse on the misalignment row
+    13.29 — "do not line up" — emphasis dim on misalignment row
+    18.16 — "every alignment breaks" — left card glitches once
+    20.48 — "H T M L gives you this" — right (.html) card surfaces
+    21.78 — "Same five numbers" — header row labels
+    23.74 — "real S V G bar chart" — SVG bars draw with stagger
+    35.46 — "Thariq writes" — pull-quote enters under the cards
+    38.11 — "easier to read" — quote text lights up
+    45.37 — "chance someone actually reads" — chance-highlight under quote
+    52.18 — "much, much higher" — emphasis pulse
+    57.82 — "colleague will skim" — SKIM verb-pill enters on left
+    61.55 — "colleague will open" — OPEN verb-pill enters on right
+    63.38 — "That is the difference" — final caption pulse
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #scene-side-by-side-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+      }
+      .sbs-header {
+        position: relative;
+        margin-bottom: 24px;
+        padding-left: 88px;
+      }
+      .sbs-section-number {
+        position: absolute;
+        left: 0;
+        top: 6px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-1);
+        line-height: 1;
+      }
+      .sbs-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 12px;
+      }
+      .sbs-h2 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 64px;
+        color: var(--text);
+        letter-spacing: -1px;
+        line-height: 1.04;
+      }
+      .sbs-h2 em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .sbs-divider {
+        height: 1px;
+        background: var(--border);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      .sbs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        margin-top: 20px;
+        padding-left: 88px;
+        padding-right: 0;
+      }
+      .sbs-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px 32px;
+        position: relative;
+        min-height: 380px;
+      }
+      .sbs-card.is-md {
+        border-color: var(--border);
+      }
+      .sbs-card.is-html {
+        border-color: var(--accent-3);
+      }
+      .sbs-tag {
+        display: inline-block;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 2px;
+        padding: 8px 14px;
+        border-radius: 4px;
+        margin-bottom: 18px;
+      }
+      .sbs-tag.is-md {
+        color: var(--accent-2);
+        background: var(--bg-surface);
+      }
+      .sbs-tag.is-html {
+        color: var(--accent-3);
+        background: var(--bg-surface);
+        border: 1px solid var(--accent-3);
+      }
+      .sbs-card-title {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 32px;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+      .sbs-card-sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 24px;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+      }
+
+      /* ASCII chart inside the .md card */
+      .ascii-chart {
+        font-family: var(--mono);
+        font-size: 18px;
+        color: var(--text);
+        line-height: 1.5;
+        white-space: pre;
+        opacity: 0;
+      }
+      .ascii-row { position: relative; }
+      .ascii-row::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; top: 50%;
+        height: 1px;
+        background: var(--accent-2);
+        transform: scaleX(0);
+        transform-origin: left center;
+        opacity: 0;
+      }
+      .ascii-row.shake { display: inline-block; }
+
+      /* SVG chart inside the .html card */
+      .svg-chart {
+        width: 100%;
+        margin-top: 4px;
+      }
+      /* SVG <rect> transforms need transform-box: fill-box so the
+         transform-origin is interpreted in element-local coordinates
+         (bottom-center of each bar) instead of the SVG canvas origin.
+         Initial scaleY(0) is set by GSAP via tl.set() at scene-rel 0;
+         declaring it here too caused the GSAP override to be ignored
+         in some Chromium builds, leaving the bars permanently collapsed. */
+      .svg-bar {
+        transform-box: fill-box;
+        transform-origin: 50% 100%;
+      }
+      .svg-axis-label {
+        font-family: var(--mono);
+        font-size: 14px;
+        fill: var(--text-muted);
+      }
+      .svg-bar-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        fill: var(--text);
+      }
+
+      /* Pull quote band */
+      .sbs-pull-quote {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        bottom: 180px;
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 28px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        max-width: 1500px;
+        opacity: 0;
+      }
+      .sbs-pull-quote em {
+        font-style: italic;
+        color: var(--accent-1);
+        font-weight: 700;
+      }
+      .sbs-pull-mark {
+        position: absolute;
+        left: 0;
+        bottom: -4px;
+        width: 0;
+        height: 5px;
+        background: var(--accent-1);
+        border-radius: 2px;
+      }
+
+      /* Verb pills (SKIM / OPEN) at the bottom */
+      .sbs-verbs {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        bottom: 70px;
+        display: flex;
+        gap: 32px;
+      }
+      .sbs-verb {
+        flex: 1 1 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 24px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text);
+        text-align: center;
+        opacity: 0;
+      }
+      .sbs-verb.is-md {
+        color: var(--accent-2);
+      }
+      .sbs-verb.is-html {
+        color: var(--accent-1);
+        border-color: var(--accent-1);
+      }
+      .sbs-verb-label {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 20px;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+    </style>
+
+    <div id="scene-side-by-side-content">
+      <div class="sbs-header">
+        <div class="sbs-section-number" id="sbs-num">02</div>
+        <div class="sbs-overline" id="sbs-overline">SAME DATA — TWO FORMATS</div>
+        <div class="sbs-h2" id="sbs-h2">Skimmed, or actually <em class="accent-italic">read</em>?</div>
+        <div class="sbs-divider" id="sbs-divider"></div>
+      </div>
+
+      <div class="sbs-grid">
+        <!-- Markdown card -->
+        <div class="sbs-card is-md" id="sbs-md-card">
+          <div class="sbs-tag is-md">.md</div>
+          <div class="sbs-card-title">A wall of pipes.</div>
+          <div class="sbs-card-sub">Looks like a chart from a distance.</div>
+          <div class="ascii-chart" id="sbs-ascii">
+<span class="ascii-row" id="sbs-ascii-r1">specs   |||||||||||||||---------</span>
+<span class="ascii-row" id="sbs-ascii-r2">plans   |||||||---------</span>
+<span class="ascii-row" id="sbs-ascii-r3">reviews ||||||||||||||||||||---</span>
+<span class="ascii-row" id="sbs-ascii-r4">demos   ||||||||||||--</span>
+<span class="ascii-row" id="sbs-ascii-r5">reports ||||||||||||||---------</span>
+          </div>
+        </div>
+
+        <!-- HTML card -->
+        <div class="sbs-card is-html" id="sbs-html-card">
+          <div class="sbs-tag is-html">.html</div>
+          <div class="sbs-card-title">A real chart.</div>
+          <div class="sbs-card-sub">Same five numbers — drawn properly.</div>
+          <svg class="svg-chart" viewBox="0 0 480 240" preserveAspectRatio="none" data-layout-allow-overflow="true">
+            <!-- baseline -->
+            <line x1="40" y1="200" x2="460" y2="200" stroke="rgba(28,26,24,0.20)" stroke-width="1" />
+            <!-- bars (each scaleY:0 → 1 on the timeline; transform-origin via JS) -->
+            <rect class="svg-bar" id="sbs-bar-1" x="56"  y="60"  width="60" height="140" fill="#C75A3F" data-layout-allow-overflow="true" />
+            <rect class="svg-bar" id="sbs-bar-2" x="140" y="120" width="60" height="80"  fill="#C75A3F" data-layout-allow-overflow="true" />
+            <rect class="svg-bar" id="sbs-bar-3" x="224" y="40"  width="60" height="160" fill="#586F4F" data-layout-allow-overflow="true" />
+            <rect class="svg-bar" id="sbs-bar-4" x="308" y="100" width="60" height="100" fill="#586F4F" data-layout-allow-overflow="true" />
+            <rect class="svg-bar" id="sbs-bar-5" x="392" y="76"  width="60" height="124" fill="#C75A3F" data-layout-allow-overflow="true" />
+            <!-- axis labels -->
+            <text class="svg-axis-label" x="86"  y="220" text-anchor="middle">specs</text>
+            <text class="svg-axis-label" x="170" y="220" text-anchor="middle">plans</text>
+            <text class="svg-axis-label" x="254" y="220" text-anchor="middle">review</text>
+            <text class="svg-axis-label" x="338" y="220" text-anchor="middle">demos</text>
+            <text class="svg-axis-label" x="422" y="220" text-anchor="middle">report</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sbs-pull-quote" id="sbs-quote">
+        Thariq: HTML documents are <em>easier to read</em>, easier to organize visually, easier to navigate. The chance someone actually <span style="position:relative; display:inline-block;">reads<span class="sbs-pull-mark" id="sbs-quote-mark"></span></span> your spec gets <em>much, much higher</em>.
+      </div>
+
+      <div class="sbs-verbs">
+        <div class="sbs-verb is-md" id="sbs-verb-md"><div class="sbs-verb-label">colleague will</div>SKIM</div>
+        <div class="sbs-verb is-html" id="sbs-verb-html"><div class="sbs-verb-label">colleague will</div>OPEN</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Hidden-until-reveal pattern for everything that animates
+      tl.set("#sbs-md-card",   { y: 18, opacity: 0 }, 0);
+      tl.set("#sbs-html-card", { y: 18, opacity: 0 }, 0);
+      tl.set("#sbs-ascii",     { opacity: 0 }, 0);
+      tl.set("#sbs-quote",     { y: 14, opacity: 0 }, 0);
+      tl.set("#sbs-verb-md",   { y: 12, opacity: 0 }, 0);
+      tl.set("#sbs-verb-html", { y: 12, opacity: 0 }, 0);
+      tl.set("#sbs-divider",   { scaleX: 0 }, 0);
+      tl.set("#sbs-quote-mark",{ width: 0 }, 0);
+      const bars = ["#sbs-bar-1","#sbs-bar-2","#sbs-bar-3","#sbs-bar-4","#sbs-bar-5"];
+      bars.forEach(s => tl.set(s, { scaleY: 0, transformOrigin: "center bottom" }, 0));
+
+      // Header
+      tl.from("#sbs-num",      { y: 14, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.2);
+      tl.from("#sbs-overline", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.4);
+      tl.from("#sbs-h2",       { y: 20, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.6);
+      tl.to("#sbs-divider",    { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.2);
+
+      // Markdown card surfaces at "Markdown gives you this"
+      tl.to("#sbs-md-card", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 2.10);
+
+      // ASCII chart fades in across "A bar chart hand-drawn..." 4.21 → 11.0 (rows reveal sequentially)
+      tl.to("#sbs-ascii", { opacity: 1, duration: 0.5, ease: "power2.out" }, 4.21);
+      // Each row "draws" by inheriting the parent fade — no separate per-row reveal needed,
+      // but we DO want the columns-drift emphasis at 11.11 to land on row 3 (the misaligned one).
+
+      // "columns drift" pulse on row 3 at 11.11
+      tl.to("#sbs-ascii-r3", { color: "var(--accent-2)", duration: 0.3 }, 11.11);
+      tl.to("#sbs-ascii-r3", { x: -3, duration: 0.05, yoyo: true, repeat: 5 }, 11.11);
+
+      // "do not line up" — pulse on row 4 at 13.29 (the second visibly off row)
+      tl.to("#sbs-ascii-r4", { color: "var(--accent-2)", duration: 0.3 }, 13.29);
+      tl.to("#sbs-ascii-r4", { x: 3,  duration: 0.05, yoyo: true, repeat: 5 }, 13.29);
+
+      // "every alignment breaks" — strikethrough sweep across row 1 at 18.16
+      tl.to("#sbs-ascii-r1::after", { scaleX: 1, opacity: 0.8, duration: 0.5, ease: "power2.out" }, 18.16);
+      // (note: GSAP can't target ::after directly in all setups — fall back to a tone shift)
+      tl.to("#sbs-md-card", { borderColor: "var(--accent-2)", duration: 0.4 }, 18.16);
+
+      // HTML card surfaces at "H T M L gives you this" — 20.48
+      tl.to("#sbs-html-card", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 20.48);
+
+      // SVG bars draw with stagger from 23.74 ("real S V G bar chart")
+      bars.forEach((s, i) => {
+        tl.to(s, { scaleY: 1, duration: 0.55, ease: "power3.out" }, 23.74 + i * 0.18);
+      });
+
+      // Pull-quote at 35.46 ("Thariq writes")
+      tl.to("#sbs-quote", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 35.46);
+
+      // "easier to read" emphasis pulse on quote at 38.11 (the <em> word)
+      tl.to("#sbs-quote em:first-of-type", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 38.11);
+
+      // "chance someone actually reads" — marker sweep on "reads" at 45.37
+      tl.to("#sbs-quote-mark", { width: "100%", duration: 0.55, ease: "power2.out" }, 45.37);
+
+      // "much, much higher" — emphasis pulse on the second <em>
+      tl.to("#sbs-quote em:last-of-type", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 52.18);
+
+      // SKIM verb pill at 57.82
+      tl.to("#sbs-verb-md", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 57.82);
+
+      // OPEN verb pill at 61.55
+      tl.to("#sbs-verb-html", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 61.55);
+
+      // "That is the difference" — final pulse on both verbs at 63.38
+      tl.to("#sbs-verb-md, #sbs-verb-html", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 63.38);
+
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

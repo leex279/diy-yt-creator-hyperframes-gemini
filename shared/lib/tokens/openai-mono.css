@@ -1,0 +1,97 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/openai/tokens/openai-mono.css
+   Vertical Shorts (1080x1920) OpenAI monochrome-editorial stage with a
+   single mint accent (#10A37F — the canonical ChatGPT hue).
+
+   Off-black canvas, off-white type, no four-color rotation, no corner
+   glows by default. Calm, premium, editorial — the surface OpenAI uses
+   on the openai.com Research and System Card pages. The ChatGPT
+   spirograph anchors the top; a single mint accent threads through the
+   eyebrow, the active rail dot, the progress-bar fill, and the CTA pill.
+
+   Linked once from index.html <head>:
+     <link rel="stylesheet" href="tokens/openai-mono.css">
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── OpenAI brand accents ──────────────────────────────── */
+  /* Mint = the ChatGPT spirograph + every OpenAI surface that needs an
+     accent. Lavender + amber are auxiliary tints reserved for Sora /
+     DALL·E flavored videos; not used by the default template. */
+  --oai-mint:       #10A37F;
+  --oai-mint-hi:    #19C37D;        /* brighter mint for hover-style emphasis */
+  --oai-mint-lo:    #0E7E61;        /* darker mint for hairlines and rails */
+  --oai-lavender:   #A78BFA;        /* Sora-flavored auxiliary */
+  --oai-amber:      #F0B86E;        /* DALL·E-flavored auxiliary */
+  --oai-coral:      #FF6E5A;        /* warning / alert; rare */
+
+  /* ── Surface ──────────────────────────────────────────── */
+  --bg-deep:        #0A0A0A;        /* primary canvas — softer than pure black */
+  --bg-mid:         #111111;        /* mid-tone wash, terminal surround */
+  --bg-soft:        #181818;        /* card surfaces, raised pills */
+  --bg:             #0A0A0A;        /* alias — matches anthropic naming */
+  --card:           rgba(20, 20, 20, 0.55);
+  --card-bright:    rgba(20, 20, 20, 0.85);
+  --border:         rgba(255, 255, 255, 0.08);     /* hairline */
+  --border-bright:  rgba(255, 255, 255, 0.18);     /* hairline-strong */
+
+  /* Light-shift surface (Phase 4 "shift" moment, optional) */
+  --bg-light:       #F4F4F2;        /* warm off-white */
+  --bg-light-mid:   #EAEAE6;
+  --ink-on-light:   #0A0A0A;
+
+  /* ── Text ─────────────────────────────────────────────── */
+  /* Off-white #ECECEC reads softer than pure #FFF on a dark editorial
+     canvas — matches the OpenAI brand's restrained type treatment. */
+  --text:           #ECECEC;
+  --ink-100:        #ECECEC;
+  --ink-80:         #C4C4C4;
+  --text-secondary: #A0A0A0;
+  --ink-60:         #A0A0A0;
+  --text-muted:     #7A7A7A;        /* ≥3:1 on #0A0A0A — WCAG AA UI baseline */
+  --ink-40:         #7A7A7A;
+  --ink-20:         #3A3A3A;
+  --text-dim:       #A0A0A0;        /* alias */
+
+  /* ── Accent role tokens ────────────────────────────────── */
+  /* Default lead = mint. Per-video override via inline style on #root:
+       style="--accent: var(--oai-lavender); --accent-glow: rgba(167,139,250,0.30);" */
+  --accent:         var(--oai-mint);
+  --accent-glow:    rgba(16, 163, 127, 0.32);
+
+  /* Legacy short-template aliases — let lib blocks pull through
+     cleanly. The lib's --orange / --purple / --blue / --green / --red /
+     --yellow names are mapped onto the closest OpenAI hue. There is no
+     four-color rotation in this template, so every alias points at the
+     mint accent except the auxiliary tints. */
+  --orange:         #F0B86E;        /* maps to amber (DALL·E-flavored) */
+  --purple:         var(--oai-lavender);
+  --blue:           #6EA8FE;        /* cool accent for compare-side "after" only */
+  --green:          var(--oai-mint);
+  --red:            var(--oai-coral);
+  --yellow:         var(--oai-amber);
+
+  /* Google brand triad aliases — let the index.html keep its Google-
+     style markup (chip data-color, terminal syntax) without rewriting
+     every selector. Every legacy Google name now resolves to a mint-
+     family hue so the visuals stay monochrome+mint. */
+  --g-blue:         var(--oai-mint);
+  --g-red:          var(--oai-coral);
+  --g-yellow:       var(--oai-amber);
+  --g-green:        var(--oai-mint-hi);
+
+  --pill-bg:        rgba(20, 20, 20, 0.7);
+  --pill-border:    rgba(255, 255, 255, 0.18);
+
+  /* ── Spacing (1080x1920 safe-zone, mobile UI overlay) ── */
+  --pad-top:        240px;          /* clears top spirograph + mobile UI header */
+  --pad-x:          60px;
+  --pad-bottom:     240px;          /* clears mobile UI footer + progress bar */
+
+  /* ── Type ─────────────────────────────────────────────── */
+  /* Inter is the best free Söhne-substitute. OpenAI's product surfaces
+     use Söhne / Söhne Mono internally; Inter + JetBrains Mono is the
+     closest open-source pairing. */
+  --sans:           'Inter', 'Söhne', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', 'Söhne Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}

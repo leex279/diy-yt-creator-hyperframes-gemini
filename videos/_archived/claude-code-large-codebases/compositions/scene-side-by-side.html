@@ -1,0 +1,269 @@
+<!--
+  scene-side-by-side.html — Scene 4 / RAG vs Agentic (44.941s).
+  Left: RAG retrieval failure mode (strike-cross on stale function name).
+  Right: Agentic search (reads live codebase).
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-sbs-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 26px;
+        box-sizing: border-box;
+      }
+      #sbs-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      #sbs-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1500px;
+      }
+      .sbs-cards {
+        display: flex;
+        flex-direction: row;
+        gap: 28px;
+        width: 100%;
+      }
+      .sbs-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+      .sbs-card.warn {
+        background: linear-gradient(135deg,
+          rgba(209, 67, 67, 0.10) 0%,
+          rgba(209, 67, 67, 0.03) 100%);
+        border: 2px solid rgba(209, 67, 67, 0.35);
+      }
+      .sbs-card.good {
+        background: linear-gradient(135deg,
+          rgba(125, 211, 166, 0.10) 0%,
+          rgba(125, 211, 166, 0.03) 100%);
+        border: 2px solid rgba(125, 211, 166, 0.40);
+      }
+      .sbs-card-header {
+        padding: 16px 26px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .sbs-card.warn .sbs-card-header { background: rgba(209, 67, 67, 0.15); }
+      .sbs-card.good .sbs-card-header { background: rgba(125, 211, 166, 0.15); }
+      .sbs-card-label {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .sbs-card.warn .sbs-card-label { color: var(--accent-warn); }
+      .sbs-card.good .sbs-card-label { color: var(--accent-4); }
+      .sbs-card-body {
+        padding: 26px 28px 30px;
+        display: flex; flex-direction: column;
+        gap: 14px; flex: 1;
+      }
+      .sbs-card-title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 44px;
+        line-height: 1.05;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .sbs-step {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 24px;
+        letter-spacing: 0.5px;
+        color: var(--text);
+        padding: 12px 18px;
+        border-radius: 14px;
+        background: rgba(245, 241, 235, 0.06);
+        border: 1px solid rgba(245, 241, 235, 0.10);
+        display: flex; align-items: center; gap: 12px;
+      }
+      .sbs-step .step-num {
+        font-weight: 800;
+        color: var(--text-secondary);
+        min-width: 26px;
+      }
+      .sbs-card.good .sbs-step .step-num { color: var(--accent-4); }
+      .sbs-mock {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 0.5px;
+        color: var(--text);
+        background: rgba(0, 0, 0, 0.35);
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(245, 241, 235, 0.12);
+        position: relative;
+        display: inline-block;
+        align-self: flex-start;
+      }
+      .sbs-mock .strike-cross {
+        position: absolute;
+        left: 8px; right: 8px;
+        top: 50%;
+        height: 3px;
+        background: var(--accent-warn);
+        transform: scaleX(0);
+        transform-origin: left;
+        box-shadow: 0 0 10px rgba(209, 67, 67, 0.7);
+      }
+      .sbs-callout {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 8px 14px;
+        border-radius: 999px;
+        align-self: flex-start;
+      }
+      .sbs-card.warn .sbs-callout { background: rgba(209, 67, 67, 0.18); color: var(--accent-warn); border: 1px solid rgba(209, 67, 67, 0.4); }
+      .sbs-card.good .sbs-callout { background: rgba(125, 211, 166, 0.18); color: var(--accent-4); border: 1px solid rgba(125, 211, 166, 0.4); }
+      .sbs-mark-codebase {
+        display: inline-block;
+        height: 4px;
+        width: 0;
+        background: var(--accent-4);
+        border-radius: 2px;
+        margin-top: 4px;
+        box-shadow: 0 0 12px rgba(125, 211, 166, 0.6);
+      }
+    </style>
+
+    <div id="scene-sbs-content">
+      <div id="sbs-overline">HOW CLAUDE CODE NAVIGATES THE REPO</div>
+      <div id="sbs-headline">RAG retrieval breaks. Agentic search works.</div>
+      <div class="sbs-cards">
+        <div class="sbs-card warn" id="sbs-card-a">
+          <div class="sbs-card-header">
+            <div class="sbs-card-label">RAG &middot; retrieval</div>
+          </div>
+          <div class="sbs-card-body">
+            <div class="sbs-card-title">Older AI coding tools.</div>
+            <div class="sbs-step" id="sbs-step-1"><span class="step-num">1.</span><span>Embed the whole repo.</span></div>
+            <div class="sbs-step" id="sbs-step-2"><span class="step-num">2.</span><span>Retrieve chunks at query time.</span></div>
+            <div class="sbs-callout" id="sbs-rag-callout">At scale, this breaks.</div>
+            <div class="sbs-mock" id="sbs-mock-1">
+              function teamRenamed()
+              <span class="strike-cross" id="sbs-strike-1"></span>
+            </div>
+            <div class="sbs-mock" id="sbs-mock-2">
+              module deletedLastSprint
+              <span class="strike-cross" id="sbs-strike-2"></span>
+            </div>
+          </div>
+        </div>
+        <div class="sbs-card good" id="sbs-card-b">
+          <div class="sbs-card-header">
+            <div class="sbs-card-label">Agentic search</div>
+          </div>
+          <div class="sbs-card-body">
+            <div class="sbs-card-title">Claude Code does it differently.</div>
+            <div class="sbs-step" id="sbs-step-3"><span class="step-num">+</span><span>No embedding pipeline.</span></div>
+            <div class="sbs-step" id="sbs-step-4"><span class="step-num">+</span><span>No central index.</span></div>
+            <div class="sbs-callout" id="sbs-agentic-callout">Reads files like an engineer would.</div>
+            <div class="sbs-step" id="sbs-step-5"><span class="step-num">&rarr;</span><span>Each instance works from <strong>the current codebase</strong>.<br/><span class="sbs-mark-codebase" id="sbs-mark-codebase"></span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 44.941;
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // scene_start = 89.185 — times below are scene-relative
+
+      tl.set("#sbs-overline",        { y: 20, opacity: 0 }, 0);
+      tl.set("#sbs-headline",        { y: 28, opacity: 0 }, 0);
+      tl.set("#sbs-card-a",          { x: -50, opacity: 0 }, 0);
+      tl.set("#sbs-step-1",          { x: -30, opacity: 0 }, 0);
+      tl.set("#sbs-step-2",          { x: -30, opacity: 0 }, 0);
+      tl.set("#sbs-rag-callout",     { y: 12, opacity: 0 }, 0);
+      tl.set("#sbs-mock-1",          { y: 12, opacity: 0 }, 0);
+      tl.set("#sbs-mock-2",          { y: 12, opacity: 0 }, 0);
+      tl.set("#sbs-card-b",          { x: 50, opacity: 0 }, 0);
+      tl.set("#sbs-step-3",          { x: 30, opacity: 0 }, 0);
+      tl.set("#sbs-step-4",          { x: 30, opacity: 0 }, 0);
+      tl.set("#sbs-agentic-callout", { y: 12, opacity: 0 }, 0);
+      tl.set("#sbs-step-5",          { y: 12, opacity: 0 }, 0);
+
+      tl.to("#sbs-overline",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.0);
+      tl.to("#sbs-headline",  { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.4);
+
+      // LEFT panel — narration starts at scene-start 0; "So how does Claude Code..."
+      // Left panel reveal at scene 0.315 ("So" at 89.185 → ~0.0; allow 0.3s before)
+      tl.to("#sbs-card-a", { x: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 0.315);
+
+      // Embed → Retrieve diagram (2-chip stagger): scene ~4.0 and 5.0
+      tl.to("#sbs-step-1", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 4.815);
+      tl.to("#sbs-step-2", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 5.815);
+
+      // "At large scale, that breaks" callout — narration scene ~11.0
+      tl.to("#sbs-rag-callout", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 11.315);
+
+      // Mock label "function teamRenamed" enters at scene ~18.0 (word "function" at ~108)
+      tl.to("#sbs-mock-1", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 18.815);
+
+      // Strike-cross fires on "two weeks ago" — word "two" at 113.264 → scene 24.079
+      tl.to("#sbs-strike-1", { scaleX: 1, duration: 0.45, ease: "power2.out" }, 24.079);
+
+      // Mock 2: "module deletedLastSprint" — scene ~27.5
+      tl.to("#sbs-mock-2", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 27.815);
+      tl.to("#sbs-strike-2", { scaleX: 1, duration: 0.45, ease: "power2.out" }, 29.315);
+
+      // Pivot beat — left panel fades on "differently" at 121.000 → scene 31.815
+      tl.to("#sbs-card-a", { opacity: 0.4, scale: 0.97, duration: 0.5, ease: "power2.in" }, 31.815);
+
+      // RIGHT panel — word "Agentic" at 123.109 → scene 33.924
+      tl.to("#sbs-card-b", { x: 0, opacity: 1, duration: 0.7, ease: "back.out(1.4)" }, 33.924);
+
+      // Agentic steps stagger
+      tl.to("#sbs-step-3", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 36.5);
+      tl.to("#sbs-step-4", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 37.5);
+      tl.to("#sbs-agentic-callout", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 38.5);
+      tl.to("#sbs-step-5", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 40.5);
+
+      // Marker-sweep under "the current codebase" — scene ~41.815
+      tl.to("#sbs-mark-codebase", { width: 360, duration: 0.8, ease: "power2.out" }, 41.815);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

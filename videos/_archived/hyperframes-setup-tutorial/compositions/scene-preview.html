@@ -1,0 +1,111 @@
+<!--
+  scene-preview.html — image-hero variant. preview-studio.png screenshot.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-preview-template">
+  <div data-composition-id="scene-preview"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #preview-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 24px; box-sizing:border-box;
+      }
+      #preview-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:10px; text-align:center;
+      }
+      #preview-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-2);
+      }
+      #preview-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 48px; line-height: 1.05;
+        letter-spacing: -0.5px; color: var(--text);
+      }
+      #preview-content .cmd-row {
+        display: inline-flex; align-items: center; gap: 14px;
+        padding: 12px 24px; border-radius: 999px;
+        background: rgba(6, 182, 212, 0.16);
+        border: 1.5px solid rgba(6, 182, 212, 0.55);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; color: var(--accent-2);
+      }
+      #preview-frame {
+        width: 1500px;
+        height: 720px;
+        border-radius: 16px;
+        border: 2px solid var(--border-bright);
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+        background: #000;
+      }
+      #preview-frame img {
+        width: 100%; height: 100%;
+        object-fit: cover; display: block;
+      }
+      #preview-foot {
+        font-family: var(--mono); font-weight: 600;
+        font-size: 20px; letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+    </style>
+
+    <div id="preview-content">
+      <div class="header-block">
+        <div class="overline" id="prev-overline">OPEN THE STUDIO &middot; STEP 7</div>
+        <div class="headline" id="prev-headline">A live preview, in your browser, on every save</div>
+      </div>
+
+      <div class="cmd-row" id="prev-cmd">
+        <span style="color:var(--text-secondary)">$</span>
+        <span>npx hyperframes preview</span>
+        <span style="color:#b8c0cc; font-weight:600; margin-left:6px;">&middot; or <code style="color:#e0e6ed; background:rgba(255,255,255,.10); padding:2px 8px; border-radius:4px; font-size:18px;">npm run dev</code></span>
+      </div>
+
+      <div id="preview-frame">
+        <img class="clip"
+             id="prev-img"
+             data-start="0" data-duration="20" data-track-index="0"
+             src="assets/screenshots/preview-studio.png"
+             alt="HyperFrames Studio with demo composition" />
+      </div>
+
+      <div id="preview-foot">
+        Edit your <code>index.html</code> in any editor &mdash; the studio reloads automatically.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#prev-overline", { y: 18, opacity: 0 }, 0);
+      tl.set("#prev-headline", { y: 30, opacity: 0 }, 0);
+      tl.set("#prev-cmd",      { y: 18, scale: 0.93, opacity: 0 }, 0);
+      tl.set("#preview-frame", { y: 40, scale: 0.96, opacity: 0 }, 0);
+      tl.set("#prev-img",      { opacity: 0 }, 0);
+      tl.set("#preview-foot",  { y: 14, opacity: 0 }, 0);
+
+      tl.to("#prev-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0);
+      tl.to("#prev-headline", { y: 0, opacity: 1, duration: 0.6 }, 0.3);
+      tl.to("#prev-cmd",      { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 0.7);
+      tl.to("#preview-frame", { y: 0, scale: 1, opacity: 1, duration: 0.7 }, 1.1);
+      tl.to("#prev-img",      { opacity: 1, duration: 0.6, ease: "power2.out" }, 1.5);
+      tl.to("#preview-foot",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 2.2);
+
+      window.__timelines["scene-preview"] = tl;
+    </script>
+  </div>
+</template>

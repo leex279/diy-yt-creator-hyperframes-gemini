@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIY Smart Code — Channel Analysis · 28 days ending 2026-05-15</title>
+<style>
+  :root {
+    --bg: #0a0d12;
+    --bg-elev: #131822;
+    --bg-card: #1a212e;
+    --border: #2a3447;
+    --fg: #e8ecf2;
+    --fg-dim: #9aa5b8;
+    --fg-mute: #6b7689;
+    --accent: #d4a574;
+    --accent-cool: #7eb8d6;
+    --good: #6ec77e;
+    --bad: #e57878;
+    --warn: #e5c478;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 48px 32px 96px; }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 38px;
+    line-height: 1.15;
+    margin: 0 0 12px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    color: var(--fg-dim);
+    font-size: 17px;
+    margin: 0;
+  }
+  h2 {
+    font-size: 26px;
+    margin: 56px 0 20px;
+    letter-spacing: -0.01em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 19px;
+    margin: 32px 0 12px;
+    color: var(--fg);
+  }
+  h3 .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+    font-weight: 500;
+  }
+  .badge-good { background: rgba(110, 199, 126, 0.15); color: var(--good); border: 1px solid rgba(110, 199, 126, 0.3); }
+  .badge-bad  { background: rgba(229, 120, 120, 0.15); color: var(--bad);  border: 1px solid rgba(229, 120, 120, 0.3); }
+  .badge-warn { background: rgba(229, 196, 120, 0.15); color: var(--warn); border: 1px solid rgba(229, 196, 120, 0.3); }
+  p { margin: 0 0 14px; color: var(--fg); }
+  p.lead { color: var(--fg-dim); }
+
+  /* KPI grid */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 0 0 16px;
+  }
+  .kpi {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .kpi-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--fg-dim);
+    margin-top: 6px;
+  }
+  .kpi.accent .kpi-value { color: var(--accent); }
+  .kpi.good   .kpi-value { color: var(--good);   }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg-elev);
+    color: var(--fg-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.rank { font-family: var(--mono); color: var(--fg-mute); width: 38px; }
+  td .vid-title { font-weight: 500; }
+  td .vid-meta  { font-size: 12px; color: var(--fg-mute); margin-top: 2px; font-family: var(--mono); }
+  .v-good { color: var(--good); font-weight: 500; }
+  .v-bad  { color: var(--bad); }
+  .v-warn { color: var(--warn); }
+
+  /* Callout boxes */
+  .callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+  }
+  .callout-bad { border-left-color: var(--bad); }
+  .callout-good { border-left-color: var(--good); }
+  .callout-title {
+    font-weight: 600;
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+  .callout p { font-size: 14px; color: var(--fg-dim); margin: 0; }
+
+  /* Recommendations */
+  .rec-list { list-style: none; padding: 0; margin: 0; counter-reset: rec; }
+  .rec-list li {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px 18px 64px;
+    margin-bottom: 12px;
+    position: relative;
+    counter-increment: rec;
+  }
+  .rec-list li::before {
+    content: counter(rec, decimal-leading-zero);
+    position: absolute;
+    left: 18px;
+    top: 18px;
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .rec-list .rec-title { font-weight: 600; margin: 0 0 6px; color: var(--fg); }
+  .rec-list p { margin: 0; color: var(--fg-dim); font-size: 14px; }
+  .rec-tier {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin: 32px 0 14px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* Quote blocks */
+  blockquote {
+    margin: 14px 0;
+    padding: 12px 18px;
+    background: var(--bg-elev);
+    border-left: 3px solid var(--accent-cool);
+    border-radius: 4px;
+    font-style: italic;
+    color: var(--fg-dim);
+    font-size: 14px;
+  }
+  blockquote cite {
+    display: block;
+    font-style: normal;
+    font-size: 12px;
+    color: var(--fg-mute);
+    margin-top: 6px;
+    font-family: var(--mono);
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--fg-mute);
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+
+  /* Two-col grids */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 16px 0;
+  }
+  .split .col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .split h4 { margin: 0 0 10px; font-size: 14px; font-family: var(--mono); letter-spacing: 0.05em; text-transform: uppercase; }
+  .split.good .col:first-child h4 { color: var(--good); }
+  .split.good .col:last-child h4  { color: var(--bad); }
+  .split ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--fg-dim); }
+  .split li { margin-bottom: 6px; }
+
+  /* Print */
+  @media print {
+    body { background: white; color: #111; }
+    .kpi, .callout, .split .col, table, .rec-list li { background: #fafafa; color: #111; }
+    blockquote { background: #f3f3f3; color: #333; }
+  }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 28px 18px 64px; }
+    h1 { font-size: 28px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .split { grid-template-columns: 1fr; }
+    th, td { padding: 9px 10px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Channel Analysis · 28-day window</div>
+  <h1>DIY Smart Code — What's working, what's tanking, where to push next</h1>
+  <p class="sub">Window: 2026-04-17 → 2026-05-15 · 64 videos shipped (14 long-form, 50 Shorts) · Generated from YouTube Analytics + vidIQ on 2026-05-15.</p>
+</header>
+
+<!-- ===================== CHANNEL SNAPSHOT ===================== -->
+<h2>Channel snapshot</h2>
+
+<div class="kpis">
+  <div class="kpi accent">
+    <div class="kpi-label">Views</div>
+    <div class="kpi-value">1.26M</div>
+    <div class="kpi-sub">+~45K/day average</div>
+  </div>
+  <div class="kpi good">
+    <div class="kpi-label">Net subs</div>
+    <div class="kpi-value">+6,737</div>
+    <div class="kpi-sub">7,392 gained · 655 lost</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Watch time</div>
+    <div class="kpi-value">21,700h</div>
+    <div class="kpi-sub">1.3M minutes</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Avg view %</div>
+    <div class="kpi-value">49.1%</div>
+    <div class="kpi-sub">~75s per view</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Likes</div>
+    <div class="kpi-value">42,504</div>
+    <div class="kpi-sub">3.4% like rate</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Comments</div>
+    <div class="kpi-value">791</div>
+    <div class="kpi-sub">0.06% comment rate</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Videos shipped</div>
+    <div class="kpi-value">64</div>
+    <div class="kpi-sub">14 long · 50 Shorts · 2.3/day</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Channel-median (28d)</div>
+    <div class="kpi-value">747</div>
+    <div class="kpi-sub">views per video baseline</div>
+  </div>
+</div>
+
+<div class="callout callout-good">
+  <p class="callout-title">Headline: the cadence is paying off at the macro level.</p>
+  <p>The top 30 videos blew past the channel's historical 28-day median (~750 views). 64 videos in 28 days isn't burning the audience — net subs are still climbing strongly. But the win is concentrated in a handful of Shorts. Long-form is the soft spot.</p>
+</div>
+
+<!-- ===================== TOP PERFORMERS ===================== -->
+<h2>Top 15 performers</h2>
+<p class="lead">Sorted by views earned in window. Like-rate and avg-view-% give engagement quality; the top of this list is where the channel's leverage lives.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th class="rank">#</th>
+      <th>Video</th>
+      <th class="num">Views</th>
+      <th class="num">Likes</th>
+      <th class="num">View %</th>
+      <th class="num">Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="rank">01</td><td><div class="vid-title">Markdown Can't Do This (HTML Can)</div><div class="vid-meta">SHORT · 58s · May 9 · Format wars</div></td><td class="num">146,827</td><td class="num">3,432</td><td class="num v-good">87.5%</td><td class="num">170</td></tr>
+    <tr><td class="rank">02</td><td><div class="vid-title">Anthropic just became unstoppable — Insane Investments</div><div class="vid-meta">SHORT · 1:18 · Apr 28 · Anthropic drama</div></td><td class="num">134,894</td><td class="num">4,075</td><td class="num v-good">64.6%</td><td class="num">61</td></tr>
+    <tr><td class="rank">03</td><td><div class="vid-title">Anthropic Just Solved The Biggest Claude Code Problem (/goals)</div><div class="vid-meta">SHORT · 1:47 · May 12 · Slash command</div></td><td class="num">47,210</td><td class="num">1,648</td><td class="num">56.8%</td><td class="num">23</td></tr>
+    <tr><td class="rank">04</td><td><div class="vid-title">Qwen 3.6 27B Just Tied Claude Opus On Your Laptop</div><div class="vid-meta">SHORT · 2:26 · Apr 22 · Local LLM</div></td><td class="num">42,394</td><td class="num">1,227</td><td class="num">50.3%</td><td class="num">26</td></tr>
+    <tr><td class="rank">05</td><td><div class="vid-title">Permission prompts are dead w/ v2.1.111 + Ultra Review</div><div class="vid-meta">SHORT · 1:58 · Apr 17 · Slash command</div></td><td class="num">40,554</td><td class="num">1,775</td><td class="num">57.9%</td><td class="num">20</td></tr>
+    <tr><td class="rank">06</td><td><div class="vid-title">This Google Omni leak is insane</div><div class="vid-meta">SHORT · 1:28 · May 3 · Big tech news</div></td><td class="num">36,587</td><td class="num">626</td><td class="num">48.1%</td><td class="num">17</td></tr>
+    <tr><td class="rank">07</td><td><div class="vid-title">Pick the Wrong Gemma 4 and You'll Think It's Broken</div><div class="vid-meta">LONG · 9:00 · Apr 19 · Local LLM · only long-form in top 10</div></td><td class="num">35,122</td><td class="num">866</td><td class="num v-warn">46.0%</td><td class="num">46</td></tr>
+    <tr><td class="rank">08</td><td><div class="vid-title">Anthropic Just Released What Wall Street Needed</div><div class="vid-meta">SHORT · 2:48 · May 5 · Anthropic drama + business</div></td><td class="num">27,861</td><td class="num">860</td><td class="num">36.3%</td><td class="num">12</td></tr>
+    <tr><td class="rank">09</td><td><div class="vid-title">Claude's New Design Tool is actually insane!</div><div class="vid-meta">SHORT · 1:41 · Apr 18 · Product launch</div></td><td class="num">27,827</td><td class="num">624</td><td class="num">45.7%</td><td class="num">2</td></tr>
+    <tr><td class="rank">10</td><td><div class="vid-title">/fewer-permissions-prompts | Boris Cherny Tips</div><div class="vid-meta">SHORT · 1:25 · Apr 17 · Slash command</div></td><td class="num">27,453</td><td class="num">1,064</td><td class="num v-good">73.0%</td><td class="num">4</td></tr>
+    <tr><td class="rank">11</td><td><div class="vid-title">Anthropic just admitted Claude Code got DUMBER</div><div class="vid-meta">SHORT · 3:00 · Apr 24 · Anthropic drama (negative)</div></td><td class="num">25,933</td><td class="num">636</td><td class="num">54.4%</td><td class="num">26</td></tr>
+    <tr><td class="rank">12</td><td><div class="vid-title">The /usage command that fixes Claude Code productivity</div><div class="vid-meta">SHORT · 1:02 · Apr 19 · Slash command</div></td><td class="num">25,360</td><td class="num">552</td><td class="num">56.7%</td><td class="num">6</td></tr>
+    <tr><td class="rank">13</td><td><div class="vid-title">SpaceX Gave Anthropic 300 Megawatts of Pure Compute</div><div class="vid-meta">SHORT · 0:57 · May 6 · Big tech news</div></td><td class="num">18,640</td><td class="num">573</td><td class="num v-good">74.4%</td><td class="num">15</td></tr>
+    <tr><td class="rank">14</td><td><div class="vid-title">These Claude patterns changed everything — HARNESS</div><div class="vid-meta">SHORT · 2:12 · Apr 18 · Engineering deep-dive</div></td><td class="num">16,996</td><td class="num">512</td><td class="num">52.7%</td><td class="num">5</td></tr>
+    <tr><td class="rank">15</td><td><div class="vid-title">Anthropic tried to delete it (Open Claw)</div><div class="vid-meta">SHORT · 1:11 · May 4 · Anthropic drama</div></td><td class="num">15,471</td><td class="num">254</td><td class="num">57.7%</td><td class="num">7</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================== WHAT'S WORKING ===================== -->
+<h2>What's working</h2>
+
+<h3>1. "Anthropic just X" drama Shorts<span class="badge badge-good">Top formula</span></h3>
+<p>5 of your top 15 videos. Pattern: <strong>"Anthropic [strong verb] [surprising thing]"</strong> — <em>just became / solved / surprise move / just released / admitted / tried to delete</em>. This is your strongest title formula by a wide margin. The negative-angle variant ("Claude got DUMBER", 26K) shows you can ship critical Anthropic coverage without losing the audience — and it earns 2-3x more comments.</p>
+
+<h3>2. Specific slash commands as the hook<span class="badge badge-good">High retention</span></h3>
+<p>Top performers <code style="font-family:var(--mono);color:var(--accent-cool);">/goals</code> (47K), <code style="font-family:var(--mono);color:var(--accent-cool);">/fewer-permissions-prompts</code> (27K), <code style="font-family:var(--mono);color:var(--accent-cool);">/usage</code> (25K). The slash in the title <em>is</em> the hook. Generic "what's new in 2.1.118" Shorts pull less than half the views of named-command Shorts.</p>
+
+<h3>3. Local LLM / open-weights coding<span class="badge badge-good">Deep engagement</span></h3>
+<p>The <em>only</em> long-form in the top 10 was a local LLM video (Gemma 4 model picker, 35K). Comments are detailed, technical, deeply engaged — viewers paste hardware specs and benchmark results in essay-length comments. Qwen 3.6 27B "Tied Claude Opus On Your Laptop" pulled 42K as a Short. This audience justifies long-form when the topic is right.</p>
+
+<h3>4. Format / standard wars (contrarian framings)<span class="badge badge-warn">Use with receipts</span></h3>
+<p>"Markdown Can't Do This (HTML Can)" is your #1 video at 147K views — and it generated 236 comments (your highest), many arguing in both directions. Tribal/contrarian framings get 3-5× more engagement than neutral updates. But see the criticism section: a contrarian frame without strong receipts attracts the "classic clickbait" comment and repels a slice of your engaged audience.</p>
+
+<h3>5. Big tech business news Shorts<span class="badge badge-good">Reaches non-coders</span></h3>
+<p>SpaceX 300MW (19K), Google Omni leak (37K), Wall Street angle (28K). The non-developer slice of your audience clearly responds to the business framing. Worth keeping in the mix.</p>
+
+<!-- ===================== WHAT'S NOT WORKING ===================== -->
+<h2>What's not working</h2>
+
+<h3>Long-form is dragging the channel<span class="badge badge-bad">Median 2.1K views</span></h3>
+<p>14 long-forms shipped. Only 2 cleared 10K. The bottom 6 of the entire 64-video batch are <strong>all</strong> long-form. Retention is the killer — long-forms average 28-35% view percentage, vs top Shorts at 73-87%. Viewers bail within the first 90 seconds.</p>
+
+<table>
+  <thead>
+    <tr><th>Bottom 6 — all long-form</th><th class="num">Views</th><th class="num">Avg View %</th><th class="num">Duration</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Claude Code MCP Stability Just Got a Major Overhaul</td><td class="num v-bad">353</td><td class="num v-bad">30.4%</td><td class="num">4:59</td></tr>
+    <tr><td>AI infrastructure that takes 60 seconds, not months</td><td class="num v-bad">394</td><td class="num v-bad">21.3%</td><td class="num">9:46</td></tr>
+    <tr><td>Claude Code 2.1.118: MCP, OAuth &amp; 6 Terminal Fixes</td><td class="num v-bad">631</td><td class="num v-bad">31.3%</td><td class="num">5:17</td></tr>
+    <tr><td>Claude Code Headless Review + Config Persistence</td><td class="num v-bad">727</td><td class="num">45.1%</td><td class="num">3:10</td></tr>
+    <tr><td>Gateway Model Picker + OAuth in Terminal</td><td class="num v-bad">839</td><td class="num v-bad">34.5%</td><td class="num">3:54</td></tr>
+    <tr><td>Google's New Agentic AI Platform Changes Everything</td><td class="num v-bad">1,288</td><td class="num v-bad">24.5%</td><td class="num">10:57</td></tr>
+  </tbody>
+</table>
+
+<h3>The Short vs long-form duplicate-coverage trap<span class="badge badge-bad">Wasted production time</span></h3>
+<p>You're publishing the same Claude Code release as BOTH a Short and a long-form, and the long-form loses every time:</p>
+
+<table>
+  <thead>
+    <tr><th>Topic</th><th>Short (views)</th><th>Long-form (views)</th><th class="num">Ratio</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Claude Code 2.1.118 release</td><td>"50 Bug Fixes" Short — 5,465</td><td>"MCP, OAuth &amp; 6 Fixes" long — 631</td><td class="num v-bad">8.7×</td></tr>
+    <tr><td>Claude Design launch</td><td>"actually insane!" Short — 27,827</td><td>"Community Has Thoughts" long — 2,142</td><td class="num v-bad">13.0×</td></tr>
+    <tr><td>Opus 4.7 release</td><td>"Engineer who built CC" Short — 11,406</td><td>"9 Opus 4.7 Changes" long — 2,333</td><td class="num v-bad">4.9×</td></tr>
+  </tbody>
+</table>
+
+<p>The long-form adds no depth the Short doesn't already imply, but costs 5-10× more production time.</p>
+
+<h3>Setup tutorials underperform<span class="badge badge-bad">Wrong audience fit</span></h3>
+<p>Hyperframes Setup Guide (long, 1.7K, 22% retention) and Remotion vs HyperFrames (long, 2.3K, 28% retention) tell a clear story: your audience already codes. They want what's new and what's worth switching to — not step-by-step installation.</p>
+
+<!-- ===================== AUDIENCE COMMENTS ===================== -->
+<h2>What the audience is telling you</h2>
+
+<div class="split good">
+  <div class="col">
+    <h4>What viewers praise (keep doing)</h4>
+    <ul>
+      <li><strong>Measured tone:</strong> "no shocked faces, short and crisp" — repeatedly cited as why people stay subscribed</li>
+      <li><strong>"In the sea of slop your videos are a guiding light"</strong> (1+ like, top of long-form)</li>
+      <li><strong>Visual production:</strong> unsolicited praise for animations / Hyperframes pipeline on multiple top videos</li>
+      <li><strong>Honesty over hype:</strong> "Honest, Direct. No conspiracy theorist twisting and twisting. Love it" (11 likes)</li>
+      <li><strong>Slash-command demos</strong> generate "Very useful compact information" responses</li>
+    </ul>
+  </div>
+  <div class="col">
+    <h4>What viewers criticize (fix-able)</h4>
+    <ul>
+      <li><strong>"Anthropic glazing in this channel just became unstoppable"</strong> — perceived bias when always covering Anthropic positively</li>
+      <li><strong>"Classic clickbait + some real data. Main reason I'm not subscribing"</strong> — top performer drew this exact comment</li>
+      <li><strong>Monotone narration</strong> on long-form: "extremely monotone, bored narration makes this unwatchable"</li>
+      <li><strong>Visual sameness:</strong> "same as every other video slopped out of Claude design" — template fatigue starting</li>
+      <li><strong>LLM-style writing</strong> flagged on a couple Shorts: "Sounds like an LLM wrote this"</li>
+    </ul>
+  </div>
+</div>
+
+<blockquote>
+"The only AI update I see anymore... short and crisp... no shocked faces.... nothing get just killed...."
+<cite>@karsan6018 — Google Omni Short</cite>
+</blockquote>
+
+<blockquote>
+"If this is you, and not an AI, you really really have to work on your delivery. Interesting topic, nicely designed video but your extremely monotone, bored narration makes this unwatchable."
+<cite>@boredbytrash — Markdown vs HTML (long-form)</cite>
+</blockquote>
+
+<blockquote>
+"In the sea of slop your videos are a guiding light."
+<cite>@only33hours — Markdown vs HTML (long-form)</cite>
+</blockquote>
+
+<div class="callout">
+  <p class="callout-title">Pinned-comment problem</p>
+  <p>Every video pins the Dynamous CTA. It gets 0-3 likes. Real engagement happens on user comments below it. Consider rotating in video-specific pinned comments (corrections, key specs missed, the debate question) instead — the SLOqlEmuy5U "Correction: All Models got Vision but Audio only E2B and E4B" pin is a great example. Verify affiliate compliance before changing.</p>
+</div>
+
+<!-- ===================== RECOMMENDATIONS ===================== -->
+<h2>Recommendations</h2>
+
+<div class="rec-tier">High impact</div>
+<ol class="rec-list">
+  <li>
+    <div class="rec-title">Kill the duplicate-coverage long-form</div>
+    <p>For Claude Code release notes, ship the Short only. The long-form duplicates lose 5-13× views and free up production capacity. Use that capacity for the deep-dive long-form below.</p>
+  </li>
+  <li>
+    <div class="rec-title">Pivot long-form to "deep-dive" topics that justify length</div>
+    <p>Local LLM model comparisons (the Gemma 4 picker proved this at 35K), framework breakdowns (HARNESS-style), and contrarian deep analyses with receipts. Avoid release-note long-forms entirely.</p>
+  </li>
+  <li>
+    <div class="rec-title">Double down on "Anthropic just X" Shorts</div>
+    <p>It's a formula. Use it on every Anthropic news cycle. Vary the verb — <em>just released / surprise move / tried to delete / quietly added / admitted / killed</em> — to avoid title-pattern blindness. Mix in negative-angle versions to defuse the "glazing" perception.</p>
+  </li>
+  <li>
+    <div class="rec-title">Fix the long-form narration</div>
+    <p>Tune ElevenLabs voice settings for inflection/variety on long-form specifically. The audience is calling this out by name and it's gating long-form retention. A/B test a different voice on one long-form. This is the single biggest long-form lever.</p>
+  </li>
+</ol>
+
+<div class="rec-tier">Medium impact</div>
+<ol class="rec-list" start="5">
+  <li>
+    <div class="rec-title">Lean into local LLM coverage</div>
+    <p>Audience response is the deepest of any topic (technical paste-spec comments). Schedule Qwen 3.7, Gemma 5, GLM 5.x reactions as they drop — Short and long-form both work here.</p>
+  </li>
+  <li>
+    <div class="rec-title">Vary the visual template</div>
+    <p>The dark-stage Anthropic look has worked but the "Claude design slop" comment is the early warning. Push usage of the Archon / Dynamous / Google templates more for non-Anthropic topics so the channel doesn't look monotonously templated.</p>
+  </li>
+  <li>
+    <div class="rec-title">Stop publishing setup tutorials as long-form</div>
+    <p>If hyperframes-setup is needed, ship it as a 60-90s "this is the install" Short pointing to docs. The audience doesn't sit through install walkthroughs.</p>
+  </li>
+  <li>
+    <div class="rec-title">Engagement CTA discipline</div>
+    <p>Top performers had explicit binary questions ("Or Is This Just Hype?"). The repo already has <code style="font-family:var(--mono);color:var(--accent-cool);">.claude/rules/engagement-cta.md</code> — enforce it tighter, especially on mid-tier 2-5K Shorts where one good CTA could flip them to 10K+.</p>
+  </li>
+</ol>
+
+<div class="rec-tier">Experiments</div>
+<ol class="rec-list" start="9">
+  <li>
+    <div class="rec-title">Receipted-contrarian long-form</div>
+    <p>The HTML vs MD Short got 147K because it took a side. A long-form <em>backing up</em> that take with token-cost benchmarks, real measurements, and screenshots could pull the engaged contrarians who currently bounce off the Short with "classic clickbait" comments.</p>
+  </li>
+  <li>
+    <div class="rec-title">Pin video-specific comments instead of the rolling Dynamous CTA</div>
+    <p>Either a correction, a key spec the video missed, or the debate question. Use the channel-level comment for affiliate. Note: reduces affiliate visibility per video — verify with sponsor first.</p>
+  </li>
+</ol>
+
+<!-- ===================== METHODOLOGY ===================== -->
+<h2>Methodology &amp; sources</h2>
+<p class="lead">All data pulled from YouTube Analytics + vidIQ on 2026-05-15. Cost ~115 vidIQ credits (balance 2,722 remaining).</p>
+
+<table>
+  <thead>
+    <tr><th>Data pull</th><th>Tool</th><th class="num">Credits</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Channel analytics (28d aggregate + per-video breakdown)</td><td>vidIQ → YouTube Analytics API</td><td class="num">10</td></tr>
+    <tr><td>Channel performance trends (view-velocity baseline)</td><td>vidIQ</td><td class="num">5</td></tr>
+    <tr><td>Video metadata (titles, descriptions, tags, durations) for all 64 videos</td><td>vidIQ get-videos-by-ids · 2 batches</td><td class="num">10</td></tr>
+    <tr><td>Comments for 12 representative videos (top 7 + 2 high-engagement long-forms + 3 underperformers)</td><td>vidIQ video-comments</td><td class="num">60</td></tr>
+    <tr><td>Initial discovery (long + Short listings)</td><td>vidIQ channel-videos</td><td class="num">10</td></tr>
+  </tbody>
+</table>
+
+<p style="margin-top: 20px;">Want deeper analysis? These additional pulls are 5 credits each:</p>
+<ul style="color: var(--fg-dim); font-size: 14px;">
+  <li><strong>Traffic source breakdown</strong> (browse vs search vs suggested) — tells us <em>why</em> top performers blew up</li>
+  <li><strong>Country breakdown</strong> — segment audience by region</li>
+  <li><strong>Subscriber vs non-subscriber retention</strong> — find out which videos pull new viewers vs serve existing ones</li>
+  <li><strong>Day-by-day breakdown</strong> — identify any publish-time effects</li>
+</ul>
+
+<footer>
+  <div>Generated 2026-05-15 · Channel: DIY Smart Code (UC_a85mUHqsy5j0CYCgLnkEQ) · 1,260,223 views · +6,737 net subs · 28-day window</div>
+</footer>
+
+</div>
+</body>
+</html>

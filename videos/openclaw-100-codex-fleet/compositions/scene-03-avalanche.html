@@ -1,0 +1,294 @@
+<!--
+  scene-03-avalanche.html — Use-case avalanche (41.8s, comp-time 60.74-102.58).
+
+  10 use-case cards revealed one at a time at narration word anchors.
+  2x5 grid layout; counter "1 / 10" ticks up in the top-right.
+
+  Word anchors (scene-internal time = audio-time - 60.741):
+     4.44  Codex (PR review)
+     7.86  claw-sweeper (issue sweep)
+    14.35  security (security review)
+    16.96  de-duplicates (cluster)
+    21.13  sandboxes (demo recorder)
+    26.31  drafts (PR drafts)
+    29.35  spam (spam police)
+    31.07  performance (perf regressions)
+    34.86  meetings (meeting listener)
+    38.23  claw-patch (semantic review)
+-->
+<template id="scene-03-avalanche-template">
+  <div data-composition-id="scene-03-avalanche"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s03-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 24px;
+        box-sizing:border-box;
+      }
+      #s03-header {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:space-between;
+        width: 100%;
+        max-width: 1720px;
+        padding: 0 8px;
+      }
+      #s03-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s03-headline {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1;
+        letter-spacing: -1.5px;
+        color: var(--text);
+        text-align: center;
+        flex: 1;
+      }
+      #s03-counter {
+        display:inline-flex; align-items:baseline; gap: 6px;
+        padding: 10px 18px;
+        border-radius: 14px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1.5px solid rgba(34, 211, 238, 0.4);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+      }
+      #s03-counter .num {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 36px;
+        color: var(--accent-2);
+        font-variant-numeric: tabular-nums;
+        min-width: 50px;
+        text-align: right;
+      }
+      #s03-counter .tot {
+        font-size: 16px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+      }
+      #s03-sub-context {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-top: -4px;
+      }
+      #s03-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 18px;
+        width: 100%;
+        max-width: 1720px;
+        flex: 1;
+        margin-top: 8px;
+      }
+      .s03-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 18px;
+        padding: 20px 18px;
+        display:flex; flex-direction:column;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      }
+      .s03-card::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 5px;
+        background: var(--accent-1);
+      }
+      .s03-card.c2::before { background: var(--accent-stat); }
+      .s03-card.c3::before { background: var(--accent-2); }
+      .s03-card.c4::before { background: var(--accent-warn); }
+      .s03-card.c5::before { background: var(--accent-1-hi); }
+      .s03-card.c6::before { background: var(--accent-2); }
+      .s03-card.c7::before { background: var(--accent-warn); }
+      .s03-card.c8::before { background: var(--accent-stat); }
+      .s03-card.c9::before { background: var(--accent-1); }
+      .s03-card.c10::before { background: var(--accent-2); }
+      .s03-card .idx {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+      }
+      .s03-card .icon {
+        font-size: 32px;
+        line-height: 1;
+        margin-top: 4px;
+      }
+      .s03-card .name {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 24px;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .s03-card .desc {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="s03-content">
+      <div id="s03-header">
+        <div id="s03-overline">10 AUTOMATIONS</div>
+        <div id="s03-headline">All running at once.</div>
+        <div id="s03-counter">
+          <span class="num" id="s03-counter-num">0</span>
+          <span class="tot">/ 10</span>
+        </div>
+      </div>
+      <div id="s03-sub-context">~100 codex &middot; parallel &middot; cloud-resident</div>
+
+      <div id="s03-grid">
+        <div class="s03-card c1" id="s03-card-1">
+          <div class="idx">01</div>
+          <div class="icon">&#9989;</div>
+          <div class="name">PR Review</div>
+          <div class="desc">Codex reviews every pull request.</div>
+        </div>
+        <div class="s03-card c2" id="s03-card-2">
+          <div class="idx">02</div>
+          <div class="icon">&#129529;</div>
+          <div class="name">Issue Sweep</div>
+          <div class="desc">clawsweeper closes already-fixed issues.</div>
+        </div>
+        <div class="s03-card c3" id="s03-card-3">
+          <div class="idx">03</div>
+          <div class="icon">&#128274;</div>
+          <div class="name">Security Holes</div>
+          <div class="desc">Every commit gets a security pass.</div>
+        </div>
+        <div class="s03-card c4" id="s03-card-4">
+          <div class="idx">04</div>
+          <div class="icon">&#128279;</div>
+          <div class="name">De-dupe / Cluster</div>
+          <div class="desc">Groups duplicate issues automatically.</div>
+        </div>
+        <div class="s03-card c5" id="s03-card-5">
+          <div class="idx">05</div>
+          <div class="icon">&#127909;</div>
+          <div class="name">Sandbox Demos</div>
+          <div class="desc">Records before-and-after fix videos.</div>
+        </div>
+        <div class="s03-card c6" id="s03-card-6">
+          <div class="idx">06</div>
+          <div class="icon">&#9997;</div>
+          <div class="name">Draft the PR</div>
+          <div class="desc">Codex writes the patch itself.</div>
+        </div>
+        <div class="s03-card c7" id="s03-card-7">
+          <div class="idx">07</div>
+          <div class="icon">&#128683;</div>
+          <div class="name">Spam Police</div>
+          <div class="desc">Moderates comment-thread spam.</div>
+        </div>
+        <div class="s03-card c8" id="s03-card-8">
+          <div class="idx">08</div>
+          <div class="icon">&#128202;</div>
+          <div class="name">Perf Regressions</div>
+          <div class="desc">Pings Discord on regressions.</div>
+        </div>
+        <div class="s03-card c9" id="s03-card-9">
+          <div class="idx">09</div>
+          <div class="icon">&#127908;</div>
+          <div class="name">Meeting Listener</div>
+          <div class="desc">Starts work as features are discussed.</div>
+        </div>
+        <div class="s03-card c10" id="s03-card-10">
+          <div class="idx">10</div>
+          <div class="icon">&#129504;</div>
+          <div class="name">Semantic Review</div>
+          <div class="desc">clawpatch reviews per unit, not per file.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        // Hide all cards from t=0 — explicit hidden-until-reveal
+        const ids = ["#s03-card-1","#s03-card-2","#s03-card-3","#s03-card-4","#s03-card-5",
+                     "#s03-card-6","#s03-card-7","#s03-card-8","#s03-card-9","#s03-card-10"];
+        ids.forEach(s => tl.set(s, { opacity: 0, y: 28, scale: 0.95 }, 0));
+        tl.set("#s03-overline", { opacity: 0, y: 16 }, 0);
+        tl.set("#s03-headline", { opacity: 0, y: 20 }, 0);
+        tl.set("#s03-counter",  { opacity: 0, scale: 0.9 }, 0);
+        tl.set("#s03-sub-context", { opacity: 0, y: 12 }, 0);
+
+        // Header enters at scene start
+        tl.to("#s03-overline", { opacity: 1, y: 0, duration: 0.5 }, 0);
+        tl.to("#s03-headline", { opacity: 1, y: 0, duration: 0.6 }, 0.2);
+        tl.to("#s03-counter",  { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.5);
+
+        // REAL-CONTENT BEAT — sub-context line reveals between card-1 (4.3) and card-2 (7.7)
+        // Anchored to narration "Codex reviews every PR and every issue" @ 5.39s
+        // Sourced: content-brief Section 1 (verbatim post text) — ~100 codex parallel in the cloud
+        tl.to("#s03-sub-context", { opacity: 1, y: 0, duration: 0.5 }, 5.5);
+
+        // Card entrance anchors paced to narration
+        const anchors = [
+          { sel: "#s03-card-1",  t: 4.3 },   // Codex PR review @ 4.44
+          { sel: "#s03-card-2",  t: 7.7 },   // clawsweeper @ 7.86
+          { sel: "#s03-card-3",  t: 14.2 },  // security @ 14.35
+          { sel: "#s03-card-4",  t: 16.8 },  // de-duplicates @ 16.96
+          { sel: "#s03-card-5",  t: 21.0 },  // sandboxes @ 21.13
+          { sel: "#s03-card-6",  t: 26.2 },  // drafts @ 26.31
+          { sel: "#s03-card-7",  t: 29.2 },  // spam @ 29.35
+          { sel: "#s03-card-8",  t: 30.9 },  // perf @ 31.07
+          { sel: "#s03-card-9",  t: 34.7 },  // meetings @ 34.86
+          { sel: "#s03-card-10", t: 38.1 },  // claw-patch @ 38.23
+        ];
+        anchors.forEach((a, i) => {
+          // Card enters
+          tl.to(a.sel, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, a.t);
+          // Counter ticks up to (i+1) over 0.3s — uses a custom inline counter tween
+          tl.to({ v: i }, {
+            v: i + 1,
+            duration: 0.3,
+            ease: "power2.out",
+            onUpdate: function() {
+              const el = document.getElementById("s03-counter-num");
+              if (el) el.textContent = Math.round(this.targets()[0].v);
+            }
+          }, a.t);
+          // Icon scale-pop 0.1s after card
+          tl.to(a.sel + " .icon", { scale: 1.2, duration: 0.2, ease: "back.out(2)", yoyo: true, repeat: 1 }, a.t + 0.1);
+        });
+
+        tl.set({}, {}, 41.8);
+        window.__timelines["scene-03-avalanche"] = tl;
+      })();
+    </script>
+  </div>
+</template>

@@ -1,0 +1,47 @@
+[SCENE: hook]
+You can make a video by writing HTML. No React. No build step. In this tutorial we go from zero to a rendered MP4 — Windows, macOS, or Linux. The official quickstart is at hyperframes.heygen.com slash quickstart. We're walking through every step on screen.
+
+[SCENE: prereqs]
+Two hard requirements. Node.js twenty-two or higher. FFmpeg seven or higher. Docker is optional. Everything else — the studio, the renderer, the templates — comes through one npx command.
+
+[SCENE: nodejs-download]
+Step one. Node twenty-two. Go to nodejs.org slash download. The page detects your OS. Windows — grab the dot-msi or run winget install OpenJS dot Nodejs dot LTS. Linux or macOS — use nvm so you can swap versions per project.
+
+[SCENE: ffmpeg-download]
+Step two. FFmpeg seven. Go to ffmpeg.org slash download. Windows — winget install ffmpeg. Linux — apt install ffmpeg. macOS — brew install ffmpeg.
+
+[SCENE: verify]
+Sanity check. Two commands. node minus minus version. ffmpeg minus version. If they print, you're done with prereqs. If not, reopen your terminal so PATH refreshes.
+
+[SCENE: pick-agent]
+Pick a code agent. HyperFrames was built for AI agents to drive. Two picks. Claude Code by Anthropic — install via the native installer, not npm. Or OpenAI's Codex CLI — npm install, dash g, at openai slash codex. Either works.
+
+[SCENE: skill-install]
+Teach your agent HyperFrames. One npx command: npx skills add heygen-com slash hyperframes. Five skills install.
+
+[SCENE: init]
+Spawn a project. npx hyperframes init my-video. Pick a starter from the interactive picker. Blank, Warm Grain, Swiss Grid, Vignelli, NYT Graph, and more. Hit enter, six files appear, then a Get-Started guide.
+
+[SCENE: open-agent]
+Open the project with your agent. cd my-video, then run claude. It auto-loads the HyperFrames skills, so it knows the framework's patterns before you type a thing.
+
+[SCENE: prompt-1]
+Tell it what you want. Using slash hyperframes, create a five-second intro that says Hello HyperFrames with a fade-in. The agent reads the skill, then edits index dot html for you.
+
+[SCENE: studio-v1]
+Run npx hyperframes preview in another terminal. The studio opens in your browser. Every time the agent saves, the canvas reloads. Here's our first result — clean, centered, fading in.
+
+[SCENE: prompt-2]
+Want changes? Just ask. Make the title bigger, and add a subtitle: Made with HyperFrames. The agent rewrites the file. The studio reloads. No build step, no rebuild loop.
+
+[SCENE: studio-v2]
+Iteration two. Bigger title. Subtitle below. Same five-second intro, in seconds, by talking to your agent.
+
+[SCENE: check]
+Before rendering, check it. npx hyperframes check. It runs lint, validate, and inspect. Lint catches missing data attributes. Validate runs WCAG contrast in headless Chrome. Inspect checks for layout overflow. Zero errors means you're good to render.
+
+[SCENE: render]
+Then render. npx hyperframes render. Headless Chromium boots. The Frame Adapter pauses time. Frames step deterministically. FFmpeg encodes the MP4. A five-second clip renders in about six seconds.
+
+[SCENE: cta]
+That's the full pipeline. Node, FFmpeg, an agent, init, prompt, preview, check, render. All open source. So tell me — what kind of video would you build first? A title card, a tutorial, a product demo, something else? Drop your idea in the comments. Links in the description. Subscribe for more.

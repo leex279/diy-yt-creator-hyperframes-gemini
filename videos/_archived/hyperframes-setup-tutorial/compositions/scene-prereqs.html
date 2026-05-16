@@ -1,0 +1,153 @@
+<!--
+  scene-prereqs.html — two-pill stat row, tightened to ~13s scene window.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-prereqs-template">
+  <div data-composition-id="scene-prereqs"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-prereqs-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:48px; box-sizing:border-box;
+      }
+      #scene-prereqs-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:14px; text-align:center;
+      }
+      #scene-prereqs-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-warn);
+      }
+      #scene-prereqs-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 64px; line-height: 1.05;
+        letter-spacing: -1.5px; color: var(--text);
+      }
+      #scene-prereqs-content .pills {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 60px;
+      }
+      .req-pill {
+        width: 540px;
+        padding: 50px 40px;
+        border-radius: 28px;
+        border: 1.5px solid var(--border-bright);
+        display:flex; flex-direction:column;
+        align-items:center; gap: 14px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      }
+      .req-pill.warn {
+        background: linear-gradient(135deg,
+                      rgba(249, 115, 22, 0.18) 0%,
+                      rgba(249, 115, 22, 0.04) 100%);
+        border-color: rgba(249, 115, 22, 0.55);
+      }
+      .req-pill.purple {
+        background: linear-gradient(135deg,
+                      rgba(139, 92, 246, 0.20) 0%,
+                      rgba(139, 92, 246, 0.04) 100%);
+        border-color: rgba(139, 92, 246, 0.55);
+      }
+      .req-pill .product {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 38px; letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .req-pill .version {
+        font-family: var(--sans); font-weight: 900;
+        font-size: 130px; line-height: 0.9;
+        letter-spacing: -4px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .req-pill.warn .version {
+        color: var(--accent-warn);
+        text-shadow: 0 0 60px rgba(249, 115, 22, 0.55);
+      }
+      .req-pill.purple .version {
+        color: var(--accent-3);
+        text-shadow: 0 0 60px rgba(139, 92, 246, 0.55);
+      }
+      .req-pill .role {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+      #prereqs-foot {
+        display:inline-flex; align-items:center; gap:14px;
+        padding: 14px 26px; border-radius: 999px;
+        background: rgba(59,130,246,.10);
+        border: 1px solid rgba(59,130,246,.45);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 1.5px;
+        color: var(--accent-1);
+        text-transform: uppercase;
+      }
+      #prereqs-foot .npx {
+        color: var(--text);
+        background: rgba(59,130,246,.20);
+        padding: 4px 10px; border-radius: 6px;
+      }
+    </style>
+
+    <div id="scene-prereqs-content">
+      <div class="header-block">
+        <div class="overline" id="prereqs-overline">TWO HARD REQUIREMENTS</div>
+        <div class="headline" id="prereqs-headline">Everything else is one <code>npx</code> away</div>
+      </div>
+
+      <div class="pills">
+        <div class="req-pill warn" id="prereqs-pill-1">
+          <div class="product">Node.js</div>
+          <div class="version">22+</div>
+          <div class="role">JavaScript runtime</div>
+        </div>
+        <div class="req-pill purple" id="prereqs-pill-2">
+          <div class="product">FFmpeg</div>
+          <div class="version">7+</div>
+          <div class="role">Video encoder</div>
+        </div>
+      </div>
+
+      <div id="prereqs-foot">
+        <span class="npx">npx</span>
+        <span>studio &middot; renderer &middot; templates</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#prereqs-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#prereqs-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#prereqs-pill-1",   { x: -60, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#prereqs-pill-2",   { x:  60, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#prereqs-foot",     { y: 14, opacity: 0 }, 0);
+
+      tl.to("#prereqs-overline", { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0);
+      tl.to("#prereqs-headline", { y: 0, opacity: 1, duration: 0.55 }, 0.25);
+      tl.to("#prereqs-pill-1",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 0.7);
+      tl.to("#prereqs-pill-2",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 1.1);
+      tl.to("#prereqs-foot",     { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 1.7);
+
+      // Pulse versions to keep the scene alive in the tail
+      tl.to("#prereqs-pill-1 .version", { textShadow: "0 0 80px rgba(249, 115, 22, 0.85)", duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.4);
+      tl.to("#prereqs-pill-2 .version", { textShadow: "0 0 80px rgba(139, 92, 246, 0.85)", duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.7);
+
+      window.__timelines["scene-prereqs"] = tl;
+    </script>
+  </div>
+</template>

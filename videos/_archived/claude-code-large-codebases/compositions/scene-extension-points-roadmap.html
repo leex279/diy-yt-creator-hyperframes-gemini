@@ -1,0 +1,431 @@
+<!--
+  scene-extension-points-roadmap.html — Scene 6 / 7-Component Harness — Curved Road Layout (93.620s)
+  Replaces the 4-column card grid with an S-curve path + 7 hex nodes revealed step-by-step.
+  Source-grounded: all labels from tmp/source.md article table and body text.
+
+  Node anchors (scene-relative from transcript.json, scene start = 172.252s abs):
+    Node 1 (CLAUDE.md):   transcript "one."   = 174.470 abs → 2.218 scene-rel
+    Node 2 (Hooks):       transcript "two."   = 184.116 abs → 11.864 scene-rel
+    Node 3 (Skills):      transcript "three." = 194.484 abs → 22.232 scene-rel
+    Node 4 (Plugins):     transcript "four."  = 204.642 abs → 32.390 scene-rel
+    Node 5 (LSP):         transcript "five."  = 225.865 abs → 53.613 scene-rel
+    Node 6 (MCP servers): transcript "six."   = 240.725 abs → 68.473 scene-rel
+    Node 7 (Sub-agents):  transcript "seven." = 257.362 abs → 85.110 scene-rel
+-->
+<template id="scene-extension-points-roadmap-template">
+  <div data-composition-id="scene-extension-points"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      /* === Overline + headline === */
+      #ep-rm-overline {
+        position: absolute;
+        top: 42px;
+        left: 80px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #ep-rm-headline {
+        position: absolute;
+        top: 86px;
+        left: 80px;
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 44px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1200px;
+      }
+
+      /* === SVG road canvas === */
+      #ep-road-svg {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        pointer-events: none;
+      }
+
+      /* === Hex node cards === */
+      .ep-node {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0px;
+        pointer-events: none;
+      }
+      .ep-hex-wrap {
+        position: relative;
+        width: 130px;
+        height: 130px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ep-hex-bg {
+        position: absolute;
+        inset: 0;
+        clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      }
+      .ep-hex-num {
+        position: relative;
+        z-index: 2;
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 52px;
+        line-height: 1;
+        letter-spacing: -1px;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      }
+      .ep-node-label {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.1;
+        color: var(--text);
+        letter-spacing: -0.5px;
+        text-align: center;
+        max-width: 210px;
+        white-space: nowrap;
+      }
+      .ep-node-sub {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 24px;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        text-align: center;
+        max-width: 220px;
+      }
+      .ep-node-tag {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+
+      /* Accent colors per node: orange, purple, blue, green, orange, purple, blue */
+      .c-orange .ep-hex-bg {
+        background: linear-gradient(135deg, rgba(233,116,88,0.85), rgba(233,116,88,0.55));
+        box-shadow: 0 0 32px rgba(233,116,88,0.50);
+        border: 2px solid rgba(233,116,88,0.90);
+      }
+      .c-purple .ep-hex-bg {
+        background: linear-gradient(135deg, rgba(167,139,250,0.85), rgba(167,139,250,0.55));
+        box-shadow: 0 0 32px rgba(167,139,250,0.50);
+        border: 2px solid rgba(167,139,250,0.90);
+      }
+      .c-blue .ep-hex-bg {
+        background: linear-gradient(135deg, rgba(107,154,239,0.85), rgba(107,154,239,0.55));
+        box-shadow: 0 0 32px rgba(107,154,239,0.50);
+        border: 2px solid rgba(107,154,239,0.90);
+      }
+      .c-green .ep-hex-bg {
+        background: linear-gradient(135deg, rgba(125,211,166,0.85), rgba(125,211,166,0.55));
+        box-shadow: 0 0 32px rgba(125,211,166,0.50);
+        border: 2px solid rgba(125,211,166,0.90);
+      }
+      .c-orange .ep-node-tag { background: rgba(233,116,88,0.18); color: var(--accent-1); }
+      .c-purple .ep-node-tag { background: rgba(167,139,250,0.18); color: var(--accent-2); }
+      .c-blue   .ep-node-tag { background: rgba(107,154,239,0.18); color: var(--accent-3); }
+      .c-green  .ep-node-tag { background: rgba(125,211,166,0.18); color: var(--green); }
+
+      /* Traveling dot */
+      #ep-dot {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent-1);
+        box-shadow: 0 0 24px 8px rgba(233,116,88,0.60);
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      /* "Don't build MCP first" warn for node 6 */
+      .ep-node-warn {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        color: #FF8B8B;
+        letter-spacing: 0.5px;
+        text-align: center;
+        max-width: 220px;
+      }
+    </style>
+
+    <!-- Overline + headline -->
+    <div id="ep-rm-overline">THE 7-COMPONENT HARNESS</div>
+    <div id="ep-rm-headline">Here is the breakdown, card by card.</div>
+
+    <!-- SVG: S-curve road path + path draw animation -->
+    <svg id="ep-road-svg" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Glow filter for the road path -->
+        <filter id="road-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <!-- Pulse glow filter for tail beat -->
+        <filter id="road-pulse-glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!--
+        S-curve path: bottom-left (120, 950) curves through 7 node positions to top-right (1820, 150)
+        Node parametric positions on path (t ≈ 0.08, 0.22, 0.36, 0.50, 0.64, 0.78, 0.92):
+          t=0.08: (~270, 890)   — Node 1 CLAUDE.md
+          t=0.22: (~490, 720)   — Node 2 Hooks
+          t=0.36: (~680, 550)   — Node 3 Skills
+          t=0.50: (~960, 520)   — Node 4 Plugins (middle)
+          t=0.64: (~1230, 480)  — Node 5 LSP
+          t=0.78: (~1480, 360)  — Node 6 MCP servers
+          t=0.92: (~1700, 200)  — Node 7 Sub-agents
+        Cubic bezier through these gives a nice S-curve:
+      -->
+      <path id="ep-road-path"
+            d="M 120,950 C 200,900 350,820 490,720 S 700,550 960,520 S 1230,490 1480,360 S 1680,220 1820,150"
+            fill="none"
+            stroke="#E97458"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            filter="url(#road-glow)"
+            id="ep-path-line" />
+    </svg>
+
+    <!-- Node 1: CLAUDE.md — orange — t=2.218 scene-rel -->
+    <div class="ep-node c-orange" id="ep-node-1" data-path-t="0.07">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">1</div>
+      </div>
+      <div class="ep-node-label">CLAUDE.md</div>
+      <div class="ep-node-sub">Auto-loaded context</div>
+      <div class="ep-node-tag">EXTENSION</div>
+    </div>
+
+    <!-- Node 2: Hooks — purple — t=11.864 -->
+    <div class="ep-node c-purple" id="ep-node-2" data-path-t="0.21">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">2</div>
+      </div>
+      <div class="ep-node-label">Hooks</div>
+      <div class="ep-node-sub">Self-improving scripts</div>
+      <div class="ep-node-tag">EXTENSION</div>
+    </div>
+
+    <!-- Node 3: Skills — blue — t=22.232 -->
+    <div class="ep-node c-blue" id="ep-node-3" data-path-t="0.355">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">3</div>
+      </div>
+      <div class="ep-node-label">Skills</div>
+      <div class="ep-node-sub">On-demand expertise</div>
+      <div class="ep-node-tag">EXTENSION</div>
+    </div>
+
+    <!-- Node 4: Plugins — green — t=32.390 -->
+    <div class="ep-node c-green" id="ep-node-4" data-path-t="0.50">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">4</div>
+      </div>
+      <div class="ep-node-label">Plugins</div>
+      <div class="ep-node-sub">Distribute what works</div>
+      <div class="ep-node-tag">EXTENSION</div>
+    </div>
+
+    <!-- Node 5: LSP — orange — t=53.613 -->
+    <div class="ep-node c-orange" id="ep-node-5" data-path-t="0.645">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">5</div>
+      </div>
+      <div class="ep-node-label">LSP</div>
+      <div class="ep-node-sub">Symbol-level precision</div>
+      <div class="ep-node-tag">CAPABILITY</div>
+    </div>
+
+    <!-- Node 6: MCP servers — purple — t=68.473 -->
+    <div class="ep-node c-purple" id="ep-node-6" data-path-t="0.79">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">6</div>
+      </div>
+      <div class="ep-node-label">MCP servers</div>
+      <div class="ep-node-sub">Expose structured search</div>
+      <div class="ep-node-tag">EXTENSION</div>
+      <div class="ep-node-warn" id="ep-node-6-warn">Don't build this first.</div>
+    </div>
+
+    <!-- Node 7: Sub-agents — blue — t=85.110 -->
+    <div class="ep-node c-blue" id="ep-node-7" data-path-t="0.94">
+      <div class="ep-hex-wrap">
+        <div class="ep-hex-bg"></div>
+        <div class="ep-hex-num">7</div>
+      </div>
+      <div class="ep-node-label">Sub-agents</div>
+      <div class="ep-node-sub">Isolated Claude instances</div>
+      <div class="ep-node-tag">CAPABILITY</div>
+    </div>
+
+    <!-- Traveling dot — gets its position set by JS at init from path.getPointAtLength -->
+    <div id="ep-dot"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 93.620;
+
+      // ===================================================================
+      // PATH GEOMETRY — compute everything FROM the SVG path so positions
+      // align with the curve exactly (no hand-tuned pixel offsets).
+      // ===================================================================
+      const path = document.getElementById('ep-road-path');
+      const PATH_LEN = path.getTotalLength();
+
+      // Helper — point on path at parametric t in [0,1]
+      function ptAt(t) { return path.getPointAtLength(t * PATH_LEN); }
+
+      // Position each hex node so its hex CENTER sits ON the path.
+      // Hex wrap is 130×130 → container left/top = pathPoint - 65.
+      // Label / sub / tag stack BELOW the hex (vertical flex column).
+      const HEX_HALF = 65;
+      document.querySelectorAll('.ep-node').forEach(node => {
+        const t = parseFloat(node.getAttribute('data-path-t'));
+        const p = ptAt(t);
+        node.style.left = (p.x - HEX_HALF) + 'px';
+        node.style.top  = (p.y - HEX_HALF) + 'px';
+      });
+
+      // Initial dot position at node 1's path point.
+      const N1 = ptAt(0.07);
+      const dot = document.getElementById('ep-dot');
+      dot.style.left = (N1.x - 6) + 'px';
+      dot.style.top  = (N1.y - 6) + 'px';
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // ===================================================================
+      // Curve-following dot animation. Tween a parametric "t" value along
+      // each leg and update dot's left/top from getPointAtLength every frame.
+      // GSAP onUpdate fires during render scrubbing → deterministic output.
+      // ===================================================================
+      function animDotAlongPath(fromT, toT, atTime, dur) {
+        const state = { t: fromT };
+        tl.to(state, {
+          t: toT,
+          duration: dur,
+          ease: "power2.out",
+          onUpdate: () => {
+            const p = ptAt(state.t);
+            dot.style.left = (p.x - 6) + 'px';
+            dot.style.top  = (p.y - 6) + 'px';
+          }
+        }, atTime);
+      }
+
+      // === INITIAL STATE — hide all nodes and dot, overline hidden ===
+      tl.set("#ep-rm-overline", { y: 20, opacity: 0 }, 0);
+      tl.set("#ep-rm-headline", { y: 20, opacity: 0 }, 0);
+      tl.set("#ep-node-1",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-2",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-3",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-4",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-5",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-6",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-7",  { x: -40, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#ep-node-6-warn", { opacity: 0 }, 0);
+      tl.set("#ep-dot",     { opacity: 0 }, 0);
+
+      // Overline + headline enter immediately
+      tl.to("#ep-rm-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.0);
+      tl.to("#ep-rm-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.2);
+
+      // === PATH DRAW — road being built ===
+      tl.set("#ep-path-line",  { strokeDasharray: PATH_LEN, strokeDashoffset: PATH_LEN, opacity: 0.8 }, 0);
+      tl.to("#ep-path-line",   { strokeDashoffset: 0, duration: 3.0, ease: "power2.out" }, 0.5);
+
+      // Dot fades in with node 1
+      tl.to("#ep-dot", { opacity: 1, duration: 0.3 }, 2.0);
+
+      // =====================================================================
+      // NODES — step-by-step reveal at narration ordinal word anchors.
+      // Dot traverses the curve between consecutive nodes.
+      // =====================================================================
+
+      // Node 1: CLAUDE.md — t=2.218
+      tl.to("#ep-node-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 2.218);
+      animDotAlongPath(0.07, 0.21, 2.9, 0.7);
+
+      // Node 2: Hooks — t=11.864
+      tl.to("#ep-node-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 11.864);
+      animDotAlongPath(0.21, 0.355, 12.5, 0.7);
+
+      // Node 3: Skills — t=22.232
+      tl.to("#ep-node-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 22.232);
+      animDotAlongPath(0.355, 0.50, 22.9, 0.7);
+
+      // Node 4: Plugins — t=32.390
+      tl.to("#ep-node-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 32.390);
+      tl.to("#ep-node-4 .ep-hex-wrap", { scale: 1.07, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 43.568);
+      animDotAlongPath(0.50, 0.645, 53.0, 0.7);
+
+      // Node 5: LSP — t=53.613
+      tl.to("#ep-node-5", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 53.613);
+      tl.to("#ep-node-5 .ep-hex-wrap", { scale: 1.07, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 57.608);
+      animDotAlongPath(0.645, 0.79, 68.0, 0.7);
+
+      // Node 6: MCP servers — t=68.473
+      tl.to("#ep-node-6", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 68.473);
+      tl.to("#ep-node-6-warn", { opacity: 1, duration: 0.5, ease: "power2.out" }, 79.004);
+      animDotAlongPath(0.79, 0.94, 84.5, 0.7);
+
+      // Node 7: Sub-agents — t=85.110
+      tl.to("#ep-node-7", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 85.110);
+
+      // Dot arrives at node 7 — pulse
+      tl.to("#ep-dot", { scale: 2.0, opacity: 0.5, duration: 0.4, ease: "power2.out" }, 85.3);
+      tl.to("#ep-dot", { scale: 1.0, opacity: 1,   duration: 0.3, ease: "power2.in"  }, 85.7);
+
+      // === TAIL BEAT: path glow-pulse 3× ===
+      tl.to("#ep-path-line", { stroke: "#F5C4B8", filter: "url(#road-pulse-glow)", duration: 0.2, ease: "power2.out" }, 90.5);
+      tl.to("#ep-path-line", { stroke: "#E97458", filter: "url(#road-glow)",       duration: 0.5, ease: "power2.in"  }, 90.7);
+      tl.to("#ep-path-line", { stroke: "#F5C4B8", filter: "url(#road-pulse-glow)", duration: 0.2, ease: "power2.out" }, 91.3);
+      tl.to("#ep-path-line", { stroke: "#E97458", filter: "url(#road-glow)",       duration: 0.5, ease: "power2.in"  }, 91.5);
+      tl.to("#ep-path-line", { stroke: "#F5C4B8", filter: "url(#road-pulse-glow)", duration: 0.2, ease: "power2.out" }, 92.1);
+      tl.to("#ep-path-line", { stroke: "#E97458", filter: "url(#road-glow)",       duration: 0.5, ease: "power2.in"  }, 92.3);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-extension-points"] = tl;
+    </script>
+  </div>
+</template>

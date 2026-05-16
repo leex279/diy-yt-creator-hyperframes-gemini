@@ -1,0 +1,11 @@
+# Scene 11 — Dynamous Midroll (replaced by shared block)
+#
+# The shared `shared/lib/blocks/dynamous-midroll/` block ships its own 31-second
+# baked-in narration (`dynamous-midroll-v2.mp3`). The host `script.txt` no
+# longer contains a spoken Dynamous line — host narration stops at Scene 10's
+# end, the block's audio plays for ~31s, then host narration resumes at Scene
+# 12.
+#
+# If iterating later: do NOT add a spoken Dynamous line back into `script.txt`.
+# The block is brand-locked content per
+# `shared/lib/blocks/dynamous-midroll/recipe.md` "Slots to edit" section.

@@ -267,6 +267,14 @@ These are banned in EVERY profile. The generic-AI banned word list is canonical 
 
 `changed everything`, `you won't believe`, `the future is here`, `absolutely incredible`, `mind-blowing`, `next level`, `the game has changed`, `smash that like button`, `don't forget to subscribe`, `this is huge`, `the most powerful`, `unlike anything before`, `the only tool you need`, `full potential`, `unlock your potential`
 
+### Authority-Without-Evidence phrases (banned — fake credibility):
+
+These phrases imply consensus or evidence that is never named or linked. They are the dominant "fake authority" pattern in AI output and are banned even if the surrounding sentence is otherwise fine. If a real source exists, name it inline (per Step 3.7 Scars Mining and the news-explainer attribution rule). If no source exists, cut the claim — do not paper over it with a generic appeal to authority.
+
+`experts agree`, `studies show` (without an inline source link in the same sentence), `research suggests` (same caveat), `many developers find`, `most developers find`, `it's widely known`, `as we all know`, `it's commonly accepted`, `industry consensus is`
+
+**The inline-source caveat**: `studies show 73% — see [GitGuardian 2025 Report](url)` is fine. `studies show 73%` standalone is not. Phase 2.5 Pass 5 (QG-4) flags any of these when no source is named in the same sentence.
+
 ---
 
 ## Profile-Specific Relaxations (ONLY for news-explainer)

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!-- Variant 07 — Counter-intuitive advice. "Don't build MCP first." — struck "MCP first", cream theme. Cover: fig1-harness.png. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v07 — Don't build MCP first.</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  .headline { top: 132px; width: 780px; }
+  .headline .l1 { font-size: 100px; line-height: 1.02; letter-spacing: -2px; }
+  .headline .l2 { font-size: 100px; line-height: 1.02; letter-spacing: -2px; }
+  .mcp-pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 80px;
+    letter-spacing: 0px;
+    color: var(--accent-deep-red);
+    background: rgba(199, 90, 63, 0.10);
+    border: 1.5px solid rgba(199, 90, 63, 0.30);
+    border-radius: 8px;
+    padding: 0 14px;
+    position: relative;
+  }
+  .mcp-pill::after {
+    content: "";
+    position: absolute;
+    left: -2%; right: -2%; top: 52%;
+    height: 9px;
+    background: var(--accent-deep-red);
+    transform: translateY(-50%) rotate(-2deg);
+    border-radius: 4px;
+    opacity: 0.85;
+  }
+  .headline .l3 { font-size: 136px; line-height: 0.95; letter-spacing: -4px; margin-top: 4px; }
+</style></head>
+<body>
+  <div class="thumb theme-cream">
+    <div class="overline">Anthropic · Claude Code at scale</div>
+    <div class="overline-divider"></div>
+    <h1 class="headline">
+      <span class="l1">Don't build</span>
+      <span class="l2"><span class="mcp-pill">MCP</span></span>
+      <em class="l3">first.</em>
+    </h1>
+    <div class="receipt"><strong>CLAUDE.md comes first.</strong><br>Then hooks. Then skills.</div>
+    <div class="brand"><span class="dot"></span><span>diy-smartcode</span></div>
+    <div class="cover-stack">
+      <span class="cover-label">From Anthropic's Blog</span>
+      <div class="cover-frame">
+        <img src="../assets/blog/fig1-harness.png" alt="Claude Code extension layer harness">
+        <div class="cover-stamp">Part 1</div>
+      </div>
+    </div>
+  </div>
+</body></html>

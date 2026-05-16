@@ -1,0 +1,102 @@
+<div id="dynamous-module-interstitial" data-composition-id="dynamous-module-interstitial" data-start="0" data-duration="3" data-width="1920" data-height="1080">
+
+  <div class="dmi-card">
+    <div class="dmi-row">
+      <div class="dmi-dot" id="dmi-dot"></div>
+      <div class="dmi-meta">
+        <div class="dmi-eyebrow">MODULE <span id="dmi-module-num">10</span></div>
+        <div class="dmi-title" id="dmi-module-title">MCP Servers + Skills</div>
+      </div>
+    </div>
+    <div class="dmi-tagline">Part of Dynamous AI Mastery</div>
+  </div>
+
+  <style>
+    #dynamous-module-interstitial {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background: transparent;
+      font-family: 'Inter', system-ui, sans-serif;
+      pointer-events: none;
+    }
+    #dynamous-module-interstitial .dmi-card {
+      position: absolute;
+      top: 180px;
+      right: 48px;
+      width: 460px;
+      box-sizing: border-box;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+      will-change: transform, opacity;
+    }
+    #dynamous-module-interstitial .dmi-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    #dynamous-module-interstitial .dmi-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: #ec4899;
+      box-shadow: 0 0 10px currentColor;
+      flex-shrink: 0;
+    }
+    #dynamous-module-interstitial .dmi-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    #dynamous-module-interstitial .dmi-eyebrow {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 4px;
+      color: #94a3b8;
+    }
+    #dynamous-module-interstitial .dmi-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.2px;
+    }
+    #dynamous-module-interstitial .dmi-tagline {
+      font-size: 15px;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.2px;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    (function () {
+      var dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+      var dot   = document.getElementById('dmi-dot');
+      var num   = document.getElementById('dmi-module-num');
+      var title = document.getElementById('dmi-module-title');
+      if (dot   && dyn.moduleAccentColor) dot.style.background = dyn.moduleAccentColor;
+      if (num   && dyn.moduleId)          num.textContent       = dyn.moduleId;
+      if (title && dyn.moduleName)        title.textContent     = dyn.moduleName;
+
+      var tl = gsap.timeline({ paused: true });
+      tl.from('#dynamous-module-interstitial .dmi-card',
+        { x: 520, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0);
+      tl.to('#dynamous-module-interstitial .dmi-card',
+        { x: 520, opacity: 0, duration: 0.6, ease: 'power3.in' }, 2.4);
+
+      window.__timelines['dynamous-module-interstitial'] = tl;
+    })();
+  </script>
+
+</div>

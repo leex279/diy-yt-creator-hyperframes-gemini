@@ -1,0 +1,297 @@
+<!--
+  scene-stat-pill-row.html — The honest tradeoff: 2-4× cost vs 1MM context
+  Scene-relative duration: 45.13s. data-start in root = 169.57.
+
+  Beats (scene-relative):
+    0     — section "03" + overline + h2 enter
+    0.76  — "There is a price" — h2 emphasis pulse
+    4.83  — "two to four times longer" — left stat pill (2-4×) reveals
+    8.30  — "Two to four x" emphasis pulse on left pill
+    11.80 — "changes the math" — pivot beat (small "BUT" pivot card)
+    15.14 — "one million token" — right stat pill (1MM) reveals + counter
+    19.23 — "extra tokens" — caption under right pill
+    22.56 — "barely register" — emphasis pulse on right pill
+    26.18 — "cost is real" — small caption appears below
+    28.17 — "absorbable" — emphasis pulse
+    34.34 — "replies pushed back" — counter-take pill appears bottom-left
+    42.88 — "depends what you are buying" — final caption emphasis
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #scene-stat-pill-row-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+      }
+      .sp-header {
+        position: relative;
+        padding-left: 88px;
+        margin-bottom: 60px;
+      }
+      .sp-section-number {
+        position: absolute;
+        left: 0;
+        top: 6px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-1);
+      }
+      .sp-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 14px;
+      }
+      .sp-h2 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 64px;
+        color: var(--text);
+        letter-spacing: -1px;
+        line-height: 1.04;
+      }
+      .sp-h2 em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .sp-divider {
+        height: 1px;
+        background: var(--border);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      .sp-row {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        top: 360px;
+        display: grid;
+        grid-template-columns: 1fr 80px 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+      .sp-pill {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 24px;
+        padding: 48px 56px;
+        text-align: center;
+        position: relative;
+      }
+      .sp-pill.is-cost {
+        border-color: var(--accent-2);
+      }
+      .sp-pill.is-budget {
+        border-color: var(--accent-1);
+      }
+      .sp-pill-tag {
+        position: absolute;
+        top: -18px;
+        left: 32px;
+        background: var(--bg);
+        padding: 0 14px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sp-pill.is-budget .sp-pill-tag {
+        color: var(--accent-1);
+      }
+      .sp-pill-num {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 180px;
+        line-height: 0.9;
+        color: var(--text);
+        letter-spacing: -8px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .sp-pill-num em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .sp-pill-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-top: 18px;
+      }
+      .sp-pill-sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 24px;
+        color: var(--text-secondary);
+        margin-top: 10px;
+        opacity: 0;
+      }
+
+      .sp-pivot {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 56px;
+        font-style: italic;
+        color: var(--accent-1);
+        text-align: center;
+        opacity: 0;
+      }
+
+      .sp-bottom {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        bottom: 90px;
+        display: flex;
+        gap: 24px;
+        align-items: center;
+      }
+      .sp-final-caption {
+        flex: 1 1 auto;
+        font-family: var(--serif);
+        font-size: 30px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        opacity: 0;
+      }
+      .sp-final-caption em {
+        font-style: italic;
+        color: var(--accent-1);
+        font-weight: 700;
+      }
+      .sp-counter-pill {
+        flex: 0 0 auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 14px 26px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        opacity: 0;
+      }
+      .sp-counter-pill .sp-counter-tag {
+        color: var(--accent-2);
+        margin-right: 10px;
+      }
+    </style>
+
+    <div id="scene-stat-pill-row-content">
+      <div class="sp-header">
+        <div class="sp-section-number" id="sp-num">03</div>
+        <div class="sp-overline" id="sp-overline">THE HONEST TRADEOFF</div>
+        <div class="sp-h2" id="sp-h2">There is a <em class="accent-italic">price</em>. And there is a budget.</div>
+        <div class="sp-divider" id="sp-divider"></div>
+      </div>
+
+      <div class="sp-row">
+        <div class="sp-pill is-cost" id="sp-pill-cost">
+          <div class="sp-pill-tag">COST</div>
+          <div class="sp-pill-num" id="sp-cost-num">2&ndash;4<em>×</em></div>
+          <div class="sp-pill-label">longer to generate</div>
+          <div class="sp-pill-sub" id="sp-cost-sub">vs the same content in markdown</div>
+        </div>
+
+        <div class="sp-pivot" id="sp-pivot">vs.</div>
+
+        <div class="sp-pill is-budget" id="sp-pill-budget">
+          <div class="sp-pill-tag">BUDGET</div>
+          <div class="sp-pill-num" id="sp-budget-num">1<em>M</em></div>
+          <div class="sp-pill-label">tokens · Opus 4.7 context</div>
+          <div class="sp-pill-sub" id="sp-budget-sub">extra tokens — barely register</div>
+        </div>
+      </div>
+
+      <div class="sp-bottom">
+        <div class="sp-final-caption" id="sp-final">
+          The cost is <em>real</em>. The cost is <em>absorbable</em>. And what you get back is a document your team will actually read.
+        </div>
+        <div class="sp-counter-pill" id="sp-counter">
+          <span class="sp-counter-tag">COUNTER-TAKE</span>fewer tokens = the value
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Hidden-until-reveal
+      tl.set("#sp-pill-cost",   { y: 18, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#sp-pill-budget", { y: 18, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#sp-pivot",       { opacity: 0, scale: 0.7 }, 0);
+      tl.set("#sp-cost-sub",    { opacity: 0 }, 0);
+      tl.set("#sp-budget-sub",  { opacity: 0 }, 0);
+      tl.set("#sp-final",       { y: 12, opacity: 0 }, 0);
+      tl.set("#sp-counter",     { y: 12, opacity: 0 }, 0);
+      tl.set("#sp-divider",     { scaleX: 0 }, 0);
+
+      // Header
+      tl.from("#sp-num",      { y: 14, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.2);
+      tl.from("#sp-overline", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.4);
+      tl.from("#sp-h2",       { y: 20, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.6);
+      tl.to("#sp-divider",    { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.2);
+
+      // h2 emphasis pulse on "price" at 0.76
+      tl.to("#sp-h2 em", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 1.5);
+
+      // Cost pill at 4.83 ("two to four times longer")
+      tl.to("#sp-pill-cost", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 4.83);
+
+      // Pulse on cost pill at 8.30 ("Two to four x")
+      tl.to("#sp-pill-cost", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 8.30);
+
+      // Cost sub-line at 9.5
+      tl.to("#sp-cost-sub", { opacity: 1, duration: 0.5, ease: "power2.out" }, 9.5);
+
+      // Pivot "vs." at 11.80 ("changes the math")
+      tl.to("#sp-pivot", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 11.80);
+
+      // Budget pill at 15.14 ("one million token")
+      tl.to("#sp-pill-budget", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 15.14);
+
+      // Budget sub-line at 19.23 ("extra tokens")
+      tl.to("#sp-budget-sub", { opacity: 1, duration: 0.5, ease: "power2.out" }, 19.23);
+
+      // Pulse on budget pill at 22.56 ("barely register")
+      tl.to("#sp-pill-budget", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 22.56);
+
+      // Final caption appears at 26.18 ("cost is real")
+      tl.to("#sp-final", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 26.18);
+
+      // Final caption "absorbable" emphasis at 28.17
+      tl.to("#sp-final em:nth-of-type(2)", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 28.17);
+
+      // Counter-take pill enters at 34.34 ("replies pushed back")
+      tl.to("#sp-counter", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 34.34);
+
+      // Final caption emphasis at 42.88 ("depends what you are buying")
+      tl.to("#sp-final", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 42.88);
+
+      window.__timelines["scene-stat-pill-row"] = tl;
+    </script>
+  </div>
+</template>

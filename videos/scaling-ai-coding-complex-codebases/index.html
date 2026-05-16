@@ -1,0 +1,555 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Scaling AI Coding to Complex Codebases â€” 6 Strategies</title>
+<link rel="stylesheet" href="tokens/dynamous.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Montserrat', system-ui, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 22% 18%, rgba(59, 130, 246, 0.14), transparent 55%),
+      radial-gradient(circle at 80% 82%, rgba(14, 165, 233, 0.09), transparent 60%),
+      radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.05), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #grid-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(96, 165, 250, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(96, 165, 250, 0.07) 1px, transparent 1px);
+    background-size: 96px 96px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 30%, transparent 100%);
+            mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 30%, transparent 100%);
+  }
+
+  /* Shape backdrop â€” real Dynamous icon scattered, low opacity */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 24px rgba(59, 130, 246, 0.18));
+  }
+
+  #bg-halo {
+    position: absolute;
+    top: -340px; right: -340px;
+    width: 1300px; height: 1300px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.32;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
+    filter: blur(40px);
+  }
+  #bg-halo-2 {
+    position: absolute;
+    bottom: -400px; left: -300px;
+    width: 1100px; height: 1100px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+    background: radial-gradient(circle, var(--accent-3) 0%, transparent 60%);
+    filter: blur(40px);
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+  }
+
+  #vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 7;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+
+  /* TOP-RIGHT Dynamous wordmark â€” moved from center per user request */
+  #top-banner {
+    position: absolute;
+    top: 32px;
+    right: 48px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  #top-banner-logo {
+    height: 44px;
+    width: auto;
+    display: block;
+    opacity: 0.95;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.75);
+  }
+
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-workshop-intro-wrap   { z-index: 1; opacity: 1; }
+  #scene-headline-accent-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-big-stat-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-tension-pivot-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-strategy-map-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-vsa-tree-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-brownfield-types-wrap { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-context-tiers-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-prime-family-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-pillars-3-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-worktrees-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-coupling-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-card-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap              { z-index: 1; opacity: 0; visibility: hidden; }
+
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+
+  #flash-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.9) 0%, rgba(59, 130, 246, 0.4) 30%, transparent 70%);
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="411"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Background stack -->
+  <div id="ambient"></div>
+  <div id="grid-bg"></div>
+  <div id="shape-backdrop"></div>
+  <div id="bg-halo"></div>
+  <div id="bg-halo-2"></div>
+
+  <!-- Top-right Dynamous wordmark -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/dynamous-logo-light.svg" alt="Dynamous AI Mastery" />
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- SCENE WRAPPERS â€” retimed for 408s narration, 411s total composition -->
+
+  <div id="scene-workshop-intro-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-workshop-intro"
+       data-composition-src="compositions/scene-workshop-intro.html"
+       data-start="0"
+       data-duration="13.7"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-headline-accent-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-headline-accent"
+       data-composition-src="compositions/scene-headline-accent.html"
+       data-start="13.7"
+       data-duration="16"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-big-stat-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-big-stat"
+       data-composition-src="compositions/scene-big-stat.html"
+       data-start="29.7"
+       data-duration="16.6"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-tension-pivot-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-tension-pivot"
+       data-composition-src="compositions/scene-tension-pivot.html"
+       data-start="46.3"
+       data-duration="11"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-strategy-map-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-strategy-map"
+       data-composition-src="compositions/scene-strategy-map.html"
+       data-start="57.3"
+       data-duration="31.8"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-vsa-tree-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-vsa-tree"
+       data-composition-src="compositions/scene-vsa-tree.html"
+       data-start="89.1"
+       data-duration="51.2"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-brownfield-types-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-brownfield-types"
+       data-composition-src="compositions/scene-brownfield-types.html"
+       data-start="140.3"
+       data-duration="56.6"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-context-tiers-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-context-tiers"
+       data-composition-src="compositions/scene-context-tiers.html"
+       data-start="196.9"
+       data-duration="39.19"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-prime-family-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-prime-family"
+       data-composition-src="compositions/scene-prime-family.html"
+       data-start="236.1"
+       data-duration="38"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-pillars-3-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-pillars-3"
+       data-composition-src="compositions/scene-pillars-3.html"
+       data-start="274.1"
+       data-duration="24.7"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-worktrees-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-worktrees"
+       data-composition-src="compositions/scene-worktrees.html"
+       data-start="298.8"
+       data-duration="37"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-coupling-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-coupling"
+       data-composition-src="compositions/scene-coupling.html"
+       data-start="335.8"
+       data-duration="36.5"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-quote-card-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-quote-card"
+       data-composition-src="compositions/scene-quote-card.html"
+       data-start="372.3"
+       data-duration="19.3"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="391.6"
+       data-duration="19.4"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <!-- Captions sub-composition -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-duration="411"
+       data-track-index="9"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <!-- Flash overlay -->
+  <div id="flash-overlay"></div>
+
+  <!-- Narration â€” edge-tts en-US-AndrewNeural +10% (408s) -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="408"
+         data-track-index="2"
+         data-volume="0.9"></audio>
+
+  <!-- Cinematic whoosh â€” fires at every scene boundary together with shape rearrange -->
+  <audio id="sfx-whoosh-t1"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="13.7"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="29.7"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="46.3"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="57.3"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="89.1"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="140.3" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="196.9" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t8"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="236.1" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t9"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="274.1" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t10" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="298.8" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t11" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="335.8" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t12" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="372.3" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t13" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="391.6" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+
+  <div id="vignette"></div>
+</div>
+
+<script>
+  // Deterministic seeded scatter for the shape backdrop (no Math.random).
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // Compute a scatter position set for `count` shapes given a seed prefix.
+  // Returns array of { cx, cy, size, rot }.
+  function computeScatter(seedPrefix, count) {
+    const w = 1920, h = 1080, minSize = 180, sizeRange = 160;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+    }
+    return placed;
+  }
+
+  // Mount N <img> elements using the real Dynamous icon and a fixed scatter.
+  function spawnShapes(seedPrefix, container, count) {
+    const scatter = computeScatter(seedPrefix, count);
+    const imgs = [];
+    for (let i = 0; i < count; i++) {
+      const s = scatter[i];
+      const img = document.createElement('img');
+      img.src = 'assets/dynamous-icon.png';
+      img.crossOrigin = 'anonymous';
+      img.style.cssText =
+        'left:' + (s.cx - s.size / 2) + 'px;' +
+        'top:' + (s.cy - s.size / 2) + 'px;' +
+        'width:' + s.size + 'px;' +
+        'height:' + s.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: s.rot });
+      imgs.push(img);
+    }
+    return imgs;
+  }
+
+  // Rearrange shapes to a new scatter at the given timeline time.
+  // Each shape tweens to its target position over ~0.9s with a slight stagger.
+  function rearrangeShapes(tl, imgs, seedPrefix, atTime) {
+    const scatter = computeScatter(seedPrefix, imgs.length);
+    imgs.forEach((img, i) => {
+      const s = scatter[i];
+      const targetLeft = s.cx - s.size / 2;
+      const targetTop  = s.cy - s.size / 2;
+      const targetW    = s.size;
+      const targetH    = s.size;
+      tl.to(img, {
+        left:   targetLeft,
+        top:    targetTop,
+        width:  targetW,
+        height: targetH,
+        rotation: s.rot,
+        x: 0, y: 0,
+        duration: 0.9,
+        ease: "power2.inOut"
+      }, atTime + i * 0.04);
+    });
+  }
+
+  function crossfadeScenes(tl, fromSel, toSel, atTime, flash) {
+    tl.to(fromSel, { filter: "blur(18px)", scale: 1.03, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(18px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+
+    if (flash) {
+      tl.to("#flash-overlay", { opacity: 0.55, duration: 0.18, ease: "power2.out", overwrite: "auto" }, atTime + 0.35);
+      tl.to("#flash-overlay", { opacity: 0,    duration: 0.45, ease: "power2.in",  overwrite: "auto" }, atTime + 0.55);
+    }
+  }
+
+  // Root timeline construction
+  const SHAPE_COUNT = 11;
+  const shapeImgs = spawnShapes('scene-0', document.getElementById('shape-backdrop'), SHAPE_COUNT);
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 411;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: Math.floor(TOTAL_DURATION / 60) },
+    0);
+
+  tl.to("#bg-halo",
+    { opacity: 0.48, scale: 1.06, duration: 18, ease: "sine.inOut",
+      yoyo: true, repeat: Math.floor(TOTAL_DURATION / 36), transformOrigin: "50% 50%" },
+    0);
+  tl.to("#bg-halo-2",
+    { opacity: 0.34, scale: 1.05, duration: 22, ease: "sine.inOut",
+      yoyo: true, repeat: Math.floor(TOTAL_DURATION / 44), transformOrigin: "50% 50%" },
+    0);
+
+  // Progress fill
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Scene labels â€” anchors so duration tweaks don't cascade
+  tl.addLabel("workshop-intro",   0)
+    .addLabel("headline-accent",  13.7)
+    .addLabel("big-stat",         29.7)
+    .addLabel("tension-pivot",    46.3)
+    .addLabel("strategy-map",     57.3)
+    .addLabel("vsa-tree",         89.1)
+    .addLabel("brownfield-types", 140.3)
+    .addLabel("context-tiers",    196.9)
+    .addLabel("prime-family",     236.1)
+    .addLabel("pillars-3",        274.1)
+    .addLabel("worktrees",        298.8)
+    .addLabel("coupling",         335.8)
+    .addLabel("quote-card",       372.3)
+    .addLabel("cta",              391.6);
+
+  // Shape rearrange â€” one per scene transition, fired at the visual swap moment
+  const SCENE_TIMES = [13.7, 29.7, 46.3, 57.3, 89.1, 140.3, 196.9, 236.1, 274.1, 298.8, 335.8, 372.3, 391.6];
+  SCENE_TIMES.forEach((t, idx) => {
+    rearrangeShapes(tl, shapeImgs, 'scene-' + (idx + 1), t - 0.05);
+  });
+
+  // Crossfades â€” `flash: true` on the hero pivot + CTA landing boundaries
+  crossfadeScenes(tl, "#scene-workshop-intro-wrap",    "#scene-headline-accent-wrap",  "headline-accent-=0.4",  false);
+  crossfadeScenes(tl, "#scene-headline-accent-wrap",   "#scene-big-stat-wrap",         "big-stat-=0.4",         false);
+  crossfadeScenes(tl, "#scene-big-stat-wrap",          "#scene-tension-pivot-wrap",    "tension-pivot-=0.4",    true);
+  crossfadeScenes(tl, "#scene-tension-pivot-wrap",     "#scene-strategy-map-wrap",     "strategy-map-=0.4",     false);
+  crossfadeScenes(tl, "#scene-strategy-map-wrap",      "#scene-vsa-tree-wrap",         "vsa-tree-=0.4",         false);
+  crossfadeScenes(tl, "#scene-vsa-tree-wrap",          "#scene-brownfield-types-wrap", "brownfield-types-=0.4", false);
+  crossfadeScenes(tl, "#scene-brownfield-types-wrap",  "#scene-context-tiers-wrap",    "context-tiers-=0.4",    false);
+  crossfadeScenes(tl, "#scene-context-tiers-wrap",     "#scene-prime-family-wrap",     "prime-family-=0.4",     false);
+  crossfadeScenes(tl, "#scene-prime-family-wrap",      "#scene-pillars-3-wrap",        "pillars-3-=0.4",        false);
+  crossfadeScenes(tl, "#scene-pillars-3-wrap",         "#scene-worktrees-wrap",        "worktrees-=0.4",        false);
+  crossfadeScenes(tl, "#scene-worktrees-wrap",         "#scene-coupling-wrap",         "coupling-=0.4",         false);
+  crossfadeScenes(tl, "#scene-coupling-wrap",          "#scene-quote-card-wrap",       "quote-card-=0.4",       false);
+  crossfadeScenes(tl, "#scene-quote-card-wrap",        "#scene-cta-wrap",              "cta-=0.4",              true);
+
+  tl.set({}, {}, TOTAL_DURATION);
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

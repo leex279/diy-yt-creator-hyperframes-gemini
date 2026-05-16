@@ -1,0 +1,407 @@
+﻿<!--
+  scene-brownfield-types.html â€” Native Type A linear flow + Type B circular loop.
+  Two-column layout matching the source diagram's structure but built natively
+  in HTML/SVG/CSS so it integrates with the Dynamous dark-navy style.
+
+  Left column "TYPE A": vertical 4-node flow with `converge / derive / arrive` connectors
+  Right column "TYPE B": circular 4-node loop around a center "Every Sprint" label
+-->
+<template id="scene-brownfield-types-template">
+  <div data-composition-id="scene-brownfield-types"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #bt-content {
+        width:100%; height:100%;
+        padding: 70px 100px 64px;
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:flex-start;
+        gap: 18px;
+        box-sizing:border-box;
+      }
+      #bt-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #bt-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #bt-content .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 60px;
+        line-height: 1.0;
+        letter-spacing: -0.022em;
+        color: var(--ink);
+      }
+      #bt-content .sub {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 24px;
+        line-height: 1.32;
+        color: var(--ink-2);
+      }
+      #bt-grid {
+        display: grid;
+        grid-template-columns: 1fr 2px 1fr;
+        gap: 30px;
+        width: 100%;
+        flex: 1;
+        margin-top: 6px;
+      }
+      .bt-col {
+        background: rgba(255,255,255,0.03);
+        border: 1.5px solid rgba(255,255,255,0.10);
+        border-radius: 20px;
+        padding: 26px 32px 30px;
+        display: flex; flex-direction: column;
+        gap: 18px;
+        position: relative;
+        transition: opacity 0.4s ease;
+      }
+      .bt-col.dim { opacity: 0.32; }
+      .bt-col.glow {
+        border-color: rgba(96, 165, 250, 0.85);
+        box-shadow: 0 0 60px rgba(96, 165, 250, 0.32);
+      }
+      .bt-col .col-head {
+        display: flex; align-items: baseline; gap: 14px;
+      }
+      .bt-col .col-head h3 {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        letter-spacing: -0.02em;
+        color: var(--accent);
+        line-height: 1.0;
+      }
+      .bt-col .col-head .sub-lbl {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .bt-divider {
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.18) 20%, rgba(255,255,255,0.18) 80%, transparent);
+        align-self: stretch;
+      }
+
+      /* â”€â”€ TYPE A â€” linear flow â”€â”€ */
+      #bt-typea-flow {
+        display: flex; flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        margin-top: 8px;
+        flex: 1;
+        justify-content: center;
+      }
+      .ta-node {
+        display: flex; align-items: center; gap: 16px;
+        padding: 10px 12px;
+        width: 100%;
+      }
+      .ta-node .dot {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.65);
+        flex: 0 0 22px;
+        position: relative;
+      }
+      .ta-node .dot::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid rgba(96, 165, 250, 0.35);
+      }
+      .ta-node.done .dot { background: #22C55E; box-shadow: 0 0 22px rgba(34, 197, 94, 0.85); }
+      .ta-node.done .dot::before { border-color: rgba(34, 197, 94, 0.55); }
+      .ta-node .label {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 1.15;
+        color: var(--ink);
+      }
+      .ta-node.done .label { color: #22C55E; }
+      .ta-conn {
+        display: flex; align-items: center;
+        gap: 14px;
+        padding-left: 23px;
+      }
+      .ta-conn .arrow {
+        width: 22px; height: 38px;
+        display: flex; justify-content: center;
+      }
+      .ta-conn .arrow svg { width: 6px; height: 100%; display: block; }
+      .ta-conn .arrow line {
+        stroke: rgba(96, 165, 250, 0.55);
+        stroke-width: 2;
+        stroke-dasharray: 4 4;
+      }
+      .ta-conn .verb {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .bt-col .caption {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 19px;
+        line-height: 1.4;
+        color: var(--muted);
+        margin-top: 12px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      /* â”€â”€ TYPE B â€” circular loop â”€â”€ */
+      #bt-typeb-flow {
+        position: relative;
+        flex: 1;
+        min-height: 360px;
+        margin-top: 8px;
+      }
+      #bt-arc-svg {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+      }
+      .tb-arc {
+        stroke: rgba(96, 165, 250, 0.55);
+        stroke-width: 2;
+        stroke-dasharray: 6 6;
+        fill: none;
+      }
+      .tb-arc-head { fill: rgba(96, 165, 250, 0.85); }
+      .tb-center {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        line-height: 1.05;
+        color: var(--accent-2);
+        text-align: center;
+        text-shadow: 0 0 24px rgba(96, 165, 250, 0.55);
+      }
+      .tb-node {
+        position: absolute;
+        background: rgba(255,255,255,0.05);
+        border: 1.5px solid rgba(96, 165, 250, 0.65);
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 17px;
+        color: var(--ink);
+        text-align: center;
+        white-space: nowrap;
+      }
+      .tb-node.active { box-shadow: 0 0 28px rgba(96, 165, 250, 0.55); }
+      #tb-n1 { top: 4%;  left: 50%; transform: translateX(-50%); }
+      #tb-n2 { top: 47%; right: 0; transform: translateY(-50%); }
+      #tb-n3 { bottom: 4%; left: 50%; transform: translateX(-50%); }
+      #tb-n4 { top: 47%; left: 0; transform: translateY(-50%); }
+    </style>
+
+    <div id="bt-content">
+      <div class="eyebrow" id="bt-eyebrow" style="opacity:0;visibility:hidden;">STRATEGY 02 &middot; TWO KINDS OF BROWNFIELD</div>
+      <h2 class="headline" id="bt-headline" style="opacity:0;visibility:hidden;">Different starting points. Different playbooks.</h2>
+
+      <div id="bt-grid">
+
+        <!-- TYPE A â€” linear flow -->
+        <div class="bt-col" id="bt-typea" style="opacity:0;visibility:hidden;">
+          <div class="col-head">
+            <h3>Type A</h3>
+            <span class="sub-lbl">No AI Layer yet</span>
+          </div>
+          <div id="bt-typea-flow">
+            <div class="ta-node" id="bt-a1" style="opacity:0;visibility:hidden;">
+              <div class="dot"></div>
+              <div class="label">Parallel Explorer sub-agents</div>
+            </div>
+            <div class="ta-conn" id="bt-a-c1" style="opacity:0;visibility:hidden;">
+              <div class="arrow"><svg viewBox="0 0 6 38" xmlns="http://www.w3.org/2000/svg"><line x1="3" y1="0" x2="3" y2="38"/></svg></div>
+              <div class="verb">converge</div>
+            </div>
+            <div class="ta-node" id="bt-a2" style="opacity:0;visibility:hidden;">
+              <div class="dot"></div>
+              <div class="label">codebase-analysis.md</div>
+            </div>
+            <div class="ta-conn" id="bt-a-c2" style="opacity:0;visibility:hidden;">
+              <div class="arrow"><svg viewBox="0 0 6 38" xmlns="http://www.w3.org/2000/svg"><line x1="3" y1="0" x2="3" y2="38"/></svg></div>
+              <div class="verb">derive</div>
+            </div>
+            <div class="ta-node" id="bt-a3" style="opacity:0;visibility:hidden;">
+              <div class="dot"></div>
+              <div class="label">AI Layer derived</div>
+            </div>
+            <div class="ta-conn" id="bt-a-c3" style="opacity:0;visibility:hidden;">
+              <div class="arrow"><svg viewBox="0 0 6 38" xmlns="http://www.w3.org/2000/svg"><line x1="3" y1="0" x2="3" y2="38"/></svg></div>
+              <div class="verb">arrive</div>
+            </div>
+            <div class="ta-node done" id="bt-a4" style="opacity:0;visibility:hidden;">
+              <div class="dot"></div>
+              <div class="label">DONE &mdash; forever</div>
+            </div>
+          </div>
+          <div class="caption" id="bt-a-cap" style="opacity:0;visibility:hidden;">A one-time discovery motion. Sub-agents converge findings, derive the AI Layer &mdash; then you live in Type B.</div>
+        </div>
+
+        <!-- Divider -->
+        <div class="bt-divider"></div>
+
+        <!-- TYPE B â€” circular loop -->
+        <div class="bt-col" id="bt-typeb" style="opacity:0;visibility:hidden;">
+          <div class="col-head">
+            <h3>Type B</h3>
+            <span class="sub-lbl">AI Layer exists, new epic</span>
+          </div>
+          <div id="bt-typeb-flow">
+            <svg id="bt-arc-svg" viewBox="0 0 400 360" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Defs for arrowheads -->
+              <defs>
+                <marker id="bt-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" class="tb-arc-head"/>
+                </marker>
+              </defs>
+              <!-- Clockwise arcs between the 4 nodes -->
+              <!-- top â†’ right -->
+              <path class="tb-arc" id="bt-arc-1" d="M 240 50 Q 360 80 360 180" marker-end="url(#bt-head)" />
+              <!-- right â†’ bottom -->
+              <path class="tb-arc" id="bt-arc-2" d="M 360 200 Q 360 290 240 310" marker-end="url(#bt-head)" />
+              <!-- bottom â†’ left -->
+              <path class="tb-arc" id="bt-arc-3" d="M 160 310 Q 40 290 40 200" marker-end="url(#bt-head)" />
+              <!-- left â†’ top -->
+              <path class="tb-arc" id="bt-arc-4" d="M 40 180 Q 40 80 160 50" marker-end="url(#bt-head)" />
+            </svg>
+            <div class="tb-center" id="bt-center" style="opacity:0;visibility:hidden;">Every<br/>Sprint</div>
+            <div class="tb-node" id="tb-n1" style="opacity:0;visibility:hidden;">New epic arrives</div>
+            <div class="tb-node" id="tb-n2" style="opacity:0;visibility:hidden;">Read existing AI Layer</div>
+            <div class="tb-node" id="tb-n3" style="opacity:0;visibility:hidden;">Layer delta + new context</div>
+            <div class="tb-node" id="tb-n4" style="opacity:0;visibility:hidden;">Ship + loop back</div>
+          </div>
+          <div class="caption" id="bt-b-cap" style="opacity:0;visibility:hidden;">The recurring motion. Each new epic evolves the AI Layer slightly. You live here 95% of the time.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Set initial dashoffset on arcs so they "draw" later
+      const arcs = ["#bt-arc-1","#bt-arc-2","#bt-arc-3","#bt-arc-4"];
+      arcs.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) {
+          const len = el.getTotalLength();
+          gsap.set(sel, { strokeDasharray: len, strokeDashoffset: len });
+        }
+      });
+
+      tl.set("#bt-eyebrow",  { y: 20 }, 0);
+      tl.set("#bt-headline", { y: 24 }, 0);
+      tl.set("#bt-typea",    { x: -30 }, 0);
+      tl.set("#bt-typeb",    { x: 30 }, 0);
+
+      // Header
+      tl.to("#bt-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#bt-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
+
+      // Both columns appear at low opacity; Type A glows, Type B dims
+      tl.to("#bt-typea", { x: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 1.1);
+      tl.to("#bt-typeb", { x: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 1.3);
+      tl.add(() => {
+        const a = document.getElementById("bt-typea");
+        const b = document.getElementById("bt-typeb");
+        if (a) a.classList.add("glow");
+        if (b) b.classList.add("dim");
+      }, 2.0);
+
+      // TYPE A nodes reveal sequentially (~3s each, fits 27s span)
+      const aNodes = ["#bt-a1","#bt-a-c1","#bt-a2","#bt-a-c2","#bt-a3","#bt-a-c3","#bt-a4"];
+      const aTimes = [3.0, 6.0, 7.0, 11.0, 12.0, 17.0, 18.0];
+      aNodes.forEach((sel, i) => {
+        tl.fromTo(sel, { x: -14 }, { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)", immediateRender: false }, aTimes[i]);
+      });
+      tl.to("#bt-a4 .dot", {
+        scale: 1.25, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 2,
+        transformOrigin: "50% 50%"
+      }, 19.5);
+      tl.to("#bt-a-cap", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 22.0);
+
+      // â”€â”€ Transition (28-30s): swap focus to Type B â”€â”€
+      tl.add(() => {
+        const a = document.getElementById("bt-typea");
+        const b = document.getElementById("bt-typeb");
+        if (a) { a.classList.remove("glow"); a.classList.add("dim"); }
+        if (b) { b.classList.remove("dim");  b.classList.add("glow"); }
+      }, 28.0);
+
+      // TYPE B center first
+      tl.fromTo("#bt-center",
+        { scale: 0.7 },
+        { scale: 1, autoAlpha: 1, duration: 0.7, ease: "back.out(1.4)", immediateRender: false },
+        29.0);
+
+      // 4 nodes reveal clockwise (top â†’ right â†’ bottom â†’ left), paced ~3s apart
+      const bNodes = ["#tb-n1","#tb-n2","#tb-n3","#tb-n4"];
+      const bTimes = [30.5, 33.5, 36.5, 39.5];
+      bNodes.forEach((sel, i) => {
+        tl.fromTo(sel,
+          { scale: 0.7 },
+          { scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)", immediateRender: false },
+          bTimes[i]);
+      });
+
+      // Arcs draw between nodes (slightly after each pair of nodes is in)
+      const arcTimes = [32.5, 35.5, 38.5, 41.5];
+      arcs.forEach((sel, i) => {
+        tl.to(sel, { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" }, arcTimes[i]);
+      });
+
+      // Highlight loop â€” chain pulse on each node + arc once the loop is complete
+      tl.to(bNodes, {
+        boxShadow: "0 0 40px rgba(96, 165, 250, 0.95)",
+        duration: 0.65, ease: "sine.inOut", yoyo: true, repeat: 1,
+        stagger: { each: 0.45 }
+      }, 44.5);
+      tl.to("#bt-center", { scale: 1.07, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 47.5);
+      tl.to("#bt-b-cap", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 48.0);
+
+      // Final beat â€” both columns brighten together
+      tl.add(() => {
+        const a = document.getElementById("bt-typea");
+        const b = document.getElementById("bt-typeb");
+        if (a) a.classList.remove("dim");
+        if (b) b.classList.add("glow");
+      }, 56.0);
+
+      tl.set({}, {}, 62);
+      window.__timelines["scene-brownfield-types"] = tl;
+    </script>
+  </div>
+</template>

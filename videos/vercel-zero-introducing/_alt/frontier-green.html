@@ -1,0 +1,2048 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AI NEWS Â· Frontier Green</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<!--
+  HyperFrames runtime scripts are intentionally NOT loaded here.
+  In raw browser preview they grab the timeline and pause it, waiting for
+  external frame control â€” which makes the page look static. The HF CLI
+  render pipeline + preview.html (via @hyperframes/player) load their own
+  drivers, so they're not needed in the markup.
+
+  If you DO need shader transitions or the runtime during local authoring,
+  uncomment one or both of these:
+  <script src="https://cdn.jsdelivr.net/npm/@hyperframes/core/dist/hyperframe.runtime.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hyperframes/shader-transitions/dist/index.global.js"></script>
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ANTHROPIC SHORTS TEMPLATE â€” Cinematic V3
+     1080x1920 vertical Â· 34s Â· 6 phases
+
+     What's new vs V2:
+       â€¢ Phase 2: Claude-CLI terminal phase (typed prompt + streaming output)
+       â€¢ Phase 3: animated benchmark chart (horizontal bars + count-ups + leader marker)
+       â€¢ Phase 4: code-diff phase (before/after stacked panels with line wipes)
+       â€¢ Phase 6: quote / social-proof card (avatar + handle + ticking engagement)
+       â€¢ Persistent particle constellation field (30 deterministic drifting dots
+         with connecting lines, behind content, in front of phases)
+       â€¢ Anamorphic horizontal flare (blue-white streak that whips across at
+         hero impact moments)
+       â€¢ Token-stream edge decorations (faint vertical mono character columns
+         on left + right edges, deterministic)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    margin: 0; padding: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Stage â€” actual design canvas, native 1080Ã—1920 for the HF renderer.
+     In browser preview, a JS sizer scales it to fit the viewport. */
+  #root {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1080px; height: 1920px;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    overflow: hidden;
+    background: #0B0F18;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --bg-deep: #060810;
+    --card: #0E121A;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #10a37f;
+    --purple: #19c37d;
+    --blue:   #74e8c0;
+    --green:  #5eead4;
+    --red:    #D14343;
+    --red-soft: #FF7C7C;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 720px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* â•â• Atmospheric layers â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #ambient {
+    position: absolute; inset: -200px; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(16,163,127,0.12), transparent 58%),
+      radial-gradient(circle at 75% 80%, rgba(25,195,125,0.08), transparent 55%);
+  }
+  #vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 9;
+    background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%);
+  }
+  #shape-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  #shape-backdrop img { position: absolute; opacity: 0.1; object-fit: contain; pointer-events: none; }
+
+  /* Particle constellation â€” deterministic dots that drift, with SVG lines
+     connecting nearest neighbors. Sits in front of phases for atmosphere. */
+  #particle-field {
+    position: absolute; inset: 0; pointer-events: none; z-index: 8;
+    opacity: 0.7;
+  }
+  .particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(245,241,235,0.55);
+    box-shadow: 0 0 8px rgba(16,163,127,0.5);
+  }
+  #constellation-lines {
+    position: absolute; inset: 0; width: 1080px; height: 1920px;
+    pointer-events: none;
+  }
+  #constellation-lines line {
+    stroke: rgba(245,241,235,0.10);
+    stroke-width: 1px;
+  }
+
+  /* Token stream â€” faint scrolling mono chars on left/right edges */
+  .token-stream {
+    position: absolute; top: 0; width: 28px; height: 1920px;
+    z-index: 7; pointer-events: none;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px; line-height: 1.6;
+    color: rgba(245,241,235,0.10);
+    overflow: hidden;
+    text-align: center;
+    user-select: none;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 2px;
+  }
+  #token-stream-left  { left: 16px; }
+  #token-stream-right { right: 16px; }
+
+  #grain {
+    position: absolute; inset: 0; pointer-events: none; z-index: 11;
+    opacity: 0.22; mix-blend-mode: overlay;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1.2px),
+      radial-gradient(rgba(0,0,0,0.18) 1px, transparent 1.2px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+  }
+  #scanlines {
+    position: absolute; inset: 0; pointer-events: none; z-index: 11;
+    opacity: 0.14; mix-blend-mode: soft-light;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px,
+      transparent 1px, transparent 3px
+    );
+  }
+
+  /* â•â• Cinematic chrome â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  .letterbox { position: absolute; left: 0; width: 1080px; background: #000; z-index: 12; pointer-events: none; }
+  #letterbox-top    { top: 0;    height: 24px; }
+  #letterbox-bottom { bottom: 0; height: 24px; }
+
+  .vf-corner { position: absolute; width: 38px; height: 38px; z-index: 12; pointer-events: none; opacity: 0.55; border: 2px solid var(--text); }
+  #vf-tl { top: 38px;    left: 38px;    border-right: none; border-bottom: none; }
+  #vf-tr { top: 38px;    right: 38px;   border-left: none;  border-bottom: none; }
+  #vf-bl { bottom: 38px; left: 38px;    border-right: none; border-top: none; }
+  #vf-br { bottom: 38px; right: 38px;   border-left: none;  border-top: none; }
+
+  #rec-indicator { position: absolute; top: 88px; left: 56px; z-index: 13; display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 22px; letter-spacing: 3px; color: var(--text); opacity: 0.85; }
+  #rec-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); }
+  #timecode { position: absolute; top: 88px; right: 56px; z-index: 13; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 22px; letter-spacing: 2px; color: var(--text); opacity: 0.85; font-variant-numeric: tabular-nums; }
+  #phase-label { position: absolute; bottom: 60px; left: 56px; z-index: 13; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 22px; letter-spacing: 4px; color: var(--text); opacity: 0.7; }
+  #phase-label .num { color: var(--orange); }
+
+  /* Phase-of-N tick dots (right side, mirrors phase-label) */
+  #phase-ticks { position: absolute; bottom: 64px; right: 56px; z-index: 13; display: flex; gap: 7px; }
+  .phase-tick { width: 7px; height: 7px; border-radius: 50%; background: rgba(245,241,235,0.18); transition: all 0.3s; }
+  .phase-tick.active { background: var(--orange); box-shadow: 0 0 12px var(--orange); }
+
+  /* Light leak transition layer */
+  #light-leak {
+    position: absolute; top: -200px; left: -300px;
+    width: 1800px; height: 2400px;
+    z-index: 14; pointer-events: none; opacity: 0;
+    transform: rotate(28deg) translateY(2400px);
+    background: linear-gradient(90deg,
+      transparent 0%, rgba(255,210,170,0.18) 45%,
+      rgba(255,240,210,0.42) 50%,
+      rgba(255,210,170,0.18) 55%, transparent 100%);
+    mix-blend-mode: screen; filter: blur(20px);
+  }
+
+  /* Anamorphic flare â€” wide horizontal blue-white streak */
+  #anamorphic {
+    position: absolute; top: 50%; left: -300px;
+    width: 1680px; height: 6px; transform: translateY(-50%);
+    z-index: 14; pointer-events: none; opacity: 0;
+    background: linear-gradient(90deg,
+      transparent, rgba(140,200,255,0.3),
+      rgba(255,255,255,0.95) 45%, rgba(255,255,255,0.95) 55%,
+      rgba(140,200,255,0.3), transparent);
+    mix-blend-mode: screen;
+    filter: blur(1.5px);
+    box-shadow: 0 0 60px rgba(140,200,255,0.4);
+  }
+
+  /* â•â• Top banner + progress â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #top-banner { position: absolute; top: 156px; left: 0; width: 1080px; z-index: 10; pointer-events: none; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); text-align: center; }
+  #top-banner-logo { width: 720px; height: auto; display: block; margin: 0 auto; opacity: 0.92; }
+
+  #progress-track { position: absolute; bottom: 28px; left: 0; width: 1080px; height: 4px; background: rgba(245, 241, 235, 0.06); z-index: 10; }
+  #progress-fill { width: 0; height: 100%; background: var(--orange); box-shadow: 0 0 16px rgba(16, 163, 127, 0.8); }
+
+  /* â•â• Phase containers â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  .phase { position: absolute; top: 0; left: 0; width: 1080px; height: 1920px; overflow: hidden; opacity: 0; }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; } #phase3 { z-index: 3; }
+  #phase4 { z-index: 4; } #phase5 { z-index: 5; } #phase15 { z-index: 6; }
+
+  .phase-content {
+    width: 100%; height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex; flex-direction: column;
+    box-sizing: border-box;
+  }
+  .overline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 34px; letter-spacing: 6px; text-transform: uppercase;
+  }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHASE 1 â€” Hook â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #p1-topic-lockup {
+    position: absolute; top: 0; left: 0; width: 1080px; height: 1920px;
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 28px; pointer-events: none; z-index: 2;
+  }
+  #p1-brand-lockup { display: flex; align-items: center; gap: 20px; }
+  #p1-brand-logo { height: 90px; width: auto; display: block; }
+  #p1-topic-slam {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 156px; line-height: 0.88; letter-spacing: -5px;
+    color: var(--text); max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  .rgb-split {
+    text-shadow:
+      -3px 0 0 rgba(16,163,127,0.55),
+      3px 0 0 rgba(116,232,192,0.55),
+      0 0 80px rgba(16,163,127,0.55),
+      0 8px 24px rgba(0,0,0,0.6);
+  }
+  #p1-ga-receipt {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600;
+    font-size: 42px; color: var(--text-dim);
+    letter-spacing: 2px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #p1-ga-receipt::before {
+    content: "â€º"; color: var(--orange);
+    font-weight: 900; font-size: 48px; line-height: 1;
+  }
+  #p1-topic-bar { width: 0; height: 4px; background: linear-gradient(90deg, var(--orange), rgba(16,163,127,0)); margin-top: 12px; border-radius: 2px; }
+  #p1-scanbeam {
+    position: absolute; top: -200px; left: 0;
+    width: 1080px; height: 200px; z-index: 2; pointer-events: none; opacity: 0;
+    background: linear-gradient(to bottom,
+      transparent 0%, rgba(16,163,127,0.45) 50%, transparent 100%);
+    mix-blend-mode: screen; filter: blur(8px);
+  }
+
+  #p1-hero-content {
+    position: absolute; top: 0; left: 0; width: 1080px; height: 1920px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    text-align: center; gap: 28px; z-index: 1; opacity: 0;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; font-size: 70px; line-height: 1.05; color: var(--text); max-width: 920px; }
+  #p1-hero {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 196px; line-height: 0.9; letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 90px rgba(16,163,127,0.65), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px; position: relative;
+    display: block; text-align: center;
+    white-space: nowrap;
+  }
+  #p1-impact-ring {
+    position: absolute; top: 50%; left: 50%;
+    width: 200px; height: 200px;
+    border: 4px solid var(--orange); border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0; pointer-events: none;
+    box-shadow: 0 0 80px rgba(16,163,127,0.6);
+  }
+  #p1-caption {
+    margin-top: 32px; padding: 14px 28px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 32px; letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg); border: 1.5px solid var(--pill-border); border-radius: 999px;
+  }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHASE 2 â€” Terminal â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase2 .phase-content { align-items: center; justify-content: center; gap: 24px; }
+  #p2-overline { color: var(--green); }
+  .term {
+    width: 940px; background: var(--card);
+    border: 1px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 80px rgba(94,234,212,0.10);
+    overflow: hidden;
+  }
+  .term-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 22px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(245,241,235,0.08);
+  }
+  .term-lights { display: flex; gap: 8px; }
+  .term-light { width: 14px; height: 14px; border-radius: 50%; }
+  .term-light.r { background: #FF5F57; } .term-light.y { background: #FEBC2E; } .term-light.g { background: #28C840; }
+  .term-title { flex: 1; text-align: center; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; font-size: 22px; color: var(--text-dim); letter-spacing: 1px; }
+  .term-status {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 20px;
+    color: var(--green); letter-spacing: 2px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .term-status-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+  }
+  .term-body {
+    padding: 36px 32px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500;
+    font-size: 30px; line-height: 1.6;
+    color: var(--text);
+    min-height: 720px;
+  }
+  .term-line { display: flex; gap: 18px; align-items: baseline; opacity: 0; }
+  .term-line .prompt { color: var(--orange); font-weight: 800; }
+  .term-line .out { color: var(--text); flex: 1; }
+  .term-line .dim { color: var(--text-dim); }
+  .term-tag {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    padding: 2px 12px; border-radius: 6px;
+    font-size: 22px; letter-spacing: 1.5px;
+    flex-shrink: 0;
+  }
+  .term-tag.ok   { color: var(--green); background: rgba(94,234,212,0.12); border: 1px solid rgba(94,234,212,0.40); }
+  .term-tag.warn { color: var(--orange); background: rgba(16,163,127,0.12); border: 1px solid rgba(16,163,127,0.40); }
+  .term-tag.run  { color: var(--blue); background: rgba(116,232,192,0.12); border: 1px solid rgba(116,232,192,0.40); }
+  .term-cursor {
+    display: inline-block; width: 14px; height: 30px;
+    background: var(--orange); vertical-align: middle;
+    box-shadow: 0 0 12px var(--orange);
+    margin-left: 8px;
+  }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHASE 3 â€” Benchmark chart â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase3 .phase-content { align-items: center; justify-content: center; gap: 28px; }
+  #p3-overline { color: var(--purple); }
+  #p3-headline {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 52px; line-height: 1.05; letter-spacing: -1px;
+    color: var(--text); text-align: center; max-width: 920px;
+    margin-bottom: 12px;
+  }
+  .bench { width: 940px; display: flex; flex-direction: column; gap: 28px; }
+  .bench-row {
+    display: grid;
+    grid-template-columns: 240px 1fr 160px;
+    align-items: center; gap: 20px;
+    opacity: 0;
+  }
+  .bench-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 28px; color: var(--text);
+    letter-spacing: 1.5px; text-align: left;
+  }
+  .bench-track {
+    position: relative; height: 26px;
+    background: rgba(245,241,235,0.06);
+    border: 1px solid rgba(245,241,235,0.08);
+    border-radius: 13px; overflow: visible;
+  }
+  .bench-fill {
+    height: 100%; width: 0%;
+    border-radius: 13px;
+    position: relative;
+  }
+  .bench-fill.orange { background: linear-gradient(90deg, var(--orange), rgba(16,163,127,0.5)); box-shadow: 0 0 24px rgba(16,163,127,0.5); }
+  .bench-fill.purple { background: linear-gradient(90deg, var(--purple), rgba(25,195,125,0.5)); box-shadow: 0 0 24px rgba(25,195,125,0.5); }
+  .bench-fill.blue   { background: linear-gradient(90deg, var(--blue),   rgba(116,232,192,0.5)); box-shadow: 0 0 24px rgba(116,232,192,0.5); }
+  .bench-fill.green  { background: linear-gradient(90deg, var(--green),  rgba(94,234,212,0.5)); box-shadow: 0 0 24px rgba(94,234,212,0.5); }
+  .bench-value {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800;
+    font-size: 38px; color: var(--text);
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+  /* Industry-leader vertical marker */
+  .bench-marker {
+    position: absolute; top: -10px; bottom: -10px;
+    width: 0; pointer-events: none;
+    border-left: 2px dashed rgba(245,241,235,0.55);
+  }
+  .bench-marker::before {
+    content: "LEADER";
+    position: absolute; top: -22px; left: 6px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800;
+    font-size: 16px; color: var(--text); letter-spacing: 2px;
+    background: var(--bg); padding: 1px 6px;
+  }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHASE 4 â€” Code diff â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase4 .phase-content { align-items: center; justify-content: center; gap: 18px; }
+  #p4-overline { color: var(--blue); }
+  #p4-filename {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600;
+    font-size: 26px; color: var(--text-dim);
+    letter-spacing: 1px;
+    padding: 8px 18px;
+    background: rgba(245,241,235,0.04);
+    border: 1px solid rgba(245,241,235,0.08);
+    border-radius: 10px;
+  }
+  .diff { width: 940px; display: flex; flex-direction: column; gap: 14px; }
+  .diff-panel {
+    background: var(--card);
+    border: 1px solid rgba(245,241,235,0.10);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.40);
+  }
+  .diff-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 22px;
+    border-bottom: 1px solid rgba(245,241,235,0.06);
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 22px;
+  }
+  .diff-head .label { color: var(--text-dim); letter-spacing: 1.5px; }
+  .diff-head .tag {
+    font-weight: 800; padding: 4px 12px;
+    border-radius: 8px; letter-spacing: 2px; font-size: 20px;
+  }
+  .diff-head .tag.before { color: var(--red-soft); background: rgba(255,124,124,0.10); border: 1px solid rgba(255,124,124,0.45); }
+  .diff-head .tag.after  { color: var(--green);    background: rgba(94,234,212,0.10); border: 1px solid rgba(94,234,212,0.45); }
+  .diff-body {
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500;
+    font-size: 24px; line-height: 1.65;
+  }
+  .diff-line {
+    display: flex; gap: 18px;
+    margin: 0 -22px; padding: 0 22px;
+    opacity: 0;
+  }
+  .diff-line.add { background: linear-gradient(90deg, rgba(94,234,212,0.12), transparent); }
+  .diff-line.del { background: linear-gradient(90deg, rgba(255,124,124,0.12), transparent); }
+  .diff-num { color: rgba(245,241,235,0.30); width: 38px; text-align: right; flex-shrink: 0; }
+  .diff-prefix { width: 22px; font-weight: 800; flex-shrink: 0; }
+  .diff-line.add .diff-prefix { color: var(--green); }
+  .diff-line.del .diff-prefix { color: var(--red-soft); }
+  .diff-text { color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; }
+  .diff-text .kw  { color: var(--purple); }
+  .diff-text .str { color: var(--green); }
+  .diff-text .nm  { color: var(--orange); }
+  .diff-text .com { color: var(--text-dim); font-style: italic; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHASE 5 â€” Timeline â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase5 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 24px; }
+  #p5-overline { color: var(--text); }
+  .timeline-wrap { position: relative; width: 940px; }
+  #p5-connector { position: absolute; top: 0; left: 80px; width: 6px; height: 100%; z-index: 0; pointer-events: none; }
+  #p5-connector line { stroke-dasharray: 480; stroke-dashoffset: 480; }
+  #p5-playhead {
+    position: absolute; top: 0; left: 73px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--orange);
+    box-shadow: 0 0 20px var(--orange), 0 0 40px rgba(16,163,127,0.5);
+    z-index: 2; opacity: 0;
+  }
+  .timeline-list { position: relative; display: flex; flex-direction: column; gap: 24px; width: 940px; z-index: 1; }
+  .tl-card { display: flex; flex-direction: row; align-items: center; gap: 26px; padding: 22px 28px; border-radius: 20px; transform-style: preserve-3d; }
+  .tl-card.orange { background: linear-gradient(135deg, rgba(16,163,127,0.18), rgba(16,163,127,0.05)); border: 2px solid rgba(16,163,127,0.45); box-shadow: 0 10px 30px rgba(16,163,127,0.22); }
+  .tl-card.purple { background: linear-gradient(135deg, rgba(25,195,125,0.18), rgba(25,195,125,0.05)); border: 2px solid rgba(25,195,125,0.45); box-shadow: 0 10px 30px rgba(25,195,125,0.22); }
+  .tl-card.blue   { background: linear-gradient(135deg, rgba(116,232,192,0.18), rgba(116,232,192,0.05)); border: 2px solid rgba(116,232,192,0.45); box-shadow: 0 10px 30px rgba(116,232,192,0.22); }
+  .tl-date { position: relative; display: flex; align-items: center; justify-content: center; min-width: 160px; padding: 14px 18px; border-radius: 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 900; font-size: 38px; letter-spacing: 1px; line-height: 1; color: var(--bg); }
+  .tl-card.orange .tl-date { background: var(--orange); }
+  .tl-card.purple .tl-date { background: var(--purple); }
+  .tl-card.blue   .tl-date { background: var(--blue); }
+  .tl-ping { position: absolute; inset: -4px; border-radius: 18px; pointer-events: none; opacity: 0; }
+  .tl-card.orange .tl-ping { border: 3px solid var(--orange); }
+  .tl-card.purple .tl-ping { border: 3px solid var(--purple); }
+  .tl-card.blue   .tl-ping { border: 3px solid var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .tl-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 38px; line-height: 1.1; color: var(--text); }
+  .tl-sub   { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 26px; letter-spacing: 1px; }
+  .tl-card.orange .tl-sub { color: var(--orange); }
+  .tl-card.purple .tl-sub { color: var(--purple); }
+  .tl-card.blue   .tl-sub { color: var(--blue); }
+  .tl-index { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 900; font-size: 32px; line-height: 1; }
+  .tl-card.orange .tl-index { background: rgba(16,163,127,0.20); border: 1.5px solid rgba(16,163,127,0.40); color: var(--orange); }
+  .tl-card.purple .tl-index { background: rgba(25,195,125,0.20); border: 1.5px solid rgba(25,195,125,0.40); color: var(--purple); }
+  .tl-card.blue   .tl-index { background: rgba(116,232,192,0.20); border: 1.5px solid rgba(116,232,192,0.40); color: var(--blue); }
+
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 6 â€” Comparison split â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase6 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 28px; }
+  #p6-overline { color: var(--orange); }
+  #p6-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 52px; line-height: 1.05; letter-spacing: -1px; color: var(--text); max-width: 920px; }
+  .cmp-wrap { width: 940px; position: relative; }
+  .cmp-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; }
+  .cmp-side { background: var(--card); border: 2px solid rgba(245,241,235,0.10); border-radius: 22px; padding: 32px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .cmp-side.left  { border-color: rgba(255,124,124,0.35); background: linear-gradient(135deg, rgba(255,124,124,0.12), rgba(255,124,124,0.03)); }
+  .cmp-side.right { border-color: rgba(94,234,212,0.35); background: linear-gradient(135deg, rgba(94,234,212,0.12), rgba(94,234,212,0.03)); }
+  .cmp-tag { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 20px; letter-spacing: 3px; padding: 6px 14px; border-radius: 8px; }
+  .cmp-side.left  .cmp-tag { color: var(--red-soft); background: rgba(255,124,124,0.12); border: 1px solid rgba(255,124,124,0.45); }
+  .cmp-side.right .cmp-tag { color: var(--green);    background: rgba(94,234,212,0.12); border: 1px solid rgba(94,234,212,0.45); }
+  .cmp-headline { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; color: var(--text); }
+  .cmp-stat { font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 110px; line-height: 0.9; letter-spacing: -3px; font-variant-numeric: tabular-nums; }
+  .cmp-side.left  .cmp-stat { color: var(--red-soft); }
+  .cmp-side.right .cmp-stat { color: var(--green); }
+  .cmp-sub { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 20px; color: var(--text-dim); letter-spacing: 1.5px; }
+  .cmp-vs { width: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .cmp-vs-text { font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 56px; letter-spacing: -2px; color: var(--text); background: var(--bg); border: 3px solid var(--orange); border-radius: 50%; width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 32px rgba(16,163,127,0.4); }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 7 â€” Big metric â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase7 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 28px; }
+  #p7-overline { color: var(--orange); }
+  .metric-wrap { width: 880px; background: var(--card); border: 2px solid rgba(16,163,127,0.40); border-radius: 28px; padding: 50px 48px; display: flex; flex-direction: column; align-items: center; gap: 14px; box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 100px rgba(16,163,127,0.15); }
+  .metric-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 26px; color: var(--text-dim); letter-spacing: 4px; text-transform: uppercase; }
+  .metric-row { display: flex; align-items: baseline; gap: 18px; }
+  .metric-num { font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 240px; line-height: 0.85; letter-spacing: -8px; color: var(--orange); font-variant-numeric: tabular-nums; text-shadow: 0 0 80px rgba(16,163,127,0.5); }
+  .metric-unit { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 72px; color: var(--text-dim); }
+  .metric-delta { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 30px; color: var(--green); padding: 8px 18px; border-radius: 999px; background: rgba(94,234,212,0.10); border: 1.5px solid rgba(94,234,212,0.45); }
+  .metric-delta .arrow { font-size: 26px; }
+  .metric-spark { width: 100%; height: 56px; }
+  .metric-spark #p7-spark-path { stroke: var(--orange); stroke-width: 3; fill: none; stroke-dasharray: 700; stroke-dashoffset: 700; filter: drop-shadow(0 0 8px rgba(16,163,127,0.6)); }
+  .metric-spark .spark-area { fill: url(#p7-spark-grad); opacity: 0; }
+  .metric-foot { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 20px; color: var(--text-dim); letter-spacing: 1px; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 8 â€” Pull quote â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase8 .phase-content { align-items: center; justify-content: center; gap: 28px; }
+  #p8-overline { color: var(--purple); }
+  .quote-wrap { width: 940px; background: linear-gradient(135deg, rgba(25,195,125,0.10), rgba(25,195,125,0.02)); border-left: 6px solid var(--purple); border-radius: 22px; padding: 56px 60px; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.40); }
+  .quote-mark-big { position: absolute; top: -10px; left: 24px; font-family: 'Inter', serif; font-size: 220px; line-height: 1; color: var(--purple); opacity: 0.35; pointer-events: none; }
+  .quote-body-big { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 44px; line-height: 1.30; letter-spacing: -0.5px; color: var(--text); text-align: left; text-wrap: pretty; }
+  .quote-body-big .em { color: var(--purple); font-weight: 800; }
+  .quote-attr { margin-top: 28px; padding-top: 22px; border-top: 1px solid rgba(245,241,235,0.10); display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; }
+  .quote-attr-name { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; font-size: 28px; color: var(--text); }
+  .quote-attr-role { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 22px; color: var(--text-dim); letter-spacing: 1px; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 9 â€” Feature grid â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase9 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 24px; }
+  #p9-overline { color: var(--blue); }
+  #p9-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 50px; line-height: 1.05; letter-spacing: -1px; color: var(--text); }
+  .grid-wrap { width: 940px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-tile { background: var(--card); border: 1.5px solid rgba(245,241,235,0.10); border-radius: 18px; padding: 26px 22px; display: flex; flex-direction: column; gap: 10px; text-align: left; min-height: 170px; transform-style: preserve-3d; }
+  .grid-icon { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 26px; color: var(--bg); flex-shrink: 0; }
+  .grid-icon.o { background: var(--orange); } .grid-icon.p { background: var(--purple); } .grid-icon.b { background: var(--blue); } .grid-icon.g { background: var(--green); }
+  .grid-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1; color: var(--text); }
+  .grid-sub { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; font-size: 19px; line-height: 1.4; color: var(--text-dim); letter-spacing: 0.5px; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 10 â€” Numbered steps â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase10 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 28px; }
+  #p10-overline { color: var(--orange); }
+  #p10-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 50px; line-height: 1.05; letter-spacing: -1px; color: var(--text); }
+  .steps-wrap { width: 880px; display: flex; flex-direction: column; gap: 20px; }
+  .step { display: flex; align-items: flex-start; gap: 22px; padding: 22px 26px; background: var(--card); border: 1.5px solid rgba(245,241,235,0.10); border-radius: 18px; text-align: left; }
+  .step-num { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 30px; color: var(--bg); flex-shrink: 0; }
+  .step-num.o { background: var(--orange); box-shadow: 0 0 24px rgba(16,163,127,0.4); }
+  .step-num.p { background: var(--purple); box-shadow: 0 0 24px rgba(25,195,125,0.4); }
+  .step-num.b { background: var(--blue);   box-shadow: 0 0 24px rgba(116,232,192,0.4); }
+  .step-body { display: flex; flex-direction: column; gap: 6px; flex: 1; padding-top: 4px; }
+  .step-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 32px; color: var(--text); line-height: 1.1; }
+  .step-sub { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; font-size: 20px; color: var(--text-dim); letter-spacing: 0.5px; line-height: 1.4; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 11 â€” Annotated UI â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase11 .phase-content { align-items: center; justify-content: center; gap: 24px; }
+  #p11-overline { color: var(--orange); }
+  .ui-wrap { width: 880px; background: var(--card); border: 1.5px solid rgba(245,241,235,0.10); border-radius: 22px; overflow: hidden; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.45); }
+  .ui-head { display: flex; align-items: center; gap: 10px; padding: 14px 22px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(245,241,235,0.06); }
+  .ui-lights { display: flex; gap: 8px; }
+  .ui-light { width: 12px; height: 12px; border-radius: 50%; }
+  .ui-light.r { background: #FF5F57; } .ui-light.y { background: #FEBC2E; } .ui-light.g { background: #28C840; }
+  .ui-url { flex: 1; text-align: center; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 17px; color: var(--text-dim); letter-spacing: 1px; padding: 6px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+  .ui-body { padding: 32px 28px; display: flex; flex-direction: column; gap: 18px; min-height: 520px; }
+  .ui-block { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .ui-block-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; font-size: 24px; color: var(--text); }
+  .ui-block-line { height: 12px; background: rgba(245,241,235,0.10); border-radius: 4px; }
+  .ui-block-line.w70 { width: 70%; } .ui-block-line.w50 { width: 50%; } .ui-block-line.w85 { width: 85%; }
+  .ui-callout { position: absolute; width: 60px; height: 60px; border: 3px solid var(--orange); border-radius: 50%; box-shadow: 0 0 24px rgba(16,163,127,0.5); pointer-events: none; }
+  .ui-callout::after { content: attr(data-num); position: absolute; top: -16px; right: -16px; width: 34px; height: 34px; border-radius: 50%; background: var(--orange); color: var(--bg); font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 19px; display: flex; align-items: center; justify-content: center; }
+  #ui-c1 { top: 160px; left: 70px; }
+  #ui-c2 { top: 360px; right: 70px; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 12 â€” Logo wall â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase12 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 24px; }
+  #p12-overline { color: var(--green); }
+  #p12-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 50px; line-height: 1.05; letter-spacing: -1px; color: var(--text); }
+  .logo-wall { width: 940px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .logo-tile { height: 130px; background: var(--card); border: 1px solid rgba(245,241,235,0.10); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 28px; color: var(--text-dim); letter-spacing: 1px; }
+  .logo-tile .badge { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 17px; padding: 4px 10px; border-radius: 6px; letter-spacing: 1.5px; margin-right: 10px; }
+  .logo-tile .badge.o { color: var(--orange); border: 1px solid rgba(16,163,127,0.40); background: rgba(16,163,127,0.10); }
+  .logo-tile .badge.p { color: var(--purple); border: 1px solid rgba(25,195,125,0.40); background: rgba(25,195,125,0.10); }
+  .logo-tile .badge.b { color: var(--blue);   border: 1px solid rgba(116,232,192,0.40); background: rgba(116,232,192,0.10); }
+  .logo-tile .badge.g { color: var(--green);  border: 1px solid rgba(94,234,212,0.40); background: rgba(94,234,212,0.10); }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 13 â€” Code snippet â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase13 .phase-content { align-items: center; justify-content: center; gap: 24px; }
+  #p13-overline { color: var(--blue); }
+  .code-wrap { width: 940px; background: var(--card); border: 1.5px solid rgba(245,241,235,0.10); border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.55); }
+  .code-head { display: flex; align-items: center; gap: 16px; padding: 14px 22px; border-bottom: 1px solid rgba(245,241,235,0.06); background: rgba(255,255,255,0.02); }
+  .code-lang { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 19px; padding: 4px 12px; color: var(--blue); background: rgba(116,232,192,0.10); border: 1px solid rgba(116,232,192,0.40); border-radius: 6px; letter-spacing: 2px; }
+  .code-filename { flex: 1; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 20px; color: var(--text-dim); letter-spacing: 1px; }
+  .code-copy { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 17px; color: var(--text-dim); letter-spacing: 2px; padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(245,241,235,0.18); }
+  .code-body { padding: 26px 22px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; font-size: 24px; line-height: 1.6; text-align: left; }
+  .code-line { display: flex; gap: 18px; opacity: 0; }
+  .code-num { color: rgba(245,241,235,0.30); width: 38px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .code-text { color: var(--text); flex: 1; white-space: pre; overflow: hidden; }
+  .code-text .kw  { color: var(--purple); }
+  .code-text .str { color: var(--green); }
+  .code-text .nm  { color: var(--orange); }
+  .code-text .fn  { color: var(--blue); }
+  .code-text .com { color: var(--text-dim); font-style: italic; }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPONENT 14 â€” KPI dashboard â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase14 .phase-content { align-items: center; justify-content: center; text-align: center; gap: 28px; }
+  #p14-overline { color: var(--orange); }
+  #p14-title { font-family: 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 48px; line-height: 1.05; letter-spacing: -1px; color: var(--text); }
+  .kpi-wrap { width: 940px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .kpi-tile { background: var(--card); border: 1.5px solid rgba(245,241,235,0.10); border-radius: 18px; padding: 24px 22px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; text-align: left; position: relative; overflow: hidden; }
+  .kpi-tile::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .kpi-tile.o::before { background: var(--orange); }
+  .kpi-tile.p::before { background: var(--purple); }
+  .kpi-tile.b::before { background: var(--blue); }
+  .kpi-tile.g::before { background: var(--green); }
+  .kpi-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 17px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; }
+  .kpi-row { display: flex; align-items: baseline; gap: 12px; width: 100%; }
+  .kpi-num { font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 72px; line-height: 0.9; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+  .kpi-tile.o .kpi-num { color: var(--orange); }
+  .kpi-tile.p .kpi-num { color: var(--purple); }
+  .kpi-tile.b .kpi-num { color: var(--blue); }
+  .kpi-tile.g .kpi-num { color: var(--green); }
+  .kpi-unit { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; font-size: 32px; color: var(--text-dim); }
+  .kpi-delta { display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 19px; padding: 4px 10px; border-radius: 6px; margin-top: 2px; }
+  .kpi-delta.up   { color: var(--green);    background: rgba(94,234,212,0.10); border: 1px solid rgba(94,234,212,0.40); }
+  .kpi-delta.down { color: var(--red-soft); background: rgba(255,124,124,0.10); border: 1px solid rgba(255,124,124,0.40); }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHASE 15 â€” Quote + CTA (was phase 6) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #phase15 .phase-content { align-items: center; justify-content: center; gap: 36px; }
+  #p15-overline { color: var(--green); }
+
+  .quote-card {
+    width: 880px; background: var(--card);
+    border: 1px solid rgba(245,241,235,0.10);
+    border-radius: 22px; padding: 32px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .quote-top { display: flex; align-items: center; gap: 18px; }
+  .quote-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 900;
+    font-size: 36px; color: var(--bg); flex-shrink: 0;
+  }
+  .quote-meta { display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left; }
+  .quote-name { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; font-size: 30px; color: var(--text); }
+  .quote-handle { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 24px; color: var(--text-dim); letter-spacing: 1px; }
+  .quote-verify {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--bg); font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 22px;
+  }
+  .quote-text {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 600;
+    font-size: 38px; line-height: 1.35;
+    color: var(--text); text-align: left;
+    margin: 24px 0 28px;
+  }
+  .quote-text .em { color: var(--orange); font-weight: 800; }
+  .quote-bottom {
+    display: flex; gap: 28px; align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(245,241,235,0.06);
+  }
+  .quote-stat {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 24px;
+    color: var(--text-dim); letter-spacing: 1px;
+  }
+  .quote-stat .icon { font-size: 20px; color: var(--text-dim); }
+  .quote-stat .num  { color: var(--text); font-variant-numeric: tabular-nums; min-width: 60px; }
+
+  #p15-url-wrap { position: relative; display: inline-block; }
+  #p15-url {
+    position: relative;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700;
+    font-size: 56px; letter-spacing: 2px;
+    color: var(--text); line-height: 1.0;
+    padding: 20px 32px; border-radius: 22px;
+    background: linear-gradient(135deg, rgba(94,234,212,0.20), rgba(94,234,212,0.05));
+    border: 2px solid rgba(94,234,212,0.45);
+    box-shadow: 0 14px 36px rgba(94,234,212,0.30);
+    max-width: 920px; white-space: nowrap; overflow: hidden;
+  }
+  #p15-caret {
+    display: inline-block; width: 4px; height: 1em;
+    background: var(--green); margin-left: 6px;
+    vertical-align: middle; box-shadow: 0 0 12px var(--green);
+  }
+  #p15-url-pulse {
+    position: absolute; inset: -8px;
+    border-radius: 30px; border: 3px solid var(--green);
+    box-shadow: 0 0 60px rgba(94,234,212,0.6);
+    opacity: 0; pointer-events: none;
+  }
+  #p15-cta-question {
+    font-family: 'Inter', system-ui, sans-serif; font-weight: 800;
+    font-size: 44px; line-height: 1.12; letter-spacing: -1px;
+    color: var(--orange); text-align: center;
+    max-width: 920px;
+  }
+  #p15-cta-question .em { color: var(--text); font-style: italic; }
+  #p15-cta-question .word { display: inline-block; margin-right: 0.25em; }
+
+  #p15-flash {
+    position: absolute; top: 50%; left: 50%;
+    width: 1600px; height: 1600px;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,163,127,0.5), rgba(16,163,127,0.1) 40%, transparent 65%);
+    pointer-events: none; opacity: 0; z-index: 0;
+    mix-blend-mode: screen;
+  }
+
+  /* â•â• Wordmark lockup (replaces Anthropic SVG) â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  #top-banner-wordmark, #p1-brand-wordmark {
+    display: inline-flex; align-items: center; gap: 18px;
+    font-family: 'Inter', system-ui, sans-serif; color: var(--text);
+    user-select: none;
+  }
+  #top-banner-wordmark { justify-content: center; }
+  .wm-mark {
+    width: 64px; height: 64px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 35%, var(--green), transparent 60%),
+      conic-gradient(from 140deg, var(--orange), var(--purple), var(--blue), var(--green), var(--orange));
+    box-shadow: 0 0 28px rgba(16,163,127,0.45), inset 0 0 18px rgba(0,0,0,0.35);
+    flex-shrink: 0;
+  }
+  .wm-text {
+    font-weight: 900; font-size: 56px; letter-spacing: -2px;
+    line-height: 1; color: var(--text);
+  }
+  .wm-sub {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px;
+    letter-spacing: 4px; color: var(--text-dim);
+    border-left: 1px solid rgba(245,241,235,0.18);
+    padding-left: 14px; line-height: 1;
+  }
+  #p1-brand-wordmark .wm-text { font-size: 48px; }
+  #p1-brand-wordmark .wm-mark { width: 56px; height: 56px; }
+
+  /* â•â• Animated gradient mesh (replaces scattered shape backdrop) â•â• */
+  #gradient-mesh {
+    position: absolute; inset: -120px;
+    z-index: 0; pointer-events: none;
+    overflow: hidden;
+    filter: blur(90px) saturate(1.05);
+    opacity: 0.42;
+  }
+  .mesh-orb {
+    position: absolute; border-radius: 50%;
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .mesh-orb.m1 {
+    width: 900px; height: 900px;
+    left: -180px; top: -60px;
+    background: radial-gradient(circle, rgba(16,163,127,0.42), rgba(16,163,127,0) 60%);
+    animation: meshDriftA 26s ease-in-out infinite alternate;
+  }
+  .mesh-orb.m2 {
+    width: 760px; height: 760px;
+    right: -160px; top: 320px;
+    background: radial-gradient(circle, rgba(94,234,212,0.36), rgba(94,234,212,0) 60%);
+    animation: meshDriftB 32s ease-in-out infinite alternate-reverse;
+  }
+  .mesh-orb.m3 {
+    width: 820px; height: 820px;
+    left: -120px; bottom: -120px;
+    background: radial-gradient(circle, rgba(25,195,125,0.36), rgba(25,195,125,0) 60%);
+    animation: meshDriftC 30s ease-in-out infinite alternate;
+  }
+  .mesh-orb.m4 {
+    width: 620px; height: 620px;
+    right: 60px; bottom: 280px;
+    background: radial-gradient(circle, rgba(116,232,192,0.28), rgba(116,232,192,0) 60%);
+    animation: meshDriftD 36s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes meshDriftA {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(180px,140px) scale(1.12); }
+    100% { transform: translate(80px,-60px) scale(0.95); }
+  }
+  @keyframes meshDriftB {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(-220px,180px) scale(1.08); }
+    100% { transform: translate(-60px,-100px) scale(0.92); }
+  }
+  @keyframes meshDriftC {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(140px,-200px) scale(1.10); }
+    100% { transform: translate(-100px,80px) scale(0.96); }
+  }
+  @keyframes meshDriftD {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(-160px,-140px) scale(1.15); }
+    100% { transform: translate(120px,60px) scale(0.94); }
+  }
+  /* Center darkening shield â€” keeps content readable against mesh */
+  #content-shield {
+    position: absolute; inset: 0; z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 55% 42% at 50% 50%, rgba(11,15,24,0.62), rgba(11,15,24,0.18) 55%, transparent 78%),
+      linear-gradient(180deg, rgba(11,15,24,0.45) 0%, transparent 18%, transparent 82%, rgba(11,15,24,0.45) 100%);
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="79"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- â”€â”€â”€ Atmosphere â”€â”€â”€ -->
+  <div id="ambient"></div>
+  <div id="gradient-mesh"><div class="mesh-orb m1"></div><div class="mesh-orb m2"></div><div class="mesh-orb m3"></div><div class="mesh-orb m4"></div></div>
+  <div id="content-shield"></div>
+
+  <!-- Particle constellation: dots + connecting SVG lines -->
+  <div id="particle-field">
+    <svg id="constellation-lines"></svg>
+  </div>
+
+  <!-- Token-stream edges (left/right) -->
+  <div id="token-stream-left"  class="token-stream"></div>
+  <div id="token-stream-right" class="token-stream"></div>
+
+  <!-- â”€â”€â”€ Chrome â”€â”€â”€ -->
+  <div id="letterbox-top" class="letterbox"></div>
+  <div id="letterbox-bottom" class="letterbox"></div>
+  <div id="vf-tl" class="vf-corner"></div>
+  <div id="vf-tr" class="vf-corner"></div>
+  <div id="vf-bl" class="vf-corner"></div>
+  <div id="vf-br" class="vf-corner"></div>
+  <div id="rec-indicator"><div id="rec-dot"></div><span>REC</span></div>
+  <div id="timecode">00:00:00</div>
+  <div id="phase-label"><span class="num">01</span> / 15</div>
+  <div id="phase-ticks">
+    <div class="phase-tick active" id="tick-1"></div>
+    <div class="phase-tick" id="tick-2"></div>
+    <div class="phase-tick" id="tick-3"></div>
+    <div class="phase-tick" id="tick-4"></div>
+    <div class="phase-tick" id="tick-5"></div>
+    <div class="phase-tick" id="tick-6"></div>
+    <div class="phase-tick" id="tick-7"></div>
+    <div class="phase-tick" id="tick-8"></div>
+    <div class="phase-tick" id="tick-9"></div>
+    <div class="phase-tick" id="tick-10"></div>
+    <div class="phase-tick" id="tick-11"></div>
+    <div class="phase-tick" id="tick-12"></div>
+    <div class="phase-tick" id="tick-13"></div>
+    <div class="phase-tick" id="tick-14"></div>
+    <div class="phase-tick" id="tick-15"></div>
+  </div>
+
+  <div id="top-banner"><div id="top-banner-wordmark"><span class="wm-mark"></span><span class="wm-text">AI&nbsp;NEWS</span><span class="wm-sub">FRONTIER&nbsp;DESK</span></div></div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 1 â€” Hook (0-6s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase1" class="phase">
+    <div id="p1-scanbeam"></div>
+    <div id="p1-topic-lockup">
+      <div id="p1-brand-lockup">
+        <div id="p1-brand-wordmark"><span class="wm-mark"></span><span class="wm-text">AI&nbsp;NEWS</span></div>
+      </div>
+      <div id="p1-topic-slam">MONEY,<br>BUT <span class="accent">SMARTER.</span></div>
+      <div id="p1-ga-receipt">FEATURE Â· NOV 12, 2026 Â· 8 MIN</div>
+      <div id="p1-topic-bar"></div>
+    </div>
+    <div id="p1-hero-content">
+      <div class="overline" id="p1-overline">AI News Â· Product Drop</div>
+      <div id="p1-pre">Your wallet just gotâ€¦</div>
+      <div style="position: relative;">
+        <div id="p1-hero">AN AGENT.</div>
+        <div id="p1-impact-ring"></div>
+      </div>
+      <div id="p1-caption">Personal Finance Â· Live in 14 markets</div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 2 â€” Terminal (6-11s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">Live walkthrough</div>
+      <div class="term" id="p2-term">
+        <div class="term-head">
+          <div class="term-lights">
+            <div class="term-light r"></div>
+            <div class="term-light y"></div>
+            <div class="term-light g"></div>
+          </div>
+          <div class="term-title">finance-agent â€” chat Â· zsh</div>
+          <div class="term-status"><div class="term-status-dot" id="p2-term-status-dot"></div><span id="p2-term-status">LIVE</span></div>
+        </div>
+        <div class="term-body" id="p2-term-body">
+          <div class="term-line" id="p2-l1"><span class="prompt">$</span><span class="out">agent budget --month=oct</span></div>
+          <div class="term-line" id="p2-l2"><span class="dim">â€º</span><span class="out">Importing transactions<span class="dim">...</span></span><span class="term-tag ok">OK</span></div>
+          <div class="term-line" id="p2-l3"><span class="dim">â€º</span><span class="out">Categorizing spend<span class="dim">...</span></span><span class="term-tag ok">OK</span></div>
+          <div class="term-line" id="p2-l4"><span class="dim">â€º</span><span class="out">Subscriptions found<span class="dim">...</span></span><span class="term-tag run">27</span></div>
+          <div class="term-line" id="p2-l5"><span class="dim">â€º</span><span class="out">Forecasting cashflow<span class="dim">...</span></span><span class="term-tag ok">OK</span></div>
+          <div class="term-line" id="p2-l6"><span class="prompt">âš </span><span class="out">Found <b>$284</b> in cuttable spend</span><span class="term-tag warn">HIGH</span></div>
+          <div class="term-line" id="p2-l7"><span class="prompt">$</span><span class="out">agent plan --output=budget.md<span class="term-cursor" id="p2-cursor"></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 3 â€” Benchmark chart (11-16s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">Accuracy</div>
+      <div id="p3-headline">Where it beats spreadsheets.</div>
+      <div class="bench" id="p3-bench">
+        <div class="bench-row" id="p3-row-1">
+          <div class="bench-label">CATEGORIZE</div>
+          <div class="bench-track">
+            <div class="bench-fill orange" id="p3-fill-1" data-pct="94"></div>
+            <div class="bench-marker" id="p3-marker-1" style="left: 92%;"></div>
+          </div>
+          <div class="bench-value" id="p3-val-1">0%</div>
+        </div>
+        <div class="bench-row" id="p3-row-2">
+          <div class="bench-label">FORECAST</div>
+          <div class="bench-track">
+            <div class="bench-fill purple" id="p3-fill-2" data-pct="87"></div>
+          </div>
+          <div class="bench-value" id="p3-val-2">0%</div>
+        </div>
+        <div class="bench-row" id="p3-row-3">
+          <div class="bench-label">FRAUD FLAG</div>
+          <div class="bench-track">
+            <div class="bench-fill blue" id="p3-fill-3" data-pct="91"></div>
+          </div>
+          <div class="bench-value" id="p3-val-3">0%</div>
+        </div>
+        <div class="bench-row" id="p3-row-4">
+          <div class="bench-label">TAX SORT</div>
+          <div class="bench-track">
+            <div class="bench-fill green" id="p3-fill-4" data-pct="89"></div>
+          </div>
+          <div class="bench-value" id="p3-val-4">0%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 4 â€” Code diff (16-21s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Setup</div>
+      <div id="p4-filename">config/budget.yml</div>
+      <div class="diff">
+        <div class="diff-panel" id="p4-before">
+          <div class="diff-head">
+            <div class="label">BEFORE</div>
+            <div class="tag before">âˆ’4 LINES</div>
+          </div>
+          <div class="diff-body">
+            <div class="diff-line del" id="p4-d1"><div class="diff-num">12</div><div class="diff-prefix">-</div><div class="diff-text"><span class="kw">tracking</span>: <span class="str">"manual"</span>,</div></div>
+            <div class="diff-line del" id="p4-d2"><div class="diff-num">13</div><div class="diff-prefix">-</div><div class="diff-text"><span class="kw">categories</span>: <span class="str">"static"</span>,</div></div>
+            <div class="diff-line del" id="p4-d3"><div class="diff-num">14</div><div class="diff-prefix">-</div><div class="diff-text"><span class="kw">alerts</span>: <span class="nm">false</span>,</div></div>
+            <div class="diff-line del" id="p4-d4"><div class="diff-num">15</div><div class="diff-prefix">-</div><div class="diff-text"><span class="com">// monthly recap only</span></div></div>
+          </div>
+        </div>
+        <div class="diff-panel" id="p4-after">
+          <div class="diff-head">
+            <div class="label">AFTER</div>
+            <div class="tag after">+4 LINES</div>
+          </div>
+          <div class="diff-body">
+            <div class="diff-line add" id="p4-a1"><div class="diff-num">12</div><div class="diff-prefix">+</div><div class="diff-text"><span class="kw">tracking</span>: <span class="str">"live"</span>,</div></div>
+            <div class="diff-line add" id="p4-a2"><div class="diff-num">13</div><div class="diff-prefix">+</div><div class="diff-text"><span class="kw">categories</span>: <span class="str">"adaptive"</span>,</div></div>
+            <div class="diff-line add" id="p4-a3"><div class="diff-num">14</div><div class="diff-prefix">+</div><div class="diff-text"><span class="kw">alerts</span>: <span class="nm">true</span>,</div></div>
+            <div class="diff-line add" id="p4-a4"><div class="diff-num">15</div><div class="diff-prefix">+</div><div class="diff-text"><span class="com">// proactive nudges</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 5 â€” Timeline (21-27s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">Rollout</div>
+      <div class="timeline-wrap">
+        <svg id="p5-connector" viewBox="0 0 6 480" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="p5-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10a37f" />
+              <stop offset="50%" stop-color="#19c37d" />
+              <stop offset="100%" stop-color="#74e8c0" />
+            </linearGradient>
+          </defs>
+          <line x1="3" y1="0" x2="3" y2="480"
+                stroke="url(#p5-grad)" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        <div id="p5-playhead"></div>
+        <div class="timeline-list">
+          <div class="tl-card orange" id="p5-card-1">
+            <div class="tl-date">Sep 3<div class="tl-ping" id="p5-ping-1"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Closed beta</div>
+              <div class="tl-sub">1K POWER USERS</div>
+            </div>
+            <div class="tl-index">01</div>
+          </div>
+          <div class="tl-card purple" id="p5-card-2">
+            <div class="tl-date">Oct 18<div class="tl-ping" id="p5-ping-2"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Open beta</div>
+              <div class="tl-sub">WAITLIST CLEARED</div>
+            </div>
+            <div class="tl-index">02</div>
+          </div>
+          <div class="tl-card blue" id="p5-card-3">
+            <div class="tl-date">Nov 12<div class="tl-ping" id="p5-ping-3"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Global rollout</div>
+              <div class="tl-sub">14 MARKETS LIVE</div>
+            </div>
+            <div class="tl-index">03</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 6 â€” Comparison split (27-32s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">Manual vs AI</div>
+      <div id="p6-title">Spreadsheet <span style="color: var(--orange);">vs</span> Agent</div>
+      <div class="cmp-wrap">
+        <div class="cmp-row">
+          <div class="cmp-side left">
+            <div class="cmp-tag">BEFORE</div>
+            <div class="cmp-headline">Manual track</div>
+            <div class="cmp-stat" id="p6-stat-l" data-target="41">0</div>
+            <div class="cmp-sub">% USERS ON-PLAN</div>
+          </div>
+          <div class="cmp-vs"><div class="cmp-vs-text">VS</div></div>
+          <div class="cmp-side right">
+            <div class="cmp-tag">AFTER</div>
+            <div class="cmp-headline">AI assistant</div>
+            <div class="cmp-stat" id="p6-stat-r" data-target="92">0</div>
+            <div class="cmp-sub">% USERS ON-PLAN</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 7 â€” Big metric (32-37s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">User outcome</div>
+      <div class="metric-wrap">
+        <div class="metric-label">Users saving more in month 1</div>
+        <div class="metric-row">
+          <div class="metric-num" id="p7-metric" data-target="94">0</div>
+          <div class="metric-unit">%</div>
+        </div>
+        <div class="metric-delta">
+          <span class="arrow">â–²</span>
+          <span id="p7-delta" data-target="12">0</span>
+          <span>%</span>
+          <span style="color: var(--text-dim); font-weight: 500; margin-left: 4px;">VS Q1</span>
+        </div>
+        <svg class="metric-spark" viewBox="0 0 880 56" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="p7-spark-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(16,163,127,0.45)" />
+              <stop offset="100%" stop-color="rgba(16,163,127,0)" />
+            </linearGradient>
+          </defs>
+          <path id="p7-spark-path" d="M0 44 L80 40 L160 42 L240 34 L320 38 L400 28 L480 32 L560 22 L640 26 L720 14 L800 18 L880 6" />
+          <path class="spark-area" id="p7-spark-area" d="M0 44 L80 40 L160 42 L240 34 L320 38 L400 28 L480 32 L560 22 L640 26 L720 14 L800 18 L880 6 L880 56 L0 56 Z" />
+        </svg>
+        <div class="metric-foot">SAMPLE N=42,180 Â· BETA COHORT</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 8 â€” Pull quote (37-42s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">Reader response</div>
+      <div class="quote-wrap">
+        <div class="quote-mark-big">"</div>
+        <div class="quote-body-big" id="p8-body">
+          Felt like a <span class="em">financial coach</span> in my pocket. It caught a subscription I&rsquo;d forgotten &mdash; and <span class="em">negotiated my internet bill</span> before I even asked.
+        </div>
+        <div class="quote-attr">
+          <div class="quote-attr-name">â€” Priya Rangan</div>
+          <div class="quote-attr-role">BETA TESTER Â· OAKLAND, CA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 9 â€” Feature grid (42-47s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase9" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p9-overline">What ships today</div>
+      <div id="p9-title">Six things in the box.</div>
+      <div class="grid-wrap" id="p9-grid">
+        <div class="grid-tile"><div class="grid-icon o">âŒ¬</div><div class="grid-title">Auto-categorize</div><div class="grid-sub">64 categories, learned from you</div></div>
+        <div class="grid-tile"><div class="grid-icon p">â—¬</div><div class="grid-title">Subscription radar</div><div class="grid-sub">Finds &amp; cancels in one tap</div></div>
+        <div class="grid-tile"><div class="grid-icon b">â—</div><div class="grid-title">Bill negotiate</div><div class="grid-sub">Drafts the letter, you sign</div></div>
+        <div class="grid-tile"><div class="grid-icon g">â—­</div><div class="grid-title">Goal coach</div><div class="grid-sub">Saves toward what you actually want</div></div>
+        <div class="grid-tile"><div class="grid-icon p">â—¯</div><div class="grid-title">Bank-grade</div><div class="grid-sub">Read-only, SOC 2 Type II</div></div>
+        <div class="grid-tile"><div class="grid-icon o">â—”</div><div class="grid-title">Memory</div><div class="grid-sub">Remembers your money DNA</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 10 â€” Numbered steps (47-52s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase10" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p10-overline">Get started</div>
+      <div id="p10-title">Three steps. One minute.</div>
+      <div class="steps-wrap" id="p10-steps">
+        <div class="step"><div class="step-num o">1</div><div class="step-body"><div class="step-title">Link your bank</div><div class="step-sub">12,000 institutions, read-only access</div></div></div>
+        <div class="step"><div class="step-num p">2</div><div class="step-body"><div class="step-title">Tell it your goals</div><div class="step-sub">Plain English &mdash; save, pay off, plan</div></div></div>
+        <div class="step"><div class="step-num b">3</div><div class="step-body"><div class="step-title">Approve the nudges</div><div class="step-sub">It pings, you tap, it executes</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 11 â€” Annotated UI (52-57s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase11" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p11-overline">Inside the app</div>
+      <div class="ui-wrap">
+        <div class="ui-head">
+          <div class="ui-lights"><div class="ui-light r"></div><div class="ui-light y"></div><div class="ui-light g"></div></div>
+          <div class="ui-url">chat.example.com/finance</div>
+        </div>
+        <div class="ui-body">
+          <div class="ui-block">
+            <div class="ui-block-title">$ Checking Â· Wells Fargo</div>
+            <div class="ui-block-line w85"></div>
+            <div class="ui-block-line w70"></div>
+            <div class="ui-block-line w50"></div>
+          </div>
+          <div class="ui-block">
+            <div class="ui-block-title">âš¡ Suggested move</div>
+            <div class="ui-block-line w70"></div>
+            <div class="ui-block-line w85"></div>
+            <div class="ui-block-line w50"></div>
+          </div>
+        </div>
+        <div class="ui-callout" id="ui-c1" data-num="1"></div>
+        <div class="ui-callout" id="ui-c2" data-num="2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 12 â€” Logo wall (57-62s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase12" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p12-overline">Featured in</div>
+      <div id="p12-title">Press coverage so far.</div>
+      <div class="logo-wall" id="p12-wall">
+        <div class="logo-tile"><span class="badge o">W</span>WIRED</div>
+        <div class="logo-tile"><span class="badge p">V</span>VERGE</div>
+        <div class="logo-tile"><span class="badge b">T</span>TCRUNCH</div>
+        <div class="logo-tile"><span class="badge g">A</span>AXIOS</div>
+        <div class="logo-tile"><span class="badge o">R</span>REUTERS</div>
+        <div class="logo-tile"><span class="badge p">P</span>PROTOCOL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 13 â€” Code snippet (62-67s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase13" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p13-overline">For developers</div>
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="code-lang">PY</div>
+          <div class="code-filename">finance_call.py</div>
+          <div class="code-copy">COPY</div>
+        </div>
+        <div class="code-body">
+          <div class="code-line" id="p13-cl1"><div class="code-num">1</div><div class="code-text"><span class="kw">from</span> <span class="fn">finance_sdk</span> <span class="kw">import</span> Agent</div></div>
+          <div class="code-line" id="p13-cl2"><div class="code-num">2</div><div class="code-text"></div></div>
+          <div class="code-line" id="p13-cl3"><div class="code-num">3</div><div class="code-text">agent = <span class="fn">Agent</span>()</div></div>
+          <div class="code-line" id="p13-cl4"><div class="code-num">4</div><div class="code-text">plan = agent.budget.<span class="fn">analyze</span>(</div></div>
+          <div class="code-line" id="p13-cl5"><div class="code-num">5</div><div class="code-text">    account=<span class="str">"chk_4910"</span>,</div></div>
+          <div class="code-line" id="p13-cl6"><div class="code-num">6</div><div class="code-text">    window=<span class="nm">90</span>,  <span class="com"># days</span></div></div>
+          <div class="code-line" id="p13-cl7"><div class="code-num">7</div><div class="code-text">    goal={<span class="str">"type"</span>: <span class="str">"save"</span>,</div></div>
+          <div class="code-line" id="p13-cl8"><div class="code-num">8</div><div class="code-text">               <span class="str">"target"</span>: <span class="nm">500</span>}</div></div>
+          <div class="code-line" id="p13-cl9"><div class="code-num">9</div><div class="code-text">)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 14 â€” KPI dashboard (67-72s) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase14" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p14-overline">Beta numbers</div>
+      <div id="p14-title">Six months in.</div>
+      <div class="kpi-wrap" id="p14-kpis">
+        <div class="kpi-tile o">
+          <div class="kpi-label">USER SAVINGS</div>
+          <div class="kpi-row"><div class="kpi-num" id="p14-k1" data-target="18">0</div><div class="kpi-unit">M$</div></div>
+          <div class="kpi-delta up">â–² <span id="p14-k1d" data-target="42">0</span>% MoM</div>
+        </div>
+        <div class="kpi-tile p">
+          <div class="kpi-label">BETA USERS</div>
+          <div class="kpi-row"><div class="kpi-num" id="p14-k2" data-target="2.4">0</div><div class="kpi-unit">M</div></div>
+          <div class="kpi-delta up">â–² <span id="p14-k2d" data-target="71">0</span>% QoQ</div>
+        </div>
+        <div class="kpi-tile b">
+          <div class="kpi-label">SETUP TIME</div>
+          <div class="kpi-row"><div class="kpi-num" id="p14-k3" data-target="90">0</div><div class="kpi-unit">sec</div></div>
+          <div class="kpi-delta down">â–¼ <span id="p14-k3d" data-target="34">0</span>% vs v1</div>
+        </div>
+        <div class="kpi-tile g">
+          <div class="kpi-label">BANK-GRADE</div>
+          <div class="kpi-row"><div class="kpi-num" id="p14-k4" data-target="99.99">0</div><div class="kpi-unit">%</div></div>
+          <div class="kpi-delta up">â–² 0.12 PPT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â• PHASE 15 â€” Quote card + CTA (72-79s, was phase 6) â•â•â•â•â•â•â•â•â• -->
+  <div id="phase15" class="phase">
+    <div id="p15-flash"></div>
+    <div class="phase-content">
+      <div class="overline" id="p15-overline">On social</div>
+      <div class="quote-card" id="p15-quote">
+        <div class="quote-top">
+          <div class="quote-avatar">MJ</div>
+          <div class="quote-meta">
+            <div class="quote-name">Marcus J.</div>
+            <div class="quote-handle">@marcusj Â· 2h</div>
+          </div>
+          <div class="quote-verify">âœ“</div>
+        </div>
+        <div class="quote-text" id="p15-quote-text">
+          &ldquo;3 days in and it flagged <span class="em">$40/mo of subscriptions</span> I forgot I had. wild.&rdquo;
+        </div>
+        <div class="quote-bottom">
+          <div class="quote-stat"><span class="icon">â™¥</span><span class="num" id="p15-stat-likes">0</span></div>
+          <div class="quote-stat"><span class="icon">âŸ²</span><span class="num" id="p15-stat-reposts">0</span></div>
+          <div class="quote-stat"><span class="icon">ðŸ‘</span><span class="num" id="p15-stat-views">0K</span></div>
+        </div>
+      </div>
+      <div id="p15-url-wrap">
+        <div id="p15-url"><span id="p15-url-text"></span><span id="p15-caret"></span></div>
+        <div id="p15-url-pulse"></div>
+      </div>
+      <div id="p15-cta-question">
+        <span class="word">Would</span> <span class="word em">YOU</span> <span class="word">let</span> <span class="word">it</span> <span class="word">run?</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- â”€â”€â”€ Overlays â”€â”€â”€ -->
+  <div id="vignette"></div>
+  <div id="scanlines"></div>
+  <div id="grain"></div>
+  <div id="light-leak"></div>
+  <div id="anamorphic"></div>
+</div>
+
+<script>
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Deterministic seeded scatter helpers
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  /* Anthropic-shape backdrop (kept from V2) */
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 12, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  /* Particle constellation: 30 deterministic dots + lines between near neighbors */
+  function spawnParticles(seedPrefix, container, svg) {
+    const count = 30, w = 1080, h = 1920;
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      const seed = seedPrefix + '-p-' + i;
+      const x = 60 + seedHash(seed + '-x') * (w - 120);
+      const y = 240 + seedHash(seed + '-y') * (h - 480);
+      const scale = 0.6 + seedHash(seed + '-s') * 0.8;
+      positions.push({ x, y, scale });
+      const dot = document.createElement('div');
+      dot.className = 'particle';
+      dot.id = 'particle-' + i;
+      dot.style.left = x + 'px';
+      dot.style.top  = y + 'px';
+      dot.style.transform = 'scale(' + scale + ')';
+      container.appendChild(dot);
+    }
+    // Connect each particle to its 2 nearest neighbors (within 260px)
+    const NEAR = 260, NEAR2 = NEAR * NEAR;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    for (let i = 0; i < count; i++) {
+      const dists = [];
+      for (let j = 0; j < count; j++) {
+        if (j === i) continue;
+        const dx = positions[i].x - positions[j].x;
+        const dy = positions[i].y - positions[j].y;
+        dists.push({ j, d2: dx * dx + dy * dy });
+      }
+      dists.sort((a, b) => a.d2 - b.d2);
+      for (let k = 0; k < 2; k++) {
+        if (dists[k].d2 > NEAR2) break;
+        const j = dists[k].j;
+        if (j < i) continue; // avoid duplicate edges
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', positions[i].x);
+        line.setAttribute('y1', positions[i].y);
+        line.setAttribute('x2', positions[j].x);
+        line.setAttribute('y2', positions[j].y);
+        const opacity = Math.max(0.04, 0.16 - Math.sqrt(dists[k].d2) / 2000);
+        line.setAttribute('stroke', 'rgba(245,241,235,' + opacity.toFixed(3) + ')');
+        svg.appendChild(line);
+      }
+    }
+    return positions;
+  }
+
+  /* Drift particles slowly across the composition */
+  function animateParticles(tl, positions, duration) {
+    positions.forEach((p, i) => {
+      const seed = 'drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 80;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      tl.to('#particle-' + i, {
+        x: dx, y: dy,
+        duration: duration / 2,
+        ease: 'sine.inOut',
+        yoyo: true, repeat: 1,
+      }, 0);
+    });
+  }
+
+  /* Fill token-stream columns with deterministic mono characters */
+  function fillTokenStreams() {
+    const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ{}<>[]/\\-+=#@*';
+    function build(seedPrefix) {
+      let out = '';
+      for (let i = 0; i < 160; i++) {
+        out += chars[Math.floor(seedHash(seedPrefix + '-' + i) * chars.length)];
+      }
+      return out;
+    }
+    document.getElementById('token-stream-left').textContent  = build('tsL');
+    document.getElementById('token-stream-right').textContent = build('tsR');
+  }
+
+  /* Reposition shapes between phases (paired with whoosh SFX) */
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  /* Effects helpers */
+  function fireLightLeak(tl, t, dur) {
+    dur = dur || 0.7;
+    tl.fromTo("#light-leak",
+      { opacity: 0, y: 2400 },
+      { opacity: 1, y: 0, duration: dur * 0.5, ease: "power2.out" }, t);
+    tl.to("#light-leak",
+      { opacity: 0, y: -2400, duration: dur * 0.5, ease: "power2.in" }, t + dur * 0.5);
+  }
+  function fireAnamorphic(tl, t, dur) {
+    dur = dur || 0.45;
+    tl.fromTo("#anamorphic",
+      { opacity: 0, x: -1680, scaleX: 0.6 },
+      { opacity: 1, x: 0, scaleX: 1.3, duration: dur * 0.5, ease: "power3.out" }, t);
+    tl.to("#anamorphic",
+      { opacity: 0, x: 1680, scaleX: 0.6, duration: dur * 0.5, ease: "power3.in" }, t + dur * 0.5);
+  }
+  function countUp(tl, sel, target, start, dur, formatter) {
+    const obj = { v: 0 };
+    const el = document.querySelector(sel);
+    tl.to(obj, {
+      v: target, duration: dur, ease: "expo.out",
+      onUpdate: function () {
+        el.textContent = formatter ? formatter(obj.v) : Math.round(obj.v);
+      }
+    }, start);
+  }
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Boot atmosphere
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  // shapes removed â€” gradient mesh atmosphere instead
+  const particlePositions = spawnParticles('anthropic-particles',
+    document.getElementById('particle-field'),
+    document.getElementById('constellation-lines'));
+  fillTokenStreams();
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Timeline
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  /* Phase boundary timestamps (transitions start 0.6s before boundary) */
+  const T1 = 5.6;   // P1 â†’ P2
+  const T2 = 10.6;  // P2 â†’ P3
+  const T3 = 15.6;  // P3 â†’ P4
+  const T4 = 20.6;  // P4 â†’ P5
+  const T5 = 26.6;  // P5 â†’ P15
+  const DUR = 34;
+
+  /* â”€â”€ Initial state reset (re-applied on loop restart) â”€â”€ */
+  tl.set("#phase1", { opacity: 1, visibility: "visible", filter: "blur(0px)", scale: 1 }, 0);
+  tl.set(["#phase2","#phase3","#phase4","#phase5","#phase6","#phase7","#phase8","#phase9","#phase10","#phase11","#phase12","#phase13","#phase14","#phase15"],
+         { opacity: 0, visibility: "hidden", filter: "blur(0px)", scale: 1 }, 0);
+  tl.set("#p1-topic-lockup", { opacity: 1 }, 0);
+  tl.set("#p1-hero-content", { opacity: 0 }, 0);
+  tl.set("#p1-scanbeam", { opacity: 0 }, 0);
+  tl.set("#p1-impact-ring", { scale: 0, opacity: 0 }, 0);
+  tl.set(".term-line", { opacity: 0 }, 0);
+  tl.set(".bench-row", { opacity: 0 }, 0);
+  tl.set(".bench-fill", { width: "0%" }, 0);
+  tl.set(".bench-marker", { opacity: 0 }, 0);
+  tl.set(".diff-line", { opacity: 0 }, 0);
+  tl.set("#p5-playhead", { opacity: 0, top: 0 }, 0);
+  tl.set(["#p15-flash","#p15-url-pulse"], { opacity: 0 }, 0);
+  tl.set(".tl-ping", { opacity: 0 }, 0);
+  tl.set("#light-leak", { opacity: 0 }, 0);
+  tl.set("#anamorphic", { opacity: 0 }, 0);
+  tl.set("#phase-label", { innerHTML: '<span class="num">01</span> / 15' }, 0);
+  tl.call(() => {
+    const u = document.getElementById("p15-url-text"); if (u) u.textContent = "";
+    const c = document.getElementById("p15-caret");    if (c) c.style.opacity = "1";
+    ["p15-stat-likes","p15-stat-reposts"].forEach(id => {
+      const e = document.getElementById(id); if (e) e.textContent = "0";
+    });
+    const v = document.getElementById("p15-stat-views"); if (v) v.textContent = "0K";
+    document.querySelectorAll(".phase-tick").forEach((t, i) => {
+      t.classList.toggle("active", i === 0);
+    });
+  }, null, 0);
+
+  /* â”€â”€ Global atmosphere â”€â”€ */
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0,  scale: 1.04, duration: DUR / 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0);
+  tl.fromTo("#progress-fill", { width: 0 }, { width: 1080, duration: DUR, ease: "none" }, 0);
+
+  /* â”€â”€ Chrome entry â”€â”€ */
+  tl.from("#letterbox-top",    { y: -24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from("#letterbox-bottom", { y:  24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from(".vf-corner", { scale: 0.6, opacity: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.05 }, 0.2);
+  tl.from("#rec-indicator", { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#timecode",      { x:  20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#phase-label",   { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.35);
+  tl.from("#phase-ticks",   { x:  20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.35);
+  tl.to("#rec-dot",       { opacity: 0.35, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 49 }, 0.5);
+  tl.from("#top-banner",  { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.4);
+
+  /* Fade-in for particle field + edges */
+  tl.from("#particle-field", { opacity: 0, duration: 1.2, ease: "power2.out" }, 0.2);
+  tl.from(".token-stream",   { opacity: 0, duration: 1.5, ease: "power2.out" }, 0.4);
+
+  /* Slowly drift particles across the entire composition */
+  animateParticles(tl, particlePositions, DUR);
+
+  /* Timecode + global Ken Burns */
+  (function () {
+    const el = document.getElementById("timecode");
+    const obj = { t: 0 };
+    tl.to(obj, {
+      t: DUR, duration: DUR, ease: "none",
+      onUpdate: function () {
+        const sec = obj.t;
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec) % 60;
+        const f = Math.floor((sec % 1) * 30);
+        el.textContent =
+          String(m).padStart(2,'0') + ':' +
+          String(s).padStart(2,'0') + ':' +
+          String(f).padStart(2,'0');
+      }
+    }, 0);
+  })();
+  tl.fromTo([".phase"], { scale: 1.0 }, { scale: 1.015, duration: DUR, ease: "none" }, 0);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PHASE 1 â€” Hook (0-6s)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  tl.from("#p1-brand-lockup", { y: -10, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.45);
+  tl.from("#p1-topic-slam",   { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.55);
+  tl.from("#p1-ga-receipt",   { x: -16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.85);
+  tl.to("#p1-topic-bar",      { width: 320, duration: 0.7, ease: "expo.out" }, 1.0);
+  tl.fromTo("#p1-scanbeam",
+    { opacity: 0, y: -200 },
+    { opacity: 1, y: 1920, duration: 1.4, ease: "none" }, 0.8);
+  tl.to("#p1-scanbeam", { opacity: 0, duration: 0.3, ease: "power2.in" }, 2.0);
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.5, ease: "power2.in" }, 2.4);
+
+  fireLightLeak(tl, 2.5, 0.8);
+  fireAnamorphic(tl, 3.65, 0.45);
+
+  tl.to("#p1-hero-content", { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.5);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 2.6);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 2.9);
+  tl.from("#p1-hero", { scale: 0.72, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, 3.5);
+  tl.add(() => document.getElementById("p1-hero").classList.add("rgb-split"), 3.7);
+  tl.add(() => document.getElementById("p1-hero").classList.remove("rgb-split"), 3.95);
+  tl.to("#p1-hero", { x:  6, duration: 0.04, ease: "none", overwrite: "auto" }, 3.7);
+  tl.to("#p1-hero", { x: -6, duration: 0.04, ease: "none", overwrite: "auto" }, 3.74);
+  tl.to("#p1-hero", { x:  4, duration: 0.04, ease: "none", overwrite: "auto" }, 3.78);
+  tl.to("#p1-hero", { x:  0, duration: 0.05, ease: "none", overwrite: "auto" }, 3.82);
+  tl.fromTo("#p1-impact-ring",
+    { scale: 0, opacity: 1 },
+    { scale: 4, opacity: 0, duration: 1.2, ease: "expo.out" }, 3.7);
+  tl.to("#p1-hero", { y: -4, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.2);
+  tl.from("#p1-caption", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 4.6);
+
+  /* P1 â†’ P2 transition */
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+  fireLightLeak(tl, T1 + 0.2, 0.7);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PHASE 2 â€” Terminal (6-11s)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  const P2 = 6.4;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-term", { y: 30, scale: 0.96, opacity: 0, duration: 0.65, ease: "back.out(1.4)" }, P2 + 0.2);
+
+  /* Terminal line stagger â€” each line appears, then next */
+  const termLines = ["#p2-l1","#p2-l2","#p2-l3","#p2-l4","#p2-l5","#p2-l6","#p2-l7"];
+  termLines.forEach((sel, i) => {
+    tl.fromTo(sel,
+      { opacity: 0, x: -10 },
+      { opacity: 1, x: 0, duration: 0.30, ease: "power2.out" },
+      P2 + 0.7 + i * 0.32);
+  });
+  /* Status dot pulse */
+  tl.to("#p2-term-status-dot",
+    { opacity: 0.3, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 7 }, P2 + 1.0);
+  /* Cursor blink */
+  tl.fromTo("#p2-cursor",
+    { opacity: 1 },
+    { opacity: 0, duration: 0.35, ease: "steps(1)", yoyo: true, repeat: 5 }, P2 + 3.4);
+
+  /* P2 â†’ P3 transition */
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+  fireLightLeak(tl, T2 + 0.2, 0.7);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PHASE 3 â€” Benchmark chart (11-16s)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  const P3 = 11.4;
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.from("#p3-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P3 + 0.3);
+
+  /* Each row: fade-in row, then fill bar from 0â†’target, then count number */
+  const benchRows = [
+    { row: "#p3-row-1", fill: "#p3-fill-1", val: "#p3-val-1", pct: 94 },
+    { row: "#p3-row-2", fill: "#p3-fill-2", val: "#p3-val-2", pct: 87 },
+    { row: "#p3-row-3", fill: "#p3-fill-3", val: "#p3-val-3", pct: 91 },
+    { row: "#p3-row-4", fill: "#p3-fill-4", val: "#p3-val-4", pct: 89 },
+  ];
+  benchRows.forEach((r, i) => {
+    const t0 = P3 + 0.8 + i * 0.35;
+    tl.to(r.row,  { opacity: 1, duration: 0.4, ease: "power2.out" }, t0);
+    tl.to(r.fill, { width: r.pct + "%", duration: 1.0, ease: "expo.out" }, t0 + 0.1);
+    countUp(tl, r.val, r.pct, t0 + 0.1, 1.0, (v) => Math.round(v) + "%");
+  });
+  /* Leader marker reveals after last row */
+  tl.to("#p3-marker-1", { opacity: 1, duration: 0.4, ease: "power2.out" }, P3 + 3.0);
+
+  /* P3 â†’ P4 transition */
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0, duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+  fireLightLeak(tl, T3 + 0.2, 0.7);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PHASE 4 â€” Code diff (16-21s)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  const P4 = 16.4;
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-filename", { y: 14, opacity: 0, duration: 0.4, ease: "power2.out" }, P4 + 0.2);
+
+  /* Before panel slides in from left, lines stagger */
+  tl.from("#p4-before", { x: -60, opacity: 0, duration: 0.6, ease: "power3.out" }, P4 + 0.5);
+  ["#p4-d1","#p4-d2","#p4-d3","#p4-d4"].forEach((sel, i) => {
+    tl.fromTo(sel,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.30, ease: "power2.out" },
+      P4 + 0.9 + i * 0.12);
+  });
+  /* After panel slides in from right */
+  tl.from("#p4-after",  { x: 60, opacity: 0, duration: 0.6, ease: "power3.out" }, P4 + 1.6);
+  ["#p4-a1","#p4-a2","#p4-a3","#p4-a4"].forEach((sel, i) => {
+    tl.fromTo(sel,
+      { opacity: 0, x: 20 },
+      { opacity: 1, x: 0, duration: 0.30, ease: "power2.out" },
+      P4 + 2.0 + i * 0.12);
+  });
+
+  /* P4 â†’ P5 transition */
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0, duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T4 + 0.6);
+  fireLightLeak(tl, T4 + 0.2, 0.7);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PHASE 5 â€” Timeline (21-27s)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  const P5 = 21.4;
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P5 + 0.0);
+  tl.fromTo("#p5-connector line",
+    { strokeDashoffset: 480 },
+    { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, P5 + 0.4);
+  tl.fromTo("#p5-playhead",
+    { top: 0, opacity: 0 },
+    { opacity: 1, duration: 0.3 }, P5 + 0.4);
+  tl.to("#p5-playhead", { top: 60,  duration: 0.6, ease: "power2.inOut" }, P5 + 0.5);
+  tl.to("#p5-playhead", { top: 220, duration: 0.6, ease: "power2.inOut" }, P5 + 1.0);
+  tl.to("#p5-playhead", { top: 380, duration: 0.6, ease: "power2.inOut" }, P5 + 1.5);
+
+  function landCard(t, cardSel, pingSel) {
+    tl.from(cardSel, { x: -40, scale: 0.92, opacity: 0, rotationX: -15, duration: 0.55, ease: "back.out(1.5)" }, t);
+    tl.fromTo(pingSel,
+      { scale: 1.0, opacity: 0.9 },
+      { scale: 1.4, opacity: 0, duration: 0.8, ease: "power2.out" }, t + 0.2);
+  }
+  landCard(P5 + 0.5, "#p5-card-1", "#p5-ping-1");
+  landCard(P5 + 1.0, "#p5-card-2", "#p5-ping-2");
+  landCard(P5 + 1.5, "#p5-card-3", "#p5-ping-3");
+  tl.to(["#p5-card-1","#p5-card-2","#p5-card-3"],
+    { y: -4, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.1 }, P5 + 2.8);
+
+  /* P5 â†’ P6 transition */
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5", { opacity: 0, duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase6", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase6", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T5 + 0.6);
+  fireLightLeak(tl, T5 + 0.2, 0.7);
+
+
+  /* P5 â†’ P6 transition (already wired above as T5)  */
+
+  /* Transition constants T6..T14 */
+  const T6  = 31.6;  // P6 â†’ P7
+  const T7  = 36.6;  // P7 â†’ P8
+  const T8  = 41.6;  // P8 â†’ P9
+  const T9  = 46.6;  // P9 â†’ P10
+  const T10 = 51.6;  // P10 â†’ P11
+  const T11 = 56.6;  // P11 â†’ P12
+  const T12 = 61.6;  // P12 â†’ P13
+  const T13 = 66.6;  // P13 â†’ P14
+  const T14 = 71.6;  // P14 â†’ P15
+
+  function phaseToPhase(fromSel, toSel, t) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, t);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, t + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, t + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, t + 0.4);
+    tl.to(toSel, { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, t + 0.4);
+    tl.to(toSel, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, t + 0.6);
+    fireLightLeak(tl, t + 0.2, 0.7);
+  }
+
+  /* â•â•â•â•â•â•â•â• PHASE 6 â€” Comparison split (27-32s) â•â•â•â•â•â•â•â• */
+  const P6 = 27.4;
+  tl.from("#p6-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P6 + 0.0);
+  tl.from("#p6-title",    { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, P6 + 0.2);
+  tl.from("#phase6 .cmp-side.left",  { x: -60, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, P6 + 0.5);
+  tl.from("#phase6 .cmp-side.right", { x:  60, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, P6 + 0.5);
+  tl.from("#phase6 .cmp-vs",         { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)" }, P6 + 1.0);
+  countUp(tl, "#p6-stat-l", 41, P6 + 1.1, 1.0);
+  countUp(tl, "#p6-stat-r", 92, P6 + 1.1, 1.0);
+  phaseToPhase("#phase6", "#phase7", T6);
+
+  /* â•â•â•â•â•â•â•â• PHASE 7 â€” Big metric (32-37s) â•â•â•â•â•â•â•â• */
+  const P7 = 32.4;
+  tl.from("#p7-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P7 + 0.0);
+  tl.from("#phase7 .metric-wrap", { y: 30, scale: 0.94, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, P7 + 0.2);
+  tl.from("#phase7 .metric-label", { opacity: 0, duration: 0.4 }, P7 + 0.6);
+  countUp(tl, "#p7-metric", 94, P7 + 0.8, 1.2);
+  countUp(tl, "#p7-delta",  12, P7 + 1.5, 0.9);
+  tl.from("#phase7 .metric-delta", { scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(1.6)" }, P7 + 1.6);
+  tl.fromTo("#p7-spark-path",
+    { strokeDashoffset: 700 },
+    { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut" }, P7 + 1.0);
+  tl.to("#p7-spark-area", { opacity: 1, duration: 0.7 }, P7 + 2.0);
+  phaseToPhase("#phase7", "#phase8", T7);
+
+  /* â•â•â•â•â•â•â•â• PHASE 8 â€” Pull quote (37-42s) â•â•â•â•â•â•â•â• */
+  const P8 = 37.4;
+  tl.from("#p8-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P8 + 0.0);
+  tl.from("#phase8 .quote-wrap", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, P8 + 0.2);
+  tl.from("#phase8 .quote-mark-big", { scale: 0, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P8 + 0.5);
+  tl.from("#p8-body", { y: 20, opacity: 0, duration: 0.7, ease: "power3.out" }, P8 + 0.7);
+  tl.from("#phase8 .quote-attr", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, P8 + 1.4);
+  phaseToPhase("#phase8", "#phase9", T8);
+
+  /* â•â•â•â•â•â•â•â• PHASE 9 â€” Feature grid (42-47s) â•â•â•â•â•â•â•â• */
+  const P9 = 42.4;
+  tl.from("#p9-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P9 + 0.0);
+  tl.from("#p9-title",    { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, P9 + 0.2);
+  tl.from("#p9-grid .grid-tile",
+    { y: 30, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)", stagger: 0.08 }, P9 + 0.6);
+  tl.from("#p9-grid .grid-icon",
+    { rotate: -90, scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)", stagger: 0.08 }, P9 + 0.7);
+  phaseToPhase("#phase9", "#phase10", T9);
+
+  /* â•â•â•â•â•â•â•â• PHASE 10 â€” Numbered steps (47-52s) â•â•â•â•â•â•â•â• */
+  const P10 = 47.4;
+  tl.from("#p10-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P10 + 0.0);
+  tl.from("#p10-title",    { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, P10 + 0.2);
+  tl.from("#p10-steps .step",
+    { x: -40, opacity: 0, duration: 0.5, ease: "power3.out", stagger: 0.2 }, P10 + 0.6);
+  tl.from("#p10-steps .step-num",
+    { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(1.8)", stagger: 0.2 }, P10 + 0.7);
+  phaseToPhase("#phase10", "#phase11", T10);
+
+  /* â•â•â•â•â•â•â•â• PHASE 11 â€” Annotated UI (52-57s) â•â•â•â•â•â•â•â• */
+  const P11 = 52.4;
+  tl.from("#p11-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P11 + 0.0);
+  tl.from("#phase11 .ui-wrap", { y: 30, scale: 0.94, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, P11 + 0.2);
+  tl.from("#phase11 .ui-block", { y: 16, opacity: 0, duration: 0.4, ease: "power2.out", stagger: 0.15 }, P11 + 0.7);
+  tl.from("#phase11 .ui-block-line", { width: 0, duration: 0.6, ease: "power2.out", stagger: 0.04 }, P11 + 0.9);
+  tl.fromTo("#ui-c1", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, P11 + 1.8);
+  tl.fromTo("#ui-c2", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, P11 + 2.2);
+  tl.to("#ui-c1", { boxShadow: "0 0 48px rgba(16,163,127,0.9)", duration: 0.5, yoyo: true, repeat: 3, ease: "sine.inOut" }, P11 + 2.4);
+  tl.to("#ui-c2", { boxShadow: "0 0 48px rgba(16,163,127,0.9)", duration: 0.5, yoyo: true, repeat: 3, ease: "sine.inOut" }, P11 + 2.6);
+  phaseToPhase("#phase11", "#phase12", T11);
+
+  /* â•â•â•â•â•â•â•â• PHASE 12 â€” Logo wall (57-62s) â•â•â•â•â•â•â•â• */
+  const P12 = 57.4;
+  tl.from("#p12-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P12 + 0.0);
+  tl.from("#p12-title",    { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, P12 + 0.2);
+  tl.from("#p12-wall .logo-tile",
+    { y: 24, scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.5)", stagger: 0.08 }, P12 + 0.6);
+  phaseToPhase("#phase12", "#phase13", T12);
+
+  /* â•â•â•â•â•â•â•â• PHASE 13 â€” Code snippet (62-67s) â•â•â•â•â•â•â•â• */
+  const P13 = 62.4;
+  tl.from("#p13-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P13 + 0.0);
+  tl.from("#phase13 .code-wrap", { y: 30, scale: 0.96, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, P13 + 0.2);
+  tl.from("#phase13 .code-head", { y: 16, opacity: 0, duration: 0.4, ease: "power2.out" }, P13 + 0.5);
+  for (let i = 1; i <= 9; i++) {
+    tl.fromTo("#p13-cl" + i,
+      { opacity: 0, x: -16 },
+      { opacity: 1, x: 0, duration: 0.30, ease: "power2.out" },
+      P13 + 0.7 + (i - 1) * 0.18);
+  }
+  phaseToPhase("#phase13", "#phase14", T13);
+
+  /* â•â•â•â•â•â•â•â• PHASE 14 â€” KPI dashboard (67-72s) â•â•â•â•â•â•â•â• */
+  const P14 = 67.4;
+  tl.from("#p14-overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, P14 + 0.0);
+  tl.from("#p14-title",    { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, P14 + 0.2);
+  tl.from("#p14-kpis .kpi-tile",
+    { y: 24, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)", stagger: 0.1 }, P14 + 0.6);
+  countUp(tl, "#p14-k1",  18,   P14 + 0.8,  0.9);
+  countUp(tl, "#p14-k1d", 42,    P14 + 0.9,  0.9);
+  countUp(tl, "#p14-k2",  2.4,   P14 + 0.88, 0.9, (v) => v.toFixed(1));
+  countUp(tl, "#p14-k2d", 71,    P14 + 0.98, 0.9);
+  countUp(tl, "#p14-k3",  90,   P14 + 0.96, 0.9);
+  countUp(tl, "#p14-k3d", 34,    P14 + 1.06, 0.9);
+  countUp(tl, "#p14-k4",  99.99, P14 + 1.04, 0.9, (v) => v.toFixed(2));
+  phaseToPhase("#phase14", "#phase15", T14);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PHASE 15 â€” Quote card + CTA (72-79s, was phase 6)
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  const P15 = 72.4;
+  tl.from("#p15-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P15 + 0.0);
+
+  /* Quote card: scale-in + content stagger */
+  tl.from("#p15-quote", { y: 30, scale: 0.94, opacity: 0, duration: 0.6, ease: "back.out(1.4)" }, P15 + 0.2);
+  tl.from("#p15-quote .quote-top", { y: 12, opacity: 0, duration: 0.4, ease: "power2.out" }, P15 + 0.6);
+  tl.from("#p15-quote-text", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out" }, P15 + 0.9);
+  tl.from("#p15-quote .quote-bottom", { y: 12, opacity: 0, duration: 0.4, ease: "power2.out" }, P15 + 1.3);
+
+  /* Engagement counters tick up */
+  countUp(tl, "#p15-stat-likes",   1247, P15 + 1.4, 1.0, (v) => Math.round(v).toLocaleString());
+  countUp(tl, "#p15-stat-reposts",  328, P15 + 1.5, 1.0, (v) => Math.round(v).toLocaleString());
+  countUp(tl, "#p15-stat-views",   84,   P15 + 1.6, 1.0, (v) => Math.round(v) + "K");
+
+  /* URL pill scales in, then types */
+  tl.from("#p15-url-wrap", { scale: 0.88, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P15 + 2.6);
+  const URL_TEXT = "ai-news.example/finance";
+  (function () {
+    const el = document.getElementById("p15-url-text");
+    const obj = { i: 0 };
+    tl.to(obj, {
+      i: URL_TEXT.length, duration: 0.9,
+      ease: "steps(" + URL_TEXT.length + ")",
+      onUpdate: function () {
+        el.textContent = URL_TEXT.slice(0, Math.round(obj.i));
+      }
+    }, P15 + 2.9);
+  })();
+  tl.fromTo("#p15-caret", { opacity: 1 }, { opacity: 0, duration: 0.35, ease: "steps(1)", yoyo: true, repeat: 9 }, P15 + 2.9);
+  tl.to("#p15-caret", { opacity: 0, duration: 0.2 }, P15 + 4.0);
+
+  /* Halo pulse on URL */
+  tl.fromTo("#p15-url-pulse",
+    { scale: 1.0, opacity: 0.85 },
+    { scale: 1.10, opacity: 0, duration: 0.9, ease: "power2.out" }, P15 + 4.0);
+  tl.fromTo("#p15-url-pulse",
+    { scale: 1.0, opacity: 0.7 },
+    { scale: 1.10, opacity: 0, duration: 0.9, ease: "power2.out" }, P15 + 4.7);
+
+  /* CTA question word stagger */
+  tl.from("#p15-cta-question .word",
+    { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", stagger: 0.07 }, P15 + 4.2);
+
+  /* Final flash */
+  tl.fromTo("#p15-flash",
+    { scale: 0, opacity: 0 },
+    { scale: 1.2, opacity: 1, duration: 0.5, ease: "expo.out" }, 76.4);
+  tl.to("#p15-flash", { opacity: 0, duration: 1.4, ease: "power2.in" }, 76.9);
+
+  /* Subtle CTA settle */
+  tl.to(["#p15-url-wrap","#p15-quote"], { y: -4, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.1 }, 76.8);
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Shape backdrop reposition + phase label updates per transition
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  // repositionShapesPerPhase: disabled â€” gradient mesh handles atmosphere
+
+  function updateChrome(t, n) {
+    tl.set("#phase-label", { innerHTML: '<span class="num">' + String(n).padStart(2,'0') + '</span> / 15' }, t);
+    tl.call(() => {
+      document.querySelectorAll(".phase-tick").forEach((el, i) => {
+        el.classList.toggle("active", i === (n - 1));
+      });
+    }, null, t);
+  }
+  updateChrome(T1 + 0.5, 2);
+  updateChrome(T2 + 0.5, 3);
+  updateChrome(T3 + 0.5, 4);
+  updateChrome(T4 + 0.5, 5);
+  updateChrome(T5 + 0.5, 6);
+  updateChrome(T6 + 0.5, 7);
+  updateChrome(T7 + 0.5, 8);
+  updateChrome(T8 + 0.5, 9);
+  updateChrome(T9 + 0.5, 10);
+  updateChrome(T10 + 0.5, 11);
+  updateChrome(T11 + 0.5, 12);
+  updateChrome(T12 + 0.5, 13);
+  updateChrome(T13 + 0.5, 14);
+  updateChrome(T14 + 0.5, 15);
+
+  
+  /* â”€â”€â”€ Gradient-mesh transition kicks: punctuate each phase cut â”€â”€â”€ */
+  (function meshKicks() {
+    const Ts = [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14];
+    Ts.forEach((t, i) => {
+      const sign  = i % 2 === 0 ? 1 : -1;
+      const dx    = sign * (50 + (i * 11) % 55);
+      const dy    = ((i + 1) % 3 - 1) * 38;
+      const rot   = sign * (2 + (i % 4));
+      // Burst out at the cut
+      tl.to('#gradient-mesh', {
+        x: dx, y: dy, rotation: rot, scale: 1.10,
+        duration: 0.55, ease: 'power3.out',
+      }, t);
+      // Settle back into ambient drift
+      tl.to('#gradient-mesh', {
+        scale: 1.0,
+        duration: 0.95, ease: 'power2.out',
+      }, t + 0.55);
+    });
+  })();
+
+  window.__timelines["main"] = tl;
+
+  /* â•â•â• Fit-to-viewport scaler (browser preview only) â•â•â•
+     Scales the 1080Ã—1920 canvas to fit the visible viewport, centered
+     and letterboxed. Skipped when an external HF driver is active. */
+  (function fitStage() {
+    if (window.__hyperframes || window.HyperFramesRuntime) return;
+    const root = document.getElementById('root');
+    if (!root) return;
+    function apply() {
+      const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+      root.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+    }
+    apply();
+    window.addEventListener('resize', apply);
+  })();
+
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Dev preview auto-play + loop.
+     Runs ONLY when no external driver (HyperFrames CLI / player web
+     component) has taken control of the timeline. Detection: if a
+     hyperframes runtime is present on window, skip autoplay so we
+     don't fight it. Otherwise, kick the timeline and loop forever.
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  (function devAutoplay() {
+    const externalDriver =
+      window.__hyperframes ||
+      window.HyperFramesRuntime ||
+      (window.frameElement && window.frameElement.hasAttribute("data-hf-driven"));
+    if (externalDriver) return;
+    tl.eventCallback("onComplete", function () { tl.restart(true); });
+    // First kick: immediate. Retry in case the iframe was just hidden.
+    tl.play(0);
+    setTimeout(function () { if (tl.time() < 0.05) tl.play(0); }, 300);
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden && tl.time() < 0.05) tl.play(0);
+    });
+  })();
+</script>
+</body>
+</html>

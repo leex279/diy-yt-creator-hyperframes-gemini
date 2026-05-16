@@ -333,9 +333,9 @@ Capture the URL.
 Quick checklist:
 
 1. **vidIQ keyword research** against the topic (e.g. `vidiq_keyword_research` for "Gemini Flash", "Google AI", "Workspace AI"). Save to `videos/<slug>/research/vidiq-keywords.md`.
-2. **Chapter timestamps**: optional for Shorts under 90s. For 90-180s Shorts compute `data-start ÷ speed_factor`.
-3. **Draft `videos/<slug>/youtube-description.md`** in the rule's prescribed order: hook → Dynamous block in `----` separators (since Dynamous is ON by default for this template) → Key Changes bullets → Resources with validated URLs → primary CTA → debate question → 15-25 hashtags.
-4. **Validate every URL** with `WebFetch`.
+2. **Shorts skip Chapters** — vertical Shorts do not include a `Chapters` section.
+3. **Draft `videos/<slug>/youtube-description.md`** — LEAN structure per the rule: SEO hook → Dynamous block in `----` separators (Dynamous ON by default for this template) → Resources: with validated URLs → Hostinger affiliate block in `----` separators (MANDATORY: `🏠 Self-host your AI agents & projects on Hostinger (10% OFF): 👉 https://hostinger.com/DIYSMARTCODE`) → debate question → 15-25 hashtags. **NO Key Changes bullets, NO Key Concepts, NO Chapters — all explicitly cut from the template.**
+4. **Validate every URL** with `WebFetch`. Keep total description ~800-1500 chars.
 
 ### 14. Report to the user
 

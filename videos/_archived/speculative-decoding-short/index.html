@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>How Two LLMs Together Beat One — Speculative Decoding</title>
+<link rel="stylesheet" href="tokens/editorial-short.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;0,8..60,800;0,8..60,900;1,8..60,400;1,8..60,700;1,8..60,800;1,8..60,900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--serif);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #grain-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+  }
+  #top-banner-wordmark {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    display: inline-block;
+  }
+  #top-banner-rule {
+    width: 80px;
+    height: 1.5px;
+    background: var(--accent-2);
+    margin: 8px auto 0;
+    opacity: 0.6;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 4px;
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+  }
+
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 1;
+  }
+  #scene-hook-wrap     { z-index: 1; opacity: 1; }
+  #scene-problem-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-insight-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-fix-wrap      { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-numbers-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-when-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-gemma-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap      { z-index: 1; opacity: 0; visibility: hidden; }
+
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="154.0"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <span id="top-banner-wordmark">Speculative Decoding</span>
+    <div id="top-banner-rule"></div>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <div id="scene-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-problem-wrap" class="scene-wrapper"
+       data-composition-id="scene-problem"
+       data-composition-src="compositions/scene-problem.html"
+       data-start="9.86"
+       data-track-index="1"></div>
+
+  <div id="scene-insight-wrap" class="scene-wrapper"
+       data-composition-id="scene-insight"
+       data-composition-src="compositions/scene-insight.html"
+       data-start="31.18"
+       data-track-index="1"></div>
+
+  <div id="scene-fix-wrap" class="scene-wrapper"
+       data-composition-id="scene-fix"
+       data-composition-src="compositions/scene-fix.html"
+       data-start="51.33"
+       data-track-index="1"></div>
+
+  <div id="scene-numbers-wrap" class="scene-wrapper"
+       data-composition-id="scene-numbers"
+       data-composition-src="compositions/scene-numbers.html"
+       data-start="80.18"
+       data-track-index="1"></div>
+
+  <div id="scene-when-wrap" class="scene-wrapper"
+       data-composition-id="scene-when"
+       data-composition-src="compositions/scene-when.html"
+       data-start="97.10"
+       data-track-index="1"></div>
+
+  <div id="scene-gemma-wrap" class="scene-wrapper"
+       data-composition-id="scene-gemma"
+       data-composition-src="compositions/scene-gemma.html"
+       data-start="118.27"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="138.58"
+       data-track-index="1"></div>
+
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="149.0"
+       data-duration="5"
+       data-track-index="12"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="153.0"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="9.46"   data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="30.78"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="50.93"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="79.78"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="96.70"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="117.87" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="138.18" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-hero-1" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="0.05"   data-duration="0.7" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-hero-2" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="2.88"   data-duration="0.6" data-track-index="4" data-volume="0.12"></audio>
+  <audio id="sfx-hero-3" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="51.33"  data-duration="0.7" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-hero-4" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="84.50"  data-duration="0.6" data-track-index="4" data-volume="0.12"></audio>
+  <audio id="sfx-hero-5" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="118.27" data-duration="0.7" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-hero-6" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="146.00" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+
+  <div id="source-url">
+    <span class="source-url-label">arXiv 2211.17192</span>
+    <span class="source-url-text">2022 · Leviathan et al.</span>
+  </div>
+
+  <svg id="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="11" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#grain-filter)" fill="#2B2A28" />
+  </svg>
+</div>
+
+<style>
+  #source-url {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(28, 26, 24, 0.06);
+    border: 1px solid rgba(28, 26, 24, 0.20);
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    font-family: var(--mono);
+  }
+  #source-url .source-url-label {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: var(--accent-2);
+    text-transform: uppercase;
+  }
+  #source-url .source-url-text {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+</style>
+
+<script>
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerScene(tl, container, seedPrefix, sceneStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !sceneStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    sceneStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.0,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  spawnShapes('spec-decoding-short', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 154.0;
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  repositionShapesPerScene(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'spec-decoding-short',
+    [9.86, 31.18, 51.33, 80.18, 97.10, 118.27, 138.58]
+  );
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+  tl.to("#source-url", { opacity: 1, duration: 0.6, ease: "power2.out" }, 0.6);
+
+  crossfadeScenes(tl, "#scene-hook-wrap",     "#scene-problem-wrap",   9.46);
+  crossfadeScenes(tl, "#scene-problem-wrap",  "#scene-insight-wrap",  30.78);
+  crossfadeScenes(tl, "#scene-insight-wrap",  "#scene-fix-wrap",      50.93);
+  crossfadeScenes(tl, "#scene-fix-wrap",      "#scene-numbers-wrap",  79.78);
+  crossfadeScenes(tl, "#scene-numbers-wrap",  "#scene-when-wrap",     96.70);
+  crossfadeScenes(tl, "#scene-when-wrap",     "#scene-gemma-wrap",   117.87);
+  crossfadeScenes(tl, "#scene-gemma-wrap",    "#scene-cta-wrap",     138.18);
+
+  tl.to({}, { duration: 0.01 }, TOTAL_DURATION - 0.01);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

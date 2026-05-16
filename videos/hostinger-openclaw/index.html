@@ -1,0 +1,3256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Hostinger × OpenClaw — Tutorial Template</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hyperframes/core/dist/hyperframe.runtime.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hyperframes/shader-transitions/dist/index.global.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        /* === Brand identity === */
+        --bg: #0e0f19;
+        --bg-2: #15172a;
+        --bg-3: #1f2240;
+        --ink: #ffffff;
+        --muted: #a0a3bd;
+        --muted-2: #6b6e8a;
+        --accent: #673de6;
+        --accent-2: #8b5cf6;
+        --accent-dim: #2d1b69;
+        --success: #00c896;
+        --line: rgba(255, 255, 255, 0.08);
+        --line-2: rgba(255, 255, 255, 0.14);
+
+        --font-display: "Manrope", system-ui, sans-serif;
+        --font-data: "JetBrains Mono", ui-monospace, monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-display);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .scene-content {
+        width: 100%;
+        height: 100%;
+        padding: 110px 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 32px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ===== Type utilities ===== */
+      .display {
+        font-family: var(--font-display);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+      }
+      .body-text {
+        font-family: var(--font-display);
+        font-weight: 300;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+      .data-text {
+        font-family: var(--font-data);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+      }
+      .kicker {
+        font-family: var(--font-data);
+        font-weight: 500;
+        font-size: 22px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+
+      /* ===== Cursor click ripple ===== */
+      .click-ripple {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        margin-left: -40px;
+        margin-top: -40px;
+        border-radius: 50%;
+        border: 3px solid rgba(103, 61, 230, 0.85);
+        background: radial-gradient(circle, rgba(103, 61, 230, 0.3) 0%, transparent 70%);
+        pointer-events: none;
+        opacity: 0;
+        transform: scale(0);
+        will-change: transform, opacity;
+      }
+      .click-ripple.dark {
+        border-color: rgba(14, 15, 25, 0.9);
+        background: radial-gradient(circle, rgba(14, 15, 25, 0.25) 0%, transparent 70%);
+      }
+
+      /* ===== Hostinger H-mark shape backdrop (subtle, low-attention) ===== */
+      .hl-backdrop {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .hl-shape {
+        position: absolute;
+        height: auto;
+        opacity: 0.035;
+        filter: blur(2px);
+        will-change: transform, opacity;
+      }
+      .hl-1 { top: -80px;    left: -120px; width: 360px; transform: rotate(-18deg); opacity: 0.04; }
+      .hl-2 { top: 18%;      right: -150px; width: 420px; transform: rotate(22deg); opacity: 0.03; }
+      .hl-3 { bottom: -140px; right: 14%;  width: 460px; transform: rotate(12deg); opacity: 0.025; }
+
+      /* ===== Persistent "Werbung" disclosure (German ad-law, top-left across all scenes) ===== */
+      .werbung-label {
+        position: absolute;
+        top: 48px;
+        left: 56px;
+        font-family: var(--font-data);
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #ffffff;
+        z-index: 60;
+        opacity: 0.92;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        pointer-events: none;
+      }
+
+      /* ===== Persistent brand mark (top-right Hostinger H-icon across all scenes) ===== */
+      .brand-mark {
+        position: absolute;
+        top: 48px;
+        right: 56px;
+        height: 64px;
+        width: auto;
+        z-index: 60;
+        opacity: 0.92;
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+        pointer-events: none;
+      }
+
+      /* ===== Decorative chrome ===== */
+      .grain {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 50;
+        opacity: 0.14;
+        background-image:
+          radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.2px),
+          radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1.2px);
+        background-size:
+          3px 3px,
+          5px 5px;
+        background-position:
+          0 0,
+          1px 2px;
+        mix-blend-mode: overlay;
+      }
+      .vignette {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 49;
+        background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+      }
+      .grid-bg {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 80px 80px;
+        mask-image: radial-gradient(ellipse at center, black 40%, transparent 90%);
+      }
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ===== Reusable bits ===== */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 24px;
+        border-radius: 100px;
+        background: var(--bg-2);
+        border: 1px solid var(--line-2);
+        font-family: var(--font-data);
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--ink);
+        letter-spacing: 0.02em;
+      }
+      .pill .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 16px var(--accent);
+      }
+      .accent-line {
+        height: 4px;
+        background: var(--accent);
+        border-radius: 4px;
+      }
+      .badge-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: rgba(0, 200, 150, 0.14);
+        border: 1px solid rgba(0, 200, 150, 0.4);
+        color: var(--success);
+        font-family: var(--font-data);
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      /* ====================== SCENE 1 — HOOK ====================== */
+      #s1 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 40px;
+      }
+      #s1 .glow-1 {
+        width: 900px;
+        height: 900px;
+        background: var(--accent);
+        opacity: 0.25;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s1 h1 {
+        font-size: 180px;
+        max-width: 1400px;
+      }
+      #s1 h1 .word {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+      }
+      #s1 h1 .word > span {
+        display: inline-block;
+      }
+      #s1 .sub {
+        font-size: 32px;
+        max-width: 1100px;
+        color: var(--muted);
+      }
+      #s1 .accent-line {
+        width: 120px;
+      }
+
+      /* ====================== SCENE 2 — BRAND LOCKUP ====================== */
+      #s2 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 30px;
+      }
+      #s2 .glow-2 {
+        width: 700px;
+        height: 700px;
+        background: var(--accent);
+        opacity: 0.18;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s2 .lockup {
+        display: flex;
+        align-items: center;
+        gap: 50px;
+      }
+      #s2 .brand {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 92px;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+      }
+      /* Official Hostinger SVG — sized to match the prior 92px display text */
+      #s2 .brand img {
+        height: 92px;
+        width: auto;
+        display: block;
+      }
+      #s2 .x {
+        font-family: var(--font-data);
+        font-weight: 400;
+        font-size: 64px;
+        color: var(--accent-2);
+        opacity: 0.8;
+      }
+      #s2 .product {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 92px;
+        letter-spacing: -0.02em;
+        color: var(--accent-2);
+      }
+      #s2 .tagline {
+        font-family: var(--font-data);
+        font-size: 24px;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* ====================== SCENE 3 — WHY AUTOMATE ====================== */
+      #s3 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+      }
+      #s3 .left {
+        flex: 0 0 540px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      #s3 .left h2 {
+        font-size: 96px;
+        line-height: 0.98;
+      }
+      #s3 .left .sub {
+        font-size: 26px;
+        color: var(--muted);
+        max-width: 480px;
+      }
+      #s3 .list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      #s3 .item {
+        display: flex;
+        gap: 28px;
+        align-items: flex-start;
+        padding: 28px 32px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+      #s3 .num {
+        font-family: var(--font-data);
+        font-size: 28px;
+        font-weight: 500;
+        color: var(--accent-2);
+        min-width: 60px;
+      }
+      #s3 .item h3 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      #s3 .item p {
+        font-size: 22px;
+        color: var(--muted);
+        font-weight: 300;
+        line-height: 1.4;
+      }
+
+      /* ====================== SCENE 4 — WHY HOSTINGER ====================== */
+      #s4 .scene-content {
+        gap: 50px;
+      }
+      #s4 .glow-4 {
+        width: 800px;
+        height: 800px;
+        background: var(--accent);
+        opacity: 0.12;
+        top: -200px;
+        right: -200px;
+      }
+      #s4 h2 {
+        font-size: 110px;
+        line-height: 1;
+        max-width: 1100px;
+      }
+      #s4 .pills {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        max-width: 1400px;
+      }
+      #s4 .feat {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 32px 36px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+      #s4 .feat-ic {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      #s4 .feat-title {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+      #s4 .feat-sub {
+        font-size: 20px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+
+      /* ====================== SCENE 5 — LANDING PAGE MOCK ====================== */
+      #s5 .scene-content {
+        padding: 80px 200px;
+        align-items: center;
+        justify-content: center;
+      }
+      #s5 .glow-5 {
+        width: 900px;
+        height: 600px;
+        background: var(--accent);
+        opacity: 0.18;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s5 .browser {
+        width: 1520px;
+        height: 880px;
+        background: var(--bg-2);
+        border: 1px solid var(--line-2);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 60px 120px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+      }
+      #s5 .browser-bar {
+        height: 60px;
+        background: #1a1c33;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        gap: 16px;
+      }
+      #s5 .browser-dots {
+        display: flex;
+        gap: 8px;
+      }
+      #s5 .browser-dots span {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #333752;
+      }
+      #s5 .browser-url {
+        flex: 1;
+        height: 36px;
+        background: #0f1124;
+        border-radius: 8px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        font-family: var(--font-data);
+        font-size: 18px;
+        color: var(--muted);
+      }
+      #s5 .browser-url .lock {
+        margin-right: 8px;
+        color: var(--success);
+      }
+      #s5 .page {
+        flex: 1;
+        padding: 80px 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        justify-content: center;
+        position: relative;
+      }
+      /* Banner-driven s5 — official Hostinger affiliate hero sits inside the page with breathing room */
+      #s5 .page.page-banner {
+        padding: 40px 60px;
+        overflow: hidden;
+        background: var(--bg-2);
+      }
+      #s5 .page-hero {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        border-radius: 16px;
+      }
+      #s5 .page .pkicker {
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #s5 .page .pkicker img {
+        height: 22px;
+        width: auto;
+        display: block;
+      }
+      #s5 .page h2 {
+        font-size: 96px;
+        line-height: 0.98;
+        max-width: 900px;
+      }
+      #s5 .page p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+        max-width: 700px;
+      }
+      #s5 .cta-row {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-top: 16px;
+      }
+      #s5 .cta-btn {
+        background: var(--accent);
+        color: white;
+        padding: 22px 40px;
+        border-radius: 12px;
+        font-size: 24px;
+        font-weight: 700;
+        font-family: var(--font-display);
+      }
+      #s5 .cta-ghost {
+        padding: 22px 40px;
+        border-radius: 12px;
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      #s5-cursor {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      /* ====================== SCENE 6 — PLAN COMPARISON ====================== */
+      #s6 .scene-content {
+        gap: 48px;
+        padding: 100px 160px;
+      }
+      #s6 .top {
+        text-align: center;
+      }
+      #s6 .top h2 {
+        font-size: 92px;
+        line-height: 1;
+        margin-bottom: 12px;
+      }
+      #s6 .top p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+      #s6 .plans {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+      #s6 .plan {
+        padding: 48px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        position: relative;
+      }
+      #s6 .plan.featured {
+        background: linear-gradient(180deg, rgba(103, 61, 230, 0.16) 0%, var(--bg-2) 60%);
+        border: 1px solid var(--accent);
+      }
+      #s6 .plan-tag {
+        position: absolute;
+        top: -16px;
+        left: 48px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: var(--accent);
+        font-family: var(--font-data);
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      #s6 .plan-name {
+        font-family: var(--font-data);
+        font-size: 20px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      #s6 .plan-title {
+        font-size: 56px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      #s6 .plan-price {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      #s6 .plan-price .amt {
+        font-size: 72px;
+        font-weight: 800;
+        font-family: var(--font-display);
+      }
+      #s6 .plan-price .per {
+        font-family: var(--font-data);
+        font-size: 22px;
+        color: var(--muted);
+      }
+      #s6 .plan-feats {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 8px;
+      }
+      #s6 .plan-feats li {
+        list-style: none;
+        font-size: 22px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      #s6 .check {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0, 200, 150, 0.18);
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+      #s6 .plan.alt .check {
+        background: rgba(139, 92, 246, 0.18);
+        color: var(--accent-2);
+      }
+
+      /* ====================== SCENE 7 — PRICING / DURATION ====================== */
+      #s7 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 40px;
+        padding: 100px 160px;
+      }
+      #s7 .glow-7 {
+        width: 1000px;
+        height: 700px;
+        background: var(--accent);
+        opacity: 0.22;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s7 h2 {
+        font-size: 72px;
+        max-width: 1100px;
+      }
+      #s7 .duration-row {
+        display: flex;
+        gap: 16px;
+        margin: 12px 0;
+      }
+      #s7 .dur {
+        padding: 22px 40px;
+        border-radius: 14px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--muted);
+        position: relative;
+      }
+      #s7 .dur.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+      #s7 .dur .save {
+        position: absolute;
+        top: -14px;
+        right: -10px;
+        background: var(--success);
+        color: var(--bg);
+        font-family: var(--font-data);
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+      #s7 .price-display {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      #s7 .price-display .cur {
+        font-size: 80px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      #s7 .price-display .amt {
+        font-size: 260px;
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        background: linear-gradient(180deg, #ffffff 0%, #c9b6ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      #s7 .price-display .per {
+        font-family: var(--font-data);
+        font-size: 36px;
+        color: var(--muted);
+      }
+      #s7 .billed {
+        font-family: var(--font-data);
+        font-size: 22px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+      }
+
+      /* ====================== SCENE 8 — CART + COUPON ====================== */
+      #s8 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+        padding: 100px 160px;
+      }
+      #s8 .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      #s8 .left .lk {
+        color: var(--accent-2);
+      }
+      #s8 .left h2 {
+        font-size: 88px;
+        line-height: 0.98;
+      }
+      #s8 .left p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+        max-width: 540px;
+      }
+      #s8 .cart {
+        flex: 0 0 720px;
+        background: var(--bg-2);
+        border: 1px solid var(--line-2);
+        border-radius: 24px;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+      }
+      #s8 .cart-title {
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      #s8 .cart-item {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg);
+        border-radius: 14px;
+      }
+      #s8 .cart-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 22px;
+        color: white;
+      }
+      #s8 .cart-item-body {
+        flex: 1;
+      }
+      #s8 .cart-item-name {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      #s8 .cart-item-term {
+        font-size: 18px;
+        color: var(--muted);
+        font-family: var(--font-data);
+      }
+      #s8 .cart-item-price {
+        font-size: 24px;
+        font-weight: 700;
+        font-family: var(--font-data);
+      }
+      #s8 .coupon-row {
+        display: flex;
+        gap: 12px;
+      }
+      #s8 .coupon-input {
+        flex: 1;
+        padding: 18px 22px;
+        background: var(--bg);
+        border: 1px solid var(--accent);
+        border-radius: 12px;
+        font-family: var(--font-data);
+        font-size: 22px;
+        letter-spacing: 0.16em;
+        font-weight: 500;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #s8 .coupon-applied {
+        color: var(--success);
+        font-size: 16px;
+      }
+      #s8 .totals {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--line);
+      }
+      #s8 .totals .row {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-data);
+        font-size: 22px;
+      }
+      #s8 .totals .row.muted {
+        color: var(--muted);
+      }
+      #s8 .totals .row.muted .strike {
+        text-decoration: line-through;
+      }
+      #s8 .totals .row.discount {
+        color: var(--success);
+      }
+      #s8 .totals .row.final {
+        font-size: 32px;
+        font-weight: 700;
+        font-family: var(--font-display);
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      /* ====================== SCENE 9 — SETUP STEPS ====================== */
+      #s9 .scene-content {
+        gap: 50px;
+        padding: 100px 160px;
+      }
+      #s9 .head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 40px;
+      }
+      #s9 h2 {
+        font-size: 84px;
+        line-height: 0.98;
+        max-width: 1000px;
+      }
+      #s9 .progress {
+        flex: 0 0 320px;
+        margin-bottom: 14px;
+      }
+      #s9 .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: var(--bg-2);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      #s9 .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 6px;
+        width: 0%;
+        transform-origin: left;
+      }
+      #s9 .progress-label {
+        font-family: var(--font-data);
+        font-size: 18px;
+        color: var(--muted);
+        margin-top: 8px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      #s9 .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+      }
+      #s9 .step {
+        padding: 36px 32px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-height: 320px;
+      }
+      #s9 .step-num {
+        font-family: var(--font-data);
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--accent-2);
+        letter-spacing: 0.16em;
+      }
+      #s9 .step-ic {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: var(--bg-3);
+        border: 1px solid var(--line-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s9 .step-title {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      #s9 .step-desc {
+        font-size: 19px;
+        color: var(--muted);
+        font-weight: 300;
+        line-height: 1.4;
+        margin-top: auto;
+      }
+
+      /* ====================== SCENE 10 — CONFIG + AI PROVIDER ====================== */
+      #s10 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+        padding: 100px 160px;
+      }
+      #s10 .left {
+        flex: 0 0 540px;
+      }
+      #s10 .left h2 {
+        font-size: 80px;
+        line-height: 0.98;
+        margin-bottom: 24px;
+      }
+      #s10 .left p {
+        font-size: 22px;
+        color: var(--muted);
+        font-weight: 300;
+        line-height: 1.4;
+        max-width: 480px;
+      }
+      #s10 .form {
+        flex: 1;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 44px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      #s10 .form-title {
+        font-size: 26px;
+        font-weight: 700;
+      }
+      #s10 .opt {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        padding: 24px 28px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        cursor: pointer;
+      }
+      #s10 .opt.active {
+        border-color: var(--accent);
+        background: linear-gradient(180deg, rgba(103, 61, 230, 0.18) 0%, var(--bg) 100%);
+      }
+      #s10 .radio {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid var(--line-2);
+        flex-shrink: 0;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s10 .opt.active .radio {
+        border-color: var(--accent);
+      }
+      #s10 .opt.active .radio::after {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      #s10 .opt-body {
+        flex: 1;
+      }
+      #s10 .opt-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      #s10 .opt-sub {
+        font-size: 18px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+      #s10 .opt-badge {
+        padding: 6px 12px;
+        background: var(--accent);
+        border-radius: 6px;
+        font-family: var(--font-data);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        margin-left: 12px;
+      }
+
+      /* ====================== SCENE 11 — CHANNEL SELECTION ====================== */
+      #s11 .scene-content {
+        gap: 56px;
+        padding: 100px 160px;
+        align-items: center;
+        text-align: center;
+      }
+      #s11 h2 {
+        font-size: 96px;
+        line-height: 1;
+        max-width: 1200px;
+      }
+      #s11 .sub {
+        font-size: 24px;
+        color: var(--muted);
+      }
+      #s11 .channels {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
+        width: 100%;
+        max-width: 1400px;
+      }
+      #s11 .ch {
+        padding: 44px 32px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        position: relative;
+      }
+      #s11 .ch.selected {
+        border-color: var(--accent);
+        background: linear-gradient(180deg, rgba(103, 61, 230, 0.16) 0%, var(--bg-2) 100%);
+      }
+      #s11 .ch-ic {
+        width: 88px;
+        height: 88px;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s11 .ch-name {
+        font-size: 26px;
+        font-weight: 700;
+      }
+      #s11 .ch-tag {
+        font-family: var(--font-data);
+        font-size: 16px;
+        color: var(--muted);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      #s11 .ch .pulse {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 16px var(--success);
+        opacity: 0;
+      }
+      #s11 .ch.selected .pulse {
+        opacity: 1;
+      }
+
+      /* ====================== SCENE 12 — WORKFLOW DEMO ====================== */
+      #s12 .scene-content {
+        flex-direction: row;
+        gap: 80px;
+        align-items: center;
+        padding: 100px 160px;
+      }
+      #s12 .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      #s12 .left h2 {
+        font-size: 88px;
+        line-height: 0.98;
+      }
+      #s12 .left p {
+        font-size: 24px;
+        color: var(--muted);
+        font-weight: 300;
+        max-width: 500px;
+      }
+      #s12 .left .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--success);
+        margin-bottom: 8px;
+      }
+      #s12 .left .live .live-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 12px var(--success);
+      }
+      #s12 .phone {
+        flex: 0 0 480px;
+        height: 800px;
+        background: #0a0c18;
+        border: 12px solid #1a1c33;
+        border-radius: 48px;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 60px 120px rgba(0, 0, 0, 0.6);
+      }
+      #s12 .phone-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 4px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      #s12 .phone-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      #s12 .phone-meta-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      #s12 .phone-meta-sub {
+        font-size: 13px;
+        color: var(--success);
+        font-family: var(--font-data);
+      }
+      #s12 .msg {
+        max-width: 80%;
+        padding: 14px 18px;
+        border-radius: 18px;
+        font-size: 18px;
+        line-height: 1.35;
+      }
+      #s12 .msg.user {
+        align-self: flex-end;
+        background: var(--accent);
+        color: white;
+        border-bottom-right-radius: 6px;
+      }
+      #s12 .msg.bot {
+        align-self: flex-start;
+        background: var(--bg-3);
+        color: var(--ink);
+        border-bottom-left-radius: 6px;
+      }
+      #s12 .msg.bot .ok {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--success);
+        font-family: var(--font-data);
+        font-size: 14px;
+        margin-top: 6px;
+      }
+      #s12 .typing {
+        align-self: flex-start;
+        background: var(--bg-3);
+        padding: 14px 18px;
+        border-radius: 18px;
+        border-bottom-left-radius: 6px;
+        display: flex;
+        gap: 6px;
+      }
+      #s12 .typing span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+
+      /* ====================== SCENE 13 — FEATURE SPOTLIGHT ====================== */
+      #s13 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 32px;
+        padding: 100px 160px;
+      }
+      #s13 .glow-13 {
+        width: 1100px;
+        height: 800px;
+        background: var(--accent);
+        opacity: 0.2;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s13 .big-stat {
+        font-size: 480px;
+        font-weight: 800;
+        line-height: 0.85;
+        letter-spacing: -0.04em;
+        background: linear-gradient(180deg, #ffffff 0%, #b497ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      #s13 .stat-label {
+        font-size: 48px;
+        font-weight: 700;
+        max-width: 1000px;
+      }
+      #s13 .stat-sub {
+        font-size: 24px;
+        color: var(--muted);
+        font-family: var(--font-data);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: inline-flex;
+        gap: 16px;
+        align-items: center;
+      }
+      #s13 .stat-sub .live-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 16px var(--success);
+      }
+
+      /* ====================== SCENE 14 — CTA ====================== */
+      #s14 .scene-content {
+        align-items: center;
+        text-align: center;
+        gap: 40px;
+        padding: 100px 160px;
+      }
+      #s14 .glow-14 {
+        width: 1200px;
+        height: 800px;
+        background: var(--accent);
+        opacity: 0.28;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #s14 .lk-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 22px;
+        border-radius: 100px;
+        border: 1px solid var(--line-2);
+        font-family: var(--font-data);
+        font-size: 22px;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+      }
+      #s14 .lk-row .ic {
+        color: var(--accent-2);
+      }
+      #s14 .lk-row img.lk-icon {
+        height: 28px;
+        width: auto;
+        display: block;
+      }
+      #s14 h2 {
+        font-size: 160px;
+        line-height: 0.95;
+        max-width: 1500px;
+      }
+      #s14 .coupon-card {
+        margin-top: 12px;
+        padding: 40px 56px;
+        border: 2px dashed var(--accent-2);
+        border-radius: 20px;
+        background: rgba(103, 61, 230, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+        position: relative;
+      }
+      #s14 .coupon-card .clabel {
+        font-family: var(--font-data);
+        font-size: 18px;
+        letter-spacing: 0.32em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      #s14 .coupon-code {
+        font-family: var(--font-data);
+        font-size: 80px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        color: white;
+      }
+      #s14 .coupon-card .discount {
+        position: absolute;
+        top: -22px;
+        right: -22px;
+        background: var(--success);
+        color: var(--bg);
+        font-family: var(--font-data);
+        font-weight: 700;
+        font-size: 22px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        transform: rotate(8deg);
+      }
+      #s14 .cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 28px 56px;
+        background: var(--accent);
+        border-radius: 14px;
+        font-size: 32px;
+        font-weight: 800;
+        font-family: var(--font-display);
+        margin-top: 8px;
+      }
+
+      /* ═══ shared/lib/components/hostinger-banner — pasted-in CSS ═══ */
+      #host-banner {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        z-index: 30;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .host-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 22px;
+        background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        padding: 14px 24px;
+        border-radius: 18px;
+        border: 4px solid #673de6;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28), 0 0 60px rgba(103, 61, 230, 0.18);
+        position: relative;
+      }
+      .host-werbung {
+        position: absolute;
+        top: -14px;
+        right: 14px;
+        background: #dc2626;
+        color: #ffffff;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 6px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+      }
+      .host-logo { flex-shrink: 0; height: 56px; display: flex; align-items: center; }
+      .host-logo-img { height: 100%; width: auto; display: block; }
+      .host-info { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+      .host-headline { font-family: 'Inter', system-ui, sans-serif; font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.3px; line-height: 1.1; white-space: nowrap; }
+      .host-tagline  { font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 600; color: #475569; letter-spacing: 0.1px; line-height: 1.2; white-space: nowrap; }
+      .host-tagline strong { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; color: #673de6; letter-spacing: 0.5px; font-size: 13px; }
+      .host-separator { width: 2px; height: 56px; background: rgba(15, 23, 42, 0.14); flex-shrink: 0; }
+      .host-pills { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+      .host-pill { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px; border-width: 2px; border-style: solid; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2); justify-content: center; }
+      .host-pill-icon { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; line-height: 0; }
+      .host-pill-label { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; white-space: nowrap; }
+      .host-pill-web { background: linear-gradient(135deg, #673de6, #5b32d6); border-color: #4c2bb8; color: #ffffff; }
+      .host-pill-vps { background: linear-gradient(135deg, #8b5cf6, #7c4ef0); border-color: #6b3fd6; color: #ffffff; }
+      .host-pill-ai  { background: linear-gradient(135deg, #673de6, #8b5cf6); border-color: #4c2bb8; color: #ffffff; }
+      .host-discount { flex-shrink: 0; padding: 8px 16px; border-radius: 10px; font-family: 'Inter', system-ui, sans-serif; font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: 0.6px; background: linear-gradient(135deg, #00c896, #00a878); border: 2px solid #008f63; box-shadow: 0 4px 14px rgba(0, 200, 150, 0.4); white-space: nowrap; }
+      .host-url-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 0; flex-shrink: 0; padding-left: 14px; margin-left: 4px; border-left: 1px solid rgba(15, 23, 42, 0.14); }
+      .host-url-overline { font-family: 'Inter', system-ui, sans-serif; font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 0.6px; text-transform: uppercase; white-space: nowrap; }
+      .host-url { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 16px; font-weight: 700; color: #673de6; letter-spacing: 0.2px; white-space: nowrap; margin-top: 2px; }
+
+      /* ═══ shared/lib/blocks/hostinger-midroll — host-side mount CSS ═══ */
+      #hostinger-midroll-mount {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        z-index: 50;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="main"
+      data-composition-id="main"
+      data-width="1920"
+      data-height="1080"
+      data-start="0"
+      data-duration="180"
+    >
+      <!-- ═══ Narration — 3 sequential track-2 segments ═══
+           narration-pre  : host script 0-90s
+           midroll        : Hostinger affiliate midroll narration (90-109.5s)
+           narration-post : host script resumes at original t=110 (drops 90-110s)
+           Source narration.wav stays in place as the master / pre-split file. -->
+      <audio
+        id="narration-pre"
+        class="clip"
+        src="audio/narration-pre.wav"
+        data-start="0"
+        data-duration="90"
+        data-track-index="2"
+        data-volume="1.0"
+      ></audio>
+      <audio
+        id="narration-midroll"
+        class="clip"
+        src="audio/hostinger-midroll-narration.wav"
+        data-start="90"
+        data-duration="19.5"
+        data-track-index="2"
+        data-volume="1.0"
+      ></audio>
+      <audio
+        id="narration-post"
+        class="clip"
+        src="audio/narration-post.wav"
+        data-start="110"
+        data-duration="65"
+        data-track-index="2"
+        data-volume="1.0"
+      ></audio>
+
+      <!-- Persistent Hostinger H-mark shape backdrop — 3 very subtle drifters -->
+      <div class="hl-backdrop">
+        <img class="hl-shape hl-1" src="assets/hostinger-brand/Hostinger_Icon_Purple.svg" alt="" aria-hidden="true" />
+        <img class="hl-shape hl-2" src="assets/hostinger-brand/Hostinger_Icon_Purple.svg" alt="" aria-hidden="true" />
+        <img class="hl-shape hl-3" src="assets/hostinger-brand/Hostinger_Icon_Purple.svg" alt="" aria-hidden="true" />
+      </div>
+
+      <!-- ============ SCENE 1 — HOOK (0–4s) ============ -->
+      <div class="scene clip" id="s1" data-start="0" data-duration="4" data-track-index="0">
+        <div class="glow glow-1"></div>
+        <div class="grid-bg"></div>
+        <div class="vignette"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s1-kicker">Hostinger × OpenClaw</div>
+          <h1 class="display" id="s1-title">
+            <span class="word"><span>Your</span></span>
+            <span class="word"><span>AI.</span></span>
+            <span class="word"><span>Your</span></span>
+            <span class="word"><span>rules.</span></span>
+          </h1>
+          <div class="accent-line" id="s1-line"></div>
+          <p class="body-text sub" id="s1-sub">
+            No subscriptions. No data harvesting. No setup pain.
+          </p>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 2 — BRAND LOCKUP (4–11s) ============ -->
+      <div
+        class="scene clip"
+        id="s2"
+        data-start="4"
+        data-duration="7"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-2"></div>
+        <div class="grid-bg"></div>
+        <div class="vignette"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="lockup">
+            <div class="brand" id="s2-brand">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_White.svg" alt="Hostinger" />
+            </div>
+            <div class="x" id="s2-x">×</div>
+            <div class="product" id="s2-product">OpenClaw</div>
+          </div>
+          <div class="accent-line" id="s2-line" style="width: 200px;"></div>
+          <div class="tagline" id="s2-tag">A personal AI agent — deployed in minutes</div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 3 — PROBLEM / OWNERSHIP (11–25s) ============ -->
+      <div
+        class="scene clip"
+        id="s3"
+        data-start="11"
+        data-duration="14"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="left">
+            <div class="kicker" id="s3-kicker">01 / Why automate</div>
+            <h2 class="display" id="s3-title">The boring stuff. Gone.</h2>
+            <p class="sub" id="s3-sub">
+              Hand off repetitive work to an AI agent that runs on your own infrastructure.
+            </p>
+          </div>
+          <div class="list">
+            <div class="item s3-item">
+              <div class="num">01</div>
+              <div>
+                <h3>Reclaim 10+ hours a week</h3>
+                <p>Replies, summaries, scheduling — handled while you sleep.</p>
+              </div>
+            </div>
+            <div class="item s3-item">
+              <div class="num">02</div>
+              <div>
+                <h3>Run leads & support 24/7</h3>
+                <p>Always-on assistants that never miss a message or a meeting.</p>
+              </div>
+            </div>
+            <div class="item s3-item">
+              <div class="num">03</div>
+              <div>
+                <h3>Keep every chat under your control</h3>
+                <p>Conversations stay on infrastructure you own, never a third-party SaaS.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 4 — ONE-CLICK BENEFITS (25–34s) ============ -->
+      <div
+        class="scene clip"
+        id="s4"
+        data-start="25"
+        data-duration="9"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-4"></div>
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="kicker" id="s4-kicker">02 / Why Hostinger</div>
+          <h2 class="display" id="s4-title">Everything wired up. <br />Nothing to babysit.</h2>
+          <div class="pills">
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="white" />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">1-click deployment</div>
+                <div class="feat-sub">Install through the Docker Catalog or hPanel.</div>
+              </div>
+            </div>
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" />
+                  <path d="M12 6v6l4 2" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">Built-in AI credits</div>
+                <div class="feat-sub">Pre-connected brain — no extra API signups.</div>
+              </div>
+            </div>
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" />
+                  <path
+                    d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"
+                    stroke="white"
+                    stroke-width="1.6"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">Live web scraping</div>
+                <div class="feat-sub">Real-time data without manual Brave API setup.</div>
+              </div>
+            </div>
+            <div class="feat s4-feat">
+              <div class="feat-ic">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" stroke="white"
+                    stroke-width="2" fill="none" />
+                  <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div>
+                <div class="feat-title">Private & sovereign</div>
+                <div class="feat-sub">Your vault, your firewalls, your data only.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 5 — HOSTINGER LANDING (34–46s) — matches 01-landing.png ============ -->
+      <div
+        class="scene clip"
+        id="s5"
+        data-start="34"
+        data-duration="12"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:50px 70px; justify-content:center;">
+          <div id="s5-browser" style="
+            width:1780px; height:980px;
+            background:#0e0f19;
+            background-image: radial-gradient(ellipse 1200px 600px at 50% 90%, rgba(103,61,230,0.45), transparent 70%);
+            border-radius:18px; overflow:hidden;
+            border:1px solid rgba(255,255,255,0.08);
+            box-shadow:0 60px 120px rgba(0,0,0,0.6);
+            display:flex; flex-direction:column;
+            position:relative;
+          ">
+            <!-- Top nav -->
+            <div style="
+              display:flex; align-items:center; padding:32px 48px; gap:32px;
+            ">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_White.svg" alt="Hostinger" style="height:32px;" />
+              <div style="display:flex; gap:32px; font-family:var(--font-display); font-size:18px; color:#fff; margin-left:36px;">
+                <span>Pricing</span>
+                <span>Services <span style="opacity:0.7;">▾</span></span>
+                <span>Explore <span style="opacity:0.7;">▾</span></span>
+                <span>1-Click OpenClaw</span>
+              </div>
+              <div style="margin-left:auto; display:flex; align-items:center; gap:16px;">
+                <div style="display:flex; align-items:center; gap:8px; padding:10px 20px; border:1px solid rgba(255,255,255,0.18); border-radius:100px; font-family:var(--font-display); font-size:16px; color:#fff;">
+                  <span style="color:#8b5cf6;">✦</span> Ask AI
+                </div>
+                <span style="font-family:var(--font-display); font-size:16px; color:#fff;">🇺🇸 EN</span>
+                <span style="font-family:var(--font-display); font-size:16px; color:#fff;">👤</span>
+              </div>
+            </div>
+            <!-- Hero center -->
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:36px; padding:60px 100px;">
+              <div id="s5-overline" style="padding:8px 22px; border-radius:100px; background:rgba(103,61,230,0.22); color:#a78bfa; font-family:var(--font-display); font-size:18px; font-weight:600;">OpenClaw</div>
+              <h1 id="s5-hero-title" style="font-family:var(--font-display); font-size:108px; line-height:1.05; font-weight:600; color:#fff; text-align:center; letter-spacing:-0.02em; max-width:1500px;">
+                Your own AI agent. Private,<br/>always on &amp; live in 60 seconds.
+              </h1>
+              <p id="s5-hero-sub" style="font-family:var(--font-display); font-size:24px; color:#cdcfe2; text-align:center; max-width:980px; line-height:1.5;">
+                Deploy once, and it handles your daily tasks around the clock, even while you sleep.
+              </p>
+              <button id="s5-get-started" style="
+                margin-top:8px; padding:22px 60px; border-radius:12px; border:none;
+                background:#673de6; color:#fff;
+                font-family:var(--font-display); font-size:24px; font-weight:700;
+                cursor:pointer;
+              ">Get started</button>
+              <div style="display:flex; align-items:center; gap:10px; color:#cdcfe2; font-family:var(--font-display); font-size:18px;">
+                <span>🛡</span> 30-day money-back guarantee
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+                <span style="font-family:var(--font-display); font-size:18px; color:#fff;">Excellent</span>
+                <span style="color:#00b67a; font-size:24px;">★★★★★</span>
+                <span style="font-family:var(--font-display); font-size:18px; color:#cdcfe2;">67,406 reviews on</span>
+                <span style="font-family:var(--font-display); font-size:18px; color:#00b67a; font-weight:700;">★ Trustpilot</span>
+              </div>
+            </div>
+            <!-- Animated cursor — lands on Get started -->
+            <svg id="s5-cursor" viewBox="0 0 24 24" style="position:absolute; width:36px; height:36px; pointer-events:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));">
+              <path d="M3 2l16 8-7 2-2 7-7-17z" fill="#ffffff" stroke="#000" stroke-width="1.2" />
+            </svg>
+            <!-- Click ripple — fires on click -->
+            <div id="s5-ripple" class="click-ripple"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 6 — PLAN COMPARISON (46–58s) ============ -->
+      <div
+        class="scene clip"
+        id="s6"
+        data-start="46"
+        data-duration="12"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:50px 70px; justify-content:center;">
+          <div id="s6-browser" style="
+            position:relative;
+            width:1780px; height:980px;
+            background:#0e0f19;
+            border-radius:18px; overflow:hidden;
+            border:1px solid rgba(255,255,255,0.08);
+            box-shadow:0 60px 120px rgba(0,0,0,0.6);
+            display:flex; flex-direction:column;
+          ">
+            <!-- Top nav -->
+            <div style="display:flex; align-items:center; padding:32px 48px; gap:32px;">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_White.svg" alt="Hostinger" style="height:32px;" />
+              <div style="display:flex; gap:32px; font-family:var(--font-display); font-size:18px; color:#fff; margin-left:36px;">
+                <span>Pricing</span><span>Services <span style="opacity:0.7;">▾</span></span><span>Explore <span style="opacity:0.7;">▾</span></span><span>1-Click OpenClaw</span>
+              </div>
+              <div style="margin-left:auto; display:flex; align-items:center; gap:16px;">
+                <div style="padding:10px 20px; border:1px solid rgba(255,255,255,0.18); border-radius:100px; font-family:var(--font-display); font-size:16px; color:#fff;">✦ Ask AI</div>
+                <span style="font-family:var(--font-display); font-size:16px; color:#fff;">🇺🇸 EN</span>
+                <span style="font-family:var(--font-display); font-size:16px; color:#fff;">👤</span>
+              </div>
+            </div>
+
+            <!-- Hero header + agents-deployed badge -->
+            <div style="display:flex; flex-direction:column; align-items:center; gap:18px; padding:24px 48px 16px;">
+              <h2 id="s6-title" style="font-family:var(--font-display); font-size:96px; font-weight:600; color:#fff; letter-spacing:-0.02em; line-height:1;">Pick your plan</h2>
+              <div id="s6-badge" style="display:flex; align-items:center; gap:10px; padding:10px 24px; border-radius:100px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); font-family:var(--font-display); font-size:18px; color:#fff;">
+                <span style="width:10px; height:10px; border-radius:50%; background:#00c896;"></span> 100,000+ agents already deployed
+              </div>
+            </div>
+
+            <!-- Two plan cards -->
+            <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:28px; padding:24px 120px 48px;">
+              <!-- Managed OpenClaw -->
+              <div id="s6-plan-1" style="
+                position:relative; border-radius:18px; overflow:hidden;
+                background:#0e0f19; border:2px solid #673de6;
+                display:flex; flex-direction:column;
+              ">
+                <div style="background:#673de6; padding:14px; text-align:center; font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:0.16em; color:#fff;">MOST POPULAR</div>
+                <div style="padding:36px 36px 32px; display:flex; flex-direction:column; gap:14px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-family:var(--font-display); font-size:32px; font-weight:700; color:#fff;">Managed OpenClaw</div>
+                    <div style="padding:6px 14px; border-radius:8px; background:rgba(103,61,230,0.18); color:#a78bfa; font-family:var(--font-data); font-size:16px; font-weight:600;">73% off</div>
+                  </div>
+                  <div style="font-family:var(--font-display); font-size:22px; color:#7a7c92; text-decoration:line-through;">$21.99</div>
+                  <div style="font-family:var(--font-display); font-size:64px; font-weight:700; color:#fff; line-height:1;">$5.99<span style="font-size:22px; font-weight:500; color:#cdcfe2;">/mo</span></div>
+                  <button id="s6-plan-1-btn" style="
+                    margin-top:10px; padding:18px; border-radius:10px; border:none;
+                    background:#fff; color:#0e0f19;
+                    font-family:var(--font-display); font-size:22px; font-weight:700; cursor:pointer;
+                  ">Choose plan</button>
+                  <div style="font-family:var(--font-display); font-size:14px; color:#7a7c92;">Renews at $11.99/mo for 2 years. Cancel anytime.</div>
+                  <div style="padding:18px; border-radius:10px; background:#15172a; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="font-family:var(--font-display); font-weight:700; font-size:18px; color:#fff; margin-bottom:8px;">For zero effort</div>
+                    <div style="font-family:var(--font-display); font-size:15px; color:#cdcfe2; line-height:1.5;">Fully managed for running AI agents with zero setup, infrastructure management, or configuration.</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OpenClaw on VPS -->
+              <div id="s6-plan-2" style="
+                position:relative; border-radius:18px; overflow:hidden;
+                background:#0e0f19; border:1px solid rgba(255,255,255,0.1);
+                display:flex; flex-direction:column;
+                margin-top:46px;
+              ">
+                <div style="padding:36px 36px 32px; display:flex; flex-direction:column; gap:14px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-family:var(--font-display); font-size:32px; font-weight:700; color:#fff;">OpenClaw on VPS</div>
+                    <div style="padding:6px 14px; border-radius:8px; background:rgba(103,61,230,0.18); color:#a78bfa; font-family:var(--font-data); font-size:16px; font-weight:600;">63% off</div>
+                  </div>
+                  <div style="font-family:var(--font-display); font-size:22px; color:#7a7c92; text-decoration:line-through;">$24.49</div>
+                  <div style="font-family:var(--font-display); font-size:64px; font-weight:700; color:#fff; line-height:1;">$8.99<span style="font-size:22px; font-weight:500; color:#cdcfe2;">/mo</span></div>
+                  <button id="s6-plan-2-btn" style="
+                    margin-top:10px; padding:18px; border-radius:10px; border:1px solid rgba(255,255,255,0.18);
+                    background:transparent; color:#fff;
+                    font-family:var(--font-display); font-size:22px; font-weight:700;
+                  ">Choose plan</button>
+                  <div style="font-family:var(--font-display); font-size:14px; color:#7a7c92;">Renews at $14.99/mo for 2 years. Cancel anytime.</div>
+                  <div style="padding:18px; border-radius:10px; background:#15172a; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="font-family:var(--font-display); font-weight:700; font-size:18px; color:#fff; margin-bottom:8px;">For full control</div>
+                    <div style="font-family:var(--font-display); font-size:15px; color:#cdcfe2; line-height:1.5;">A self-managed VPS for users requiring root access, full control, and allocated resources.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Animated cursor — lands on Choose plan (Managed OpenClaw) -->
+            <svg id="s6-cursor" viewBox="0 0 24 24" style="position:absolute; width:36px; height:36px; pointer-events:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));">
+              <path d="M3 2l16 8-7 2-2 7-7-17z" fill="#ffffff" stroke="#000" stroke-width="1.2" />
+            </svg>
+            <div id="s6-ripple" class="click-ripple"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 7 — CART STATE 1: PERIOD PICK (58–71s) — SHADER ANCHOR ============ -->
+      <div
+        class="scene clip"
+        id="s7"
+        data-start="58"
+        data-duration="13"
+        data-track-index="0"
+        style="opacity:0;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:50px 70px; justify-content:center;">
+          <div id="s7-browser" style="
+            position:relative;
+            width:1780px; height:980px;
+            background:#f4f4fa;
+            border-radius:18px; overflow:hidden;
+            box-shadow:0 60px 120px rgba(0,0,0,0.6);
+            display:flex; flex-direction:column;
+          ">
+            <!-- Top white nav -->
+            <div style="padding:24px 56px; background:#fff; display:flex; align-items:center;">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_Black.svg" alt="Hostinger" style="height:32px;" />
+              <div style="margin-left:auto; padding:10px 20px; border:1.5px solid #673de6; border-radius:100px; font-family:var(--font-display); font-size:16px; color:#0e0f19;">✦ Ask AI</div>
+            </div>
+
+            <!-- Cart body — focused on period selection -->
+            <div style="flex:1; padding:32px 80px; display:flex; flex-direction:column; gap:24px;">
+              <h1 style="font-family:var(--font-display); font-size:36px; font-weight:700; color:#0e0f19;">Your cart</h1>
+
+              <div style="display:grid; grid-template-columns:1fr 460px; gap:32px;">
+                <!-- LEFT: Managed OpenClaw with period dropdown OPEN -->
+                <div style="display:flex; flex-direction:column; gap:18px;">
+                  <div style="background:#fff; border-radius:16px; padding:28px 32px; box-shadow:0 2px 12px rgba(0,0,0,0.04); position:relative;">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+                      <div style="width:48px; height:48px; border-radius:10px; background:#0e0f19; display:flex; align-items:center; justify-content:center; color:#fff;">🐷</div>
+                      <div style="font-family:var(--font-display); font-size:24px; font-weight:700; color:#0e0f19;">Managed OpenClaw</div>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:20px;">
+                      <div style="flex:1; position:relative;">
+                        <div style="font-family:var(--font-display); font-size:14px; color:#444; font-weight:500; margin-bottom:6px;">Period</div>
+                        <div id="s7-period-trigger" style="
+                          padding:14px 18px; background:#fff; border:1.5px solid #673de6; border-radius:10px;
+                          display:flex; align-items:center; justify-content:space-between;
+                          font-family:var(--font-display); font-size:18px; color:#0e0f19;
+                          box-shadow:0 0 0 3px rgba(103,61,230,0.12);
+                        ">
+                          <span id="s7-period-label">24 months</span> <span style="opacity:0.5;">▾</span>
+                        </div>
+                        <!-- Period dropdown options (appears mid-scene) -->
+                        <div id="s7-period-dropdown" style="
+                          position:absolute; top:78px; left:0; right:0;
+                          background:#fff; border:1.5px solid #d6d6e0; border-radius:10px;
+                          box-shadow:0 12px 28px rgba(0,0,0,0.12); opacity:0;
+                          z-index:5;
+                        ">
+                          <div id="s7-opt-1" class="s7-period-opt" data-label="1 month" data-save="0" data-mo="21.99" data-strike="" style="padding:14px 18px; display:flex; justify-content:space-between; font-family:var(--font-display); font-size:17px; color:#0e0f19; cursor:pointer;">
+                            <span>1 month</span><span style="color:#777;">$ 21.99/mo</span>
+                          </div>
+                          <div id="s7-opt-12" class="s7-period-opt" data-label="12 months" data-save="168" data-mo="7.99" data-strike="21.99" style="padding:14px 18px; display:flex; justify-content:space-between; font-family:var(--font-display); font-size:17px; color:#0e0f19; cursor:pointer; border-top:1px solid #ececf3;">
+                            <span>12 months</span><span><span style="color:#0e7a3c; font-weight:600; margin-right:8px;">Save $168</span>$ 7.99/mo</span>
+                          </div>
+                          <div id="s7-opt-24" class="s7-period-opt" data-label="24 months" data-save="384" data-mo="5.99" data-strike="21.99" style="padding:14px 18px; display:flex; justify-content:space-between; font-family:var(--font-display); font-size:17px; color:#0e0f19; cursor:pointer; border-top:1px solid #ececf3; background:rgba(103,61,230,0.06);">
+                            <span>24 months</span><span><span style="color:#0e7a3c; font-weight:600; margin-right:8px;">Save $384</span>$ 5.99/mo</span>
+                          </div>
+                        </div>
+                        <div style="margin-top:8px; font-family:var(--font-display); font-size:14px; color:#777;">Renews at $ 11.99/mo for 2 years. Cancel anytime.</div>
+                      </div>
+                      <div style="text-align:right;">
+                        <div id="s7-save-badge" style="padding:6px 14px; border-radius:8px; background:#d8f3e2; color:#0e7a3c; font-family:var(--font-display); font-size:14px; font-weight:600; display:inline-block; margin-bottom:8px;">Save $ <span id="s7-save-amt">384</span></div>
+                        <div style="font-family:var(--font-display); font-size:28px; font-weight:700; color:#0e0f19;">$ <span id="s7-price-amt">5.99</span><span style="font-size:16px; color:#777; font-weight:500;">/mo</span></div>
+                        <div style="font-family:var(--font-display); font-size:16px; color:#999; text-decoration:line-through;">$ 21.99/mo</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Ready-to-Use AI -->
+                  <div style="background:#fff; border-radius:16px; padding:22px 28px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                      <div style="width:22px; height:22px; border-radius:6px; background:#673de6; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;">✓</div>
+                      <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">Ready-to-Use AI</div>
+                      <div style="padding:3px 10px; border-radius:6px; background:rgba(103,61,230,0.12); color:#673de6; font-family:var(--font-display); font-size:12px; font-weight:600;">Recommended</div>
+                      <div style="margin-left:auto; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">$ 5.99</div>
+                    </div>
+                    <div style="padding:10px 14px; background:#fff; border:1.5px solid #d6d6e0; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-display); font-size:14px; color:#0e0f19;">
+                      5 nexos.ai credits • $ 5.99 <span style="opacity:0.5;">▾</span>
+                    </div>
+                  </div>
+
+                  <!-- Instant web search -->
+                  <div style="background:#fff; border-radius:16px; padding:22px 28px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                      <div style="width:22px; height:22px; border-radius:6px; background:#673de6; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;">✓</div>
+                      <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">Instant web search</div>
+                      <div style="padding:3px 10px; border-radius:6px; background:rgba(103,61,230,0.12); color:#673de6; font-family:var(--font-display); font-size:12px; font-weight:600;">Recommended</div>
+                      <div style="margin-left:auto; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">$ 0</div>
+                    </div>
+                    <div style="padding:10px 14px; background:#fff; border:1.5px solid #d6d6e0; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-display); font-size:14px; color:#0e0f19;">
+                      1000 Oxylabs AI Studio credits • FREE <span style="opacity:0.5;">▾</span>
+                    </div>
+                  </div>
+
+                  <!-- Agentic Mail -->
+                  <div style="background:#fff; border-radius:16px; padding:22px 28px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                      <div style="width:22px; height:22px; border-radius:6px; border:1.5px solid #c0c0d0; background:#fff;"></div>
+                      <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">Agentic Mail</div>
+                      <div style="padding:3px 10px; border-radius:6px; background:rgba(103,61,230,0.12); color:#673de6; font-family:var(--font-display); font-size:12px; font-weight:600;">Recommended</div>
+                      <div style="margin-left:auto; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">$ 2.99<span style="font-size:14px; color:#777; font-weight:500;">/mo</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RIGHT: Order summary (dimmed during period pick) -->
+                <div style="background:#fff; border-radius:16px; padding:28px; height:fit-content; box-shadow:0 2px 12px rgba(0,0,0,0.04); opacity:0.7;">
+                  <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19; margin-bottom:14px;">Order summary</div>
+                  <div style="font-family:var(--font-display); font-size:15px; font-weight:700; color:#0e0f19; margin-bottom:8px;">Managed OpenClaw</div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:14px; color:#222; padding:4px 0;">
+                    <span><span id="s7-period-row">1-month period</span></span>
+                    <span><span id="s7-strike" style="text-decoration:line-through; color:#999;"></span> <span id="s7-mo-price">$ 21.99</span></span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:14px; color:#222; padding:4px 0;">
+                    <span>Nexos AI Credits 5</span><span>$ 5.99</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:14px; color:#222; padding:4px 0; border-top:1px solid #ececf3; margin-top:6px; padding-top:10px;">
+                    <span>Taxes ⓘ</span><span>$ 28.45</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19; padding:12px 0; border-top:1px solid #ececf3; margin-top:6px;">
+                    <span>Total</span><span id="s7-total">$ 178.20</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cursor + ripple -->
+            <svg id="s7-cursor" viewBox="0 0 24 24" style="position:absolute; width:36px; height:36px; pointer-events:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));">
+              <path d="M3 2l16 8-7 2-2 7-7-17z" fill="#0e0f19" stroke="#fff" stroke-width="1.2" />
+            </svg>
+            <div id="s7-ripple" class="click-ripple dark"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 8 — CART (71–83s) — SHADER ANCHOR — matches live 03-cart-top.png ============ -->
+      <div
+        class="scene clip"
+        id="s8"
+        data-start="71"
+        data-duration="12"
+        data-track-index="0"
+        style="opacity:0;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:50px 70px; justify-content:center;">
+          <div id="s8-browser" style="
+            position:relative;
+            width:1780px; height:980px;
+            background:#f4f4fa;
+            border-radius:18px; overflow:hidden;
+            box-shadow:0 60px 120px rgba(0,0,0,0.6);
+            display:flex; flex-direction:column;
+          ">
+            <!-- Top white nav bar -->
+            <div style="padding:24px 56px; background:#fff; display:flex; align-items:center;">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_Black.svg" alt="Hostinger" style="height:32px;" />
+              <div style="margin-left:auto; padding:10px 20px; border:1.5px solid #673de6; border-radius:100px; font-family:var(--font-display); font-size:16px; color:#0e0f19;">✦ Ask AI</div>
+            </div>
+
+            <!-- Cart body -->
+            <div style="flex:1; padding:32px 80px; display:flex; flex-direction:column; gap:24px;">
+              <h1 style="font-family:var(--font-display); font-size:36px; font-weight:700; color:#0e0f19;">Your cart</h1>
+
+              <div style="display:grid; grid-template-columns:1fr 460px; gap:32px;">
+                <!-- LEFT: line items -->
+                <div style="display:flex; flex-direction:column; gap:18px;">
+                  <!-- Managed OpenClaw card -->
+                  <div style="background:#fff; border-radius:16px; padding:28px 32px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+                      <div style="width:48px; height:48px; border-radius:10px; background:#0e0f19; display:flex; align-items:center; justify-content:center; color:#fff;">🐷</div>
+                      <div style="font-family:var(--font-display); font-size:24px; font-weight:700; color:#0e0f19;">Managed OpenClaw</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:20px;">
+                      <div style="flex:1;">
+                        <div style="font-family:var(--font-display); font-size:14px; color:#444; font-weight:500; margin-bottom:6px;">Period</div>
+                        <div style="padding:14px 18px; background:#fff; border:1.5px solid #d6d6e0; border-radius:10px; display:flex; align-items:center; justify-content:space-between; font-family:var(--font-display); font-size:18px; color:#0e0f19;">
+                          24 months <span style="opacity:0.5;">▾</span>
+                        </div>
+                        <div style="margin-top:8px; font-family:var(--font-display); font-size:14px; color:#777;">Renews at $ 11.99/mo for 2 years. Cancel anytime.</div>
+                      </div>
+                      <div style="text-align:right;">
+                        <div style="padding:6px 14px; border-radius:8px; background:#d8f3e2; color:#0e7a3c; font-family:var(--font-display); font-size:14px; font-weight:600; display:inline-block; margin-bottom:8px;">Save $ 384</div>
+                        <div style="font-family:var(--font-display); font-size:28px; font-weight:700; color:#0e0f19;">$ 5.99<span style="font-size:16px; color:#777; font-weight:500;">/mo</span></div>
+                        <div style="font-family:var(--font-display); font-size:16px; color:#999; text-decoration:line-through;">$ 21.99/mo</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Ready-to-Use AI card -->
+                  <div style="background:#fff; border-radius:16px; padding:22px 28px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                      <div style="width:22px; height:22px; border-radius:6px; background:#673de6; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;">✓</div>
+                      <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">Ready-to-Use AI</div>
+                      <div style="padding:3px 10px; border-radius:6px; background:rgba(103,61,230,0.12); color:#673de6; font-family:var(--font-display); font-size:12px; font-weight:600;">Recommended</div>
+                      <div style="margin-left:auto; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">$ 5.99</div>
+                    </div>
+                    <div style="padding:10px 14px; background:#fff; border:1.5px solid #d6d6e0; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-display); font-size:14px; color:#0e0f19;">
+                      5 nexos.ai credits • $ 5.99 <span style="opacity:0.5;">▾</span>
+                    </div>
+                  </div>
+
+                  <!-- Instant web search -->
+                  <div style="background:#fff; border-radius:16px; padding:22px 28px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                      <div style="width:22px; height:22px; border-radius:6px; background:#673de6; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;">✓</div>
+                      <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">Instant web search</div>
+                      <div style="padding:3px 10px; border-radius:6px; background:rgba(103,61,230,0.12); color:#673de6; font-family:var(--font-display); font-size:12px; font-weight:600;">Recommended</div>
+                      <div style="margin-left:auto; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">$ 0</div>
+                    </div>
+                    <div style="padding:10px 14px; background:#fff; border:1.5px solid #d6d6e0; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-display); font-size:14px; color:#0e0f19;">
+                      1000 Oxylabs AI Studio credits • FREE <span style="opacity:0.5;">▾</span>
+                    </div>
+                  </div>
+
+                  <!-- Agentic Mail -->
+                  <div style="background:#fff; border-radius:16px; padding:22px 28px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                      <div style="width:22px; height:22px; border-radius:6px; border:1.5px solid #c0c0d0; background:#fff;"></div>
+                      <div style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">Agentic Mail</div>
+                      <div style="padding:3px 10px; border-radius:6px; background:rgba(103,61,230,0.12); color:#673de6; font-family:var(--font-display); font-size:12px; font-weight:600;">Recommended</div>
+                      <div style="margin-left:auto; font-family:var(--font-display); font-size:20px; font-weight:700; color:#0e0f19;">$ 2.99<span style="font-size:14px; color:#777; font-weight:500;">/mo</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RIGHT: Order summary -->
+                <div id="s8-summary" style="background:#fff; border-radius:16px; padding:32px 32px 28px; height:fit-content; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+                  <div style="font-family:var(--font-display); font-size:22px; font-weight:700; color:#0e0f19; margin-bottom:18px;">Order summary</div>
+                  <div style="font-family:var(--font-display); font-size:16px; font-weight:700; color:#0e0f19; margin-bottom:10px;">Managed OpenClaw</div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:15px; color:#222; padding:6px 0;">
+                    <span>24-month period</span>
+                    <span><span style="text-decoration:line-through; color:#999;">$ 527.76</span>  $ 143.76</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:15px; color:#222; padding:6px 0;">
+                    <span>Nexos AI Credits 5</span>
+                    <span>$ 5.99</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:15px; color:#222; padding:6px 0; border-top:1px solid #ececf3; margin-top:8px; padding-top:14px;">
+                    <span>Taxes ⓘ</span>
+                    <span>$ 28.45</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-size:22px; font-weight:700; color:#0e0f19; padding:14px 0; border-top:1px solid #ececf3; margin-top:8px;">
+                    <span>Total</span>
+                    <span><span style="text-decoration:line-through; color:#999; font-size:18px; font-weight:500;">$ 562.20</span>  <span id="s8-total">$ 178.20</span></span>
+                  </div>
+                  <div id="s8-coupon-link" style="margin-top:8px; font-family:var(--font-display); font-size:16px; color:#673de6; font-weight:500; cursor:pointer;">Have a coupon code?</div>
+                  <!-- Coupon row (appears after click) -->
+                  <div id="s8-coupon-row" style="margin-top:12px; display:flex; gap:10px; opacity:0;">
+                    <div id="s8-coupon-field" style="flex:1; padding:12px 16px; background:#fff; border:1.5px solid #d6d6e0; border-radius:10px; font-family:var(--font-data); font-size:16px; color:#0e0f19; letter-spacing:0.08em;"><span id="s8-coupon-text"></span><span id="s8-caret" style="display:inline-block; width:2px; height:18px; background:#673de6; vertical-align:middle; margin-left:1px;"></span></div>
+                    <button id="s8-apply-btn" style="padding:12px 22px; border-radius:10px; border:none; background:#673de6; color:#fff; font-family:var(--font-display); font-size:16px; font-weight:600;">Apply</button>
+                  </div>
+                  <div id="s8-coupon-success" style="margin-top:8px; font-family:var(--font-display); font-size:14px; color:#0e7a3c; opacity:0;">✓ DIYSMARTCODE applied — 10% off</div>
+                  <!-- Continue button -->
+                  <button id="s8-continue-btn" style="margin-top:18px; padding:16px; width:100%; border-radius:10px; border:none; background:#673de6; color:#fff; font-family:var(--font-display); font-size:20px; font-weight:700;">Continue</button>
+                  <div style="margin-top:14px; text-align:center; font-family:var(--font-display); font-size:14px; color:#555;">🛡 30-day money-back guarantee</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Animated cursor -->
+            <svg id="s8-cursor" viewBox="0 0 24 24" style="position:absolute; width:36px; height:36px; pointer-events:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));">
+              <path d="M3 2l16 8-7 2-2 7-7-17z" fill="#0e0f19" stroke="#fff" stroke-width="1.2" />
+            </svg>
+            <div id="s8-ripple" class="click-ripple dark"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 9 — NEXOS.AI CREDITS HIGHLIGHT (83–96s) ============ -->
+      <div
+        class="scene clip"
+        id="s9"
+        data-start="83"
+        data-duration="13"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:80px 100px; gap:0; align-items:center; justify-content:center; flex-direction:column;">
+          <div id="s9-overline" class="kicker" style="margin-bottom:24px;">07 / THE MAGIC PART</div>
+          <h2 id="s9-headline" class="display" style="font-size:88px; line-height:1; letter-spacing:-0.03em; text-align:center; margin-bottom:48px;">
+            No API keys.<br/><span style="color:#8b5cf6;">No external accounts.</span>
+          </h2>
+
+          <!-- Nexos.AI credits card -->
+          <div id="s9-credits-card" style="
+            width:1100px; max-width:90%;
+            padding:48px 56px; border-radius:24px;
+            background:linear-gradient(135deg, rgba(103,61,230,0.18), rgba(139,92,246,0.08));
+            border:2px solid #673de6;
+            box-shadow:0 30px 80px rgba(103,61,230,0.3);
+            display:flex; align-items:center; gap:48px;
+          ">
+            <div style="flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div id="s9-big-badge" style="
+                font-family:var(--font-display); font-weight:800;
+                font-size:120px; line-height:1; color:#fff;
+              "><span style="color:#8b5cf6;">5</span>+<span style="color:#00c896;">5</span></div>
+              <div style="font-family:var(--font-data); font-size:22px; letter-spacing:0.2em; color:#00c896;">FREE CREDITS</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:var(--font-display); font-size:32px; font-weight:700; color:#fff; margin-bottom:14px;">Ready-to-Use AI</div>
+              <div style="font-family:var(--font-display); font-size:20px; line-height:1.45; color:#cdcfe2; margin-bottom:22px;">Buy 5 Nexos AI credits, get 5 more free. Instant access to every model — no signups, no setup, no manual API keys.</div>
+              <div id="s9-providers" style="display:flex; gap:14px; flex-wrap:wrap;">
+                <div class="s9-provider" style="padding:10px 20px; border-radius:100px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-family:var(--font-data); font-size:16px;">OpenAI</div>
+                <div class="s9-provider" style="padding:10px 20px; border-radius:100px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-family:var(--font-data); font-size:16px;">Anthropic Claude</div>
+                <div class="s9-provider" style="padding:10px 20px; border-radius:100px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-family:var(--font-data); font-size:16px;">Google Gemini</div>
+                <div class="s9-provider" style="padding:10px 20px; border-radius:100px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-family:var(--font-data); font-size:16px;">xAI Grok</div>
+              </div>
+            </div>
+            <div style="flex:0 0 auto; text-align:right;">
+              <div style="font-family:var(--font-display); font-size:18px; color:var(--muted); text-decoration:line-through;">$11.98</div>
+              <div id="s9-price" style="font-family:var(--font-display); font-size:48px; font-weight:800; color:#00c896; line-height:1;">$5.99</div>
+              <div style="font-family:var(--font-data); font-size:14px; color:var(--muted); margin-top:4px;">one-time</div>
+            </div>
+          </div>
+
+          <!-- Strike-through pill for old API key workflow -->
+          <div id="s9-strike" style="
+            margin-top:32px; padding:14px 28px; border-radius:100px;
+            background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.3);
+            display:flex; align-items:center; gap:14px;
+            font-family:var(--font-data); font-size:18px; color:#ff4d4d;
+            text-decoration:line-through; text-decoration-color:#ff4d4d;
+          ">OpenAI account · Anthropic billing · Google Cloud API · Manual key juggling</div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 10 — CONFIG + AI PROVIDER (34.5–38.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s10"
+        data-start="96"
+        data-duration="14"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="left">
+            <div class="kicker" id="s10-kicker">07 / Configure</div>
+            <h2 class="display" id="s10-title">Pick your AI brain.</h2>
+            <p id="s10-sub">
+              Use the credits Hostinger pre-loaded — or paste your own OpenAI, Anthropic
+              or Gemini key.
+            </p>
+          </div>
+          <div class="form" id="s10-form">
+            <div class="form-title">AI Provider</div>
+            <div class="opt active s10-opt">
+              <div class="radio"></div>
+              <div class="opt-body">
+                <div class="opt-title">
+                  Ready-to-use AI
+                  <span class="opt-badge">RECOMMENDED</span>
+                </div>
+                <div class="opt-sub">Pre-connected. Add credits and ship.</div>
+              </div>
+            </div>
+            <div class="opt s10-opt">
+              <div class="radio"></div>
+              <div class="opt-body">
+                <div class="opt-title">External API key</div>
+                <div class="opt-sub">Bring your own OpenAI / Anthropic / Gemini key.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 11 — LOGIN → DASHBOARD (110–126s) ============ -->
+      <div
+        class="scene clip"
+        id="s11"
+        data-start="110"
+        data-duration="16"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:60px 100px; gap:0; justify-content:center; align-items:center;">
+
+          <!-- BEAT 1 (110-117.5): "Welcome to OpenClaw" login card -->
+          <div id="s11-login" style="
+            position:absolute; inset:60px 100px;
+            background:#ffffff; border-radius:32px; overflow:hidden;
+            box-shadow:0 0 0 4px #673de6, 0 60px 120px rgba(0,0,0,0.5);
+            display:flex; flex-direction:column;
+          ">
+            <div style="padding:36px 56px; border-bottom:1px solid #e8e9f3; display:flex; align-items:center; justify-content:center; gap:14px;">
+              <img src="assets/hostinger-brand/Hostinger_Horizontal_Black.svg" alt="Hostinger" style="height:36px;" />
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:32px;">
+              <h2 id="s11-login-title" style="font-family:var(--font-display); font-size:56px; font-weight:700; color:#0e0f19;">Welcome to OpenClaw</h2>
+              <div id="s11-token-row" style="
+                width:680px; max-width:80%;
+                padding:24px 28px; border:2px solid #673de6; border-radius:16px;
+                background:#fafafe; display:flex; align-items:center; gap:14px;
+                font-family:var(--font-data); font-size:30px; color:#3a3a4a;
+                letter-spacing:0.18em;
+              ">
+                <span id="s11-token-dots">••••••••••••••••••••</span>
+                <span style="margin-left:auto; opacity:0.6; font-size:24px;">🔒</span>
+              </div>
+              <button id="s11-login-btn" style="
+                padding:22px 60px; border-radius:14px; border:none;
+                background:#673de6; color:white;
+                font-family:var(--font-display); font-size:28px; font-weight:700;
+                display:inline-flex; align-items:center; gap:14px; cursor:pointer;
+              ">→ Login</button>
+            </div>
+          </div>
+
+          <!-- BEAT 2 (117.5+): OpenClaw Gateway Dashboard chat interface -->
+          <div id="s11-dash" style="
+            position:absolute; inset:60px 100px; opacity:0;
+            background:#0e0f19; border:1px solid var(--line-2); border-radius:24px; overflow:hidden;
+            box-shadow:0 0 0 3px #673de6, 0 60px 120px rgba(0,0,0,0.5);
+            display:flex;
+          ">
+            <div style="
+              width:280px; background:#15172a; border-right:1px solid var(--line);
+              padding:32px 0; display:flex; flex-direction:column; gap:8px;
+            ">
+              <div style="padding:0 28px 28px; display:flex; align-items:center; gap:12px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#673de6; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">OC</div>
+                <div style="font-family:var(--font-display); font-weight:700; font-size:18px;">OPENCLAW</div>
+              </div>
+              <div style="padding:14px 28px; background:rgba(103,61,230,0.18); border-left:3px solid #673de6; font-family:var(--font-display); font-size:18px;">💬 Chat</div>
+              <div style="padding:14px 28px; color:var(--muted); font-size:18px;">📊 Overview</div>
+              <div style="padding:14px 28px; color:var(--muted); font-size:18px;">🔗 Channels</div>
+              <div style="padding:14px 28px; color:var(--muted); font-size:18px;">📦 Instances</div>
+              <div style="padding:14px 28px; color:var(--muted); font-size:18px;">⚙️ Config</div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column;">
+              <div style="
+                padding:24px 36px; border-bottom:1px solid var(--line);
+                display:flex; align-items:center; justify-content:space-between;
+              ">
+                <div>
+                  <div style="font-family:var(--font-display); font-weight:700; font-size:28px;">Chat</div>
+                  <div style="color:var(--muted); font-size:18px; margin-top:4px;">Direct gateway chat session for quick interventions.</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; padding:8px 16px; background:rgba(0,200,150,0.12); border-radius:100px; font-size:16px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#00c896;"></span>
+                  Health OK
+                </div>
+              </div>
+              <div id="s11-chat-area" style="
+                flex:1; padding:36px; display:flex; flex-direction:column; gap:20px; justify-content:flex-end;
+              ">
+                <div id="s11-msg-user" style="
+                  align-self:flex-end; max-width:60%;
+                  padding:18px 26px; background:#673de6; color:white;
+                  border-radius:20px 20px 4px 20px;
+                  font-family:var(--font-display); font-size:22px;
+                ">Hello</div>
+                <div id="s11-msg-bot" style="
+                  align-self:flex-start; max-width:70%;
+                  padding:20px 28px; background:#15172a; border:1px solid var(--line);
+                  border-radius:20px 20px 20px 4px;
+                  font-family:var(--font-display); font-size:22px; color:#e6e7f0;
+                ">Hi! I'm your new assistant. Let's set up your <b>soul.md</b> — what should I call you, and what should I be called?</div>
+              </div>
+              <div style="
+                padding:16px 36px 28px; border-top:1px solid var(--line);
+                display:flex; align-items:center; gap:14px;
+              ">
+                <div style="
+                  flex:1; padding:14px 20px; background:#0e0f19;
+                  border:1px solid var(--line); border-radius:12px;
+                  color:var(--muted-2); font-family:var(--font-display); font-size:18px;
+                ">Message (↩ to send, Shift+↩ for line breaks)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 12 — CHANNEL SELECTION (126–140s) ============ -->
+      <div
+        class="scene clip"
+        id="s12"
+        data-start="126"
+        data-duration="14"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:80px 100px; gap:48px; align-items:center; justify-content:center; flex-direction:column;">
+          <div style="text-align:center;">
+            <div id="s12-kicker" class="kicker" style="margin-bottom:18px;">08 / CONNECT A CHANNEL</div>
+            <h2 id="s12-title" class="display" style="font-size:88px; line-height:1; letter-spacing:-0.03em;">Talk to it from <span style="color:#8b5cf6;">anywhere</span>.</h2>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:24px; width:100%; max-width:1500px;">
+            <!-- Telegram (highlighted as 1-click) -->
+            <div class="s12-ch" id="s12-ch-telegram" style="
+              padding:40px 28px; background:#15172a;
+              border:2px solid #673de6; border-radius:22px;
+              display:flex; flex-direction:column; align-items:center; gap:18px;
+              position:relative;
+              box-shadow:0 0 40px rgba(103,61,230,0.25);
+            ">
+              <div style="position:absolute; top:14px; right:14px; padding:6px 12px; border-radius:100px; background:#673de6; font-family:var(--font-data); font-size:12px; font-weight:700; color:#fff;">1-CLICK</div>
+              <div style="width:80px; height:80px; border-radius:20px; background:#229ed9; display:flex; align-items:center; justify-content:center;">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="white"><path d="M9.04 15.12l-.4 4c.55 0 .8-.24 1.1-.52l2.6-2.5 5.4 3.9c1 .55 1.7.27 1.95-.92l3.55-16.6c.3-1.43-.5-2-1.5-1.66L1.7 9.27c-1.4.55-1.38 1.34-.25 1.7l5.2 1.63 12.1-7.6c.57-.4 1.1-.18.66.22"/></svg>
+              </div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff;">Telegram</div>
+            </div>
+
+            <!-- WhatsApp -->
+            <div class="s12-ch" id="s12-ch-whatsapp" style="
+              padding:40px 28px; background:#15172a;
+              border:1px solid var(--line); border-radius:22px;
+              display:flex; flex-direction:column; align-items:center; gap:18px;
+            ">
+              <div style="width:80px; height:80px; border-radius:20px; background:#25d366; display:flex; align-items:center; justify-content:center;">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="white"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-.9 1.2c-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.5.3-.5.9-1.6.1-.2.05-.4 0-.5l-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1-1.1 2.6s1.1 3 1.3 3.2c.2.3 2.3 3.5 5.6 4.9.8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.4-.3z"/></svg>
+              </div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff;">WhatsApp</div>
+            </div>
+
+            <!-- iMessage -->
+            <div class="s12-ch" id="s12-ch-imessage" style="
+              padding:40px 28px; background:#15172a;
+              border:1px solid var(--line); border-radius:22px;
+              display:flex; flex-direction:column; align-items:center; gap:18px;
+            ">
+              <div style="width:80px; height:80px; border-radius:20px; background:#00c853; display:flex; align-items:center; justify-content:center;">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.18 2 11.34c0 2.94 1.41 5.57 3.62 7.28L4.5 22l3.83-2c1.13.32 2.33.49 3.67.49 5.52 0 10-4.18 10-9.34S17.52 2 12 2z"/></svg>
+              </div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff;">iMessage</div>
+            </div>
+
+            <!-- Slack -->
+            <div class="s12-ch" id="s12-ch-slack" style="
+              padding:40px 28px; background:#15172a;
+              border:1px solid var(--line); border-radius:22px;
+              display:flex; flex-direction:column; align-items:center; gap:18px;
+            ">
+              <div style="width:80px; height:80px; border-radius:20px; background:#4a154b; display:flex; align-items:center; justify-content:center;">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="white"><path d="M9 2a2 2 0 110 4H7a2 2 0 110-4h2zm6 4V4a2 2 0 114 0v2a2 2 0 11-4 0zm-9 9a2 2 0 110-4h2a2 2 0 110 4H6zm9 6a2 2 0 11-4 0v-2a2 2 0 114 0v2zm6-9a2 2 0 110 4h-2a2 2 0 110-4h2zM4 11a2 2 0 110-4h2a2 2 0 110 4H4z"/></svg>
+              </div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff;">Slack</div>
+            </div>
+
+            <!-- Discord -->
+            <div class="s12-ch" id="s12-ch-discord" style="
+              padding:40px 28px; background:#15172a;
+              border:1px solid var(--line); border-radius:22px;
+              display:flex; flex-direction:column; align-items:center; gap:18px;
+            ">
+              <div style="width:80px; height:80px; border-radius:20px; background:#5865f2; display:flex; align-items:center; justify-content:center;">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="white"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4c1.6.4 3 1 4.4 1.8a17 17 0 0 0-15.2 0c1.4-.8 2.8-1.4 4.4-1.8L8.6 3A19.8 19.8 0 0 0 3.7 4.4 21 21 0 0 0 0 16.6a19.7 19.7 0 0 0 6.1 3l1.3-2c-1-.3-2-.7-3-1.3l.6-.5a14 14 0 0 0 13.9 0l.6.5c-1 .6-2 1-3 1.3l1.3 2A19.7 19.7 0 0 0 24 16.6a21 21 0 0 0-3.7-12.2zM8 14a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z"/></svg>
+              </div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff;">Discord</div>
+            </div>
+          </div>
+
+          <!-- Bottom prompt -->
+          <div id="s12-prompt" style="
+            margin-top:24px; padding:18px 32px;
+            background:rgba(103,61,230,0.12); border:1px solid #673de6;
+            border-radius:14px;
+            font-family:var(--font-data); font-size:20px; color:#fff;
+          ">💬 "Let's set up Telegram"  <span style="opacity:0.5;">— OpenClaw walks you through it.</span></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 13 — BOTFATHER + TEST + SKILLS + CREDITS (140–167s) ============ -->
+      <div
+        class="scene clip"
+        id="s13"
+        data-start="140"
+        data-duration="27"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="grain"></div>
+        <div class="scene-content" style="padding:60px 100px; gap:0; align-items:stretch; justify-content:flex-start;">
+
+          <!-- BEAT 1 (140-148): Telegram BotFather chat -->
+          <div id="s13-beat1" style="position:absolute; inset:60px 100px; display:flex; flex-direction:column; gap:24px;">
+            <div class="kicker" id="s13-b1-kicker">09a / BOTFATHER FLOW</div>
+            <h2 class="display" id="s13-b1-title" style="font-size:60px; line-height:1; letter-spacing:-0.02em;">Paste the token. Get a pairing code.</h2>
+            <div style="display:flex; gap:36px; flex:1;">
+              <!-- Phone Telegram chat -->
+              <div id="s13-b1-phone" style="
+                width:420px; padding:24px 28px;
+                background:#0e1f35; border-radius:28px; border:1px solid #229ed9;
+                display:flex; flex-direction:column; gap:14px;
+                box-shadow:0 30px 80px rgba(34,158,217,0.25);
+              ">
+                <div style="display:flex; align-items:center; gap:12px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                  <div style="width:42px; height:42px; border-radius:50%; background:#229ed9; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">@</div>
+                  <div>
+                    <div style="font-family:var(--font-display); font-weight:700; font-size:17px;">BotFather</div>
+                    <div style="color:#7da3c0; font-size:13px;">@BotFather · bot</div>
+                  </div>
+                </div>
+                <div id="s13-b1-msg1" style="align-self:flex-end; max-width:80%; padding:10px 14px; background:#3390ec; color:#fff; border-radius:14px 14px 4px 14px; font-family:var(--font-data); font-size:15px;">/newbot</div>
+                <div id="s13-b1-msg2" style="align-self:flex-start; max-width:90%; padding:12px 16px; background:#1c2e44; color:#dfe9f3; border-radius:14px 14px 14px 4px; font-family:var(--font-display); font-size:14px; line-height:1.5;">Done! Use this token to access the HTTP API:<br/><b style="font-family:var(--font-data); color:#8b5cf6;">7421:AAH•••••••</b></div>
+              </div>
+              <!-- OpenClaw response -->
+              <div id="s13-b1-claw" style="
+                flex:1; padding:24px 28px;
+                background:#15172a; border-radius:18px; border:1px solid var(--line);
+                display:flex; flex-direction:column; gap:14px;
+              ">
+                <div style="font-family:var(--font-data); font-size:14px; letter-spacing:0.18em; color:var(--accent-2);">OPENCLAW</div>
+                <div style="align-self:flex-end; max-width:75%; padding:12px 18px; background:#673de6; color:#fff; border-radius:14px 14px 4px 14px; font-family:var(--font-data); font-size:14px;">7421:AAH•••••••</div>
+                <div style="align-self:flex-start; padding:14px 20px; background:#0e0f19; border:1px solid var(--line); border-radius:14px 14px 14px 4px; font-family:var(--font-display); font-size:15px; line-height:1.45;">
+                  ✅ Telegram channel connected. Your pairing code:
+                  <div style="margin-top:8px; padding:10px 16px; background:rgba(0,200,150,0.08); border:1px dashed #00c896; border-radius:8px; font-family:var(--font-data); font-size:20px; color:#00c896; letter-spacing:0.15em;">7K-9A2P</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BEAT 2 (148-153): Phone message exchange (assistant alive on Telegram) -->
+          <div id="s13-beat2" style="position:absolute; inset:60px 100px; opacity:0; display:flex; flex-direction:column; gap:24px;">
+            <div class="kicker">09b / TEST IT</div>
+            <h2 class="display" style="font-size:60px; line-height:1; letter-spacing:-0.02em;">Now chat from anywhere.</h2>
+            <div style="display:flex; gap:48px; flex:1; align-items:center; justify-content:center;">
+              <div style="
+                width:380px; padding:24px 28px;
+                background:#0e1f35; border-radius:28px; border:1px solid #229ed9;
+                display:flex; flex-direction:column; gap:14px;
+              ">
+                <div style="display:flex; align-items:center; gap:12px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                  <div style="width:42px; height:42px; border-radius:50%; background:#673de6; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">OC</div>
+                  <div>
+                    <div style="font-family:var(--font-display); font-weight:700; font-size:17px;">OpenClaw Agent</div>
+                    <div style="color:#7da3c0; font-size:13px;">● online</div>
+                  </div>
+                </div>
+                <div id="s13-b2-m1" style="align-self:flex-end; max-width:80%; padding:12px 16px; background:#3390ec; color:#fff; border-radius:14px 14px 4px 14px; font-family:var(--font-display); font-size:16px;">Hey, schedule a call with the design team Friday 3pm</div>
+                <div id="s13-b2-m2" style="align-self:flex-start; max-width:88%; padding:12px 16px; background:#1c2e44; color:#dfe9f3; border-radius:14px 14px 14px 4px; font-family:var(--font-display); font-size:16px;">✅ Calendar invite sent. Blocked Friday 15:00–16:00.</div>
+              </div>
+              <div id="s13-b2-stat" style="text-align:center;">
+                <div style="font-family:var(--font-display); font-size:140px; font-weight:800; color:#00c896; line-height:1;">24<span style="color:#fff;">/</span>7</div>
+                <div style="font-family:var(--font-data); font-size:20px; letter-spacing:0.2em; color:var(--muted); margin-top:8px;">RUNNING</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BEAT 3 (153-160): ClawHub skills library -->
+          <div id="s13-beat3" style="position:absolute; inset:60px 100px; opacity:0; display:flex; flex-direction:column; gap:24px;">
+            <div class="kicker">09c / EXTEND IT — SKILLS</div>
+            <h2 class="display" style="font-size:60px; line-height:1; letter-spacing:-0.02em;">Ask for skills. ClawHub <span style="color:#8b5cf6;">installs them.</span></h2>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:18px;">
+              <div class="s13-skill" style="padding:24px 22px; background:#15172a; border:1px solid var(--line); border-radius:16px;">
+                <div style="font-size:36px; margin-bottom:10px;">📧</div>
+                <div style="font-family:var(--font-display); font-weight:700; font-size:18px;">Email</div>
+                <div style="color:var(--muted); font-size:14px; margin-top:4px;">Gmail · Outlook</div>
+              </div>
+              <div class="s13-skill" style="padding:24px 22px; background:#15172a; border:1px solid var(--line); border-radius:16px;">
+                <div style="font-size:36px; margin-bottom:10px;">📅</div>
+                <div style="font-family:var(--font-display); font-weight:700; font-size:18px;">Calendar</div>
+                <div style="color:var(--muted); font-size:14px; margin-top:4px;">Google · Outlook</div>
+              </div>
+              <div class="s13-skill" style="padding:24px 22px; background:#15172a; border:1px solid var(--line); border-radius:16px;">
+                <div style="font-size:36px; margin-bottom:10px;">🏠</div>
+                <div style="font-family:var(--font-display); font-weight:700; font-size:18px;">Smart Home</div>
+                <div style="color:var(--muted); font-size:14px; margin-top:4px;">HomeKit · HA</div>
+              </div>
+              <div class="s13-skill" style="padding:24px 22px; background:#15172a; border:1px solid var(--line); border-radius:16px;">
+                <div style="font-size:36px; margin-bottom:10px;">📊</div>
+                <div style="font-family:var(--font-display); font-weight:700; font-size:18px;">Workspace</div>
+                <div style="color:var(--muted); font-size:14px; margin-top:4px;">Slack · Drive</div>
+              </div>
+            </div>
+            <div style="
+              padding:16px 24px; background:rgba(103,61,230,0.1); border-left:3px solid #673de6;
+              font-family:var(--font-data); font-size:18px; color:#fff;
+            ">$ <span style="color:#8b5cf6;">install</span> google-workspace · <span style="opacity:0.7;">OpenClaw walks through every step.</span></div>
+          </div>
+
+          <!-- BEAT 4 (160-167): Credits top-up + Backup safety net -->
+          <div id="s13-beat4" style="position:absolute; inset:60px 100px; opacity:0; display:flex; flex-direction:column; gap:20px;">
+            <div class="kicker">09d / WHEN THINGS GO SIDEWAYS</div>
+            <h2 class="display" style="font-size:54px; line-height:1; letter-spacing:-0.02em;">Top up in seconds. Roll back in one click.</h2>
+            <div style="display:flex; gap:32px;">
+              <!-- Credits panel -->
+              <div id="s13-b4-credits" style="
+                flex:1; padding:32px 36px; background:#15172a;
+                border:1px solid var(--line); border-radius:18px;
+              ">
+                <div style="font-family:var(--font-data); font-size:14px; letter-spacing:0.18em; color:var(--muted); margin-bottom:14px;">HPANEL · NEXOS AI</div>
+                <div style="font-family:var(--font-display); font-size:56px; font-weight:800; color:#fff;">$<span id="s13-b4-bal">2.40</span></div>
+                <div style="font-family:var(--font-display); font-size:18px; color:var(--muted); margin-top:6px;">Real-time balance</div>
+                <button style="
+                  margin-top:22px; padding:14px 28px; border-radius:10px; border:none;
+                  background:#00c896; color:#0e0f19; font-family:var(--font-display); font-size:18px; font-weight:700;
+                ">+ Top up credits</button>
+              </div>
+              <!-- Backup panel -->
+              <div id="s13-b4-backup" style="
+                flex:1; padding:32px 36px; background:#15172a;
+                border:1px solid var(--line); border-radius:18px;
+              ">
+                <div style="font-family:var(--font-data); font-size:14px; letter-spacing:0.18em; color:var(--muted); margin-bottom:14px;">SNAPSHOTS & BACKUPS</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#0e0f19; border:1px solid var(--line); border-radius:10px;">
+                    <span style="font-family:var(--font-data); font-size:16px;">2026-05-14 · 03:00</span>
+                    <span style="padding:4px 10px; background:rgba(0,200,150,0.18); color:#00c896; font-size:13px; border-radius:6px;">✓ Latest</span>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#0e0f19; border:1px solid var(--line); border-radius:10px;">
+                    <span style="font-family:var(--font-data); font-size:16px;">2026-05-13 · 03:00</span>
+                    <span style="color:var(--muted); font-size:13px;">·</span>
+                  </div>
+                </div>
+                <button style="
+                  margin-top:18px; padding:14px 28px; border-radius:10px; border:1px solid #673de6;
+                  background:transparent; color:#fff; font-family:var(--font-display); font-size:18px;
+                ">↺ Restore</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============ SCENE 14 — CTA (49.5–53.5s) ============ -->
+      <div
+        class="scene clip"
+        id="s14"
+        data-start="167"
+        data-duration="13"
+        data-track-index="0"
+        style="visibility:hidden;"
+      >
+        <div class="glow glow-14"></div>
+        <div class="grid-bg"></div>
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="lk-row" id="s14-link">
+            <img class="lk-icon" src="assets/hostinger-brand/Hostinger_Icon_White.svg" alt="Hostinger" />
+            <span class="data-text">hostinger.com/openclaw</span>
+          </div>
+          <h2 class="display" id="s14-title">Launch yours today.</h2>
+          <div class="coupon-card" id="s14-coupon">
+            <div class="clabel">Coupon code</div>
+            <div class="coupon-code" id="s14-code">DIYSMARTCODE</div>
+            <div class="discount" id="s14-discount">−20% OFF</div>
+          </div>
+          <div class="cta-btn" id="s14-btn">Deploy OpenClaw →</div>
+        </div>
+      </div>
+
+      <!-- Persistent "Werbung" disclosure top-left (German ad-law) -->
+      <div class="werbung-label">Werbung</div>
+
+      <!-- Persistent top-right Hostinger H-mark — visible across every scene -->
+      <img
+        class="brand-mark"
+        src="assets/hostinger-brand/Hostinger_Icon_White.svg"
+        alt="Hostinger"
+      />
+
+      <!-- ============================================================
+           SFX — cinematic-whoosh at each scene transition (matches shape rearrange)
+           Per audio-design.md: data-duration=1.5s, data-volume=0.11, track 3
+           ============================================================ -->
+      <audio id="sfx-whoosh-t2"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="4"   data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t3"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="11"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t4"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="25"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t5"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="34"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t6"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="46"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t7"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="58"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t8"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="71"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t9"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="83"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t10" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="96"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t11" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="110" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t12" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="126" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t13" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="140" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+      <audio id="sfx-whoosh-t14" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="167" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+      <!-- ═══ shared/lib/components/hostinger-banner — pasted-in HTML ═══
+           Fires at t=120 (2:00 mark). Stays on screen until t=128. -->
+      <div id="host-banner">
+        <div class="host-card">
+          <div class="host-werbung">Werbung</div>
+          <div class="host-logo">
+            <img class="host-logo-img" src="assets/hostinger-horizontal-purple.svg" alt="Hostinger" crossorigin="anonymous" />
+          </div>
+          <div class="host-info">
+            <div class="host-headline" id="host-headline">Try Hostinger</div>
+            <div class="host-tagline" id="host-tagline">10% OFF with code <strong>DIYSMARTCODE</strong></div>
+          </div>
+          <div class="host-separator"></div>
+          <div class="host-pills">
+            <div class="host-pill host-pill-web">
+              <div class="host-pill-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM11 19.93C7.05 19.44 4 16.08 4 12C4 11.38 4.08 10.79 4.21 10.21L9 15V16C9 17.1 9.9 18 11 18V19.93ZM17.9 17.39C17.64 16.58 16.9 16 16 16H15V13C15 12.45 14.55 12 14 12H8V10H10C10.55 10 11 9.55 11 9V7H13C14.1 7 15 6.1 15 5V4.59C17.93 5.78 20 8.65 20 12C20 14.08 19.2 15.97 17.9 17.39Z" fill="currentColor"/></svg>
+              </div>
+              <span class="host-pill-label">Web Hosting</span>
+            </div>
+            <div class="host-pill host-pill-vps">
+              <div class="host-pill-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 1H20C21.1 1 22 1.9 22 3V9C22 10.1 21.1 11 20 11H4C2.9 11 2 10.1 2 9V3C2 1.9 2.9 1 4 1ZM4 13H20C21.1 13 22 13.9 22 15V21C22 22.1 21.1 23 20 23H4C2.9 23 2 22.1 2 21V15C2 13.9 2.9 13 4 13ZM6 4V8H8V4H6ZM6 16V20H8V16H6Z" fill="currentColor"/></svg>
+              </div>
+              <span class="host-pill-label">VPS</span>
+            </div>
+            <div class="host-pill host-pill-ai">
+              <div class="host-pill-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 1L13.09 8.26L20 9L13.09 9.74L12 17L10.91 9.74L4 9L10.91 8.26L12 1ZM19 14L19.74 16.74L22.5 17.5L19.74 18.26L19 21L18.26 18.26L15.5 17.5L18.26 16.74L19 14ZM5 14L5.74 16.74L8.5 17.5L5.74 18.26L5 21L4.26 18.26L1.5 17.5L4.26 16.74L5 14Z" fill="currentColor"/></svg>
+              </div>
+              <span class="host-pill-label">AI Website Builder</span>
+            </div>
+          </div>
+          <div class="host-discount">10% OFF</div>
+          <div class="host-url-panel">
+            <div class="host-url-overline">visit</div>
+            <div class="host-url" id="host-url">hostinger.com/DIYSMARTCODE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ shared/lib/blocks/hostinger-midroll — sub-composition mount ═══
+           20s midroll at t=90s (halfway through the 180s video).
+           Silent — host narrator covers the window. -->
+      <div id="hostinger-midroll-mount"
+           data-composition-id="hostinger-midroll"
+           data-composition-src="compositions/hostinger-midroll.html"
+           data-start="90"
+           data-duration="20"
+           data-track-index="20"
+           data-width="1920"
+           data-height="1080"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // ============================================================
+      // SCENE VISIBILITY TOGGLES (autoAlpha for non-anchor scenes)
+      // s7 + s8 are shader anchors — HyperShader owns their opacity during their window
+      // Retimed for 180s composition (draft narration: 176.5s)
+      // DEFENSIVE: every scene starts hidden at t=0 and is explicitly hidden after its window
+      // ============================================================
+      // Hide everything except s1 at t=0
+      tl.set("#s2",  { autoAlpha: 0 }, 0);
+      tl.set("#s3",  { autoAlpha: 0 }, 0);
+      tl.set("#s4",  { autoAlpha: 0 }, 0);
+      tl.set("#s5",  { autoAlpha: 0 }, 0);
+      tl.set("#s6",  { autoAlpha: 0 }, 0);
+      tl.set("#s7",  { opacity: 0 }, 0);
+      tl.set("#s8",  { opacity: 0 }, 0);
+      tl.set("#s9",  { autoAlpha: 0 }, 0);
+      tl.set("#s10", { autoAlpha: 0 }, 0);
+      tl.set("#s11", { autoAlpha: 0 }, 0);
+      tl.set("#s12", { autoAlpha: 0 }, 0);
+      tl.set("#s13", { autoAlpha: 0 }, 0);
+      tl.set("#s14", { autoAlpha: 0 }, 0);
+      // Per-scene reveal + hide cycle
+      tl.set("#s1",  { autoAlpha: 0 }, 4.0);
+      tl.set("#s2",  { autoAlpha: 1 }, 4.0);
+      tl.set("#s2",  { autoAlpha: 0 }, 11.0);
+      tl.set("#s3",  { autoAlpha: 1 }, 11.0);
+      tl.set("#s3",  { autoAlpha: 0 }, 25.0);
+      tl.set("#s4",  { autoAlpha: 1 }, 25.0);
+      tl.set("#s4",  { autoAlpha: 0 }, 34.0);
+      tl.set("#s5",  { autoAlpha: 1 }, 34.0);
+      tl.set("#s5",  { autoAlpha: 0 }, 46.0);
+      tl.set("#s6",  { autoAlpha: 1 }, 46.0);
+      tl.set("#s6",  { autoAlpha: 0 }, 58.0);
+      // Shader anchors — explicit show/hide for both s7 and s8
+      tl.set("#s7",  { opacity: 1 }, 58.0);
+      tl.set("#s7",  { opacity: 0 }, 83.0);
+      tl.set("#s8",  { opacity: 0 }, 83.0);
+      tl.set("#s9",  { autoAlpha: 1 }, 83.0);
+      tl.set("#s9",  { autoAlpha: 0 }, 96.0);
+      tl.set("#s10", { autoAlpha: 1 }, 96.0);
+      tl.set("#s10", { autoAlpha: 0 }, 110.0);
+      tl.set("#s11", { autoAlpha: 1 }, 110.0);
+      tl.set("#s11", { autoAlpha: 0 }, 126.0);
+      tl.set("#s12", { autoAlpha: 1 }, 126.0);
+      tl.set("#s12", { autoAlpha: 0 }, 140.0);
+      tl.set("#s13", { autoAlpha: 1 }, 140.0);
+      tl.set("#s13", { autoAlpha: 0 }, 167.0);
+      tl.set("#s14", { autoAlpha: 1 }, 167.0);
+
+      // ============================================================
+      // HOSTINGER H-MARK SHAPE BACKDROP — drifts continuously and rearranges on each scene transition
+      // ============================================================
+      var sceneEdges = [4, 11, 25, 34, 46, 58, 71, 83, 96, 110, 126, 140, 167, 180];
+      // Ambient drift (very subtle, continuous)
+      tl.to(".hl-1", { x: 24,  y: 18,  rotation: "+=3",  duration: 180, ease: "none", repeat: 0 }, 0);
+      tl.to(".hl-2", { x: -32, y: 26,  rotation: "-=4",  duration: 180, ease: "none", repeat: 0 }, 0);
+      tl.to(".hl-3", { x: 40,  y: -22, rotation: "+=6",  duration: 180, ease: "none", repeat: 0 }, 0);
+      // Per-transition rearrange (shape-rearrange-on-whoosh default)
+      function rearrange(t) {
+        tl.to(".hl-1", { x: "+=" + (Math.sin(t)*40),  y: "+=" + (Math.cos(t*1.3)*30), rotation: "+=8",  duration: 0.6, ease: "power2.out", overwrite: "auto" }, t);
+        tl.to(".hl-2", { x: "+=" + (Math.cos(t*0.9)*40), y: "+=" + (Math.sin(t*1.1)*32), rotation: "-=7",  duration: 0.6, ease: "power2.out", overwrite: "auto" }, t);
+        tl.to(".hl-3", { x: "+=" + (Math.sin(t*1.4)*36), y: "+=" + (Math.cos(t*0.8)*28), rotation: "+=9",  duration: 0.6, ease: "power2.out", overwrite: "auto" }, t);
+      }
+      sceneEdges.slice(0, -1).forEach(function (t) { rearrange(t); });
+
+      // ============================================================
+      // SCENE 1 — HOOK  (0 – 4s)
+      // ============================================================
+      tl.from("#s1-kicker", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 0.15);
+      tl.from("#s1-title .word > span",
+        { y: 160, duration: 0.8, ease: "expo.out", stagger: { each: 0.08, from: "start" } },
+        0.25);
+      tl.from("#s1-line", { scaleX: 0, transformOrigin: "left", duration: 0.6, ease: "power3.out" }, 0.9);
+      tl.from("#s1-sub", { y: 24, autoAlpha: 0, duration: 0.6, ease: "power2.out" }, 1.0);
+      tl.to(".glow-1", { opacity: 0.4, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.5);
+
+      // ============================================================
+      // SCENE 2 — BRAND LOCKUP  (4 – 11s)
+      // ============================================================
+      tl.from("#s2-brand", { x: -80, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 4.2);
+      tl.from("#s2-x", { scale: 0, autoAlpha: 0, duration: 0.5, ease: "back.out(2)" }, 4.5);
+      tl.from("#s2-product", { x: 80, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 4.2);
+      tl.from("#s2-line", { scaleX: 0, transformOrigin: "center", duration: 0.5, ease: "power2.out" }, 4.9);
+      tl.from("#s2-tag", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 5.05);
+      tl.to("#s2-brand", { y: -4, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.4);
+      tl.to("#s2-product", { y: -4, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.4);
+      tl.to(".glow-2", { opacity: 0.32, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.6);
+      // mid-scene breath
+      tl.to(".glow-2", { opacity: 0.3, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.0);
+
+      // ============================================================
+      // SCENE 3 — PROBLEM / OWNERSHIP  (11 – 25s)
+      // ============================================================
+      tl.from("#s3-kicker", { x: -30, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 11.2);
+      tl.from("#s3-title", { y: 40, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 11.35);
+      tl.from("#s3-sub", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 11.65);
+      tl.from(".s3-item",
+        { x: 80, autoAlpha: 0, duration: 0.6, ease: "power3.out", stagger: 1.4 },
+        11.6);
+      // mid-scene beats — keep visual rhythm during the 14s window
+      tl.to("#s3-title", { scale: 1.02, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 18.0);
+      tl.to(".s3-item", { x: 6, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.15 }, 21.0);
+
+      // ============================================================
+      // SCENE 4 — ONE-CLICK BENEFITS  (25 – 34s)
+      // ============================================================
+      tl.from("#s4-kicker", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 25.2);
+      tl.from("#s4-title", { y: 50, autoAlpha: 0, duration: 0.7, ease: "expo.out" }, 25.35);
+      tl.from(".s4-feat",
+        { y: 40, autoAlpha: 0, duration: 0.55, ease: "back.out(1.4)", stagger: 0.6 },
+        25.7);
+      tl.to(".glow-4", { opacity: 0.22, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 26.0);
+      tl.to(".s4-feat", { y: -4, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.2 }, 30.0);
+
+      // ============================================================
+      // SCENE 5 — HOSTINGER LANDING  (34 – 46s)
+      // Page loads → cursor glides slowly → CLICK at 45.3 → immediate transition out
+      // ============================================================
+      function fireRipple(rippleSel, leftPct, topPct, t) {
+        tl.set(rippleSel, { left: leftPct, top: topPct, scale: 0, opacity: 0.9 }, t);
+        tl.to(rippleSel, { scale: 1.6, opacity: 0, duration: 0.55, ease: "power2.out" }, t);
+      }
+      tl.from("#s5-browser",
+        { y: 50, autoAlpha: 0, scale: 0.98, duration: 0.6, ease: "power3.out", transformOrigin: "center" },
+        34.1);
+      // Cursor enters
+      tl.set("#s5-cursor", { left: "85%", top: "12%", autoAlpha: 0 }, 35.5);
+      tl.to("#s5-cursor", { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 35.7);
+      // Slow glide toward Get Started (center ~50%, 70%) — takes ~8s
+      tl.to("#s5-cursor", { left: "50%", top: "70%", duration: 8.0, ease: "power2.inOut" }, 36.0);
+      // Settle micro-jitter just before click
+      tl.to("#s5-cursor", { left: "50.3%", top: "70.2%", duration: 0.25, ease: "sine.inOut" }, 44.4);
+      // Hover pulse on button right before click
+      tl.to("#s5-get-started", { scale: 1.04, boxShadow: "0 0 50px rgba(103,61,230,0.55)", duration: 0.4, ease: "sine.inOut" }, 44.6);
+      // CLICK at 45.3 → immediate transition cued by next scene's visibility toggle at 46
+      tl.to("#s5-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 45.3);
+      tl.to("#s5-get-started", { scale: 0.94, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.inOut" }, 45.32);
+      tl.to("#s5-get-started", { boxShadow: "0 0 80px rgba(103,61,230,0.9)", duration: 0.3, ease: "sine.inOut" }, 45.4);
+      fireRipple("#s5-ripple", "50.3%", "70.2%", 45.3);
+      // Browser ken-burns
+      tl.to("#s5-browser", { scale: 1.015, duration: 11, ease: "none", transformOrigin: "center" }, 34.1);
+
+      // ============================================================
+      // SCENE 6 — PICK YOUR PLAN  (46 – 58s)
+      // Page loads → slow cursor glide → CLICK Choose plan (Managed) at 57.3 → immediate transition
+      // ============================================================
+      tl.from("#s6-browser", { y: 50, autoAlpha: 0, scale: 0.98, duration: 0.6, ease: "power3.out", transformOrigin: "center" }, 46.1);
+      tl.set("#s6-cursor", { left: "80%", top: "8%", autoAlpha: 0 }, 47.5);
+      tl.to("#s6-cursor", { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 47.7);
+      // Slow glide to Managed "Choose plan" button (~28%, 64%) — takes ~8s
+      tl.to("#s6-cursor", { left: "28%", top: "64%", duration: 8.0, ease: "power2.inOut" }, 48.0);
+      tl.to("#s6-cursor", { left: "28.3%", top: "64.2%", duration: 0.25, ease: "sine.inOut" }, 56.3);
+      tl.to("#s6-plan-1", { boxShadow: "0 0 50px rgba(103,61,230,0.4)", duration: 0.45, ease: "sine.inOut" }, 56.5);
+      tl.to("#s6-plan-1-btn", { scale: 1.04, duration: 0.4, ease: "sine.inOut" }, 56.6);
+      // CLICK at 57.3 → immediate transition cued by scene visibility toggle at 58
+      tl.to("#s6-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 57.3);
+      tl.to("#s6-plan-1-btn", { scale: 0.94, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.inOut" }, 57.32);
+      tl.to("#s6-plan-1", { boxShadow: "0 0 90px rgba(103,61,230,0.7)", duration: 0.3, ease: "sine.inOut" }, 57.4);
+      fireRipple("#s6-ripple", "28.3%", "64.2%", 57.3);
+      tl.to("#s6-browser", { scale: 1.015, duration: 11, ease: "none", transformOrigin: "center" }, 46.1);
+
+      // ============================================================
+      // SCENE 7 — CART STATE 1 (PERIOD PICK)  (58 – 71s) — SHADER ANCHOR
+      // Cart loads → cursor → CLICK dropdown → CLICK 24mo → price/savings reveal → ken-burns out
+      // Period trigger ~(30.5%, 33%); 24-mo option ~(30.5%, 48%)
+      // ============================================================
+      tl.set("#s7-period-label", { innerText: "1 month" }, 58.0);
+      tl.set("#s7-price-amt", { innerText: "21.99" }, 58.0);
+      tl.set("#s7-save-amt", { innerText: "0" }, 58.0);
+      tl.set("#s7-save-badge", { autoAlpha: 0 }, 58.0);
+      tl.from("#s7-browser", { y: 50, autoAlpha: 0, scale: 0.98, duration: 0.6, ease: "power3.out", transformOrigin: "center" }, 58.1);
+      tl.set("#s7-cursor", { left: "82%", top: "8%", autoAlpha: 0 }, 58.9);
+      tl.to("#s7-cursor", { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 59.1);
+      // Glide to period dropdown trigger at (30.5%, 33%)
+      tl.to("#s7-cursor", { left: "30.5%", top: "33%", duration: 2.0, ease: "power2.inOut" }, 59.4);
+      tl.to("#s7-cursor", { left: "30.8%", top: "33.2%", duration: 0.2, ease: "sine.inOut" }, 61.4);
+      tl.to("#s7-period-trigger", { borderColor: "#673de6", boxShadow: "0 0 0 4px rgba(103,61,230,0.2)", duration: 0.3, ease: "sine.inOut" }, 61.6);
+      // CLICK 1: open dropdown at 62.0
+      tl.to("#s7-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 62.0);
+      fireRipple("#s7-ripple", "30.8%", "33.2%", 62.0);
+      tl.to("#s7-period-dropdown", { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, 62.15);
+      // Glide to "24 months" option at (30.5%, 48%)
+      tl.to("#s7-cursor", { left: "30.5%", top: "48%", duration: 1.0, ease: "power2.inOut" }, 62.7);
+      tl.to("#s7-opt-24", { backgroundColor: "rgba(103,61,230,0.18)", duration: 0.25, ease: "sine.inOut" }, 63.6);
+      // CLICK 2: pick 24 months at 64.0
+      tl.to("#s7-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 64.0);
+      fireRipple("#s7-ripple", "30.5%", "48%", 64.0);
+      tl.to("#s7-period-dropdown", { autoAlpha: 0, duration: 0.25, ease: "power2.out" }, 64.15);
+      tl.call(function () {
+        var el = document.getElementById("s7-period-label");
+        if (el) el.textContent = "24 months";
+        var pr = document.getElementById("s7-period-row");
+        if (pr) pr.textContent = "24-month period";
+      }, null, 64.2);
+      // Price rolls 21.99 → 5.99
+      var s7priceObj = { v: 21.99 };
+      tl.to(s7priceObj, {
+        v: 5.99, duration: 0.9, ease: "power2.out",
+        onUpdate: function () {
+          var el = document.getElementById("s7-price-amt");
+          if (el) el.textContent = s7priceObj.v.toFixed(2);
+          var mo = document.getElementById("s7-mo-price");
+          if (mo) mo.textContent = "$ " + s7priceObj.v.toFixed(2);
+        }
+      }, 64.4);
+      // Save badge fades in + counts up
+      tl.to("#s7-save-badge", { autoAlpha: 1, scale: 1.12, duration: 0.4, ease: "back.out(1.6)" }, 64.6);
+      tl.to("#s7-save-badge", { scale: 1, duration: 0.3, ease: "power2.out" }, 65.0);
+      var s7saveObj = { v: 0 };
+      tl.to(s7saveObj, {
+        v: 384, duration: 0.9, ease: "power2.out",
+        onUpdate: function () {
+          var el = document.getElementById("s7-save-amt");
+          if (el) el.textContent = Math.round(s7saveObj.v);
+        }
+      }, 64.7);
+      // Strike-through old price (in summary)
+      tl.call(function () {
+        var s = document.getElementById("s7-strike");
+        if (s) s.textContent = "$ 527.76";
+      }, null, 65.2);
+      tl.to("#s7-save-badge", { boxShadow: "0 0 24px rgba(14,122,60,0.55)", duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 66.0);
+      // Cursor moves away (preparing to "leave" the dropdown area)
+      tl.to("#s7-cursor", { left: "55%", top: "55%", duration: 1.5, ease: "power2.inOut" }, 68.0);
+      tl.to("#s7-browser", { scale: 1.015, duration: 12, ease: "none", transformOrigin: "center" }, 58.1);
+
+      // ============================================================
+      // SCENE 8 — CART COUPON FLOW  (71 – 83s) — SHADER ANCHOR
+      // Cart loads → 3 clicks (coupon link → Apply → Continue) → immediate transition out
+      // coupon-link ~(76.5%, 51%); coupon-field ~(80%, 56%); Apply ~(91.5%, 56%); Continue ~(82.5%, 66%)
+      // ============================================================
+      tl.from("#s8-browser", { y: 50, autoAlpha: 0, scale: 0.98, duration: 0.6, ease: "power3.out", transformOrigin: "center" }, 71.1);
+      tl.set("#s8-cursor", { left: "55%", top: "8%", autoAlpha: 0 }, 71.7);
+      tl.to("#s8-cursor", { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 71.9);
+      // Glide to "Have a coupon code?" link at (76.5%, 51%)
+      tl.to("#s8-cursor", { left: "76.5%", top: "51%", duration: 1.4, ease: "power2.inOut" }, 72.1);
+      tl.to("#s8-cursor", { left: "76.8%", top: "51.2%", duration: 0.2, ease: "sine.inOut" }, 73.5);
+      tl.to("#s8-coupon-link", { color: "#3a1fa3", duration: 0.3, ease: "sine.inOut" }, 73.6);
+      // CLICK 1: coupon link at 74.0
+      tl.to("#s8-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 74.0);
+      fireRipple("#s8-ripple", "76.8%", "51.2%", 74.0);
+      tl.to("#s8-coupon-row", { opacity: 1, duration: 0.3, ease: "power2.out" }, 74.2);
+      // Glide to coupon field at (80%, 56%)
+      tl.to("#s8-cursor", { left: "80%", top: "56%", duration: 0.55, ease: "power2.inOut" }, 74.5);
+      tl.to("#s8-coupon-field", { borderColor: "#673de6", boxShadow: "0 0 0 3px rgba(103,61,230,0.18)", duration: 0.3, ease: "sine.inOut" }, 74.9);
+      // Type DIYSMARTCODE letter-by-letter (12 chars × 0.1s = 1.2s)
+      var s8couponFull = "DIYSMARTCODE";
+      for (var i = 0; i < s8couponFull.length; i++) {
+        (function (idx) {
+          tl.call(function () {
+            var txt = s8couponFull.slice(0, idx + 1);
+            var el = document.getElementById("s8-coupon-text");
+            if (el) el.textContent = txt;
+          }, null, 75.1 + idx * 0.1);
+        })(i);
+      }
+      // Glide to Apply button at (91.5%, 56%)
+      tl.to("#s8-cursor", { left: "91.5%", top: "56%", duration: 0.55, ease: "power2.inOut" }, 76.6);
+      // CLICK 2: Apply at 77.4
+      tl.to("#s8-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 77.4);
+      tl.to("#s8-apply-btn", { scale: 0.94, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.inOut" }, 77.42);
+      fireRipple("#s8-ripple", "91.5%", "56%", 77.4);
+      tl.to("#s8-coupon-success", { opacity: 1, duration: 0.4, ease: "power2.out" }, 77.7);
+      tl.to("#s8-coupon-field", { borderColor: "#0e7a3c", duration: 0.4, ease: "sine.inOut" }, 77.7);
+      var s8t = { v: 178.20 };
+      tl.to(s8t, {
+        v: 160.38, duration: 0.9, ease: "power2.out",
+        onUpdate: function () {
+          var el = document.getElementById("s8-total");
+          if (el) el.textContent = "$ " + s8t.v.toFixed(2);
+        }
+      }, 77.8);
+      tl.to("#s8-total", { color: "#0e7a3c", duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 78.5);
+      // Glide to Continue button at (82.5%, 66%)
+      tl.to("#s8-cursor", { left: "82.5%", top: "66%", duration: 0.9, ease: "power2.inOut" }, 79.7);
+      tl.to("#s8-continue-btn", { scale: 1.04, boxShadow: "0 0 40px rgba(103,61,230,0.5)", duration: 0.4, ease: "sine.inOut" }, 80.8);
+      // CLICK 3: Continue at 81.8 → immediate transition (s9 visibility at 83.0, fade window 1.2s)
+      tl.to("#s8-cursor", { scale: 0.78, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 81.8);
+      tl.to("#s8-continue-btn", { scale: 0.94, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.inOut" }, 81.82);
+      fireRipple("#s8-ripple", "82.5%", "66%", 81.8);
+      tl.to("#s8-continue-btn", { boxShadow: "0 0 70px rgba(103,61,230,0.9)", duration: 0.3, ease: "sine.inOut" }, 81.9);
+
+      // ============================================================
+      // SCENE 9 — NEXOS.AI CREDITS HIGHLIGHT  (83 – 96s)
+      // ============================================================
+      tl.from("#s9-overline", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 83.2);
+      tl.from("#s9-headline", { y: 30, autoAlpha: 0, duration: 0.7, ease: "expo.out" }, 83.4);
+      // Credits card slides up
+      tl.from("#s9-credits-card", { y: 60, autoAlpha: 0, scale: 0.96, duration: 0.7, ease: "power3.out" }, 84.6);
+      // Big "5+5" badge counts up dramatically
+      tl.from("#s9-big-badge", { scale: 0.6, autoAlpha: 0, duration: 0.7, ease: "back.out(2)" }, 85.3);
+      // Provider pills cascade in
+      tl.from(".s9-provider", { y: 20, autoAlpha: 0, duration: 0.45, ease: "back.out(1.4)", stagger: 0.18, immediateRender: false }, 86.2);
+      // Price pulses
+      tl.from("#s9-price", { scale: 0.6, autoAlpha: 0, duration: 0.5, ease: "back.out(2)", immediateRender: false }, 87.5);
+      tl.to("#s9-price", { scale: 1.08, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 88.2);
+      // Strike-through pill enters (old workflow)
+      tl.from("#s9-strike", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 89.5);
+      // Mid-scene re-emphases through the 13s window
+      tl.to("#s9-credits-card", { boxShadow: "0 30px 80px rgba(103,61,230,0.55)", duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 91.0);
+      tl.to(".s9-provider", { y: -4, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.1 }, 93.0);
+      tl.to("#s9-big-badge", { scale: 1.04, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 94.5);
+
+      // ============================================================
+      // SCENE 10 — CONFIG + AI PROVIDER (Nexos.AI) — (96 – 110s)
+      // ============================================================
+      tl.from("#s10-kicker", { x: -20, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 96.2);
+      tl.from("#s10-title", { y: 40, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 96.35);
+      tl.from("#s10-sub", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 96.6);
+      tl.from("#s10-form",
+        { x: 80, autoAlpha: 0, duration: 0.7, ease: "power3.out" }, 96.2);
+      tl.from(".s10-opt",
+        { y: 24, autoAlpha: 0, duration: 0.5, ease: "back.out(1.4)", stagger: 0.9 },
+        96.85);
+      tl.to(".s10-opt.active",
+        { boxShadow: "0 0 40px rgba(103,61,230,0.4)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        100.0);
+      tl.to(".s10-opt", { scale: 1.02, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.25 }, 105.0);
+
+      // ============================================================
+      // SCENE 11 — LOGIN → DASHBOARD  (110 – 126s)
+      // Beat 1 (110-117): Welcome to OpenClaw login card
+      // Beat 2 (117-126): OpenClaw Gateway Dashboard chat — "Hello" → onboarding
+      // ============================================================
+      tl.from("#s11-login",
+        { y: 60, autoAlpha: 0, scale: 0.96, duration: 0.7, ease: "power3.out", transformOrigin: "center" },
+        110.2);
+      tl.from("#s11-login-title", { y: 20, autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 110.6);
+      tl.from("#s11-token-row", { y: 24, autoAlpha: 0, duration: 0.55, ease: "back.out(1.4)" }, 110.95);
+      tl.from("#s11-login-btn", { y: 18, autoAlpha: 0, duration: 0.5, ease: "back.out(1.6)" }, 111.4);
+      // Token field gets focus pulse
+      tl.to("#s11-token-row", { borderColor: "#8b5cf6", boxShadow: "0 0 30px rgba(103,61,230,0.45)", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 112.5);
+      // Login button hover pulse
+      tl.to("#s11-login-btn", { scale: 1.06, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 115.0);
+      // Click + crossfade to dashboard at ~117s
+      tl.to("#s11-login-btn", { scale: 0.92, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.inOut" }, 116.8);
+      tl.to("#s11-login", { autoAlpha: 0, duration: 0.6, ease: "power2.out" }, 117.2);
+      tl.to("#s11-dash", { autoAlpha: 1, duration: 0.7, ease: "power2.out" }, 117.4);
+      // Chat reveals — user "Hello" then bot welcome
+      tl.from("#s11-msg-user", { y: 20, scale: 0.92, autoAlpha: 0, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 119.0);
+      tl.from("#s11-msg-bot",  { y: 20, scale: 0.92, autoAlpha: 0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false }, 120.5);
+      // Mid-scene re-emphasis on bot reply
+      tl.to("#s11-msg-bot", { scale: 1.02, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 123.5);
+
+      // ============================================================
+      // SCENE 12 — CHANNEL SELECTION  (126 – 140s)
+      // Cards reveal step-by-step matching narration "Telegram. WhatsApp. iMessage. Slack. Discord."
+      // ============================================================
+      tl.from("#s12-kicker", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 126.2);
+      tl.from("#s12-title", { y: 40, autoAlpha: 0, duration: 0.7, ease: "expo.out" }, 126.4);
+      // Step-by-step reveal in narration order: Telegram, WhatsApp, iMessage, Slack, Discord
+      tl.from("#s12-ch-telegram",  { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.55, ease: "back.out(1.6)" }, 127.3);
+      tl.from("#s12-ch-whatsapp",  { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.55, ease: "back.out(1.6)" }, 128.2);
+      tl.from("#s12-ch-imessage",  { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.55, ease: "back.out(1.6)" }, 129.1);
+      tl.from("#s12-ch-slack",     { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.55, ease: "back.out(1.6)" }, 130.0);
+      tl.from("#s12-ch-discord",   { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.55, ease: "back.out(1.6)" }, 130.9);
+      // Telegram card pulses to mark it as the demo target
+      tl.to("#s12-ch-telegram", { scale: 1.06, boxShadow: "0 0 60px rgba(103,61,230,0.5)", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 132.5);
+      // Bottom prompt reveal — "Let's set up Telegram"
+      tl.from("#s12-prompt", { y: 30, autoAlpha: 0, duration: 0.6, ease: "power3.out" }, 134.5);
+      // Mid-scene re-pulses
+      tl.to(".s12-ch", { y: -4, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.1 }, 137.0);
+      tl.to("#s12-prompt", { borderColor: "#8b5cf6", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 138.5);
+
+      // ============================================================
+      // SCENE 13 — 4 BEATS  (140 – 167s)
+      // Beat 1 (140-148): BotFather flow
+      // Beat 2 (148-153): Test message + 24/7 stat
+      // Beat 3 (153-160): ClawHub skills
+      // Beat 4 (160-167): Credits top-up + Backup
+      // Beats 2-4 start hidden; crossfade in sequence
+      // ============================================================
+      tl.set(["#s13-beat2", "#s13-beat3", "#s13-beat4"], { autoAlpha: 0 }, 140);
+      // BEAT 1 — BotFather
+      tl.from("#s13-b1-kicker", { y: 16, autoAlpha: 0, duration: 0.4, ease: "power3.out" }, 140.2);
+      tl.from("#s13-b1-title", { y: 30, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 140.4);
+      tl.from("#s13-b1-phone", { x: -40, autoAlpha: 0, duration: 0.6, ease: "power3.out" }, 140.9);
+      tl.from("#s13-b1-msg1", { y: 14, autoAlpha: 0, scale: 0.9, duration: 0.4, ease: "back.out(1.6)", immediateRender: false }, 141.6);
+      tl.from("#s13-b1-msg2", { y: 14, autoAlpha: 0, scale: 0.9, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 142.7);
+      tl.from("#s13-b1-claw", { x: 40, autoAlpha: 0, duration: 0.6, ease: "power3.out" }, 143.8);
+
+      // BEAT 1 → BEAT 2 crossfade at 148
+      tl.to("#s13-beat1", { autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 147.8);
+      tl.to("#s13-beat2", { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, 148.0);
+      tl.from("#s13-b2-m1", { y: 14, autoAlpha: 0, duration: 0.4, ease: "back.out(1.6)", immediateRender: false }, 148.8);
+      tl.from("#s13-b2-m2", { y: 14, autoAlpha: 0, duration: 0.4, ease: "back.out(1.6)", immediateRender: false }, 149.7);
+      tl.from("#s13-b2-stat", { scale: 0.7, autoAlpha: 0, duration: 0.7, ease: "back.out(1.6)", immediateRender: false }, 150.5);
+      tl.to("#s13-b2-stat", { scale: 1.05, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 151.5);
+
+      // BEAT 2 → BEAT 3 crossfade at 153
+      tl.to("#s13-beat2", { autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 152.8);
+      tl.to("#s13-beat3", { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, 153.0);
+      tl.from(".s13-skill", { y: 30, autoAlpha: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.5, immediateRender: false }, 153.8);
+      tl.to(".s13-skill", { y: -4, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 158.0);
+
+      // BEAT 3 → BEAT 4 crossfade at 160
+      tl.to("#s13-beat3", { autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 159.8);
+      tl.to("#s13-beat4", { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, 160.0);
+      tl.from("#s13-b4-credits", { x: -30, autoAlpha: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 160.7);
+      tl.from("#s13-b4-backup", { x: 30, autoAlpha: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 161.0);
+      // Credit balance counter rolls down to show usage then up to show top-up
+      var s13bal = { v: 7.85 };
+      tl.to(s13bal, {
+        v: 0.40, duration: 2.0, ease: "power1.inOut",
+        onUpdate: function () {
+          var el = document.getElementById("s13-b4-bal");
+          if (el) el.textContent = s13bal.v.toFixed(2);
+        }
+      }, 162.0);
+      tl.to(s13bal, {
+        v: 12.40, duration: 1.2, ease: "back.out(1.4)",
+        onUpdate: function () {
+          var el = document.getElementById("s13-b4-bal");
+          if (el) el.textContent = s13bal.v.toFixed(2);
+        }
+      }, 164.5);
+      tl.to("#s13-b4-credits", { boxShadow: "0 0 50px rgba(0,200,150,0.45)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 165.0);
+
+      // ============================================================
+      // SCENE 14 — CTA  (167 – 180s)
+      // ============================================================
+      tl.from("#s14-link", { y: 16, autoAlpha: 0, duration: 0.5, ease: "power3.out" }, 167.2);
+      tl.from("#s14-title", { y: 60, autoAlpha: 0, duration: 0.8, ease: "expo.out" }, 167.35);
+      tl.from("#s14-coupon",
+        { y: 40, scale: 0.92, autoAlpha: 0, duration: 0.6, ease: "back.out(1.6)" }, 167.95);
+      tl.from("#s14-discount",
+        { scale: 0, rotate: -30, autoAlpha: 0, duration: 0.5, ease: "back.out(2.2)" }, 168.35);
+      tl.from("#s14-btn",
+        { y: 24, autoAlpha: 0, duration: 0.5, ease: "back.out(1.6)" }, 168.55);
+      tl.to(".glow-14", { opacity: 0.4, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 168.0);
+      tl.to("#s14-btn",
+        { scale: 1.04, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 4 },
+        169.2);
+      tl.to("#s14-coupon",
+        { borderColor: "#673de6", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 4 },
+        169.0);
+      tl.to(".glow-14", { opacity: 0.4, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 175.0);
+      // Pin the timeline to the full composition duration
+      tl.set({}, {}, 180);
+
+      // ============================================================
+      // SHADER TRANSITIONS — 1 hero transition between Pricing → Cart
+      // ============================================================
+      window.HyperShader.init({
+        bgColor:
+          getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0e0f19",
+        scenes: ["s7", "s8"],
+        timeline: tl,
+        transitions: [
+          { time: 70.75, shader: "cinematic-zoom", duration: 0.5 },
+        ],
+      });
+
+      // ═══ shared/lib/components/hostinger-banner — pasted-in JS ═══
+      // Fires at t=120 (2:00 mark). Entrance ~0.55s, content stagger ~2.0s,
+      // hold with idle pulses, exit at t=127 (~0.6s fly-out).
+      function addHostingerBanner(tl, t, opts) {
+        opts = opts || {};
+        if (typeof opts.headline === 'string') { var h = document.getElementById('host-headline'); if (h) h.textContent = opts.headline; }
+        if (typeof opts.tagline === 'string')  { var tg = document.getElementById('host-tagline'); if (tg) tg.innerHTML = opts.tagline; }
+        if (typeof opts.url === 'string')      { var u = document.getElementById('host-url'); if (u) u.textContent = opts.url; }
+        if (typeof opts.discountLabel === 'string') { var d = document.querySelector('#host-banner .host-discount'); if (d) d.textContent = opts.discountLabel; }
+        tl.set('#host-banner', { opacity: 0, y: 80, xPercent: -50 }, 0);
+        tl.set('.host-logo', { opacity: 0, scale: 0.6 }, 0);
+        tl.set('.host-headline', { opacity: 0, x: -28 }, 0);
+        tl.set('.host-tagline', { opacity: 0, x: -28 }, 0);
+        tl.set('.host-pill-web', { opacity: 0, y: 28, scale: 0.7 }, 0);
+        tl.set('.host-pill-vps', { opacity: 0, y: 28, scale: 0.7 }, 0);
+        tl.set('.host-pill-ai',  { opacity: 0, y: 28, scale: 0.7 }, 0);
+        tl.set('.host-pill-web .host-pill-icon', { scale: 1 }, 0);
+        tl.set('.host-pill-vps .host-pill-icon', { scale: 1 }, 0);
+        tl.set('.host-pill-ai .host-pill-icon',  { scale: 1 }, 0);
+        tl.set('.host-discount', { opacity: 0, scale: 0.5 }, 0);
+        tl.set('.host-url-panel', { opacity: 0 }, 0);
+        tl.to('#host-banner',     { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.4)', overwrite: 'auto' }, t);
+        tl.to('.host-logo',       { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)', overwrite: 'auto' }, t + 0.27);
+        tl.to('.host-headline',   { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 0.47);
+        tl.to('.host-tagline',    { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 0.6);
+        tl.to('.host-pill-web',   { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' }, t + 0.87);
+        tl.to('.host-pill-vps',   { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' }, t + 1.13);
+        tl.to('.host-pill-ai',    { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' }, t + 1.39);
+        tl.to('.host-discount',   { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.8)', overwrite: 'auto' }, t + 1.67);
+        tl.to('.host-url-panel',  { opacity: 1, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, t + 2.0);
+        var pulseDur = 1.3, pulseRepeats = 3, pulseEase = 'sine.inOut';
+        var icon1 = gsap.timeline(); icon1.fromTo('.host-pill-web .host-pill-icon', { scale: 1 }, { scale: 1.08, duration: pulseDur, ease: pulseEase, yoyo: true, repeat: pulseRepeats }); tl.add(icon1, t + 2.67);
+        var icon2 = gsap.timeline(); icon2.fromTo('.host-pill-vps .host-pill-icon', { scale: 1 }, { scale: 1.08, duration: pulseDur, ease: pulseEase, yoyo: true, repeat: pulseRepeats }); tl.add(icon2, t + 2.87);
+        var icon3 = gsap.timeline(); icon3.fromTo('.host-pill-ai .host-pill-icon',  { scale: 1 }, { scale: 1.08, duration: pulseDur, ease: pulseEase, yoyo: true, repeat: pulseRepeats }); tl.add(icon3, t + 3.07);
+        var discountPulse = gsap.timeline(); discountPulse.fromTo('.host-discount', { scale: 1 }, { scale: 1.05, duration: 1.1, ease: pulseEase, yoyo: true, repeat: 3 }); tl.add(discountPulse, t + 2.5);
+        tl.to('#host-banner', { opacity: 0, y: 120, duration: 0.6, ease: 'back.in(1.0)', overwrite: 'auto' }, t + 7.0);
+      }
+
+      // Wire the banner — fires at 2:00 (t=120)
+      addHostingerBanner(tl, 120);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

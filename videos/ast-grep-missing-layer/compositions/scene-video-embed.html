@@ -1,0 +1,422 @@
+<!--
+  scene-video-embed.html — Scene 04: Demo 1 — The String-Literal Lie (62.33 - 96.29, 33.96s)
+  THE HERO PROOF SCENE. The dag-executor.test.ts:2813 receipt — what your AGENT
+  is being lied to about. Agent reading-cursor visible on file. String highlighted.
+  Tooltip: agent treats string as bug. Side panel: grep ✗ 22 files vs ast-grep ✓ 12 files.
+
+  Scene-local anchors (local = root - 62.33):
+    0.00   "Watch your agent waste"     → title
+    2.42   "clean up debug logs"        → task strip
+    4.76   "dumb text search"           → grep query strip
+    6.87   "164 matches"                → 164 counter
+    8.72   "22 files"                   → 22 files counter pop
+    10.74  "opens every one"            → file-list cascade
+    13.23  "hiding inside"              → file panel slides in
+    14.00  "dag-executor.test.ts"       → filename + line badge
+    18.02  "test fixture"               → "FIXTURE" tag
+    19.61  "literal string"             → red underline + tooltip
+    20.35  "console-dot-log-hi"         → SMASH ZOOM
+    24.19  "quoted text"                → tooltip pulse
+    26.77  "whole file, triages it"     → BILLED stamp
+    29.79  "skips it instantly"         → green ast-grep marker
+    31.76  "Twelve files"               → counter rolls 22→12
+    32.60  "not twenty-two"             → comparison receipt
+-->
+<template id="scene-video-embed-template">
+  <div data-composition-id="scene-video-embed"
+       data-start="0"
+       data-width="1556"
+       data-height="998"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, -apple-system, sans-serif; color:var(--fg-default);
+              background: var(--bg-editor);">
+
+    <style>
+      #s04 { position: absolute; inset: 0; padding: 40px 50px 40px; box-sizing: border-box; }
+
+      #s04-head {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 56px;
+        line-height: 1;
+        letter-spacing: -1px;
+        color: var(--fg-bright);
+      }
+      #s04-head .em { color: var(--err); }
+
+      #s04-task-strip {
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 22px;
+        color: var(--fg-muted);
+      }
+      #s04-task-strip .lbl {
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      #s04-task-strip .task {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        padding: 8px 14px;
+        color: var(--fg-bright);
+      }
+
+      /* Grep query strip + count */
+      #s04-grep-strip {
+        margin-top: 16px;
+        display: flex;
+        gap: 18px;
+        align-items: stretch;
+      }
+      .grep-card {
+        flex: 1;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        padding: 18px 22px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      }
+      .grep-card .lbl {
+        font-size: 16px;
+        letter-spacing: 2px;
+        color: var(--fg-muted);
+        text-transform: uppercase;
+        display: block;
+      }
+      .grep-card .val {
+        margin-top: 4px;
+        font-size: 32px;
+        color: var(--fg-bright);
+        font-weight: 700;
+      }
+      .grep-card.bad { border-left: 4px solid var(--err); }
+      .grep-card.good { border-left: 4px solid var(--ok); }
+      .grep-card.bad .num { color: var(--err); font-size: 56px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+      .grep-card.good .num { color: var(--ok); font-size: 56px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+
+      /* File code panel */
+      #file-panel {
+        margin-top: 18px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+        height: 420px;
+      }
+      #fp-path {
+        background: var(--bg-deep);
+        padding: 12px 22px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 16px;
+        color: var(--fg-muted);
+        border-bottom: 1px solid var(--border-soft);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      #fp-path .file { color: var(--fg-bright); font-weight: 700; }
+      #fp-path .lineno {
+        padding: 4px 10px;
+        background: rgba(247, 129, 102, 0.15);
+        border: 1px solid var(--err);
+        color: var(--err);
+        border-radius: 4px;
+        font-weight: 700;
+      }
+      #fp-path .fixture-tag {
+        margin-left: auto;
+        background: rgba(215, 186, 125, 0.18);
+        border: 1px solid var(--warn);
+        color: var(--warn);
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        font-size: 14px;
+      }
+
+      #fp-code {
+        position: relative;
+        padding: 20px 0;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 22px;
+        line-height: 1.55;
+      }
+      .fp-row {
+        position: relative;
+        display: flex;
+        padding-left: 70px;
+        padding-right: 30px;
+        height: 36px;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .fp-row .gutter {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 60px;
+        text-align: right;
+        padding-right: 12px;
+        color: var(--fg-muted);
+        font-size: 18px;
+        line-height: 36px;
+      }
+      .fp-row.target #fp-row-bg {
+        position: absolute;
+        left: 0; top: 0; right: 0; bottom: 0;
+        background: rgba(247, 129, 102, 0.0);
+      }
+      .fp-row.target #fp-row-mark {
+        position: absolute;
+        left: 70px; right: 30px;
+        bottom: 4px;
+        height: 4px;
+        width: 0;
+        background: var(--err);
+        border-radius: 3px;
+        box-shadow: 0 0 16px rgba(247, 129, 102, 0.7);
+      }
+      .syn-key { color: var(--syn-keyword); }
+      .syn-var { color: var(--syn-variable); }
+      .syn-str { color: var(--syn-string); }
+      .syn-com { color: var(--syn-comment); }
+      .syn-punct { color: var(--fg-muted); }
+
+      /* Agent cursor on the file */
+      #agent-cursor {
+        position: absolute;
+        left: 70px;
+        top: 0;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--brand-orange);
+        background: rgba(247, 129, 102, 0.15);
+        border: 1px solid var(--brand-orange);
+        padding: 2px 8px;
+        border-radius: 3px;
+        letter-spacing: 1px;
+        z-index: 10;
+      }
+
+      /* Tooltip */
+      #fp-tooltip {
+        position: absolute;
+        left: 50%; top: 200px;
+        background: var(--err);
+        color: #fff;
+        padding: 14px 22px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 900;
+        font-size: 22px;
+        letter-spacing: 1px;
+        border-radius: 6px;
+        box-shadow: 0 12px 50px rgba(247, 129, 102, 0.6);
+        z-index: 30;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      /* Billed stamp */
+      #fp-billed {
+        position: absolute;
+        right: 28px;
+        bottom: 16px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 2px;
+        color: var(--err);
+        border: 2px solid var(--err);
+        padding: 8px 14px;
+        border-radius: 4px;
+        transform: rotate(-4deg);
+        background: rgba(247, 129, 102, 0.10);
+      }
+
+      /* Final comparison row */
+      #fp-result {
+        position: absolute;
+        left: 24px;
+        bottom: 16px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        z-index: 25;
+      }
+      .result-chip {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 22px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        letter-spacing: 1px;
+      }
+      .result-chip.bad {
+        background: rgba(247, 129, 102, 0.15);
+        border: 1px solid var(--err);
+        color: var(--err);
+      }
+      .result-chip.good {
+        background: rgba(78, 201, 176, 0.15);
+        border: 1px solid var(--ok);
+        color: var(--ok);
+      }
+    </style>
+
+    <div id="s04">
+      <div id="s04-head">Watch your agent <span class="em">waste your money.</span></div>
+
+      <div id="s04-task-strip">
+        <span class="lbl">USER TASK:</span>
+        <span class="task">"clean up debug logs"</span>
+      </div>
+
+      <div id="s04-grep-strip">
+        <div class="grep-card bad" id="grep-bad">
+          <span class="lbl">grep "console.log"</span>
+          <span class="num"><span id="grep-bad-count">0</span> matches</span>
+          <span class="val"><span id="grep-bad-files">0</span> files</span>
+        </div>
+        <div class="grep-card good" id="grep-good">
+          <span class="lbl">ast-grep 'console.log($A)'</span>
+          <span class="num"><span id="grep-good-count">0</span> real calls</span>
+          <span class="val"><span id="grep-good-files">0</span> files</span>
+        </div>
+      </div>
+
+      <div id="file-panel">
+        <div id="fp-path">
+          packages/workflows/src/<span class="file">dag-executor.test.ts</span>
+          <span class="lineno">:2813</span>
+          <span class="fixture-tag" id="fp-fixture-tag">TEST FIXTURE</span>
+        </div>
+        <div id="fp-code">
+          <div class="fp-row"><span class="gutter">2811</span><span class="syn-key">const</span>&nbsp;<span class="syn-var">fixture</span>&nbsp;<span class="syn-punct">=</span>&nbsp;<span class="syn-punct">{</span></div>
+          <div class="fp-row"><span class="gutter">2812</span>&nbsp;&nbsp;<span class="syn-var">id</span><span class="syn-punct">:</span>&nbsp;<span class="syn-str">"echo-test"</span><span class="syn-punct">,</span></div>
+          <div class="fp-row target">
+            <span id="fp-row-bg"></span>
+            <span class="gutter">2813</span>
+            &nbsp;&nbsp;<span class="syn-var">script</span><span class="syn-punct">:</span>&nbsp;<span class="syn-str" id="fp-target-str">'console.log("hi")'</span><span class="syn-punct">,</span>&nbsp;&nbsp;<span class="syn-com">// fixture data</span>
+            <span id="fp-row-mark"></span>
+          </div>
+          <div class="fp-row"><span class="gutter">2814</span>&nbsp;&nbsp;<span class="syn-var">expect</span><span class="syn-punct">:</span>&nbsp;<span class="syn-str">"hi"</span><span class="syn-punct">,</span></div>
+          <div class="fp-row"><span class="gutter">2815</span><span class="syn-punct">};</span></div>
+        </div>
+
+        <div id="agent-cursor">▼ agent reading line 2813</div>
+        <div id="fp-tooltip">YOUR AGENT TREATS THIS STRING AS A BUG</div>
+        <div id="fp-billed">+$0.03 BILLED</div>
+
+        <div id="fp-result">
+          <span class="result-chip bad" id="result-bad">✗ grep · 22 files</span>
+          <span class="result-chip good" id="result-good">✓ ast-grep · 12 files</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // HIDE
+      tl.set("#s04-head",       { opacity: 0, y: -16 }, 0);
+      tl.set("#s04-task-strip", { opacity: 0, x: -24 }, 0);
+      tl.set("#grep-bad",       { opacity: 0, y: 18 }, 0);
+      tl.set("#grep-good",      { opacity: 0, y: 18 }, 0);
+      tl.set("#file-panel",     { opacity: 0, y: 28, scale: 0.97 }, 0);
+      tl.set("#fp-row-bg",      { background: "rgba(247, 129, 102, 0)" }, 0);
+      tl.set("#fp-row-mark",    { width: 0 }, 0);
+      tl.set("#agent-cursor",   { opacity: 0, top: 0 }, 0);
+      tl.set("#fp-tooltip",     { opacity: 0, y: -10, scale: 0.85, xPercent: -50 }, 0);
+      tl.set("#fp-billed",      { opacity: 0, scale: 1.4, rotate: -10 }, 0);
+      tl.set("#fp-fixture-tag", { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#result-bad",     { opacity: 0, x: -20 }, 0);
+      tl.set("#result-good",    { opacity: 0, x: -20 }, 0);
+
+      // Head — "Watch your agent waste" (local 0)
+      tl.to("#s04-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
+      // Task strip — "clean up debug logs" (local 2.42)
+      tl.to("#s04-task-strip", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.42);
+
+      // grep card slides in — "dumb text search" (local 4.76)
+      tl.to("#grep-bad", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 4.76);
+      // 164 counter — "164 matches" (local 6.87)
+      const c164 = { v: 0 };
+      tl.to(c164, {
+        v: 164, duration: 0.75, ease: "power2.out",
+        onUpdate() { const el = document.getElementById('grep-bad-count'); if (el) el.textContent = Math.round(c164.v); }
+      }, 6.87);
+      // 22 files counter — "22 files" (local 8.72)
+      const c22 = { v: 0 };
+      tl.to(c22, {
+        v: 22, duration: 0.55, ease: "power2.out",
+        onUpdate() { const el = document.getElementById('grep-bad-files'); if (el) el.textContent = Math.round(c22.v); }
+      }, 8.72);
+      tl.to("#grep-bad", { scale: 1.04, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.72);
+
+      // ast-grep card enters too (local 9.5)
+      tl.to("#grep-good", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 9.50);
+
+      // File panel slides in — "hiding inside" (local 13.23)
+      tl.to("#file-panel", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 13.23);
+
+      // Agent cursor descends onto line 2813 — "opens every one" cascade
+      tl.fromTo("#agent-cursor",
+        { opacity: 0, top: 80 },
+        { opacity: 1, top: 158, duration: 0.7, ease: "power2.inOut" },
+        14.30);
+
+      // FIXTURE tag (local 18.02 "test fixture")
+      tl.to("#fp-fixture-tag", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.0)" }, 18.02);
+
+      // Red bg + marker — "literal string" (local 19.61)
+      tl.to("#fp-row-bg", { background: "rgba(247, 129, 102, 0.22)", duration: 0.4 }, 19.61);
+      tl.to("#fp-row-mark", { width: "calc(100% - 100px)", duration: 0.55, ease: "power2.out" }, 19.61);
+
+      // CAMERA-ABUSE: SMASH ZOOM on console.log string (local 20.35)
+      tl.to("#file-panel", { scale: 1.08, filter: "blur(1.5px)", duration: 0.20, ease: "power3.out" }, 20.35);
+      tl.to("#file-panel", { scale: 1.0, filter: "blur(0px)", duration: 0.25, ease: "power3.in" }, 20.55);
+      tl.to("#fp-target-str", { scale: 1.2, color: "#ff5f56", duration: 0.30, ease: "back.out(2.0)" }, 20.35);
+      tl.to("#fp-target-str", { scale: 1.0, duration: 0.30, ease: "power2.in" }, 20.95);
+
+      // Tooltip (local 21.5)
+      tl.to("#fp-tooltip", { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, 21.5);
+      // Pulse — "quoted text" (local 24.19)
+      tl.to("#fp-tooltip", { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.19);
+
+      // BILLED stamp — "whole file, triages it, bills you" (local 26.77)
+      tl.to("#fp-billed", { opacity: 1, scale: 1, rotate: -4, duration: 0.45, ease: "back.out(2.2)" }, 26.77);
+
+      // ast-grep skips it — green marker (local 29.79)
+      tl.to("#fp-row-bg", { background: "rgba(78, 201, 176, 0.20)", duration: 0.4 }, 29.79);
+      tl.to("#fp-row-mark", { background: "var(--ok)", boxShadow: "0 0 18px rgba(78, 201, 176, 0.7)", duration: 0.4 }, 29.79);
+
+      // Counter 22 → 12 — "Twelve files" (local 31.76)
+      const cTo12 = { v: 22 };
+      tl.to(cTo12, {
+        v: 12, duration: 0.7, ease: "power2.out",
+        onUpdate() { const el = document.getElementById('grep-good-files'); if (el) el.textContent = Math.round(cTo12.v); }
+      }, 31.76);
+      // grep-good also gets real-call count
+      const cGood = { v: 0 };
+      tl.to(cGood, {
+        v: 130, duration: 0.7, ease: "power2.out",
+        onUpdate() { const el = document.getElementById('grep-good-count'); if (el) el.textContent = Math.round(cGood.v); }
+      }, 31.76);
+
+      // Result chips — comparison receipt (local 32.20)
+      tl.to("#result-bad",  { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 32.20);
+      tl.to("#result-good", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 32.60);
+
+      tl.set({}, {}, 33.96);
+      window.__timelines["scene-video-embed"] = tl;
+    </script>
+  </div>
+</template>

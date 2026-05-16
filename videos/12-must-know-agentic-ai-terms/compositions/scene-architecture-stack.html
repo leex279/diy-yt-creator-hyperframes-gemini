@@ -1,0 +1,148 @@
+<!--
+  scene-architecture-stack.html — vertical layer-stack archetype.
+
+  5 horizontal layer bars stacked top-down (User → API → Logic → Data →
+  Infra). Each layer has an accent-rotated left-border strip. After all
+  5 are visible, a synthesizing 56px headline fades in below.
+
+  Stagger via GSAP — DO NOT manually compute 5 separate trigger times.
+-->
+<template id="scene-architecture-stack-template">
+  <div data-composition-id="scene-architecture-stack"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-architecture-stack-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-architecture-stack-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+      }
+      #scene-architecture-stack-content .stack {
+        display:flex; flex-direction:column;
+        gap: 16px;
+      }
+      .arch-layer {
+        width: 1200px;
+        height: 90px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-bright);
+        position: relative;
+        overflow: hidden;
+        display:flex; align-items:center;
+        padding: 0 32px 0 56px;
+        gap: 24px;
+      }
+      .arch-layer::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 8px;
+        background: var(--accent-1);
+      }
+      .arch-layer.l1::before { background: var(--accent-1); }
+      .arch-layer.l2::before { background: var(--accent-2); }
+      .arch-layer.l3::before { background: var(--accent-3); }
+      .arch-layer.l4::before { background: var(--accent-4); }
+      .arch-layer.l5::before { background: var(--accent-warn); }
+      .arch-layer .label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        width: 80px;
+      }
+      .arch-layer .name {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 32px;
+        color: var(--text);
+        flex: 1;
+      }
+      .arch-layer .meta {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 18px;
+        color: var(--text-secondary);
+      }
+      #scene-architecture-stack-content .synth-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1200px;
+        margin-top: 12px;
+      }
+    </style>
+
+    <div id="scene-architecture-stack-content">
+      <div class="overline" id="arch-overline">FOUR ROLES &middot; TWELVE WORDS</div>
+
+      <div class="stack" id="arch-stack">
+        <div class="arch-layer l1">
+          <span class="label">01</span>
+          <span class="name">Context</span>
+          <span class="meta">MCP &middot; Tool Use &middot; Memory</span>
+        </div>
+        <div class="arch-layer l2">
+          <span class="label">02</span>
+          <span class="name">Reasoning</span>
+          <span class="meta">Agent Loop &middot; Grounding &middot; Context Window</span>
+        </div>
+        <div class="arch-layer l3">
+          <span class="label">03</span>
+          <span class="name">Team</span>
+          <span class="meta">Orchestrator &middot; Subagent &middot; Multi-Agent</span>
+        </div>
+        <div class="arch-layer l4">
+          <span class="label">04</span>
+          <span class="name">Control</span>
+          <span class="meta">Guardrails &middot; Sandboxing &middot; Human-in-the-Loop</span>
+        </div>
+      </div>
+
+      <div class="synth-headline" id="arch-synth">Four roles. Twelve words. One mental model.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.from("#arch-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#arch-stack .arch-layer", {
+        y: 30, opacity: 0,
+        duration: 0.5,
+        ease: "power3.out",
+        stagger: 0.15,
+        immediateRender: false
+      }, 0.4);
+      tl.from("#arch-synth", { y: 20, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, 1.7);
+
+      window.__timelines["scene-architecture-stack"] = tl;
+    </script>
+  </div>
+</template>

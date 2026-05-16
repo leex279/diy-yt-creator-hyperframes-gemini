@@ -1,0 +1,143 @@
+<!--
+  scene-video-embed.html — Animated wrapper around an embedded video element.
+
+  HARD RULE: never animate the video element directly — wrapper only.
+  The video element itself does NOT take class="clip"; the wrapper div
+  takes it. The audio track is a separate audio element with a
+  DIFFERENT src filename than the video (e.g. demo-audio.mp3 extracted
+  via ffmpeg from the .mp4) — pointing both at the same source produces
+  a duplicate-media warning.
+
+  Operator drops their MP4 at assets/clips/demo.mp4. Until then, the
+  scene shows a placeholder slate.
+-->
+<template id="scene-video-embed-template">
+  <div data-composition-id="scene-video-embed"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-video-embed-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 28px;
+        box-sizing:border-box;
+      }
+      #scene-video-embed-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:12px;
+        text-align:center;
+      }
+      #scene-video-embed-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #scene-video-embed-content .caption {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 48px;
+        line-height: 1.05;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      #confusion-grid {
+        width: 1500px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .conf-card {
+        padding: 26px 30px;
+        border-radius: 18px;
+        border: 1.5px solid var(--border-bright);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .conf-card .conf-pair {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .conf-card .conf-resolve {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 1.3;
+        color: var(--text);
+      }
+      .conf-card .conf-tag {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--text-secondary);
+        letter-spacing: 0.04em;
+      }
+    </style>
+
+    <div id="scene-video-embed-content">
+      <div class="header-block">
+        <div class="overline" id="vembed-overline">FOUR ARGUMENTS &middot; FOUR RESOLUTIONS</div>
+        <div class="caption"  id="vembed-caption">The confusions that ship bad agents</div>
+      </div>
+
+      <div id="confusion-grid">
+        <div class="conf-card" id="conf-card-1">
+          <div class="conf-pair">MCP &nbsp;vs&nbsp; Tool Use</div>
+          <div class="conf-resolve">Protocol vs message. Transport vs language.</div>
+          <div class="conf-tag">Different layer &middot; different scope</div>
+        </div>
+        <div class="conf-card" id="conf-card-2">
+          <div class="conf-pair">Context &middot; Memory &middot; RAG</div>
+          <div class="conf-resolve">What fits now. What persists. How you populate either.</div>
+          <div class="conf-tag">Inference &middot; sessions &middot; retrieval</div>
+        </div>
+        <div class="conf-card" id="conf-card-3">
+          <div class="conf-pair">Guardrails &middot; Sandbox &middot; HITL</div>
+          <div class="conf-resolve">Rules. Environments. Gates. Different failures, different fixes.</div>
+          <div class="conf-tag">Three layers &middot; not one</div>
+        </div>
+        <div class="conf-card" id="conf-card-4">
+          <div class="conf-pair">Subagent &middot; Orchestrator &middot; Multi-Agent</div>
+          <div class="conf-resolve">Worker. Coordinator. System property.</div>
+          <div class="conf-tag">One thing &middot; another thing &middot; the whole thing</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.from("#vembed-overline",       { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#vembed-caption",        { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+      tl.from("#confusion-grid .conf-card", {
+        y: 30, opacity: 0,
+        duration: 0.55,
+        ease: "back.out(1.3)",
+        stagger: 0.25,
+        immediateRender: false
+      }, 0.8);
+
+      window.__timelines["scene-video-embed"] = tl;
+    </script>
+  </div>
+</template>

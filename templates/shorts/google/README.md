@@ -185,7 +185,7 @@ tl.to("#p3a-b1", { x: 0, opacity: 1, duration: 0.45 }, NARRATION_ANCHOR_FOR_BULL
 
 **Why `tl.set` + `tl.to` instead of `tl.from`?** `tl.from(...)` with `immediateRender: false` leaves the element at its CSS-default visible state until the tween fires, then snaps to the from-state and animates — a one-frame flash on playback. The `set` + `to` pattern keeps the element hidden the entire time.
 
-For working examples of the multi-sub-slide architecture see `videos/gemini-cli-v040-short/index.html` — it uses 3 sub-slides in Phase 2 (terminals → settings UI → explainer), 5 sub-slides in Phase 3 (intro + 4 features + 1 add-on), and 2 sub-slides in Phase 4 (perf-pills → CTA close).
+For working examples of the multi-sub-slide architecture see `videos/_archived/gemini-cli-v040-short/index.html` — it uses 3 sub-slides in Phase 2 (terminals → settings UI → explainer), 5 sub-slides in Phase 3 (intro + 4 features + 1 add-on), and 2 sub-slides in Phase 4 (perf-pills → CTA close).
 
 ## Brand surfaces
 

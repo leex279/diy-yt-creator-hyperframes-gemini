@@ -61,7 +61,7 @@
   }
   #shape-backdrop img {
     position: absolute;
-    opacity: 0.05;
+    opacity: 0.0425;
     object-fit: contain;
     pointer-events: none;
   }
@@ -126,7 +126,7 @@
     filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.55));
   }
   #version-branding .vb-logos img {
-    width: 340px;
+    width: 240px;
     height: auto;
   }
   #version-branding .vb-version {
@@ -173,8 +173,6 @@
   }
   #phase1 { z-index: 1; opacity: 1; }
   #phase2 { z-index: 2; opacity: 0; }
-  #phase3 { z-index: 3; opacity: 0; }
-  #phase4 { z-index: 4; opacity: 0; }
 
   .phase-content {
     width: 100%;
@@ -182,75 +180,45 @@
     padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;  /* content stacks from top, not centered — keeps it close to the logos line */
     box-sizing: border-box;
+    gap: 28px;
   }
 
-  /* Mono overline — every phase opens with one of these */
+  /* Mono overline — every phase opens with one of these.
+     40px clears the .claude/rules/shorts-typography.md overline floor with
+     headroom (32px minimum, 36px recommended) and reads cleanly on phone. */
   .overline {
     font-family: var(--mono);
     font-weight: 700;
-    font-size: 36px;
+    font-size: 40px;
     letter-spacing: 6px;
     text-transform: uppercase;
   }
 
   /* ──────────────────────────────────────────────────
-     PHASE 1 — VERSION SLAM
-     Pattern: overline → "Version" pre-line → BIG version
-     slam (e.g. "v2.1.118") → caption pill ("What's new").
+     PHASE 1 — STATS OPENER (with version header)
+     Pattern: overline → BIG version (static, no slam) →
+     headline → 3 huge stat pills (cyan / purple / green).
+     Composition opens cold here — narration starts on the
+     first stat number (e.g. "28 new features..."). The
+     version is visible from frame 0 so viewers can read it.
      ────────────────────────────────────────────────── */
-  #phase1 .phase-content {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 28px;
-  }
+  #phase1 .phase-content { text-align: center; }
   #p1-overline { color: var(--accent-warn); }
-  #p1-pre {
-    font-family: var(--sans);
-    font-weight: 700;
-    font-size: 64px;
-    line-height: 1.05;
-    color: var(--text);
-    max-width: 920px;
-  }
-  #p1-hero {
+  #p1-version {
     font-family: var(--sans);
     font-weight: 900;
-    font-size: 200px;
+    font-size: 150px;
     line-height: 0.9;
-    letter-spacing: -4px;
+    letter-spacing: -3px;
     color: var(--accent-1);
-    text-shadow: 0 0 80px rgba(88,166,255,0.55), 0 8px 24px rgba(0,0,0,0.6);
-    max-width: 960px;
+    text-shadow: 0 0 60px rgba(88,166,255,0.45), 0 6px 18px rgba(0,0,0,0.55);
+    max-width: 1000px;
     font-variant-numeric: tabular-nums lining-nums;
   }
-  #p1-caption {
-    margin-top: 24px;
-    padding: 14px 28px;
-    font-family: var(--mono);
-    font-weight: 600;
-    font-size: 30px;
-    letter-spacing: 2px;
-    color: var(--text);
-    background: var(--pill-bg);
-    border: 1.5px solid var(--pill-border);
-    border-radius: 999px;
-  }
-
-  /* ──────────────────────────────────────────────────
-     PHASE 2 — STATS OPENER (3 pills)
-     Pattern: overline → headline → 3 huge stat pills
-     (cyan / purple / green) for features / fixes / improved.
-     ────────────────────────────────────────────────── */
-  #phase2 .phase-content {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 40px;
-  }
-  #p2-overline { color: var(--accent-warn); }
-  #p2-headline {
+  #p1-headline {
     font-family: var(--sans);
     font-weight: 800;
     font-size: 56px;
@@ -260,7 +228,7 @@
     letter-spacing: -1px;
     margin-bottom: 8px;
   }
-  #p2-pills {
+  #p1-pills {
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -315,17 +283,28 @@
   }
 
   /* ──────────────────────────────────────────────────
-     PHASE 3 — HIGHLIGHT CARDS (numbered)
-     Pattern: overline → 3 numbered cards (01/02/03),
-     accent rotation cyan → purple → green.
+     PHASE 2 — HIGHLIGHT CARDS (numbered, 2 SETS for ~150s short)
+     Pattern: overline → set A (3 cards: 01/02/03) → crossfade →
+     set B (3 cards: 04/05/06). Accent rotation cyan → purple →
+     green within each set. The two sets share the same vertical
+     slot via absolute positioning so the layout stays anchored.
+     Operators may collapse to 1 set (3 cards total) for shorter
+     releases by removing #p2-set-b and the crossfade tween.
      ────────────────────────────────────────────────── */
-  #phase3 .phase-content {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 36px;
+  #phase2 .phase-content { text-align: center; gap: 36px; }
+  #p2-overline { color: var(--text); }
+  /* Wrapper that hosts the two card sets stacked at the same position.
+     Height matches the natural height of one set (3 cards × 220 + gaps). */
+  #p2-card-stack {
+    position: relative;
+    width: 940px;
+    height: 720px;
   }
-  #p3-overline { color: var(--text); }
+  #p2-set-a, #p2-set-b {
+    position: absolute;
+    inset: 0;
+  }
+  #p2-set-b { opacity: 0; }
   .highlight-list {
     display: flex;
     flex-direction: column;
@@ -378,14 +357,22 @@
   .hl-title {
     font-family: var(--sans);
     font-weight: 800;
-    font-size: 38px;
+    /* Per .claude/rules/shorts-typography.md: list-item primary min 48px,
+       recommended 52-64px. 52px is the floor for highlight-card readability
+       on phone (renders ~19px at the typical 0.36x downscale). Keep titles
+       to ~3-5 words at 52px so they fit the 940px card minus the 96px badge
+       + 32px gap (content area ~754px). If a real title needs more, shorten
+       the wording before reducing the font size. */
+    font-size: 52px;
     line-height: 1.1;
     color: var(--text);
   }
   .hl-sub {
     font-family: var(--mono);
     font-weight: 600;
-    font-size: 26px;
+    /* List-item descriptor min 30px, recommended 32-36px. 32px is the safe
+       floor when the sub line has mono ASCII like "claude agents · ...". */
+    font-size: 32px;
     letter-spacing: 1px;
     line-height: 1.3;
   }
@@ -394,83 +381,20 @@
   .hl-card.green  .hl-sub { color: var(--accent-4); }
 
   /* ──────────────────────────────────────────────────
-     PHASE 4 — CTA / `$ claude update` terminal block
-     Pattern: overline → terminal block → subscribe pill.
-     Terminal CSS duplicated from
-     templates/long-form/claude-code-version/compositions/scene-cta.html
-     (single-use; no shared CSS file).
+     DYNAMOUS ENDCARD MOUNT — replaces the old "Pull every
+     change" CTA phase. claude auto-updates, so the explicit
+     `claude update` call-to-action is unnecessary; the
+     endcard is the canonical close (Mastery wordmark + Join
+     the Community CTA + 10% off + URL + fade-to-black).
+     Sub-composition lives in compositions/dynamous-endcard.html.
      ────────────────────────────────────────────────── */
-  #phase4 .phase-content {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 40px;
-  }
-  #p4-overline { color: var(--accent-4); }
-  #p4-terminal {
-    width: 920px;
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgba(28, 33, 40, 0.95);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55),
-                0 0 0 1.5px rgba(88, 166, 255, 0.4);
-  }
-  #p4-terminal .term-titlebar {
-    height: 48px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 18px;
-    background: #21262D;
-    position: relative;
-  }
-  #p4-terminal .term-titlebar .dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-  }
-  #p4-terminal .term-titlebar .dot.red    { background: #FF5F56; }
-  #p4-terminal .term-titlebar .dot.yellow { background: #FFBD2E; }
-  #p4-terminal .term-titlebar .dot.green  { background: #27C93F; }
-  #p4-terminal .term-titlebar .title {
+  #dynamous-endcard-mount {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--sans);
-    font-weight: 500;
-    font-size: 20px;
-    color: var(--text-secondary);
-  }
-  #p4-terminal .term-content {
-    padding: 36px 44px;
-    font-family: var(--mono);
-    font-size: 38px;
-    line-height: 1.5;
-    color: var(--text);
-    text-align: left;
-  }
-  #p4-terminal .term-content .prompt { color: var(--accent-4); }
-  #p4-terminal .term-content .flag   { color: var(--accent-1); }
-  #p4-subscribe {
-    display: inline-flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 36px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, rgba(247,129,102,0.18), rgba(247,129,102,0.05));
-    border: 1.5px solid rgba(247,129,102,0.55);
-    font-family: var(--sans);
-    font-weight: 700;
-    font-size: 38px;
-    color: var(--text);
-    letter-spacing: 0.5px;
-  }
-  #p4-subscribe .arrow {
-    color: var(--accent-warn);
-    font-family: var(--sans);
-    font-weight: 900;
-    font-size: 48px;
-    line-height: 0.7;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
   }
 </style>
 </head>
@@ -478,7 +402,7 @@
 <div id="root"
      data-composition-id="main"
      data-start="0"
-     data-duration="24"
+     data-duration="150"
      data-width="1080"
      data-height="1920">
 
@@ -515,34 +439,27 @@
   <div id="progress-track"><div id="progress-fill"></div></div>
 
   <!-- ═══════════════════════════════════════════════════════
-       PHASE 1 — VERSION SLAM (0-6s)
+       PHASE 1 — STATS OPENER WITH VERSION HEADER
+       The composition opens cold here (no spoken slam intro).
+       Version is visible from frame 0 (no animation slam) so
+       viewers can read it; narration starts on the first stat
+       number (e.g. "28 new features...").
        ═══════════════════════════════════════════════════════ -->
   <div id="phase1" class="phase">
     <div class="phase-content">
       <div class="overline" id="p1-overline">Claude Code Update</div>
-      <div id="p1-pre">Version</div>
-      <div id="p1-hero">vX.Y.Z</div>
-      <div id="p1-caption">What's new in 90 seconds</div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════
-       PHASE 2 — STATS OPENER (6-12s)
-       ═══════════════════════════════════════════════════════ -->
-  <div id="phase2" class="phase">
-    <div class="phase-content">
-      <div class="overline" id="p2-overline">What shipped</div>
-      <div id="p2-headline">The receipts.</div>
-      <div id="p2-pills">
-        <div class="stat-pill cyan" id="p2-pill-1">
+      <div id="p1-version">vX.Y.Z</div>
+      <div id="p1-headline">The receipts.</div>
+      <div id="p1-pills">
+        <div class="stat-pill cyan" id="p1-pill-1">
           <div class="stat-num">0</div>
           <div class="stat-label">features</div>
         </div>
-        <div class="stat-pill purple" id="p2-pill-2">
+        <div class="stat-pill purple" id="p1-pill-2">
           <div class="stat-num">0</div>
           <div class="stat-label">fixes</div>
         </div>
-        <div class="stat-pill green" id="p2-pill-3">
+        <div class="stat-pill green" id="p1-pill-3">
           <div class="stat-num">0</div>
           <div class="stat-label">improved</div>
         </div>
@@ -551,31 +468,58 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════
-       PHASE 3 — HIGHLIGHT CARDS (12-18s)
+       PHASE 2 — HIGHLIGHT CARDS (2 SETS for ~150s default)
+       Set A (cards 01-03) plays first, then a crossfade swaps in
+       Set B (cards 04-06) at roughly the midpoint of the phase.
        ═══════════════════════════════════════════════════════ -->
-  <div id="phase3" class="phase">
+  <div id="phase2" class="phase">
     <div class="phase-content">
-      <div class="overline" id="p3-overline">Top changes</div>
-      <div class="highlight-list">
-        <div class="hl-card cyan" id="p3-card-1">
-          <div class="hl-num">01</div>
-          <div class="hl-body">
-            <div class="hl-title">Highlight title one</div>
-            <div class="hl-sub">Short sub-line for context</div>
+      <div class="overline" id="p2-overline">Top changes</div>
+      <div id="p2-card-stack">
+        <div id="p2-set-a" class="highlight-list">
+          <div class="hl-card cyan" id="p2-card-1">
+            <div class="hl-num">01</div>
+            <div class="hl-body">
+              <div class="hl-title">Highlight title one</div>
+              <div class="hl-sub">Short sub-line for context</div>
+            </div>
+          </div>
+          <div class="hl-card purple" id="p2-card-2">
+            <div class="hl-num">02</div>
+            <div class="hl-body">
+              <div class="hl-title">Highlight title two</div>
+              <div class="hl-sub">Short sub-line for context</div>
+            </div>
+          </div>
+          <div class="hl-card green" id="p2-card-3">
+            <div class="hl-num">03</div>
+            <div class="hl-body">
+              <div class="hl-title">Highlight title three</div>
+              <div class="hl-sub">Short sub-line for context</div>
+            </div>
           </div>
         </div>
-        <div class="hl-card purple" id="p3-card-2">
-          <div class="hl-num">02</div>
-          <div class="hl-body">
-            <div class="hl-title">Highlight title two</div>
-            <div class="hl-sub">Short sub-line for context</div>
+        <div id="p2-set-b" class="highlight-list">
+          <div class="hl-card cyan" id="p2-card-4">
+            <div class="hl-num">04</div>
+            <div class="hl-body">
+              <div class="hl-title">Highlight title four</div>
+              <div class="hl-sub">Short sub-line for context</div>
+            </div>
           </div>
-        </div>
-        <div class="hl-card green" id="p3-card-3">
-          <div class="hl-num">03</div>
-          <div class="hl-body">
-            <div class="hl-title">Highlight title three</div>
-            <div class="hl-sub">Short sub-line for context</div>
+          <div class="hl-card purple" id="p2-card-5">
+            <div class="hl-num">05</div>
+            <div class="hl-body">
+              <div class="hl-title">Highlight title five</div>
+              <div class="hl-sub">Short sub-line for context</div>
+            </div>
+          </div>
+          <div class="hl-card green" id="p2-card-6">
+            <div class="hl-num">06</div>
+            <div class="hl-body">
+              <div class="hl-title">Highlight title six</div>
+              <div class="hl-sub">Short sub-line for context</div>
+            </div>
           </div>
         </div>
       </div>
@@ -583,25 +527,30 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════
-       PHASE 4 — CTA / `$ claude update` (18-24s)
+       DEBATE-CTA QUESTION — MANDATORY per .claude/rules/engagement-cta.md.
+       The branded Dynamous endcard below is the visual CTA pill; the
+       debate question must ALSO appear on-screen during the final body
+       phase (typically the last 3-5s before the endcard takes over).
+       The wording MUST match the FINAL spoken line of script.txt and
+       the engagement question in youtube-description.md. Style + animate
+       per the rule. Operator wires #cta-question into the final body
+       phase or adds a dedicated #phaseN-cta-question phase before 145s.
        ═══════════════════════════════════════════════════════ -->
-  <div id="phase4" class="phase">
-    <div class="phase-content">
-      <div class="overline" id="p4-overline">Pull every fix</div>
-      <div id="p4-terminal">
-        <div class="term-titlebar">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-          <span class="title">~/project</span>
-        </div>
-        <div class="term-content">
-          <span class="prompt">$</span> claude <span class="flag">update</span>
-        </div>
-      </div>
-      <div id="p4-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
-    </div>
-  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       DYNAMOUS ENDCARD — full-frame closer, last 5s.
+       Operator retimes data-start per video (default 145s for
+       the 150s template; should match the post-narration tail
+       so the endcard owns the closing beats).
+       ═══════════════════════════════════════════════════════ -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="145"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
 
   <!-- ═══════════════════════════════════════════════════════
        NARRATION + SFX — operator wires when narration is in audio/.
@@ -754,36 +703,33 @@
   window.__timelines = window.__timelines || {};
   const tl = gsap.timeline({ paused: true });
 
-  // Ambient: slow breath across full duration
+  // Ambient: slow breath across full duration (~150s / 30s = 5 yoyo cycles)
   tl.fromTo("#ambient",
     { opacity: 0.85, scale: 1.0 },
-    { opacity: 1.0, scale: 1.04, duration: 12, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 4 },
     0);
 
-  // Progress bar fills linearly (24s template; bump duration per video)
+  // Progress bar fills linearly (150s template default; operator overrides per video)
   tl.fromTo("#progress-fill",
     { width: 0 },
-    { width: 1080, duration: 24, ease: "none" },
+    { width: 1080, duration: 150, ease: "none" },
     0);
 
   // VersionBranding fades in once at 0.4s, then static
   tl.from("#version-branding", { opacity: 0, duration: 0.8, ease: "power2.out" }, 0.4);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 1 — Version slam (0-6s) : entrances only
+  // PHASE 1 — Stats opener with version header (0–T1)
+  // Composition opens cold. Version + overline visible from frame 0
+  // (no spoken slam intro). Pills enter on each spoken stat number.
   // ═══════════════════════════════════════════════════════
-  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.6);
-  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 1.0);
-  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 1.6);
-  // Inline shake on the slam frame — 4 short ticks ±5px, then settle
-  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.75);
-  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.80);
-  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.85);
-  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.90);
-  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.4);
+  tl.from("#p1-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.0);
+  tl.from("#p1-pill-1",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 0.5);
+  tl.from("#p1-pill-2",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 2.0);
+  tl.from("#p1-pill-3",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 3.5);
 
-  // ─── Transition phase1 → phase2 at 5.6s : blur + crossfade ───
-  const T1 = 5.6;
+  // ─── Transition phase1 → phase2 at T1 (~10s default) ───
+  const T1 = 10.0;
   tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
   tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
   tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
@@ -792,65 +738,55 @@
   tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 2 — Stats opener (6-12s) : entrances only
+  // PHASE 2 — Highlight cards: 6 cards in 2 sets (~120s)
+  // Set A (cards 1-3) enters first; at SET_SWAP we crossfade to
+  // Set B (cards 4-6). Operator retimes per transcript narration.
   // ═══════════════════════════════════════════════════════
-  const P2 = 6.4;
+  const P2 = T1 + 0.4;            // 10.4
+  const P2_SET_B_AT = P2 + 60;    // crossfade midpoint (default — retime to narration)
   tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
-  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
-  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, P2 + 0.9);
-  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, P2 + 1.4);
-  tl.from("#p2-pill-3",   { scale: 0.85, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, P2 + 1.9);
 
-  // ─── Transition phase2 → phase3 at 11.6s ───
-  const T2 = 11.6;
+  // Set A — cards 1-3 enter (hidden-until-reveal pattern; staggered to narration cues)
+  tl.set("#p2-card-1", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-2", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-3", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.to("#p2-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 1.0);
+  tl.to("#p2-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 18.0);
+  tl.to("#p2-card-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2 + 38.0);
+
+  // Set A → Set B crossfade (kept on the same #phase2 wrapper to preserve overline + position)
+  tl.to("#p2-set-a", { opacity: 0, duration: 0.5, ease: "power1.in" }, P2_SET_B_AT);
+  tl.to("#p2-set-b", { opacity: 1, duration: 0.5, ease: "power1.out" }, P2_SET_B_AT);
+
+  // Set B — cards 4-6 hidden by default (CSS opacity: 0 on individual cards as well so the
+  // container fade-in doesn't reveal everything at once)
+  tl.set("#p2-card-4", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-5", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.set("#p2-card-6", { x: -40, scale: 0.95, opacity: 0 }, P2);
+  tl.to("#p2-card-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2_SET_B_AT + 1.0);
+  tl.to("#p2-card-5", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2_SET_B_AT + 18.0);
+  tl.to("#p2-card-6", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P2_SET_B_AT + 38.0);
+
+  // ─── Phase 2 fade-out into endcard at T2 (~145s default) ───
+  // No #phase3 — the dynamous-endcard sub-composition (track 10) takes
+  // over at T2 + 0.4 and runs its own internal timeline (5s, ending in
+  // a 0.5s fade-to-black). Operator retimes T2 + endcard data-start per
+  // video so the narration ends as the endcard begins.
+  const T2 = 145.0;
   tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
   tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
   tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
-  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
-  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
-  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
 
-  // ═══════════════════════════════════════════════════════
-  // PHASE 3 — Highlight cards (12-18s) : entrances only
-  // ═══════════════════════════════════════════════════════
-  const P3 = 12.4;
-  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
-  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 0.5);
-  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 0.95);
-  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P3 + 1.4);
+  // Hide persistent chrome so the endcard's Mastery wordmark + CTA own the closing frame.
+  tl.to("#version-branding", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.to("#progress-track",   { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
 
-  // ─── Transition phase3 → phase4 at 17.6s ───
-  const T3 = 17.6;
-  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
-  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
-  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
-  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
-  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
-  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
-
-  // ═══════════════════════════════════════════════════════
-  // PHASE 4 — `$ claude update` CTA (18-24s) : entrances only
-  // ═══════════════════════════════════════════════════════
-  const P4 = 18.4;
-  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
-  tl.from("#p4-terminal",  { y: 24, scale: 0.96, opacity: 0, duration: 0.6, ease: "back.out(1.4)", immediateRender: false }, P4 + 0.5);
-  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 1.5);
-  // Subscribe pulse — finite repeat (yoyo true + repeat 4 = 5 total tweens, ~4.5s span).
-  // Claude Code orange glow; always use a finite count (deterministic timeline rule).
-  tl.to("#p4-subscribe", {
-    boxShadow: "0 0 0 6px rgba(247, 129, 102, 0.40)",
-    duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 4
-  }, P4 + 1.8);
-
-  // Phase 4 stays fully visible to the end — composition naturally ends at 24s.
-
-  // Re-randomise shape backdrop at every phase transition (paired with cinematic-whoosh SFX).
-  // DEFAULT for every Short. Update [T1, T2, T3] when transition timestamps move.
+  // Re-randomise shape backdrop at every phase + set transition (paired with cinematic-whoosh SFX).
   repositionShapesPerPhase(
     tl,
     document.getElementById('shape-backdrop'),
     'claude-code-short',
-    [T1, T2, T3]
+    [T1, P2_SET_B_AT, T2]
   );
 
   window.__timelines["main"] = tl;

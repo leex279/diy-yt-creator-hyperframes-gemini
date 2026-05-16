@@ -7,14 +7,10 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
   /* ──────────────────────────────────────────────────
-     CANVAS — 1080x1920 dark navy stage, brand-neutral.
-     Full design system in DESIGN.md. Edit values per
-     video; keep families.
-
-     Most styling is driven by CSS variables in
-     tokens/standard-short.css. To re-skin a phase or
-     a card per video, override --accent-1..4 inside
-     #root or a per-phase scope.
+     CANVAS — 1080x1920 dark navy, 5-phase mutex.
+     Phases 1-5 layered with z-index escalation. Each
+     phase has its own 3D-perspective stage so the
+     panels can rotate in/out of the screen plane.
      ────────────────────────────────────────────────── */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -27,9 +23,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Ambient wash — slow dual-radial breath under all phases.
-     Uses --accent-1 (blue lead) + --accent-3 (purple) at low alpha. */
-  /* COMPONENT: shared/lib/components/ambient-radial/ */
   #ambient {
     position: absolute;
     inset: -200px;
@@ -40,9 +33,6 @@
     z-index: 0;
   }
 
-  /* Shape backdrop — 14 deterministic geometric shapes (circle, rounded
-     square, triangle) scattered at 4% opacity. Sits between #ambient
-     and phases. Populated by spawnShapes() in script below. */
   #shape-backdrop {
     position: absolute;
     inset: 0;
@@ -57,9 +47,6 @@
     pointer-events: none;
   }
 
-  /* Film-grain overlay — fractal noise via SVG feTurbulence, blended
-     over the entire stack to break up gradient banding under H.264.
-     Highest z-index (below noise-overlay only) so it tints everything. */
   #noise-overlay {
     position: absolute;
     inset: 0;
@@ -71,14 +58,7 @@
     mix-blend-mode: overlay;
   }
 
-  /* ──────────────────────────────────────────────────
-     TOP CHROME — persistent banner across all phases.
-     Default ships with a styled wordmark div ("TOPIC")
-     that operators replace per video. Swap the inner
-     content for an <img> tag pointing at a real logo
-     copied into assets/ (see README "Adding a logo").
-     ────────────────────────────────────────────────── */
-  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  /* Top banner — persistent across all phases */
   #top-banner {
     position: absolute;
     top: 60px;
@@ -112,8 +92,7 @@
     box-shadow: 0 0 14px rgba(59, 130, 246, 0.7);
   }
 
-  /* Slim progress bar — bottom edge, accent blue */
-  /* COMPONENT: shared/lib/components/progress-bar/ */
+  /* Slim progress bar */
   #progress-track {
     position: absolute;
     bottom: 0;
@@ -130,12 +109,7 @@
     box-shadow: 0 0 12px rgba(59, 130, 246, 0.55);
   }
 
-  /* ──────────────────────────────────────────────────
-     PHASES — full-bleed, layered. Phase 1 visible by
-     default; phases 2-4 start at opacity 0. Crossfades
-     between phases handle scene change (no exits on
-     individual elements — see DESIGN.md motion rules).
-     ────────────────────────────────────────────────── */
+  /* Phases */
   .phase {
     position: absolute;
     top: 0;
@@ -143,11 +117,14 @@
     width: 1080px;
     height: 1920px;
     overflow: hidden;
+    perspective: 1500px;
+    transform-style: preserve-3d;
   }
   #phase1 { z-index: 1; opacity: 1; }
   #phase2 { z-index: 2; opacity: 0; }
   #phase3 { z-index: 3; opacity: 0; }
   #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
 
   .phase-content {
     width: 100%;
@@ -156,9 +133,9 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    transform-style: preserve-3d;
   }
 
-  /* Mono overline — every phase opens with one of these */
   .overline {
     font-family: var(--mono);
     font-weight: 700;
@@ -168,264 +145,387 @@
   }
 
   /* ──────────────────────────────────────────────────
-     PHASE 1 — HERO HOOK
-     Pattern: overline → secondary line → slam word + caption pill.
-     Use for: scroll-stop hook on any topic.
+     PHASE 1 — HOOK
+     "What is HyperFrames? Video, with HTML."
+     Stacked slam: VIDEO. → WITH HTML.
      ────────────────────────────────────────────────── */
   #phase1 .phase-content {
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     text-align: center;
-    gap: 28px;
+    gap: 18px;
   }
-  #p1-overline { color: var(--accent-1); }
-  #p1-pre {
-    font-family: var(--sans);
-    font-weight: 700;
-    font-size: 72px;
-    line-height: 1.05;
-    color: var(--text);
-    max-width: 920px;
-  }
-  #p1-hero {
+  #p1-overline { color: var(--accent-1); margin-bottom: 24px; }
+  #p1-slam-1 {
     font-family: var(--sans);
     font-weight: 900;
-    font-size: 200px;
+    font-size: 220px;
     line-height: 0.9;
-    letter-spacing: -4px;
+    letter-spacing: -6px;
+    color: var(--text);
+    text-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  }
+  #p1-slam-2 {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 220px;
+    line-height: 0.9;
+    letter-spacing: -6px;
     color: var(--accent-1);
     text-shadow: 0 0 80px rgba(59, 130, 246, 0.55), 0 8px 24px rgba(0,0,0,0.6);
-    max-width: 920px;
-  }
-  #p1-caption {
-    margin-top: 32px;
-    padding: 14px 28px;
-    font-family: var(--mono);
-    font-weight: 600;
-    font-size: 32px;
-    letter-spacing: 2px;
-    color: var(--text);
-    background: var(--pill-bg);
-    border: 1.5px solid var(--pill-border);
-    border-radius: 999px;
   }
 
   /* ──────────────────────────────────────────────────
-     PHASE 2 — STAT PILL ROW
-     Pattern: overline → headline → 2 huge stat pills,
-              color-rotated.
-     Use for: receipts, before/after, comparison numbers.
+     PHASE 2 — STACK + INSTALL
+     Headline: "Just HTML + GSAP."
+     3D-reveal terminal panel with `npx hyperframes init`
+     2 chips: NO BUILD / NO CONFIG
      ────────────────────────────────────────────────── */
   #phase2 .phase-content {
     align-items: center;
     justify-content: flex-start;
     text-align: center;
-    gap: 36px;
+    gap: 32px;
   }
   #p2-overline { color: var(--accent-2); }
   #p2-headline {
     font-family: var(--sans);
     font-weight: 800;
-    font-size: 64px;
+    font-size: 80px;
     line-height: 1.05;
     color: var(--text);
-    max-width: 920px;
+    max-width: 980px;
     letter-spacing: -1px;
-    margin-bottom: 8px;
   }
-  #p2-pills {
+  #p2-headline .hl { color: var(--accent-2); }
+  #p2-headline .hl-2 { color: var(--accent-3); }
+
+  /* Terminal panel — looks like a terminal window with the install command */
+  .terminal-panel {
+    width: 960px;
+    margin-top: 16px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(8, 14, 28, 0.95), rgba(4, 8, 18, 0.95));
+    border: 2px solid rgba(59, 130, 246, 0.35);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 36px rgba(59, 130, 246, 0.18);
+    overflow: hidden;
+    transform-style: preserve-3d;
+  }
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    background: rgba(20, 28, 48, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 10px;
+  }
+  .terminal-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+  }
+  .terminal-dot.red    { background: #ff5f56; }
+  .terminal-dot.yellow { background: #ffbd2e; }
+  .terminal-dot.green  { background: #27c93f; }
+  .terminal-title {
+    margin-left: 16px;
+    font-family: var(--mono);
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 1px;
+  }
+  .terminal-body {
+    padding: 28px 32px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 36px;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  .term-line { white-space: nowrap; }
+  .term-prompt { color: var(--accent-1); margin-right: 14px; }
+  .term-cmd    { color: var(--text); }
+  .term-cmd .accent { color: var(--accent-2); }
+  .term-ok     { color: var(--accent-4); }
+  .term-dim    { color: rgba(255, 255, 255, 0.55); }
+
+  #p2-chips {
     display: flex;
     flex-direction: row;
-    gap: 18px;
+    gap: 22px;
+    margin-top: 16px;
   }
-  /* BLOCK: shared/lib/blocks/stat-pill-row/ */
-  .stat-pill {
+  .chip-stat {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 460px;
-    min-height: 300px;
-    padding: 44px 24px;
-    border-radius: 24px;
-  }
-  .stat-pill.accent-1 {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.20), rgba(59, 130, 246, 0.06));
-    border: 2px solid rgba(59, 130, 246, 0.40);
-    box-shadow: 0 14px 36px rgba(59, 130, 246, 0.20);
-  }
-  .stat-pill.accent-2 {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.20), rgba(6, 182, 212, 0.06));
-    border: 2px solid rgba(6, 182, 212, 0.40);
-    box-shadow: 0 14px 36px rgba(6, 182, 212, 0.20);
-  }
-  .stat-pill.accent-3 {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.20), rgba(139, 92, 246, 0.06));
-    border: 2px solid rgba(139, 92, 246, 0.40);
-    box-shadow: 0 14px 36px rgba(139, 92, 246, 0.20);
-  }
-  .stat-pill.accent-4 {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.20), rgba(34, 197, 94, 0.06));
-    border: 2px solid rgba(34, 197, 94, 0.40);
-    box-shadow: 0 14px 36px rgba(34, 197, 94, 0.20);
-  }
-  .stat-num {
-    font-family: var(--sans);
-    font-weight: 900;
-    font-size: 180px;
-    line-height: 0.9;
-    letter-spacing: -4px;
-    font-variant-numeric: tabular-nums lining-nums;
-  }
-  .stat-pill.accent-1 .stat-num { color: var(--accent-1); text-shadow: 0 0 60px rgba(59, 130, 246, 0.40); }
-  .stat-pill.accent-2 .stat-num { color: var(--accent-2); text-shadow: 0 0 60px rgba(6, 182, 212, 0.40); }
-  .stat-pill.accent-3 .stat-num { color: var(--accent-3); text-shadow: 0 0 60px rgba(139, 92, 246, 0.40); }
-  .stat-pill.accent-4 .stat-num { color: var(--accent-4); text-shadow: 0 0 60px rgba(34, 197, 94, 0.40); }
-  .stat-label {
-    margin-top: 10px;
+    gap: 14px;
+    padding: 18px 36px;
+    border-radius: 999px;
     font-family: var(--mono);
     font-weight: 700;
-    font-size: 30px;
+    font-size: 38px;
     letter-spacing: 2px;
-    color: var(--text);
-    text-align: center;
+    text-transform: uppercase;
+  }
+  .chip-stat.accent-3 {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(139, 92, 246, 0.05));
+    border: 2px solid rgba(139, 92, 246, 0.40);
+    color: var(--accent-3);
+  }
+  .chip-stat.accent-4 {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(34, 197, 94, 0.05));
+    border: 2px solid rgba(34, 197, 94, 0.40);
+    color: var(--accent-4);
+  }
+  .chip-stat .x {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 44px;
+    line-height: 0.8;
   }
 
   /* ──────────────────────────────────────────────────
-     PHASE 3 — STEP CARDS
-     Pattern: overline → 3 numbered step cards stacked,
-              accent rotation 1 → 2 → 3.
-     Use for: how-to steps, feature breakdowns, the
-              three things to know — anything that
-              decomposes into a small ordered list.
-     (Replaces anthropic's "dated timeline" pattern with
-     a topic-agnostic numbered-step pattern.)
+     PHASE 3 — THREE RULES
+     3D-reveal code panel. Lines highlight on cue.
      ────────────────────────────────────────────────── */
   #phase3 .phase-content {
     align-items: center;
     justify-content: flex-start;
     text-align: center;
-    gap: 36px;
+    gap: 28px;
   }
   #p3-overline { color: var(--text); }
-  .step-list {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    width: 940px;
-  }
-  /* BLOCK: shared/lib/blocks/timeline-cards/ (adapted for numbered steps) */
-  .step-card {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 26px;
-    padding: 22px 28px;
-    border-radius: 20px;
-  }
-  .step-card.accent-1 {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
-    border: 2px solid rgba(59, 130, 246, 0.40);
-    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.20);
-  }
-  .step-card.accent-2 {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.05));
-    border: 2px solid rgba(6, 182, 212, 0.40);
-    box-shadow: 0 10px 30px rgba(6, 182, 212, 0.20);
-  }
-  .step-card.accent-3 {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
-    border: 2px solid rgba(139, 92, 246, 0.40);
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.20);
-  }
-  .step-card.accent-4 {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
-    border: 2px solid rgba(34, 197, 94, 0.40);
-    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.20);
-  }
-  .step-num {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 100px;
-    height: 100px;
-    border-radius: 18px;
-    font-family: var(--mono);
-    font-weight: 900;
-    font-size: 56px;
-    letter-spacing: 0;
-    line-height: 1;
-    color: var(--bg);
-  }
-  .step-card.accent-1 .step-num { background: var(--accent-1); }
-  .step-card.accent-2 .step-num { background: var(--accent-2); }
-  .step-card.accent-3 .step-num { background: var(--accent-3); }
-  .step-card.accent-4 .step-num { background: var(--accent-4); }
-  .step-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
-  .step-title {
+  #p3-headline {
     font-family: var(--sans);
     font-weight: 800;
-    font-size: 40px;
-    line-height: 1.1;
+    font-size: 64px;
+    line-height: 1.0;
     color: var(--text);
+    letter-spacing: -1px;
   }
-  .step-sub {
+  #p3-headline .num {
+    display: inline-block;
+    color: var(--accent-1);
+    margin-right: 14px;
+  }
+
+  .code-panel {
+    width: 980px;
+    margin-top: 8px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(8, 14, 28, 0.95), rgba(4, 8, 18, 0.95));
+    border: 2px solid rgba(59, 130, 246, 0.35);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 36px rgba(59, 130, 246, 0.18);
+    overflow: hidden;
+    transform-style: preserve-3d;
+  }
+  .code-body {
+    padding: 28px 32px;
+    text-align: left;
     font-family: var(--mono);
+    font-size: 30px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .code-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+  }
+  .code-line .ln {
+    width: 38px;
+    color: rgba(255, 255, 255, 0.50);
     font-weight: 600;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .code-line .ct {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tok-tag      { color: #ff8da1; }
+  .tok-attr     { color: #a78bfa; }
+  .tok-str      { color: #fbbf24; }
+  .tok-keyword  { color: #f472b6; }
+  .tok-fn       { color: #60a5fa; }
+  .tok-comment  { color: rgba(255,255,255,0.35); font-style: italic; }
+  .tok-text     { color: rgba(255,255,255,0.78); }
+
+  /* Rule highlight — flash + lasting subtle glow on the row containing
+     the keyword. Animated by GSAP via .rule-active class swap. */
+  .rule-active {
+    background: rgba(59, 130, 246, 0.18) !important;
+    box-shadow: inset 0 0 0 1.5px rgba(59, 130, 246, 0.6);
+  }
+  .rule-active.r2 {
+    background: rgba(6, 182, 212, 0.22) !important;
+    box-shadow: inset 0 0 0 1.5px rgba(6, 182, 212, 0.6);
+  }
+  .rule-active.r3 {
+    background: rgba(139, 92, 246, 0.22) !important;
+    box-shadow: inset 0 0 0 1.5px rgba(139, 92, 246, 0.6);
+  }
+
+  #p3-rules {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    width: 980px;
+    margin-top: 10px;
+  }
+  .rule-tag {
+    flex: 1;
+    padding: 16px 18px;
+    border-radius: 16px;
+    font-family: var(--mono);
+    font-weight: 700;
     font-size: 28px;
     letter-spacing: 1px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.55);
+    transition: all 0.25s ease;
   }
-  .step-card.accent-1 .step-sub { color: var(--accent-1); }
-  .step-card.accent-2 .step-sub { color: var(--accent-2); }
-  .step-card.accent-3 .step-sub { color: var(--accent-3); }
-  .step-card.accent-4 .step-sub { color: var(--accent-4); }
+  .rule-tag .num {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+    opacity: 0.7;
+  }
+  .rule-tag.lit-1 { background: rgba(59, 130, 246, 0.20); border-color: rgba(59, 130, 246, 0.55); color: var(--accent-1); }
+  .rule-tag.lit-2 { background: rgba(6, 182, 212, 0.20); border-color: rgba(6, 182, 212, 0.55); color: var(--accent-2); }
+  .rule-tag.lit-3 { background: rgba(139, 92, 246, 0.20); border-color: rgba(139, 92, 246, 0.55); color: var(--accent-3); }
 
   /* ──────────────────────────────────────────────────
-     PHASE 4 — CTA / URL SLAM
-     Pattern: overline → URL slam → subscribe pill.
-     Closes with green-glow accent for "go" energy.
+     PHASE 4 — PREVIEW / RENDER / DETERMINISTIC
+     Two 3D-reveal command pills, then "DETERMINISTIC"
+     slam, then 3 deterministic guarantee chips.
      ────────────────────────────────────────────────── */
   #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p4-overline { color: var(--accent-2); }
+
+  .cmd-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 940px;
+    padding: 26px 36px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(8, 14, 28, 0.95), rgba(4, 8, 18, 0.95));
+    border: 2px solid rgba(59, 130, 246, 0.35);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.5), 0 0 36px rgba(59, 130, 246, 0.18);
+    transform-style: preserve-3d;
+  }
+  .cmd-pill .cmd-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .cmd-pill .cmd-text {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 42px;
+    color: var(--text);
+    letter-spacing: 0;
+  }
+  .cmd-pill .cmd-text .accent { color: var(--accent-2); }
+  .cmd-pill.accent-3 { border-color: rgba(139, 92, 246, 0.45); box-shadow: 0 18px 48px rgba(0,0,0,0.5), 0 0 36px rgba(139, 92, 246, 0.20); }
+  .cmd-pill.accent-3 .cmd-text .accent { color: var(--accent-3); }
+  .cmd-pill .arrow {
+    margin-left: 14px;
+    color: var(--accent-4);
+  }
+
+  #p4-determin {
+    margin-top: 18px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 84px;
+    line-height: 0.95;
+    letter-spacing: -1px;
+    color: var(--accent-4);
+    text-shadow: 0 0 40px rgba(34, 197, 94, 0.45);
+  }
+  #p4-chips {
+    display: flex;
+    flex-direction: row;
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .determ-chip {
+    padding: 14px 22px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: rgba(34, 197, 94, 0.10);
+    border: 1.5px solid rgba(34, 197, 94, 0.35);
+    color: var(--accent-4);
+  }
+  .determ-chip .x { color: var(--accent-4); margin-right: 8px; font-weight: 900; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 5 — CTA
+     URL slam + Subscribe pill.
+     ────────────────────────────────────────────────── */
+  #phase5 .phase-content {
     align-items: center;
     justify-content: center;
     text-align: center;
     gap: 36px;
   }
-  #p4-overline { color: var(--accent-4); }
-  /* BLOCK: shared/lib/blocks/url-cta/ */
-  #p4-url {
+  #p5-overline { color: var(--accent-4); }
+  #p5-url {
     font-family: var(--mono);
     font-weight: 700;
     font-size: 60px;
     letter-spacing: 1px;
     color: var(--text);
     line-height: 1.0;
-    padding: 22px 36px;
+    padding: 24px 40px;
     border-radius: 24px;
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(34, 197, 94, 0.05));
     border: 2px solid rgba(34, 197, 94, 0.40);
     box-shadow: 0 14px 36px rgba(34, 197, 94, 0.25);
-    max-width: 960px;
+    max-width: 980px;
   }
-  #p4-subscribe {
+  #p5-subscribe {
     display: inline-flex;
     align-items: center;
     gap: 16px;
-    padding: 18px 36px;
+    padding: 20px 40px;
     border-radius: 999px;
     background: var(--pill-bg);
     border: 1.5px solid var(--pill-border);
     font-family: var(--sans);
     font-weight: 700;
-    font-size: 38px;
+    font-size: 44px;
     color: var(--text);
     letter-spacing: 0.5px;
   }
-  #p4-subscribe .arrow {
+  #p5-subscribe .arrow {
     color: var(--accent-1);
     font-family: var(--sans);
     font-weight: 400;
-    font-size: 48px;
+    font-size: 52px;
     line-height: 0.7;
   }
 </style>
@@ -434,19 +534,13 @@
 <div id="root"
      data-composition-id="main"
      data-start="0"
-     data-duration="70.7"
+     data-duration="44"
      data-width="1080"
      data-height="1920">
 
-  <!-- Ambient blue+purple wash -->
   <div id="ambient"></div>
-
-  <!-- Shape backdrop — 14 deterministic geometric shapes scattered behind
-       phases. Populated by spawnShapes() at boot using a seeded PRNG. -->
   <div id="shape-backdrop"></div>
 
-  <!-- Persistent top banner. Default is a styled wordmark pill — operator
-       replaces with a real logo (copy into assets/ first). See README. -->
   <div id="top-banner">
     <div id="top-banner-text">
       <span id="top-banner-dot"></span>
@@ -454,127 +548,131 @@
     </div>
   </div>
 
-  <!-- Slim progress bar -->
   <div id="progress-track"><div id="progress-fill"></div></div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       PHASE 1 — HERO HOOK (0-6s)
-       ═══════════════════════════════════════════════════════ -->
+  <!-- ═══ PHASE 1 — HOOK (0-3.0s) ═══ -->
   <div id="phase1" class="phase">
     <div class="phase-content">
-      <div class="overline" id="p1-overline">Video Framework</div>
-      <div id="p1-pre">Most tools mean React.</div>
-      <div id="p1-hero">HTML.</div>
-      <div id="p1-caption">Plus GSAP. That's it.</div>
+      <div class="overline" id="p1-overline">What is HyperFrames?</div>
+      <div id="p1-slam-1">VIDEO.</div>
+      <div id="p1-slam-2">WITH HTML.</div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       PHASE 2 — STAT PILL ROW (6-12s)
-       ═══════════════════════════════════════════════════════ -->
+  <!-- ═══ PHASE 2 — STACK + INSTALL (3.0-10.6s) ═══ -->
   <div id="phase2" class="phase">
     <div class="phase-content">
-      <div class="overline" id="p2-overline">What you get</div>
-      <div id="p2-headline">Two numbers that matter.</div>
-      <div id="p2-pills">
-        <div class="stat-pill accent-1" id="p2-pill-1">
-          <div class="stat-num">1</div>
-          <div class="stat-label">CLI</div>
+      <div class="overline" id="p2-overline">The stack</div>
+      <div id="p2-headline">Just <span class="hl">HTML</span> + <span class="hl-2">GSAP</span>.</div>
+      <div id="p2-terminal" class="terminal-panel">
+        <div class="terminal-bar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">~ / my-video</span>
         </div>
-        <div class="stat-pill accent-3" id="p2-pill-2">
-          <div class="stat-num">0</div>
-          <div class="stat-label">config</div>
+        <div class="terminal-body">
+          <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">npx <span class="accent">hyperframes init</span> my-video</span></div>
+          <div class="term-line"><span class="term-ok">&check;</span> Created project</div>
+          <div class="term-line"><span class="term-ok">&check;</span> No build needed</div>
+          <div class="term-line"><span class="term-ok">&check;</span> Zero config</div>
         </div>
+      </div>
+      <div id="p2-chips">
+        <div class="chip-stat accent-3" id="p2-chip-build"><span class="x">&times;</span>NO BUILD</div>
+        <div class="chip-stat accent-4" id="p2-chip-config"><span class="x">&times;</span>NO CONFIG</div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       PHASE 3 — STEP CARDS (12-18s)
-       ═══════════════════════════════════════════════════════ -->
+  <!-- ═══ PHASE 3 — THREE RULES (10.5-27.0s) ═══ -->
   <div id="phase3" class="phase">
     <div class="phase-content">
       <div class="overline" id="p3-overline">The three rules</div>
-      <div class="step-list">
-        <div class="step-card accent-1" id="p3-card-1">
-          <div class="step-num">01</div>
-          <div class="step-body">
-            <div class="step-title">data-start + data-duration</div>
-            <div class="step-sub">Per-element timing</div>
-          </div>
+      <div id="p3-headline">Get <span class="num">these</span> right.</div>
+      <div id="p3-code" class="code-panel">
+        <div class="code-body">
+          <div class="code-line" id="cl-1"><span class="ln">1</span><span class="ct"><span class="tok-comment">&lt;!-- a clip with timing --&gt;</span></span></div>
+          <div class="code-line" id="cl-2"><span class="ln">2</span><span class="ct"><span class="tok-tag">&lt;div</span> <span class="tok-attr">data-start</span>=<span class="tok-str">"0"</span> <span class="tok-attr">data-duration</span>=<span class="tok-str">"3"</span></span></div>
+          <div class="code-line" id="cl-3"><span class="ln">3</span><span class="ct">&nbsp;&nbsp;&nbsp;&nbsp; <span class="tok-attr">class</span>=<span class="tok-str">"clip"</span><span class="tok-tag">&gt;</span><span class="tok-text">Hello</span><span class="tok-tag">&lt;/div&gt;</span></span></div>
+          <div class="code-line" id="cl-4"><span class="ln">4</span><span class="ct">&nbsp;</span></div>
+          <div class="code-line" id="cl-5"><span class="ln">5</span><span class="ct"><span class="tok-tag">&lt;script&gt;</span></span></div>
+          <div class="code-line" id="cl-6"><span class="ln">6</span><span class="ct">&nbsp;&nbsp;<span class="tok-keyword">window</span>.<span class="tok-fn">__timelines</span> = <span class="tok-keyword">window</span>.<span class="tok-fn">__timelines</span> || {};</span></div>
+          <div class="code-line" id="cl-7"><span class="ln">7</span><span class="ct">&nbsp;&nbsp;<span class="tok-keyword">window</span>.<span class="tok-fn">__timelines</span>[<span class="tok-str">"main"</span>] = gsap.timeline();</span></div>
+          <div class="code-line" id="cl-8"><span class="ln">8</span><span class="ct"><span class="tok-tag">&lt;/script&gt;</span></span></div>
         </div>
-        <div class="step-card accent-2" id="p3-card-2">
-          <div class="step-num">02</div>
-          <div class="step-body">
-            <div class="step-title">class="clip"</div>
-            <div class="step-sub">Visibility control</div>
-          </div>
-        </div>
-        <div class="step-card accent-3" id="p3-card-3">
-          <div class="step-num">03</div>
-          <div class="step-body">
-            <div class="step-title">Register the timeline</div>
-            <div class="step-sub">window.__timelines</div>
-          </div>
-        </div>
+      </div>
+      <div id="p3-rules">
+        <div class="rule-tag" id="rt-1"><span class="num">01</span>data-start</div>
+        <div class="rule-tag" id="rt-2"><span class="num">02</span>class="clip"</div>
+        <div class="rule-tag" id="rt-3"><span class="num">03</span>__timelines</div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       PHASE 4 — CTA / URL SLAM (18-24s)
-       ═══════════════════════════════════════════════════════ -->
+  <!-- ═══ PHASE 4 — PREVIEW / RENDER / DETERMINISTIC (27.0-38.5s) ═══ -->
   <div id="phase4" class="phase">
     <div class="phase-content">
-      <div class="overline" id="p4-overline">Build something</div>
-      <div id="p4-url">hyperframes.heygen.com</div>
-      <div id="p4-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+      <div class="overline" id="p4-overline">Then ship it</div>
+      <div id="p4-cmd-preview" class="cmd-pill">
+        <div class="cmd-label">// open in browser</div>
+        <div class="cmd-text">npx <span class="accent">hyperframes preview</span></div>
+      </div>
+      <div id="p4-cmd-render" class="cmd-pill accent-3">
+        <div class="cmd-label">// ship an MP4</div>
+        <div class="cmd-text">npx <span class="accent">hyperframes render</span> <span class="arrow">&rarr;</span> .mp4</div>
+      </div>
+      <div id="p4-determin">DETERMINISTIC.</div>
+      <div id="p4-chips">
+        <div class="determ-chip" id="p4-chip-1"><span class="x">&times;</span>RANDOMNESS</div>
+        <div class="determ-chip" id="p4-chip-2"><span class="x">&times;</span>CLOCKS</div>
+        <div class="determ-chip" id="p4-chip-3"><span class="x">&times;</span>NETWORK</div>
+      </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       NARRATION + SFX
-       Rules:        .claude/rules/audio-design.md
-       Cue catalog:  shared/audio/MANIFEST.md
-       Sync into this project (after you copy this template):
-         bash scripts/sync-video-sfx.sh videos/<slug> impact-slam spring-pop
-       Then uncomment the blocks below and tune the data-* values per scene.
-       ═══════════════════════════════════════════════════════ -->
-
-  <!--
-  Narration — single track, replaces this comment in real videos.
-  Operator wires the audio element after dropping audio/narration.wav.
-  Required attrs: id="narration" class="clip" data-start data-duration
-  data-track-index="2" data-volume="1".
-
-  Per-cue SFX — one element per beat. data-track-index 3+ for SFX; bump
-  per concurrent cue. data-volume per .claude/rules/audio-design.md
-  (hard cap 0.25 per single per-cue SFX).
-  -->
+  <!-- ═══ PHASE 5 — CTA (38.5-44s) ═══ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">Build something</div>
+      <div id="p5-url">hyperframes.heygen.com</div>
+      <div id="p5-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+    </div>
+  </div>
 
   <!-- Narration -->
   <audio id="narration"
          class="clip"
          src="audio/narration.wav"
          data-start="0"
-         data-duration="69.23"
+         data-duration="43.75"
          data-track-index="2"
          data-volume="1"></audio>
 
-  <!-- SFX — aligned to spoken-word landmarks. All on track 3 (no overlaps).
-       Volumes per .claude/rules/audio-design.md (hard cap 0.25). -->
-  <audio id="sfx-html-slam" class="clip" src="assets/sfx/impact-slam.mp3"      data-start="8.42"  data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
-  <audio id="sfx-whoosh-1"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="11.82" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-pill-1"    class="clip" src="assets/sfx/scale-slam.mp3"       data-start="14.40" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
-  <audio id="sfx-pill-2"    class="clip" src="assets/sfx/scale-slam.mp3"       data-start="17.40" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
-  <audio id="sfx-whoosh-2"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="30.17" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-step-1"    class="clip" src="assets/sfx/spring-pop.mp3"       data-start="32.80" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-step-2"    class="clip" src="assets/sfx/spring-pop.mp3"       data-start="42.40" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-step-3"    class="clip" src="assets/sfx/spring-pop.mp3"       data-start="50.90" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-whoosh-3"  class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="59.28" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+  <!-- SFX — aligned to spoken-word landmarks. data-volume per audio-design.md. -->
+  <audio id="sfx-slam-1"   class="clip" src="assets/sfx/scale-slam.mp3"       data-start="1.20"  data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-slam-2"   class="clip" src="assets/sfx/impact-slam.mp3"      data-start="1.90"  data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="2.85"  data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-term"     class="clip" src="assets/sfx/spring-pop.mp3"       data-start="5.40"  data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-chip-1"   class="clip" src="assets/sfx/pop.mp3"              data-start="8.04"  data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-chip-2"   class="clip" src="assets/sfx/pop.mp3"              data-start="9.65"  data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="10.40" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-code"     class="clip" src="assets/sfx/spring-pop.mp3"       data-start="11.60" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-rule-1"   class="clip" src="assets/sfx/pop.mp3"              data-start="13.66" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-rule-2"   class="clip" src="assets/sfx/pop.mp3"              data-start="18.96" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-rule-3"   class="clip" src="assets/sfx/pop.mp3"              data-start="22.97" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="27.00" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-cmd-1"    class="clip" src="assets/sfx/spring-pop.mp3"       data-start="27.74" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-cmd-2"    class="clip" src="assets/sfx/spring-pop.mp3"       data-start="30.96" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-determ"   class="clip" src="assets/sfx/impact-slam.mp3"      data-start="34.22" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-d-chip-1" class="clip" src="assets/sfx/pop.mp3"              data-start="35.04" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-d-chip-2" class="clip" src="assets/sfx/pop.mp3"              data-start="35.74" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-d-chip-3" class="clip" src="assets/sfx/pop.mp3"              data-start="37.20" data-duration="0.3" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="38.40" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-url"      class="clip" src="assets/sfx/scale-slam.mp3"       data-start="39.00" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-subscribe" class="clip" src="assets/sfx/spring-pop.mp3"      data-start="42.07" data-duration="0.4" data-track-index="3" data-volume="0.11"></audio>
 
-  <!-- Film-grain overlay — last child so it sits on top and tints
-       everything via blend mode -->
+  <!-- Film-grain overlay -->
   <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
@@ -588,9 +686,8 @@
 
 <script>
   // ─────────────────────────────────────────────────────
-  // Shape backdrop — deterministic seeded scatter of 14 generic
-  // geometric shapes (circle, rounded square, triangle).
-  // No Math.random / Date.now — uses an xmur3-style hash for determinism.
+  // Shape backdrop — deterministic seeded scatter, rearranges
+  // on each phase transition (paired with cinematic-whoosh).
   // ─────────────────────────────────────────────────────
   function seedHash(seed) {
     let h = 1779033703 ^ seed.length;
@@ -603,17 +700,14 @@
     h ^= h >>> 16;
     return (h >>> 0) / 4294967296;
   }
-  // Rejection-sample 14 shapes with a minimum center-to-center distance
-  // so they don't visually clump. Each retry mixes an attempt counter
-  // into the seed so the result stays deterministic. Falls back to the
-  // best-spaced candidate if a valid spot isn't found within MAX_TRIES
-  // (rare with these defaults).
-  function spawnShapes(seedPrefix, container) {
+
+  function placeShapes(seedPrefix) {
     const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
-    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
-    const minDist = 340, MAX_TRIES = 80;
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
     const placed = [];
     let attempt = 0;
+    const positions = [];
     for (let i = 0; i < count; i++) {
       let best = null, bestScore = -1;
       for (let t = 0; t < MAX_TRIES; t++) {
@@ -632,146 +726,276 @@
         if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
       }
       placed.push(best);
-      const img = document.createElement('img');
-      img.src = shapes[i % shapes.length];
-      img.style.cssText =
-        'left:' + (best.cx - best.size / 2) + 'px;' +
-        'top:' + (best.cy - best.size / 2) + 'px;' +
-        'width:' + best.size + 'px;' +
-        'height:' + best.size + 'px;';
-      container.appendChild(img);
-      // Hand the rotation to GSAP so the drift tween can layer rotation
-      // deltas on top of the base orientation.
-      gsap.set(img, { rotation: best.rot });
+      positions.push({
+        left: best.cx - best.size / 2,
+        top: best.cy - best.size / 2,
+        size: best.size,
+        rot: best.rot,
+        shape: shapes[i % shapes.length]
+      });
     }
+    return positions;
   }
 
-  // Subtle ambient drift — each shape gets a slow yoyo translate +
-  // rotation delta. Half-cycle duration is sampled in [T/10, T/5] so
-  // every shape goes through several yoyo cycles during the composition.
-  // Repeat count is finite (`Math.floor(T / dur) - 1`) so the
-  // deterministic capture engine can seek frames.
-  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
-    const imgs = container.querySelectorAll('img');
-    imgs.forEach((img, i) => {
-      const seed = seedPrefix + '-drift-' + i;
-      const dx = (seedHash(seed + '-dx') - 0.5) * 50;   // ±25px translate
-      const dy = (seedHash(seed + '-dy') - 0.5) * 50;
-      const dr = (seedHash(seed + '-dr') - 0.5) * 7;    // ±3.5° rotation delta
-      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
-      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
-      tl.to(img, {
-        x: dx, y: dy, rotation: '+=' + dr,
-        duration: dur, ease: 'sine.inOut',
-        yoyo: true, repeat: repeatCount
-      }, 0);
+  function spawnShapes(seedPrefix, container) {
+    const positions = placeShapes(seedPrefix);
+    positions.forEach((p) => {
+      const img = document.createElement('img');
+      img.src = p.shape;
+      img.style.cssText =
+        'left:' + p.left + 'px;' +
+        'top:' + p.top + 'px;' +
+        'width:' + p.size + 'px;' +
+        'height:' + p.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: p.rot });
     });
   }
 
-  spawnShapes('what-is-hyperframes', document.getElementById('shape-backdrop'));
+  function rearrangeShapes(tl, container, newSeedPrefix, atTime) {
+    const newPositions = placeShapes(newSeedPrefix);
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      if (i >= newPositions.length) return;
+      const p = newPositions[i];
+      tl.to(img, {
+        left: p.left + 'px',
+        top: p.top + 'px',
+        width: p.size + 'px',
+        height: p.size + 'px',
+        rotation: p.rot,
+        duration: 1.0,
+        ease: 'power2.inOut'
+      }, atTime);
+    });
+  }
+
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0,                          duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  const shapeContainer = document.getElementById('shape-backdrop');
+  spawnShapes('what-is-hf-p1', shapeContainer);
 
   window.__timelines = window.__timelines || {};
+  const TOTAL = 44;
   const tl = gsap.timeline({ paused: true });
-  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'what-is-hyperframes', 70.7);
 
-  // ─────────────────────────────────────────────────────
-  // Ambient: slow breath across full duration
-  // ─────────────────────────────────────────────────────
+  // Ambient breath
   tl.fromTo("#ambient",
     { opacity: 0.85, scale: 1.0 },
-    { opacity: 1.0, scale: 1.04, duration: 35.35, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
     0);
 
-  // Progress bar fills linearly across the composition (70.7s total)
+  // Progress bar
   tl.fromTo("#progress-fill",
     { width: 0 },
-    { width: 1080, duration: 70.7, ease: "none" },
+    { width: 1080, duration: TOTAL, ease: "none" },
     0);
 
-  // Top banner fade-in (one-shot, then static)
+  // Top banner fade-in
   tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
 
-  // ═══════════════════════════════════════════════════════
-  // PHASE 1 — Hero hook (0-12s) : entrances only
-  // Slam word "HTML." lands at narration t=8.42s; hero enters
-  // at 7.6s with a 0.8s back.out so the scale-up settles right
-  // when the word is spoken.
-  // ═══════════════════════════════════════════════════════
-  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
-  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.8);
-  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 7.6);
-  // Inline shake on the slam frame — 4 short ticks ±5px aligned to "HTML." at 8.42s
-  // EFFECT: shared/lib/effects/hero-slam-shake.js
-  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 8.42);
-  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 8.47);
-  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 8.52);
-  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 8.57);
-  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 9.5);
-
-  // ─── Transition phase1 → phase2 at 11.82s : blur + crossfade ───
-  // EFFECT: shared/lib/effects/phase-crossfade.js
-  const T1 = 11.82;
-  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
-  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
-  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
-  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
-  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
-  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+  // Hide all phase 2-5 children that animate so they don't peek through
+  tl.set(["#p2-overline","#p2-headline","#p2-terminal","#p2-chip-build","#p2-chip-config"], { opacity: 0 }, 0);
+  tl.set(["#p3-overline","#p3-headline","#p3-code","#rt-1","#rt-2","#rt-3"], { opacity: 0 }, 0);
+  tl.set(["#p4-overline","#p4-cmd-preview","#p4-cmd-render","#p4-determin","#p4-chip-1","#p4-chip-2","#p4-chip-3"], { opacity: 0 }, 0);
+  tl.set(["#p5-overline","#p5-url","#p5-subscribe"], { opacity: 0 }, 0);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 2 — Stat pill row (12-30s) : entrances only
-  // Pill-1 ("1 CLI") aligned to spoken "One" at 14.84s
-  // Pill-2 ("0 config") aligned to spoken "Zero" at 17.90s
+  // PHASE 1 — Hook (0-3.0s)
+  // "What is HyperFrames? Video, with HTML."
+  // word landmarks: HyperFrames? @0.38, Video, @1.22, HTML. @1.90
   // ═══════════════════════════════════════════════════════
-  const P2 = 12.22;
-  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
-  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
-  // EFFECT: shared/lib/effects/stat-pill-pop.js
-  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 2.18);
-  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 5.18);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.10);
+  tl.fromTo("#p1-slam-1",
+    { scale: 0.7, opacity: 0, rotationX: 30, transformOrigin: "50% 50%" },
+    { scale: 1, opacity: 1, rotationX: 0, duration: 0.55, ease: "back.out(1.6)" },
+    1.05);
+  // Inline shake on "VIDEO." slam
+  tl.to("#p1-slam-1", { x: 6,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.22);
+  tl.to("#p1-slam-1", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.27);
+  tl.to("#p1-slam-1", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.32);
+  tl.fromTo("#p1-slam-2",
+    { scale: 0.7, opacity: 0, rotationX: -30, transformOrigin: "50% 50%" },
+    { scale: 1, opacity: 1, rotationX: 0, duration: 0.55, ease: "back.out(1.6)" },
+    1.78);
+  tl.to("#p1-slam-2", { x: 6,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.92);
+  tl.to("#p1-slam-2", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.97);
+  tl.to("#p1-slam-2", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.02);
 
-  // ─── Transition phase2 → phase3 at 30.17s ───
-  const T2 = 30.17;
-  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
-  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
-  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
-  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
-  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
-  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
-
-  // ═══════════════════════════════════════════════════════
-  // PHASE 3 — Step cards (30-59s) : entrances only
-  // Cards aligned to spoken "Number 1.", "Number 2.", "Number 3."
-  // (33.39s, 43.02s, 51.49s respectively).
-  // immediateRender: false — without it GSAP applies the from-state
-  // at t=0 and the cards flash invisible during phase 1/2 scrubs.
-  // ═══════════════════════════════════════════════════════
-  const P3 = 30.57;
-  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P3 + 0.0);
-  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)", immediateRender: false }, P3 + 2.23);
-  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)", immediateRender: false }, P3 + 11.83);
-  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)", immediateRender: false }, P3 + 20.33);
-
-  // ─── Transition phase3 → phase4 at 59.28s ───
-  const T3 = 59.28;
-  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
-  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
-  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
-  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
-  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
-  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+  // ─── T1: Phase1 → Phase2 at 2.85s ───
+  const T1 = 2.85;
+  rearrangeShapes(tl, shapeContainer, 'what-is-hf-p2', T1 - 0.4);
+  crossfadeScenes(tl, "#phase1", "#phase2", T1);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 4 — CTA URL slam (59-69s) : entrances only
-  // URL aligned to spoken "Docs are at hyperframes" at 62.22s
-  // Subscribe pill aligned to spoken "Subscribe" at 65.04s
+  // PHASE 2 — Stack + Install (3.0-10.6s)
+  // word landmarks: Just @3.08, GSAP. @4.59, To start @6.10,
+  //                 init. @7.58, No build @8.05, No config @9.66
   // ═══════════════════════════════════════════════════════
-  const P4 = 59.68;
-  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P4 + 0.0);
-  tl.from("#p4-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out", immediateRender: false }, P4 + 2.02);
-  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P4 + 4.82);
+  const P2 = 3.20;
+  tl.fromTo("#p2-overline",
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P2);
+  tl.fromTo("#p2-headline",
+    { opacity: 0, y: 24 },
+    { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.2);
 
-  // Phase 4 stays fully visible to the end — composition naturally ends at 70.7s
+  // Terminal panel — 3D reveal at "GSAP." landmark (around 5.4s)
+  // EFFECT: 3D flip-in (rotationY + z + opacity)
+  tl.fromTo("#p2-terminal",
+    { rotationY: -45, rotationX: 12, z: -300, opacity: 0, transformOrigin: "50% 50%" },
+    { rotationY: 0, rotationX: 0, z: 0, opacity: 1, duration: 0.95, ease: "power3.out" },
+    5.40);
+
+  // "NO BUILD" chip @ 8.04 (spoken "No build step")
+  tl.fromTo("#p2-chip-build",
+    { scale: 0.85, opacity: 0, rotationY: -25 },
+    { scale: 1, opacity: 1, rotationY: 0, duration: 0.5, ease: "back.out(1.6)" },
+    8.04);
+  // "NO CONFIG" chip @ 9.65 (spoken "No config")
+  tl.fromTo("#p2-chip-config",
+    { scale: 0.85, opacity: 0, rotationY: 25 },
+    { scale: 1, opacity: 1, rotationY: 0, duration: 0.5, ease: "back.out(1.6)" },
+    9.65);
+
+  // ─── T2: Phase2 → Phase3 at 10.40s ───
+  const T2 = 10.40;
+  rearrangeShapes(tl, shapeContainer, 'what-is-hf-p3', T2 - 0.4);
+  crossfadeScenes(tl, "#phase2", "#phase3", T2);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Three rules (10.5-27.0s)
+  // word landmarks: Three rules @10.32, Number one @12.29,
+  //                 data-start @13.66, Number two @17.88,
+  //                 class equals clip @18.96, Number three @21.87,
+  //                 Register @22.97, timelines. @26.83
+  // ═══════════════════════════════════════════════════════
+  const P3 = 10.80;
+  tl.fromTo("#p3-overline",
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P3);
+  tl.fromTo("#p3-headline",
+    { opacity: 0, y: 20 },
+    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.2);
+
+  // Code panel 3D reveal
+  tl.fromTo("#p3-code",
+    { rotationY: 35, rotationX: 10, z: -350, opacity: 0, transformOrigin: "50% 50%" },
+    { rotationY: 0, rotationX: 0, z: 0, opacity: 1, duration: 1.0, ease: "power3.out" },
+    11.60);
+
+  // Rule tags fade in together with code panel (still neutral state)
+  tl.to(["#rt-1","#rt-2","#rt-3"], { opacity: 1, duration: 0.6, ease: "power2.out", stagger: 0.12 }, 12.20);
+
+  // Rule 1 — data-start @ 13.66
+  tl.add(() => {
+    document.getElementById('cl-2').classList.add('rule-active');
+    document.getElementById('cl-3').classList.add('rule-active');
+    document.getElementById('rt-1').classList.add('lit-1');
+  }, 13.55);
+  tl.add(() => {
+    document.getElementById('cl-2').classList.remove('rule-active');
+    document.getElementById('cl-3').classList.remove('rule-active');
+  }, 17.40);
+
+  // Rule 2 — class="clip" @ 18.96
+  tl.add(() => {
+    document.getElementById('cl-3').classList.add('rule-active', 'r2');
+    document.getElementById('rt-2').classList.add('lit-2');
+  }, 18.85);
+  tl.add(() => {
+    document.getElementById('cl-3').classList.remove('rule-active', 'r2');
+  }, 21.40);
+
+  // Rule 3 — window.__timelines @ 22.97
+  tl.add(() => {
+    document.getElementById('cl-6').classList.add('rule-active', 'r3');
+    document.getElementById('cl-7').classList.add('rule-active', 'r3');
+    document.getElementById('rt-3').classList.add('lit-3');
+  }, 22.85);
+
+  // ─── T3: Phase3 → Phase4 at 27.00s ───
+  const T3 = 27.00;
+  rearrangeShapes(tl, shapeContainer, 'what-is-hf-p4', T3 - 0.4);
+  crossfadeScenes(tl, "#phase3", "#phase4", T3);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Preview / Render / Deterministic (27.0-38.5s)
+  // word landmarks: Then @27.74, preview @28.93, browser. @29.97,
+  //                 npx (render) @30.96, MP4. @32.68,
+  //                 Deterministic. @34.22, randomness @35.21,
+  //                 clocks @35.88, network @37.34
+  // ═══════════════════════════════════════════════════════
+  const P4 = 27.30;
+  tl.fromTo("#p4-overline",
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P4);
+
+  // Preview pill — 3D reveal at "Then npx hyperframes preview" @ 27.74
+  tl.fromTo("#p4-cmd-preview",
+    { rotationY: -45, rotationX: 8, z: -300, opacity: 0, transformOrigin: "50% 50%" },
+    { rotationY: 0, rotationX: 0, z: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
+    27.74);
+
+  // Render pill — 3D reveal at "npx hyperframes render" @ 30.96
+  tl.fromTo("#p4-cmd-render",
+    { rotationY: 45, rotationX: 8, z: -300, opacity: 0, transformOrigin: "50% 50%" },
+    { rotationY: 0, rotationX: 0, z: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
+    30.96);
+
+  // "DETERMINISTIC." slam @ 34.22
+  tl.fromTo("#p4-determin",
+    { scale: 0.7, opacity: 0, rotationX: 30 },
+    { scale: 1, opacity: 1, rotationX: 0, duration: 0.55, ease: "back.out(1.7)" },
+    34.10);
+  tl.to("#p4-determin", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 34.32);
+  tl.to("#p4-determin", { x: -4, duration: 0.04, ease: "none", overwrite: "auto" }, 34.37);
+  tl.to("#p4-determin", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 34.42);
+
+  // Three "NO X" chips — at the spoken word for each
+  tl.fromTo("#p4-chip-1",
+    { scale: 0.85, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+    35.04);
+  tl.fromTo("#p4-chip-2",
+    { scale: 0.85, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+    35.74);
+  tl.fromTo("#p4-chip-3",
+    { scale: 0.85, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" },
+    37.20);
+
+  // ─── T4: Phase4 → Phase5 at 38.40s ───
+  const T4 = 38.40;
+  rearrangeShapes(tl, shapeContainer, 'what-is-hf-p5', T4 - 0.4);
+  crossfadeScenes(tl, "#phase4", "#phase5", T4);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — CTA (38.5-44s)
+  // word landmarks: Docs @38.96, Subscribe @42.07
+  // ═══════════════════════════════════════════════════════
+  const P5 = 38.70;
+  tl.fromTo("#p5-overline",
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, P5);
+
+  tl.fromTo("#p5-url",
+    { rotationX: 25, scale: 0.85, opacity: 0, z: -200 },
+    { rotationX: 0, scale: 1, opacity: 1, z: 0, duration: 0.7, ease: "expo.out" },
+    39.00);
+
+  tl.fromTo("#p5-subscribe",
+    { y: 24, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+    42.07);
 
   window.__timelines["main"] = tl;
 </script>

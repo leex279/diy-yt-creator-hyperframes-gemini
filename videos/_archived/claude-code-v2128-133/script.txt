@@ -1,0 +1,91 @@
+[SCENE: stats-opener]
+Six Claude Code releases shipped this week. Here are the receipts.
+
+Twenty eight new features. Seventy eight bug fixes. Four improvements.
+
+The biggest pass — M C P. Four stability wins land together.
+
+Tool list reconnect floods are gone. Re-announced tools are now summarized by server prefix.
+
+Servers that connect but fail to fetch tools now retry once and show fetch failed status in slash mcp.
+
+Stdio servers writing non-protocol data to standard out used to leak ten gigabytes of RAM. Patched.
+
+And M C P OAuth now respects your proxy and mutual T L S settings across the full discovery and token refresh flow.
+
+[SCENE: feature-cards]
+Six headline changes you can use today.
+
+The new worktree dot baseRef setting picks whether new worktrees branch from origin, or from your local HEAD. Set it to head if you want unpushed commits to follow you.
+
+The dash dash plugin URL flag fetches a plugin zip archive from any URL for the current session. Try a plugin in seconds, no install.
+
+Hooks now receive the active effort level via the CLAUDE EFFORT environment variable. Adapt your logging or skip expensive work when you are on low effort.
+
+Bash tool subprocesses now get CLAUDE CODE SESSION ID matching the hook session ID. Tool level session tracing finally works.
+
+Set CLAUDE CODE DISABLE ALTERNATE SCREEN to one and your conversation stays in the terminal's native scrollback.
+
+And subagents finally discover project, user, and plugin skills through the Skill tool.
+
+[SCENE: detail-headless]
+Hooks and power user APIs.
+
+The CLAUDE EFFORT environment variable now flows into hooks and Bash subprocesses. Your CI hook can react to high, medium, or low effort runs.
+
+CLAUDE CODE SESSION ID matches the hook session ID. Every Bash invocation can now write to a session scoped log.
+
+The worktree dot baseRef setting flips the default base branch source. Origin slash default by default, or local HEAD if you want unpushed commits in your worktrees.
+
+And on Linux and WSL, sandbox dot bwrapPath and sandbox dot socatPath let admins point at custom bubblewrap and socat binaries.
+
+[SCENE: detail-performance]
+Auth, OAuth, and sessions.
+
+A refresh token race could wipe shared credentials when parallel sessions all refreshed at once. Every session would dead end at four oh one. Patched.
+
+A separate OAuth refresh race after wake from sleep was logging out every running session. Also fixed.
+
+The one hour prompt cache T T L was being silently downgraded to five minutes. Now honored.
+
+And changing the slash effort level in one session no longer leaks into your other concurrent sessions.
+
+[SCENE: detail-plugin-system]
+Plugins, M C P, and skills.
+
+Dash dash plugin URL fetches a plugin zip archive directly from any URL. Session scoped install, zero footprint.
+
+Subagents now discover project, user, and plugin skills through the Skill tool. A regression that broke subagent skill use is gone.
+
+M C P reconnects no longer flood the chat with full tool name lists. Re-announced tools are summarized by server prefix.
+
+And stdio M C P servers that wrote non-protocol data to standard out were leaking ten gigabytes of RAM in worst case sessions. Now fixed.
+
+[SCENE: detail-terminal-ui]
+Terminal U I and editor integration.
+
+Set CLAUDE CODE DISABLE ALTERNATE SCREEN to one and the entire conversation stays in your native scrollback instead of swapping into the alternate screen.
+
+Mouse wheel scrolling speed in Cursor and V S Code one point nine two through one point one zero four. Upstream xterm dot js bug. Patched.
+
+Fullscreen mode going blank after laptop sleep, wake, or a Control Z then fg cycle. Fixed.
+
+And slash terminal setup no longer shows a contradictory error in Windows Terminal. Shift Enter is natively supported there.
+
+[SCENE: detail-network]
+Network, proxy, and A P I compatibility.
+
+Your proxy and mutual T L S settings are now honored across the full M C P OAuth flow. Discovery, dynamic client registration, token exchange, and token refresh.
+
+Bedrock and Vertex four hundred errors when ENABLE PROMPT CACHING ONE H is set. Patched.
+
+The V S Code extension activation on Windows was failing with a hardcoded build path. Fixed in version one three one.
+
+And the Mantle endpoint authentication failure with a missing x A P I key header. Also resolved.
+
+[SCENE: cta]
+To pull every change in this video, run claude update.
+
+Drop a like, subscribe, and tell me which one you needed most.
+
+Which patch made your day. The hooks effort variable, the subagent skill fix, or the ten gigabyte M C P memory leak?

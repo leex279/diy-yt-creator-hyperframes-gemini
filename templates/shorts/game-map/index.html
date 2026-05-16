@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Game-Map Shorts Template — Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Full design system
+     in DESIGN.md. The "world" is much larger than the
+     viewport: a hub + 6 hex-arranged spokes inside a
+     4080x4518 camera box. A GSAP-driven camera transform
+     pans + scales between sections instead of phase
+     mutex / fade transitions.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOKENS — palette + spacing + type. Reuses Anthropic dark visual style;
+     swap `tokens/anthropic-dark.css` content for a different palette.
+     TOKENS: shared/lib/tokens/anthropic-dark.css */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+
+    /* World geometry — every section position is computed from these
+       so changing the radius re-flows the whole map. */
+    --world-w: 4080px;
+    --world-h: 4518px;
+    --section-w: 1080px;
+    --section-h: 1920px;
+
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+
+  /* Ambient warm wash — viewport-fixed (NOT inside the camera so it
+     stays as a constant glow regardless of camera move).
+     COMPONENT: shared/lib/components/ambient-radial/ */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ──────────────────────────────────────────────────
+     CAMERA — the giant world canvas. Transform-origin 0 0
+     so translate(x,y) scale(s) maps a camera-local point
+     (Lx, Ly) to screen (Lx*s + tx, Ly*s + ty). To put a
+     camera-local point at viewport center (540, 960):
+       tx = 540 - Lx*s
+       ty = 960 - Ly*s
+     All section coordinates and the camera transforms in
+     the script tag are derived from this rule.
+     ────────────────────────────────────────────────── */
+  #camera {
+    position: absolute;
+    width: var(--world-w);
+    height: var(--world-h);
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    z-index: 1;
+    /* Initial state — map view (scale 0.26 centered on world middle) — is
+       set by `tl.set('#camera', { x:10, y:373, scale:0.26 }, 0)` in the
+       script tag. NEVER add a `transform:` here; GSAP's x/y/scale and CSS
+       transforms conflict (HyperFrames lint flags it). */
+  }
+
+  /* World fill — subtle vignette inside the camera. Drawn behind sections
+     so the area between sections doesn't read as flat black. */
+  #world-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(233,116,88,0.04), transparent 55%),
+      radial-gradient(circle at 50% 50%, #0E1320 0%, #0B0F18 70%);
+    pointer-events: none;
+  }
+
+  /* Shape backdrop — populated per-section by spawnShapesPerSection()
+     in the script. Each section has its own scattered shape group so the
+     map shows shapes everywhere; section view shows that section's shapes.
+     Anchored on its parent .section so positions are local to the section. */
+  .section-shapes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .section-shapes img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* SVG connection lines — drawn between hub center and each spoke center
+     in camera-local coordinates. Each <line> uses pathLength=1 + a 1-unit
+     dasharray + dashoffset 1, then GSAP animates dashoffset to 0 to draw
+     the line in. Lines fade slightly once the dive begins so they don't
+     compete with section content at full zoom. */
+  #connections {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #connections line {
+    stroke: rgba(245, 241, 235, 0.18);
+    stroke-width: 6;
+    stroke-linecap: round;
+    fill: none;
+  }
+
+  /* ──────────────────────────────────────────────────
+     SECTIONS — 7 absolute-positioned tiles inside #camera.
+     Each is 1080x1920. Coordinates pre-computed from a
+     hex layout with R=1500 around hub at (2040, 2259):
+       HUB    centre (2040, 2259)  → top:1299  left:1500
+       S1 NW  centre (1290,  960)  → top:   0  left: 750
+       S2 NE  centre (2790,  960)  → top:   0  left:2250
+       S3  E  centre (3540, 2259)  → top:1299  left:3000
+       S4 SE  centre (2790, 3558)  → top:2598  left:2250
+       S5 SW  centre (1290, 3558)  → top:2598  left: 750
+       S6  W  centre ( 540, 2259)  → top:1299  left:   0
+     ────────────────────────────────────────────────── */
+  .section {
+    position: absolute;
+    width: var(--section-w);
+    height: var(--section-h);
+    overflow: hidden;
+  }
+  #sec-hub { top:1299px; left:1500px; }
+  #sec-1   { top:   0px; left: 750px; }
+  #sec-2   { top:   0px; left:2250px; }
+  #sec-3   { top:1299px; left:3000px; }
+  #sec-4   { top:2598px; left:2250px; }
+  #sec-5   { top:2598px; left: 750px; }
+  #sec-6   { top:1299px; left:   0px; }
+
+  /* Per-section ground tile — gives each section a soft accent wash that
+     reads as "you're inside this room" at section zoom and as a coloured
+     map node at zoomed-out view. */
+  .section-tile {
+    position: absolute;
+    inset: 60px;
+    border-radius: 60px;
+    pointer-events: none;
+  }
+  #sec-hub .section-tile { background: radial-gradient(circle at 50% 40%, rgba(233,116,88,0.16), transparent 60%); }
+  #sec-1   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(167,139,250,0.14), transparent 60%); }
+  #sec-2   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(107,154,239,0.14), transparent 60%); }
+  #sec-3   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(125,211,166,0.14), transparent 60%); }
+  #sec-4   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(167,139,250,0.14), transparent 60%); }
+  #sec-5   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(107,154,239,0.14), transparent 60%); }
+  #sec-6   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(125,211,166,0.14), transparent 60%); }
+
+  /* Section node badge — visible at all camera depths. Acts as the readable
+     anchor in map view (where the full content is too small to read) and as
+     the "phase 03" chip at section zoom. Centered horizontally near the top
+     of each section so the connecting lines, which terminate at the section
+     centre, visually "lead into" the badge. */
+  .section-node {
+    position: absolute;
+    left: 390px;
+    top: 280px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 4px solid;
+    background: rgba(11,15,24,0.78);
+    backdrop-filter: blur(6px);
+  }
+  .section-node .node-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 0.9;
+    letter-spacing: -3px;
+  }
+  .section-node .node-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  /* Per-section node accent. The big badge for HUB and the colour rotation
+     for spokes (purple / blue / green / purple / blue / green). */
+  #sec-hub .section-node {
+    width: 380px; height: 380px;
+    left: 350px; top: 240px;
+    border-color: var(--orange);
+    box-shadow: 0 0 80px rgba(233,116,88,0.45), inset 0 0 60px rgba(233,116,88,0.20);
+  }
+  #sec-hub .section-node .node-num { color: var(--orange); font-size: 130px; text-shadow: 0 0 40px rgba(233,116,88,0.6); }
+  #sec-hub .section-node .node-label { color: var(--orange); }
+
+  #sec-1 .section-node, #sec-4 .section-node { border-color: var(--purple); box-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  #sec-1 .section-node .node-num, #sec-4 .section-node .node-num { color: var(--purple); }
+
+  #sec-2 .section-node, #sec-5 .section-node { border-color: var(--blue); box-shadow: 0 0 60px rgba(107,154,239,0.40); }
+  #sec-2 .section-node .node-num, #sec-5 .section-node .node-num { color: var(--blue); }
+
+  #sec-3 .section-node, #sec-6 .section-node { border-color: var(--green); box-shadow: 0 0 60px rgba(125,211,166,0.40); }
+  #sec-3 .section-node .node-num, #sec-6 .section-node .node-num { color: var(--green); }
+
+  /* "Visited" check — small green tick that appears on a node after the
+     camera has visited it. Used in the final completion screen so the map
+     reads as a finished journey when the camera pulls back at the end.
+     Sits inside the badge (NOT overlapping the ring) so the contrast
+     stack is just green-on-dark — passes WCAG AA without depending on
+     whatever happens to be behind the badge's outer edge. */
+  .node-check {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #0B0F18;
+    color: var(--green);
+    border: 3px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 1;
+    box-shadow: 0 0 14px rgba(125,211,166,0.55);
+    opacity: 0;
+  }
+
+  /* Section content — the "rich" content visible only at section zoom.
+     Fades in when the camera arrives, fades out before the camera leaves.
+     Sits below the badge with the standard padding rhythm. */
+  .section-content {
+    position: absolute;
+    top: 620px;
+    left: 60px;
+    width: 960px;
+    bottom: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 920px;
+  }
+  .body {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 880px;
+  }
+  .accent-pill {
+    margin-top: 12px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  /* Hub overline + accent variants (one accent per section per the
+     anthropic-dark accent rotation rule). */
+  #sec-hub .overline { color: var(--orange); }
+  #sec-1 .overline, #sec-4 .overline { color: var(--purple); }
+  #sec-2 .overline, #sec-5 .overline { color: var(--blue); }
+  #sec-3 .overline, #sec-6 .overline { color: var(--green); }
+
+  /* Hub content lays out a true scroll-stop hero with a slam word — same
+     pattern as the anthropic template's phase 1 but framed by the larger
+     hub badge above it. */
+  #sec-hub .section-content {
+    top: 700px;
+    gap: 24px;
+  }
+  #sec-hub .hero-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     VIEWPORT-FIXED CHROME — sits above #camera, never moves.
+     The top banner and progress bar must stay anchored to
+     the viewport regardless of camera scale / position so
+     they read as constants throughout the journey.
+     ────────────────────────────────────────────────── */
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* COMPONENT: shared/lib/components/progress-bar/ */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* Map-overlay heading — only visible during the establishing shot and
+     the final completion screen. Sits in the viewport's top safe zone
+     (just under the banner) so it reads independently of camera state. */
+  #map-overlay {
+    position: absolute;
+    top: 220px;
+    left: 60px;
+    width: 960px;
+    z-index: 9;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #map-overlay .map-overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+  #map-overlay .map-headline {
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 88px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--text);
+  }
+  #map-overlay .map-sub {
+    margin-top: 16px;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 1.25;
+    color: var(--text-dim);
+  }
+
+  /* Final-frame CTA pill — sits at viewport bottom during the completion
+     screen. Subordinate to the map (per shorts-thumbnail-frames rule
+     the topic must dominate, the CTA is small). */
+  #final-cta {
+    position: absolute;
+    bottom: 140px;
+    left: 0;
+    width: 1080px;
+    z-index: 9;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #final-cta .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 40px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #final-cta .cta-pill .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 52px;
+    line-height: 0.7;
+  }
+
+  /* Film-grain overlay — sits above EVERYTHING so it tints the whole stack
+     regardless of camera state. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="38"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient wash — viewport-fixed (not inside camera). -->
+  <div id="ambient"></div>
+
+  <!-- Camera — the transformed wrapper. All section content lives inside. -->
+  <div id="camera">
+    <div id="world-bg"></div>
+
+    <!-- Connection lines (camera-local coordinates).
+         Hub centre is (2040, 2259); each line terminates at the spoke centre. -->
+    <svg id="connections" viewBox="0 0 4080 4518" preserveAspectRatio="none">
+      <line id="line-hub-1" x1="2040" y1="2259" x2="1290" y2="960"  pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-2" x1="2040" y1="2259" x2="2790" y2="960"  pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-3" x1="2040" y1="2259" x2="3540" y2="2259" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-4" x1="2040" y1="2259" x2="2790" y2="3558" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-5" x1="2040" y1="2259" x2="1290" y2="3558" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-6" x1="2040" y1="2259" x2=" 540" y2="2259" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+    </svg>
+
+    <!-- HUB — section 0, the start node. Hero hook lives here. -->
+    <div id="sec-hub" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">00</div>
+        <div class="node-label">START</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="hub-content">
+        <div class="overline">The Game Map</div>
+        <div class="hero-slam" id="hub-slam">6 THINGS</div>
+        <div class="accent-pill">in 30 seconds</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 1 — top-left -->
+    <div id="sec-1" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">01</div>
+        <div class="node-label">First</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s1-content">
+        <div class="overline">Discovery</div>
+        <div class="headline">First key point lands here.</div>
+        <div class="body">Replace this body line with the receipt that justifies the headline. Two short sentences max — narration carries the rest.</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 2 — top-right -->
+    <div id="sec-2" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">02</div>
+        <div class="node-label">Second</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s2-content">
+        <div class="overline">Mechanism</div>
+        <div class="headline">Second point — what it actually does.</div>
+        <div class="body">Pair with a stat or a verbatim quote from the source. Avoid abstract phrasing.</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 3 — right (chapter break) -->
+    <div id="sec-3" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">03</div>
+        <div class="node-label">Third</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s3-content">
+        <div class="overline">Pivot</div>
+        <div class="headline">Third point — the surprise turn.</div>
+        <div class="body">Use this slot for the contrarian beat — the moment narration says "but here is what nobody talks about". The map zooms out to reach this node, so the visual drum hit is built in.</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 4 — bottom-right -->
+    <div id="sec-4" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">04</div>
+        <div class="node-label">Fourth</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s4-content">
+        <div class="overline">Detail</div>
+        <div class="headline">Fourth point — drill into the receipt.</div>
+        <div class="body">Specific numbers, dates, or a one-line code sample read well here.</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 5 — bottom-left -->
+    <div id="sec-5" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">05</div>
+        <div class="node-label">Fifth</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s5-content">
+        <div class="overline">Implication</div>
+        <div class="headline">Fifth point — what it means for the viewer.</div>
+        <div class="body">Translate the receipt into a "you" sentence — what changes for the person watching.</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 6 — left (chapter break — final stop) -->
+    <div id="sec-6" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">06</div>
+        <div class="node-label">Sixth</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s6-content">
+        <div class="overline">Close</div>
+        <div class="headline">Sixth point — the loop-closing receipt.</div>
+        <div class="body">Mirror the hook here so the loop reads as resolved before the camera pulls back.</div>
+      </div>
+    </div>
+  </div>
+  <!-- /#camera -->
+
+  <!-- Persistent top banner. Anthropic wordmark from shared/logos/. -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Map-view overlay — visible during the establishing shot AND the
+       final completion screen. The same element is reused so the loop
+       (final frame becomes the next opening frame) stays consistent. -->
+  <div id="map-overlay">
+    <div class="map-overline">The Game Map</div>
+    <div class="map-headline">Six things,<br/>in 30 seconds.</div>
+    <div class="map-sub" id="map-overlay-sub">Tap → to start</div>
+  </div>
+
+  <!-- Final-frame CTA pill — visible only on the completion screen.
+       MANDATORY: pair the pill with a debate-sparking CTA question per
+       .claude/rules/engagement-cta.md. The question must match the final spoken
+       line of script.txt AND the engagement question in youtube-description.md. -->
+  <div id="final-cta">
+    <div class="cta-pill">Follow for more<span class="arrow">→</span></div>
+    <div id="cta-question"
+         style="margin-top: 24px;
+                font-family: var(--sans, system-ui); font-weight: 800; font-size: 48px;
+                line-height: 1.12; letter-spacing: -1px; color: var(--accent, #ffd166);
+                text-align: center; max-width: 920px;">
+      REPLACE: your debate question?
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX
+       Rules:        .claude/rules/audio-design.md
+       Cue catalog:  shared/audio/MANIFEST.md
+       Sync into this project (after you copy this template):
+         bash scripts/sync-video-sfx.sh videos/<slug> cinematic-whoosh impact-slam scale-slam pop
+       Then uncomment the blocks below and tune the data-* values per scene.
+
+       The defaults below cue every camera move with a cinematic-whoosh.
+       This is intentional for the game-map metaphor: each move is a
+       physical journey beat, and the audio grounds it. Direct pans get
+       a softer whoosh (0.08); chapter zoom-out-in moves get the standard
+       0.11; the dive-in and final pull-back layer impact-slam / scale-slam.
+       ═══════════════════════════════════════════════════════ -->
+
+  <!--
+  Narration — single track, replaces this comment in real videos.
+
+    audio id="narration"
+           class="clip"
+           src="audio/narration.wav"
+           data-start="0"
+           data-duration="0"
+           data-track-index="2"
+           data-volume="1"
+
+  SFX — cued to the camera-move timestamps in the script tag. Track 3 is the
+  whoosh row; track 4 layers the impact / scale-slam during dive + pull-back.
+  ALL whoosh timestamps below are the camera-tween START — keeps the audio
+  impact aligned to the visible motion start (per audio-design.md
+  "SFX must be aligned to their visual triggers").
+
+    audio id="sfx-dive-whoosh"   class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="2.50" data-duration="0.84" data-track-index="3" data-volume="0.13"
+    audio id="sfx-dive-impact"   class="clip" src="assets/sfx/impact-slam.mp3"
+           data-start="2.85" data-duration="0.50" data-track-index="4" data-volume="0.15"
+
+    audio id="sfx-pan-1"         class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="7.50" data-duration="0.50" data-track-index="3" data-volume="0.08"
+    audio id="sfx-pan-2"         class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="12.00" data-duration="0.50" data-track-index="3" data-volume="0.08"
+
+    audio id="sfx-chapter-1"     class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="16.50" data-duration="1.40" data-track-index="3" data-volume="0.13"
+
+    audio id="sfx-pan-4"         class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="22.00" data-duration="0.50" data-track-index="3" data-volume="0.08"
+    audio id="sfx-pan-5"         class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="26.50" data-duration="0.50" data-track-index="3" data-volume="0.08"
+    audio id="sfx-pan-6"         class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="31.00" data-duration="0.50" data-track-index="3" data-volume="0.08"
+
+    audio id="sfx-pullback"      class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="34.50" data-duration="1.40" data-track-index="3" data-volume="0.13"
+    audio id="sfx-completion"    class="clip" src="assets/sfx/scale-slam.mp3"
+           data-start="35.80" data-duration="0.60" data-track-index="4" data-volume="0.13"
+  -->
+
+  <!-- Film-grain overlay — last child so it sits on top and tints everything via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Deterministic hash — same xmur3-style PRNG as the Anthropic template
+  // so shape scatter is reproducible across renders.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // Per-section shape scatter — each .section-shapes container gets its own
+  // 8-shape distribution, keyed by the section id so HUB and S1..S6 each have
+  // a stable but distinct pattern. Rejection-sampled for spacing.
+  function spawnShapesPerSection(seedPrefix, container, count) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const w = 1080, h = 1920, minSize = 220, sizeRange = 240;
+    const minDist = 380, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:'  + (best.cy - best.size / 2) + 'px;' +
+        'width:'  + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Spawn shapes inside each section. Per-section count is modest (8) so the
+  // 7-section total of 56 shapes still feels like ambient texture rather than
+  // a busy field. Each section's seed includes its id so the patterns differ.
+  ['hub','1','2','3','4','5','6'].forEach((sid) => {
+    const el = document.querySelector('#sec-' + sid + ' .section-shapes');
+    if (el) spawnShapesPerSection('game-map-' + sid, el, 8);
+  });
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─────────────────────────────────────────────────────
+  // Initial state — every section's content hidden, every node check
+  // hidden, all connection lines un-drawn. Camera starts on the map view.
+  // ─────────────────────────────────────────────────────
+  tl.set('#camera', { x: 10, y: 373, scale: 0.26 }, 0);
+  tl.set('.section-content', { opacity: 0 }, 0);
+  tl.set('.node-check', { opacity: 0, scale: 0.6 }, 0);
+  tl.set('#map-overlay', { opacity: 0 }, 0);
+  tl.set('#final-cta', { opacity: 0 }, 0);
+
+  // Top banner fade-in (one-shot, then static)
+  tl.from('#top-banner', { y: -20, opacity: 0, duration: 0.6, ease: 'power2.out' }, 0.2);
+
+  // Progress bar fills linearly across the composition (38s total)
+  tl.fromTo('#progress-fill',
+    { width: 0 },
+    { width: 1080, duration: 38, ease: 'none' },
+    0);
+
+  // ═══════════════════════════════════════════════════════
+  // ESTABLISHING SHOT (0 - 2.5s)
+  // Map view holds; connection lines draw in sequentially so the viewer
+  // sees the structure of the journey. Map-overlay headline fades in.
+  // ═══════════════════════════════════════════════════════
+  tl.to('#map-overlay', { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
+  // Lines draw in 0.3s apart starting at t=0.6
+  ['#line-hub-1','#line-hub-2','#line-hub-3','#line-hub-4','#line-hub-5','#line-hub-6']
+    .forEach((sel, i) => {
+      tl.to(sel, { strokeDashoffset: 0, duration: 0.5, ease: 'power2.inOut' }, 0.6 + i * 0.25);
+    });
+
+  // ═══════════════════════════════════════════════════════
+  // CAMERA MOVES — pre-computed transforms.
+  // Each entry: { id, x, y, scale } where (x,y) is the translate applied
+  // to #camera so the section centre lands at viewport centre (540, 960):
+  //   tx = 540 - sectionLocalCx * scale
+  //   ty = 960 - sectionLocalCy * scale
+  // At scale 1, these collapse to (-cx + 540, -cy + 960).
+  // ═══════════════════════════════════════════════════════
+  const VIEWS = {
+    map: { x:    10, y:   373, scale: 0.26 },
+    hub: { x: -1500, y: -1299, scale: 1.00 },
+    s1:  { x:  -750, y:     0, scale: 1.00 },
+    s2:  { x: -2250, y:     0, scale: 1.00 },
+    s3:  { x: -3000, y: -1299, scale: 1.00 },
+    s4:  { x: -2250, y: -2598, scale: 1.00 },
+    s5:  { x:  -750, y: -2598, scale: 1.00 },
+    s6:  { x:     0, y: -1299, scale: 1.00 },
+  };
+
+  // Helper — schedule a content-fade pair on the timeline. The outgoing
+  // section fades during the camera move; the incoming section fades in
+  // after a small delay so the badge re-establishes first.
+  function fadeContent(outId, inId, t, moveDuration) {
+    if (outId) tl.to(outId, { opacity: 0, duration: 0.30, ease: 'power1.in' }, t);
+    if (inId)  tl.to(inId,  { opacity: 1, duration: 0.40, ease: 'power2.out' }, t + moveDuration * 0.55);
+  }
+
+  // ─── 1. DIVE-IN: map → HUB at t=2.5 ─────────────────────
+  // Map overlay fades out as the camera dives. Scale tween with
+  // power2.inOut + a slight overshoot via small post-tween settle.
+  tl.to('#map-overlay', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.4);
+  tl.to('#camera', { ...VIEWS.hub, duration: 0.5, ease: 'power2.inOut' }, 2.5);
+  fadeContent(null, '#hub-content', 2.5, 0.5);
+
+  // Hub-content micro-beats (visual-pacing 5s rule — content is in for 4.5s)
+  tl.from('#sec-hub .overline',     { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 3.1);
+  tl.from('#sec-hub .hero-slam',    { scale: 0.82, opacity: 0, duration: 0.7, ease: 'back.out(1.7)', immediateRender: false }, 3.5);
+  tl.from('#sec-hub .accent-pill',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 4.6);
+  tl.to('#sec-hub .node-check',     { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 6.8);
+
+  // ─── 2. PAN to S1 at t=7.5 (direct, 0.5s) ──────────────
+  tl.to('#camera', { ...VIEWS.s1, duration: 0.5, ease: 'power2.inOut' }, 7.5);
+  fadeContent('#hub-content', '#s1-content', 7.5, 0.5);
+  tl.from('#sec-1 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 8.2);
+  tl.from('#sec-1 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 8.5);
+  tl.from('#sec-1 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 9.5);
+  tl.to('#sec-1 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 11.4);
+
+  // ─── 3. PAN to S2 at t=12.0 (direct, 0.5s) ─────────────
+  tl.to('#camera', { ...VIEWS.s2, duration: 0.5, ease: 'power2.inOut' }, 12.0);
+  fadeContent('#s1-content', '#s2-content', 12.0, 0.5);
+  tl.from('#sec-2 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 12.7);
+  tl.from('#sec-2 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 13.0);
+  tl.from('#sec-2 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 14.0);
+  tl.to('#sec-2 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 15.9);
+
+  // ─── 4. CHAPTER BREAK: S2 → MAP → S3 at t=16.5 (1.5s total) ─
+  // Zoom-out-pan-zoom-in: brief pull to map view to "show the journey",
+  // then dive into S3. This is the major pacing reset of the video.
+  tl.to('#s2-content', { opacity: 0, duration: 0.3, ease: 'power1.in' }, 16.5);
+  tl.to('#camera', { ...VIEWS.map, duration: 0.6, ease: 'power2.in' }, 16.5);
+  tl.to('#camera', { ...VIEWS.s3,  duration: 0.9, ease: 'power2.out' }, 17.1);
+  tl.to('#s3-content', { opacity: 1, duration: 0.4, ease: 'power2.out' }, 17.7);
+  tl.from('#sec-3 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 18.2);
+  tl.from('#sec-3 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 18.5);
+  tl.from('#sec-3 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 19.5);
+  tl.to('#sec-3 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 21.4);
+
+  // ─── 5. PAN to S4 at t=22.0 (direct) ────────────────────
+  tl.to('#camera', { ...VIEWS.s4, duration: 0.5, ease: 'power2.inOut' }, 22.0);
+  fadeContent('#s3-content', '#s4-content', 22.0, 0.5);
+  tl.from('#sec-4 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 22.7);
+  tl.from('#sec-4 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 23.0);
+  tl.from('#sec-4 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 24.0);
+  tl.to('#sec-4 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 25.9);
+
+  // ─── 6. PAN to S5 at t=26.5 (direct) ────────────────────
+  tl.to('#camera', { ...VIEWS.s5, duration: 0.5, ease: 'power2.inOut' }, 26.5);
+  fadeContent('#s4-content', '#s5-content', 26.5, 0.5);
+  tl.from('#sec-5 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 27.2);
+  tl.from('#sec-5 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 27.5);
+  tl.from('#sec-5 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 28.5);
+  tl.to('#sec-5 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 30.4);
+
+  // ─── 7. PAN to S6 at t=31.0 (direct) ────────────────────
+  tl.to('#camera', { ...VIEWS.s6, duration: 0.5, ease: 'power2.inOut' }, 31.0);
+  fadeContent('#s5-content', '#s6-content', 31.0, 0.5);
+  tl.from('#sec-6 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 31.7);
+  tl.from('#sec-6 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 32.0);
+  tl.from('#sec-6 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 33.0);
+  tl.to('#sec-6 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 33.9);
+
+  // ─── 8. PULL-BACK to MAP (completion screen) at t=34.5 ──
+  // 1.5s pan + zoom out, then 2.0s static hold. This is the
+  // thumbnail-grade final frame (per shorts-thumbnail-frames
+  // rule): all 6 spoke checks + hub check are visible, the map
+  // headline returns, and the CTA pill fades in subordinate to it.
+  tl.to('#s6-content', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 34.5);
+  tl.to('#camera',     { ...VIEWS.map, duration: 1.5, ease: 'power2.inOut' }, 34.5);
+  // Switch the map-overlay copy to its "completion" state and fade in
+  tl.set('#map-overlay-sub', { innerText: 'Six covered. Follow for more.' }, 35.8);
+  tl.to('#map-overlay', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 35.8);
+  tl.to('#final-cta',   { opacity: 1, duration: 0.5, ease: 'power2.out' }, 36.0);
+
+  // Final hold from 36.5s to 38.0s — every element is at its final
+  // transform. No drift, no pulses (per shorts-thumbnail-frames rule
+  // the terminal hold is a STILL).
+
+  window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

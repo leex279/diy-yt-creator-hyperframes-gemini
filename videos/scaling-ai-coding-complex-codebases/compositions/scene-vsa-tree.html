@@ -1,0 +1,147 @@
+﻿<!--
+  scene-vsa-tree.html â€” Vertical Slice Architecture file tree visualization.
+  Displays the canonical `products/` shape line-by-line, each row revealing on its own beat.
+-->
+<template id="scene-vsa-tree-template">
+  <div data-composition-id="scene-vsa-tree"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #vsa-content {
+        width:100%; height:100%;
+        padding: 90px var(--pad-x) 70px;
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:space-between;
+        gap: 60px;
+        box-sizing:border-box;
+      }
+      #vsa-left {
+        flex: 1.3;
+        display: flex; flex-direction: column;
+        gap: 22px;
+        max-width: 900px;
+      }
+      #vsa-left .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #vsa-left .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #vsa-left .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 76px;
+        line-height: 1.0;
+        letter-spacing: -0.022em;
+        color: var(--ink);
+      }
+      #vsa-left .blurb {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 32px;
+        line-height: 1.35;
+        color: var(--ink-2);
+        max-width: 820px;
+      }
+      #vsa-tree {
+        flex: 1;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 18px;
+        padding: 36px 40px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 28px;
+        line-height: 1.55;
+        color: var(--ink);
+        max-width: 760px;
+        position: relative;
+        box-shadow: 0 0 60px rgba(59, 130, 246, 0.18);
+      }
+      #vsa-tree .row {
+        display: flex;
+        align-items: baseline;
+        gap: 18px;
+      }
+      #vsa-tree .row .path {
+        white-space: pre;
+        color: var(--ink-2);
+      }
+      #vsa-tree .row .label {
+        font-size: 22px;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      #vsa-tree .row.feature .path { color: var(--accent); font-weight: 600; }
+      #vsa-tree .row.indent .path { padding-left: 0; }
+    </style>
+
+    <div id="vsa-content">
+
+      <div id="vsa-left">
+        <div class="eyebrow" id="vsa-eyebrow" style="opacity:0;visibility:hidden;">STRATEGY 01 &middot; VSA</div>
+        <h2 class="headline" id="vsa-headline" style="opacity:0;visibility:hidden;">One folder per feature.</h2>
+        <p class="blurb" id="vsa-blurb" style="opacity:0;visibility:hidden;">
+          The agent loads the slice and has the full feature in context. No chasing layers. No token tax per hop.
+        </p>
+      </div>
+
+      <div id="vsa-tree">
+        <div class="row feature" id="vsa-r1" style="opacity:0;visibility:hidden;"><span class="path">app/products/</span><span class="label">&larr; one folder per feature</span></div>
+        <div class="row" id="vsa-r2" style="opacity:0;visibility:hidden;"><span class="path">&#9500;&#9472;&#9472; errors.py</span><span class="label">custom exceptions</span></div>
+        <div class="row" id="vsa-r3" style="opacity:0;visibility:hidden;"><span class="path">&#9500;&#9472;&#9472; models.py</span><span class="label">ORM models</span></div>
+        <div class="row" id="vsa-r4" style="opacity:0;visibility:hidden;"><span class="path">&#9500;&#9472;&#9472; schemas.py</span><span class="label">validation schemas</span></div>
+        <div class="row" id="vsa-r5" style="opacity:0;visibility:hidden;"><span class="path">&#9500;&#9472;&#9472; routes.py</span><span class="label">thin HTTP handlers</span></div>
+        <div class="row" id="vsa-r6" style="opacity:0;visibility:hidden;"><span class="path">&#9500;&#9472;&#9472; service.py</span><span class="label">business logic</span></div>
+        <div class="row" id="vsa-r7" style="opacity:0;visibility:hidden;"><span class="path">&#9492;&#9472;&#9472; tests/</span><span class="label">all tests for this feature</span></div>
+      </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#vsa-eyebrow",  { y: 20 }, 0);
+      tl.set("#vsa-headline", { y: 30 }, 0);
+      tl.set("#vsa-blurb",    { y: 20 }, 0);
+      ["#vsa-r1","#vsa-r2","#vsa-r3","#vsa-r4","#vsa-r5","#vsa-r6","#vsa-r7"].forEach(sel => {
+        tl.set(sel, { x: -24 }, 0);
+      });
+
+      tl.to("#vsa-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#vsa-headline", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 0.5);
+      tl.to("#vsa-blurb",    { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 1.1);
+
+      // Tree rows reveal one at a time
+      const treeTimes = [1.8, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+      ["#vsa-r1","#vsa-r2","#vsa-r3","#vsa-r4","#vsa-r5","#vsa-r6","#vsa-r7"].forEach((sel, i) => {
+        tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, treeTimes[i]);
+      });
+
+      // Mid-hold beats â€” pulse the feature row periodically
+      tl.to("#vsa-r1", { scale: 1.03, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1,
+        transformOrigin: "left center" }, 11.0);
+      tl.to("#vsa-tree", { boxShadow: "0 0 100px rgba(59, 130, 246, 0.35)",
+        duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 15.0);
+      tl.to("#vsa-r1", { scale: 1.03, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1,
+        transformOrigin: "left center" }, 19.0);
+
+      // Extend timeline to full slot duration
+      tl.set({}, {}, 52);
+      window.__timelines["scene-vsa-tree"] = tl;
+    </script>
+  </div>
+</template>

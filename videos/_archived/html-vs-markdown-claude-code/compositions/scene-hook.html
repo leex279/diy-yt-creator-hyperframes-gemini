@@ -1,0 +1,784 @@
+<!--
+  scene-hook.html — Cold open with controversy + 3D reveals + kinetic typography
+  Scene-relative duration: 48.53s. data-start in root = 0.
+
+  6 stage-mutex phases (one visible at a time, GSAP-driven):
+    Stage 1 (0–5s)      — Death of Markdown — kinetic typography
+    Stage 2 (5–10s)     — 3D-flipped article cover + Thariq bio
+    Stage 3 (10–17s)    — Receipt pills (3D push-up)
+    Stage 4 (17–23s)    — "WAIT. YOU STOPPED TOO?" slam
+    Stage 5 (23–31s)    — Indictment chips (every spec / plan / PR writeup) + ALL OF IT. OUT.
+    Stage 6 (31–46s)    — Title slam (3D depth) + curiosity-loop subline
+
+  Every beat below ties to a transcript word offset (extracted via
+  tmp/find-words.py). The scene has SOMETHING CHANGING ON SCREEN every 1-3s.
+
+  Beats (scene-relative):
+    0.04  "Markdown" — word 1 enters
+    0.51  "is dying" — words 2-3 + glitch-zap on "dying"
+    1.64  "And the people killing it..." — line 2 slides in
+    3.01  "...built Claude Code" — line 2 ends with depth scale
+    4.93  Stage 1 → Stage 2 transition; cover 3D-flips in; Thariq caption types
+    9.39  "broke the dev internet" — screen-shake + chromatic flash
+    10.5  Stage 2 → Stage 3 transition; receipts begin stacking
+    11.44 Receipt pill 1: 751K VIEWS (3D push-up)
+    13.82 Receipt pill 2: 2.7K LIKES
+    16.31 Receipt pill 3: 341 REPOSTS
+    18.01 "the replies are split" — pills pulse (split signal)
+    19.98 "but again and again" — pills pulse
+    21.37 "the same line" — Stage 3 → Stage 4 prep
+    23.00 "WAIT." giant slam (scale + depth)
+    23.81 "You stopped too?" question types in
+    25.7  Stage 4 → Stage 5 transition
+    26.55 "the WRONG format for:" headline
+    27.48 chip 1 "every spec"
+    28.36 chip 2 "every plan"
+    29.33 chip 3 "every PR writeup"
+    32.60 "ALL OF IT. OUT." stamp + red strikethrough across chips
+    34.85 Stage 5 → Stage 6 transition; "He has the receipts" callback
+    36.74 TITLE SLAM: "The unreasonable effectiveness of HTML" (3D scale-from-depth)
+    40.60 subline "By the end of this video..." curiosity loop
+    45.02 emphasis pulse on "look very different"
+    47.99 final emphasis on "good thing"
+-->
+<template id="scene-hook-template">
+  <div data-composition-id="scene-hook"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #scene-hook-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        perspective: 1500px;
+        perspective-origin: 50% 40%;
+      }
+
+      /* Persistent overline (sits across all stages) */
+      .h-overline {
+        position: absolute;
+        top: 50px;
+        left: 100px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .h-overline::after {
+        content: "";
+        display: inline-block;
+        width: 80px;
+        height: 1.5px;
+        background: var(--accent-2);
+        opacity: 0.6;
+      }
+
+      /* Stage container (shared layout for stages 1-6 except cover) */
+      .h-stage {
+        position: absolute;
+        inset: 140px 100px 100px 100px;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      /* ── Stage 1 — Death of Markdown ────────────────────────────────── */
+      .h-s1 { display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+      .h-s1-row {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 140px;
+        line-height: 1;
+        letter-spacing: -3px;
+        color: var(--text);
+      }
+      .h-s1-row-2 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 64px;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: var(--text-secondary);
+        max-width: 1100px;
+        margin-top: 10px;
+      }
+      .h-s1-row-2 em {
+        font-style: italic;
+        color: var(--accent-1);
+        font-weight: 800;
+      }
+      .kw {
+        display: inline-block;
+        margin-right: 0.25em;
+      }
+      .glitch-host { position: relative; display: inline-block; }
+      .glitch-r, .glitch-g {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .glitch-r { color: var(--accent-1); }
+      .glitch-g { color: var(--accent-3); }
+
+      /* ── Stage 2 — Cover + bio ──────────────────────────────────────── */
+      /* Perspective + perspective-origin establish a 3D camera so the cover
+         frame's rotateY / translateZ phases (FLAT REVEAL → CAMERA PUSH →
+         3D TILT → 3D HOLD) read with proper depth. Pattern adapted from
+         shared/lib/blocks/ui-3d-reveal — same perspective:2800 + 50/50
+         origin. The cover element itself already has transform-style:
+         preserve-3d (set on .h-cover-frame). */
+      .h-s2 {
+        display: grid;
+        grid-template-columns: 1fr 720px;
+        gap: 60px;
+        align-items: center;
+        perspective: 2800px;
+        perspective-origin: 50% 50%;
+      }
+      .h-s2-text {
+        position: relative;
+      }
+      .h-s2-attr-mono {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 14px;
+      }
+      .h-s2-name {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 84px;
+        letter-spacing: -2px;
+        line-height: 1;
+        color: var(--text);
+      }
+      .h-s2-role {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 32px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+      }
+      .h-s2-broke {
+        margin-top: 32px;
+        display: inline-block;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        background: var(--bg-card);
+        border: 1.5px solid var(--accent-1);
+        border-radius: 6px;
+        padding: 10px 18px;
+      }
+
+      .h-cover-frame {
+        width: 720px;
+        max-height: 100%;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(28, 26, 24, 0.30);
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .h-cover-frame img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* ── Stage 3 — Receipt pills (vertical stack) ───────────────────── */
+      .h-s3 {
+        display: grid;
+        grid-template-columns: 1fr 720px;
+        gap: 60px;
+        align-items: center;
+      }
+      .h-s3-pills {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .h-pill-3d {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px 36px;
+        display: flex;
+        align-items: baseline;
+        gap: 22px;
+        transform-style: preserve-3d;
+        box-shadow: 0 10px 24px rgba(28, 26, 24, 0.10);
+      }
+      .h-pill-3d.is-hero {
+        border-color: var(--accent-1);
+        background: linear-gradient(135deg, rgba(199, 90, 63, 0.08), rgba(199, 90, 63, 0.02));
+      }
+      .h-pill-num {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 100px;
+        line-height: 0.9;
+        color: var(--accent-1);
+        letter-spacing: -3px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .h-pill-3d.is-hero .h-pill-num {
+        font-size: 140px;
+        text-shadow: 0 0 30px rgba(199, 90, 63, 0.25);
+      }
+      .h-pill-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .h-s3-cover-mini {
+        align-self: start;
+        margin-top: 40px;
+      }
+      .h-s3-cover-mini .h-cover-frame {
+        width: 100%;
+      }
+
+      /* ── Stage 4 — WAIT slam ────────────────────────────────────────── */
+      .h-s4 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 32px;
+      }
+      .h-s4-wait {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 320px;
+        line-height: 0.85;
+        letter-spacing: -10px;
+        color: var(--text);
+        position: relative;
+      }
+      .h-s4-wait em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .h-s4-question {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 600;
+        font-size: 56px;
+        color: var(--text-secondary);
+        max-width: 1300px;
+      }
+      .h-s4-question .qmark {
+        color: var(--accent-1);
+        font-size: 1.2em;
+        font-style: normal;
+      }
+
+      /* ── Stage 5 — Indictment ───────────────────────────────────────── */
+      .h-s5 {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        justify-content: center;
+      }
+      .h-s5-headline {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 60px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+      }
+      .h-s5-headline em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .h-s5-chips {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .h-s5-chip {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 999px;
+        padding: 18px 32px;
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 38px;
+        color: var(--text);
+        position: relative;
+        overflow: hidden;
+      }
+      .h-s5-chip-strike {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        top: 50%;
+        height: 4px;
+        background: var(--accent-1);
+        transform: scaleX(0);
+        transform-origin: left center;
+        border-radius: 2px;
+      }
+      .h-s5-stamp {
+        align-self: flex-start;
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 88px;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: var(--accent-1);
+        margin-top: 24px;
+        position: relative;
+      }
+      .h-s5-stamp em {
+        font-style: italic;
+      }
+
+      /* ── Stage 6 — Title slam + curiosity loop ──────────────────────── */
+      .h-s6 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 40px;
+      }
+      .h-s6-callback {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .h-s6-title {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 130px;
+        line-height: 1;
+        letter-spacing: -3px;
+        color: var(--text);
+        max-width: 1700px;
+        transform-style: preserve-3d;
+      }
+      .h-s6-title em {
+        font-style: italic;
+        color: var(--accent-1);
+        font-family: var(--serif);
+      }
+      .h-s6-sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 30px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        max-width: 1300px;
+        margin-top: 12px;
+      }
+      .h-s6-sub em {
+        font-style: italic;
+        color: var(--accent-1);
+        font-weight: 700;
+      }
+      .h-s6-mark-host { position: relative; display: inline-block; }
+      .h-s6-mark {
+        position: absolute;
+        left: 0; bottom: -3px;
+        width: 0; height: 4px;
+        background: var(--accent-1);
+        border-radius: 2px;
+      }
+    </style>
+
+    <div id="scene-hook-content">
+      <div class="h-overline" id="h-overline">USING CLAUDE CODE</div>
+
+      <!-- Stage 1 — Death of Markdown -->
+      <div class="h-stage h-s1" id="h-s1">
+        <div class="h-s1-row" id="h-s1-line1">
+          <span class="kw" id="h-w-markdown">Markdown</span>
+          <span class="kw" id="h-w-is">is</span>
+          <span class="glitch-host kw" id="h-glitch-host">
+            <em style="font-style:italic;color:var(--accent-1);" id="h-w-dying">dying.</em>
+            <span class="glitch-r" id="h-glitch-r" aria-hidden="true">dying.</span>
+            <span class="glitch-g" id="h-glitch-g" aria-hidden="true">dying.</span>
+          </span>
+        </div>
+        <div class="h-s1-row-2" id="h-s1-line2">
+          And the people killing it... <em>built Claude Code.</em>
+        </div>
+      </div>
+
+      <!-- Stage 2 — Cover + Thariq bio -->
+      <div class="h-stage h-s2" id="h-s2">
+        <div class="h-s2-text">
+          <div class="h-s2-attr-mono" id="h-s2-attr">SOURCE / X &middot; @TRQ212</div>
+          <div class="h-s2-name" id="h-s2-name">Thariq.</div>
+          <div class="h-s2-role" id="h-s2-role">Claude Code &middot; Anthropic. Last week he dropped a thesis.</div>
+          <div class="h-s2-broke" id="h-s2-broke">BROKE THE DEV INTERNET</div>
+        </div>
+        <div class="h-cover-frame" id="h-cover">
+          <img src="../assets/article-cover.png" alt="The Unreasonable Effectiveness of HTML — article cover" />
+        </div>
+      </div>
+
+      <!-- Stage 3 — Receipt pills + cover mini -->
+      <div class="h-stage h-s3" id="h-s3">
+        <div class="h-s3-pills">
+          <div class="h-pill-3d is-hero" id="h-p1">
+            <span class="h-pill-num">751<span style="font-size:0.7em;">K</span></span>
+            <span class="h-pill-label">views</span>
+          </div>
+          <div class="h-pill-3d" id="h-p2">
+            <span class="h-pill-num">2.7<span style="font-size:0.7em;">K</span></span>
+            <span class="h-pill-label">likes</span>
+          </div>
+          <div class="h-pill-3d" id="h-p3">
+            <span class="h-pill-num">341</span>
+            <span class="h-pill-label">reposts</span>
+          </div>
+        </div>
+        <div class="h-s3-cover-mini">
+          <div class="h-cover-frame" id="h-cover-mini">
+            <img src="../assets/article-cover.png" alt="article cover" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 4 — WAIT slam -->
+      <div class="h-stage h-s4" id="h-s4">
+        <div class="h-s4-wait" id="h-s4-wait"><em>WAIT.</em></div>
+        <div class="h-s4-question" id="h-s4-question">You <em style="color:var(--text);">stopped</em> too<span class="qmark">?</span></div>
+      </div>
+
+      <!-- Stage 5 — Indictment -->
+      <div class="h-stage h-s5" id="h-s5">
+        <div class="h-s5-headline" id="h-s5-head">
+          He says markdown is the <em>wrong format</em> for everything you hand to your agent.
+        </div>
+        <div class="h-s5-chips">
+          <div class="h-s5-chip" id="h-s5-chip-1">every spec<span class="h-s5-chip-strike" id="h-s5-strike-1"></span></div>
+          <div class="h-s5-chip" id="h-s5-chip-2">every plan<span class="h-s5-chip-strike" id="h-s5-strike-2"></span></div>
+          <div class="h-s5-chip" id="h-s5-chip-3">every PR writeup<span class="h-s5-chip-strike" id="h-s5-strike-3"></span></div>
+        </div>
+        <div class="h-s5-stamp" id="h-s5-stamp">All of it. <em>Out.</em></div>
+      </div>
+
+      <!-- Stage 6 — Title slam + curiosity loop -->
+      <div class="h-stage h-s6" id="h-s6">
+        <div class="h-s6-callback" id="h-s6-callback">AND HE HAS THE RECEIPTS &mdash;</div>
+        <div class="h-s6-title" id="h-s6-title">
+          The unreasonable <em>effectiveness</em> of HTML.
+        </div>
+        <div class="h-s6-sub" id="h-s6-sub">
+          By the end of this video you will know exactly why your codebase is about to <span class="h-s6-mark-host">look very different<span class="h-s6-mark" id="h-s6-mark"></span></span> &mdash; and whether that is a <em>good thing</em>.
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Hide all stages at t=0 (hidden-until-reveal pattern)
+      const allStages = ["#h-s1","#h-s2","#h-s3","#h-s4","#h-s5","#h-s6"];
+      allStages.forEach(s => tl.set(s, { opacity: 0, visibility: "hidden" }, 0));
+
+      // Initial state: stage 1 words hidden inside their containers
+      tl.set("#h-w-markdown",   { opacity: 0, y: 30, rotationX: -45, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-w-is",         { opacity: 0, y: 20 }, 0);
+      tl.set("#h-w-dying",      { opacity: 0, scale: 0.5, filter: "blur(20px)" }, 0);
+      tl.set("#h-glitch-r",     { opacity: 0, x: 0 }, 0);
+      tl.set("#h-glitch-g",     { opacity: 0, x: 0 }, 0);
+      tl.set("#h-s1-line2",     { opacity: 0, x: 80 }, 0);
+
+      // Stage 2 prep — initial state for the registry-style 3D reveal pattern
+      // (adapted from shared/lib/blocks/ui-3d-reveal). Card materializes flat
+      // at scale 0.74 + y 24 + opacity 0, then runs through 4 phases:
+      // FLAT REVEAL → CAMERA PUSH → 3D TILT → 3D HOLD.
+      tl.set("#h-cover",        { rotationY: 0, x: 0, y: 24, scale: 0.74, opacity: 0,
+                                  transformOrigin: "center center" }, 0);
+      tl.set("#h-s2-attr",      { opacity: 0, y: 14 }, 0);
+      tl.set("#h-s2-name",      { opacity: 0, y: 24 }, 0);
+      tl.set("#h-s2-role",      { opacity: 0, y: 14 }, 0);
+      tl.set("#h-s2-broke",     { opacity: 0, scale: 0.85 }, 0);
+
+      // Stage 3 prep
+      tl.set("#h-p1",           { opacity: 0, y: 60, rotationX: -60, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-p2",           { opacity: 0, y: 60, rotationX: -60, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-p3",           { opacity: 0, y: 60, rotationX: -60, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-cover-mini",   { rotationY: -8, scale: 0.95, opacity: 0 }, 0);
+
+      // Stage 4 prep
+      tl.set("#h-s4-wait",      { scale: 0.4, opacity: 0, filter: "blur(20px)" }, 0);
+      tl.set("#h-s4-question",  { y: 30, opacity: 0 }, 0);
+
+      // Stage 5 prep
+      tl.set("#h-s5-head",      { y: 20, opacity: 0 }, 0);
+      tl.set("#h-s5-chip-1",    { y: 30, opacity: 0, rotationX: -50, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-s5-chip-2",    { y: 30, opacity: 0, rotationX: -50, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-s5-chip-3",    { y: 30, opacity: 0, rotationX: -50, transformOrigin: "center bottom" }, 0);
+      tl.set("#h-s5-strike-1",  { scaleX: 0 }, 0);
+      tl.set("#h-s5-strike-2",  { scaleX: 0 }, 0);
+      tl.set("#h-s5-strike-3",  { scaleX: 0 }, 0);
+      tl.set("#h-s5-stamp",     { scale: 0.6, opacity: 0, filter: "blur(15px)" }, 0);
+
+      // Stage 6 prep
+      tl.set("#h-s6-callback",  { opacity: 0, y: 14 }, 0);
+      tl.set("#h-s6-title",     { scale: 0.45, opacity: 0, filter: "blur(25px)", z: -400 }, 0);
+      tl.set("#h-s6-sub",       { opacity: 0, y: 14 }, 0);
+      tl.set("#h-s6-mark",      { width: 0 }, 0);
+
+      // Persistent overline enters at 0.3s
+      tl.from("#h-overline", { y: -12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.3);
+
+      // ──────────────────────────────────────────────────────────────────
+      //  STAGE 1 — Death of Markdown (0–4.9s)
+      // ──────────────────────────────────────────────────────────────────
+      tl.set("#h-s1", { visibility: "visible" }, 0.0);
+      tl.to("#h-s1", { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.0);
+
+      // "Markdown" word at 0.04
+      tl.to("#h-w-markdown", { opacity: 1, y: 0, rotationX: 0, duration: 0.6, ease: "back.out(1.4)" }, 0.04);
+      // "is" at 0.51
+      tl.to("#h-w-is", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.51);
+      // "dying" at 0.51 with depth zoom
+      tl.to("#h-w-dying", { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.51);
+      // Glitch zap on "dying" at 0.9 — RGB split flicker (3 quick offsets)
+      tl.to("#h-glitch-r", { opacity: 0.7, x: -6, duration: 0.05 }, 0.9);
+      tl.to("#h-glitch-g", { opacity: 0.7, x: 6,  duration: 0.05 }, 0.9);
+      tl.to("#h-glitch-r", { opacity: 0,   x: 0,  duration: 0.08 }, 1.0);
+      tl.to("#h-glitch-g", { opacity: 0,   x: 0,  duration: 0.08 }, 1.0);
+      tl.to("#h-glitch-r", { opacity: 0.6, x: -3, duration: 0.04 }, 1.18);
+      tl.to("#h-glitch-r", { opacity: 0,   x: 0,  duration: 0.06 }, 1.24);
+
+      // "And the people killing it… built Claude Code" at 1.64
+      tl.to("#h-s1-line2", { opacity: 1, x: 0, duration: 0.7, ease: "power3.out" }, 1.64);
+
+      // Subtle scale-pulse on "built Claude Code" at 3.01
+      tl.to("#h-s1-line2 em", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 3.01);
+
+      // Stage 1 → Stage 2 transition at 4.5s
+      tl.to("#h-s1", { opacity: 0, scale: 0.96, duration: 0.5, ease: "power2.in" }, 4.5);
+      tl.set("#h-s1", { visibility: "hidden" }, 5.0);
+
+      // ──────────────────────────────────────────────────────────────────
+      //  STAGE 2 — Cover 3D-flip + Thariq bio (4.9–10.5s)
+      // ──────────────────────────────────────────────────────────────────
+      tl.set("#h-s2", { visibility: "visible" }, 4.5);
+      tl.to("#h-s2", { opacity: 1, duration: 0.4, ease: "power2.out" }, 4.5);
+
+      // ─────────────────────────────────────────────────────────
+      //  Cover 3D-reveal sequence — adapted from the ui-3d-reveal
+      //  registry block (shared/lib/blocks/ui-3d-reveal). Same 4-phase
+      //  pattern, applied to the real article-cover screenshot:
+      //    PHASE 1 — FLAT REVEAL  (4.50 → 5.05, 0.55s, expo.out)
+      //      opacity 0→1, scale 0.74→0.79, y 24→0
+      //    PHASE 2 — CAMERA PUSH  (6.50 → 7.80, 1.3s, power3.inOut)
+      //      scale 0.79 → 1.08 (slightly tamer than registry's 1.15
+      //      so the 720px frame stays inside the right column)
+      //    PHASE 3 — 3D TILT      (7.20 → 8.55, 1.35s, expo.out)
+      //      rotationY 0 → -28 (registry uses -34, dialled to -28
+      //      to keep the article text legible), y → -16
+      //    PHASE 4 — 3D HOLD      (8.55 → 10.35, two 0.9s drifts)
+      //      subtle yoyo-style drift around the held angle so the
+      //      camera doesn't feel locked. y -8 / rotY -25 then
+      //      y -20 / rotY -30.
+      // ─────────────────────────────────────────────────────────
+
+      // PHASE 1 — FLAT REVEAL
+      tl.to("#h-cover", {
+        opacity: 1,
+        scale: 0.79,
+        y: 0,
+        duration: 0.55,
+        ease: "expo.out"
+      }, 4.50);
+
+      // Thariq attribution + name + role (sit alongside the cover, unchanged)
+      tl.to("#h-s2-attr",  { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 4.93);
+      tl.to("#h-s2-name",  { opacity: 1, y: 0, duration: 0.6,  ease: "power3.out" }, 5.30);
+      tl.to("#h-s2-role",  { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 5.85);
+
+      // PHASE 2 — CAMERA PUSH
+      tl.to("#h-cover", {
+        scale: 1.08,
+        duration: 1.3,
+        ease: "power3.inOut"
+      }, 6.50);
+
+      // PHASE 3 — 3D TILT
+      tl.to("#h-cover", {
+        rotationY: -28,
+        y: -16,
+        duration: 1.35,
+        ease: "expo.out"
+      }, 7.20);
+
+      // PHASE 4 — 3D HOLD (drift A: settle slightly back-up + ease angle)
+      tl.to("#h-cover", {
+        y: -8,
+        rotationY: -25,
+        duration: 0.9,
+        ease: "sine.inOut"
+      }, 8.55);
+
+      // PHASE 4 — 3D HOLD (drift B: deeper recession, steeper angle)
+      tl.to("#h-cover", {
+        y: -20,
+        rotationY: -30,
+        duration: 0.9,
+        ease: "sine.inOut"
+      }, 9.45);
+
+      // "broke the dev internet" stamp + screen-shake at 9.39
+      tl.to("#h-s2-broke", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 9.0);
+      tl.to("#h-s2-broke", { scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 9.39);
+      // Screen-shake (translate the whole stage briefly)
+      tl.to("#h-s2", { x: -6, duration: 0.05, yoyo: true, repeat: 5 }, 9.39);
+
+      // Stage 2 → Stage 3 transition at 10.5s
+      tl.to("#h-s2", { opacity: 0, scale: 0.96, duration: 0.5, ease: "power2.in" }, 10.5);
+      tl.set("#h-s2", { visibility: "hidden" }, 11.0);
+
+      // ──────────────────────────────────────────────────────────────────
+      //  STAGE 3 — Receipt pills (10.5–17.9s)
+      // ──────────────────────────────────────────────────────────────────
+      tl.set("#h-s3", { visibility: "visible" }, 10.5);
+      tl.to("#h-s3", { opacity: 1, duration: 0.4, ease: "power2.out" }, 10.5);
+
+      // Mini cover floats in alongside (continuity)
+      tl.to("#h-cover-mini", { opacity: 1, scale: 1, rotationY: -8, duration: 0.7, ease: "power3.out" }, 10.7);
+
+      // Pill 1 (751K views) at 11.44 — 3D push-up
+      tl.to("#h-p1", { opacity: 1, y: 0, rotationX: 0, duration: 0.7, ease: "back.out(1.6)" }, 11.44);
+      // Hero glow pulse on the 751K
+      tl.to("#h-p1", { boxShadow: "0 14px 40px rgba(199, 90, 63, 0.30)", duration: 0.5, yoyo: true, repeat: 1, ease: "power2.out" }, 12.0);
+
+      // Pill 2 (2.7K likes) at 13.82
+      tl.to("#h-p2", { opacity: 1, y: 0, rotationX: 0, duration: 0.65, ease: "back.out(1.5)" }, 13.82);
+
+      // Pill 3 (341 reposts) at 16.31
+      tl.to("#h-p3", { opacity: 1, y: 0, rotationX: 0, duration: 0.65, ease: "back.out(1.5)" }, 16.31);
+
+      // Beats at 18.01 ("replies are split") and 19.98 ("but again and again")
+      // and 21.37 ("the same line") — pulse all 3 pills to keep eye locked.
+      tl.to("#h-p1, #h-p2, #h-p3", { scale: 1.03, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out" }, 18.01);
+      tl.to("#h-p1, #h-p2, #h-p3", { scale: 1.02, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 19.98);
+      tl.to("#h-p1, #h-p2, #h-p3", { scale: 1.02, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 21.37);
+
+      // Stage 3 → Stage 4 transition at 22.0s
+      tl.to("#h-s3", { opacity: 0, scale: 0.94, duration: 0.5, ease: "power2.in" }, 22.0);
+      tl.set("#h-s3", { visibility: "hidden" }, 22.55);
+
+      // ──────────────────────────────────────────────────────────────────
+      //  STAGE 4 — WAIT slam (22.6–25.6s)
+      // ──────────────────────────────────────────────────────────────────
+      tl.set("#h-s4", { visibility: "visible" }, 22.6);
+      tl.to("#h-s4", { opacity: 1, duration: 0.3, ease: "power2.out" }, 22.6);
+
+      // Giant "WAIT." slam at 23.00 — depth zoom + blur clear
+      tl.to("#h-s4-wait", { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, 23.00);
+      // Quick aftershake
+      tl.to("#h-s4-wait", { x: -8, duration: 0.04, yoyo: true, repeat: 5 }, 23.30);
+
+      // "You stopped too?" at 23.81
+      tl.to("#h-s4-question", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 23.81);
+      // pulse the qmark
+      tl.to("#h-s4-question .qmark", { scale: 1.3, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center" }, 24.7);
+
+      // Stage 4 → Stage 5
+      tl.to("#h-s4", { opacity: 0, scale: 0.94, duration: 0.5, ease: "power2.in" }, 25.6);
+      tl.set("#h-s4", { visibility: "hidden" }, 26.2);
+
+      // ──────────────────────────────────────────────────────────────────
+      //  STAGE 5 — Indictment (25.7–34s)
+      // ──────────────────────────────────────────────────────────────────
+      tl.set("#h-s5", { visibility: "visible" }, 25.7);
+      tl.to("#h-s5", { opacity: 1, duration: 0.4, ease: "power2.out" }, 25.7);
+
+      // Headline "wrong format" at 26.55
+      tl.to("#h-s5-head", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 26.0);
+
+      // chip 1 "every spec" at 27.48
+      tl.to("#h-s5-chip-1", { y: 0, opacity: 1, rotationX: 0, duration: 0.55, ease: "back.out(1.5)" }, 27.48);
+      // chip 2 "every plan" at 28.36
+      tl.to("#h-s5-chip-2", { y: 0, opacity: 1, rotationX: 0, duration: 0.55, ease: "back.out(1.5)" }, 28.36);
+      // chip 3 "every PR writeup" at 29.33
+      tl.to("#h-s5-chip-3", { y: 0, opacity: 1, rotationX: 0, duration: 0.55, ease: "back.out(1.5)" }, 29.33);
+
+      // Strike-through chips at 32.60 — sequentially (0.10s stagger)
+      tl.to("#h-s5-strike-1", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 32.50);
+      tl.to("#h-s5-strike-2", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 32.60);
+      tl.to("#h-s5-strike-3", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 32.70);
+
+      // "ALL OF IT. OUT." stamp at 32.60 — depth zoom in (audio: "Almost all of it. Out.")
+      tl.to("#h-s5-stamp", { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out" }, 32.60);
+      tl.to("#h-s5-stamp", { x: -4, duration: 0.04, yoyo: true, repeat: 4 }, 33.00);
+
+      // Stage 5 → Stage 6 transition at 34.0s
+      tl.to("#h-s5", { opacity: 0, scale: 0.96, duration: 0.5, ease: "power2.in" }, 34.0);
+      tl.set("#h-s5", { visibility: "hidden" }, 34.55);
+
+      // ──────────────────────────────────────────────────────────────────
+      //  STAGE 6 — Title slam + curiosity loop (34.4–48.5s)
+      // ──────────────────────────────────────────────────────────────────
+      tl.set("#h-s6", { visibility: "visible" }, 34.4);
+      tl.to("#h-s6", { opacity: 1, duration: 0.4, ease: "power2.out" }, 34.4);
+
+      // "And he has the receipts —" callback at 34.85
+      tl.to("#h-s6-callback", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 34.85);
+
+      // TITLE SLAM at 36.74 — 3D depth scale-from-far
+      tl.to("#h-s6-title", {
+        scale: 1, opacity: 1, filter: "blur(0px)", z: 0,
+        duration: 1.1, ease: "power3.out"
+      }, 36.74);
+      // emphasis pulse on "effectiveness" italic
+      tl.to("#h-s6-title em", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center" }, 37.9);
+
+      // Subline "By the end of this video..." at 40.60
+      tl.to("#h-s6-sub", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 40.60);
+
+      // Marker sweep under "look very different" at 45.02
+      tl.to("#h-s6-mark", { width: "100%", duration: 0.6, ease: "power2.out" }, 45.02);
+
+      // Final emphasis on "good thing" at 47.99
+      tl.to("#h-s6-sub em", { scale: 1.07, color: "var(--accent-1)", duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 47.99);
+
+      window.__timelines["scene-hook"] = tl;
+    </script>
+  </div>
+</template>

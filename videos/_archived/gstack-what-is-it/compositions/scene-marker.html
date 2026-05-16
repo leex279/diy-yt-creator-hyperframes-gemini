@@ -1,0 +1,113 @@
+<!--
+  scene-marker.html — Headline with marker-sweep highlight on a key word (~8s).
+
+  Pattern: pretitle → big headline (one word wrapped in a marker
+           highlight) → supporting subline. The marker is a real DOM
+           band absolutely positioned behind the word; we animate its
+           clip-path from inset(0 100% 0 0) → inset(0 0% 0 0) so it
+           paints left-to-right like a highlighter sweep.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-marker"].
+-->
+<template id="scene-marker-template">
+  <div data-composition-id="scene-marker"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-marker-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-marker-content .pretitle {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 36px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-warm);
+      }
+      #scene-marker-content .headline {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: 156px;
+        line-height: 1.0;
+        letter-spacing: -4px;
+        color: var(--accent-ink);
+        max-width: 980px;
+      }
+      #scene-marker-content .marker-wrap {
+        position: relative;
+        display: inline-block;
+        color: var(--accent-ink);
+        padding: 0 14px;
+      }
+      #scene-marker-content .marker-band {
+        position: absolute;
+        left: 0; right: 0; bottom: 14px;
+        height: 60%;
+        background: var(--accent-warm);
+        border-radius: 6px;
+        z-index: -1;
+        opacity: 0.95;
+      }
+      #scene-marker-content .subline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 500;
+        font-size: 44px;
+        line-height: 1.3;
+        color: rgba(255, 255, 255, 0.85);
+        max-width: 880px;
+      }
+    </style>
+
+    <div id="scene-marker-content">
+      <div class="pretitle" id="marker-pretitle">The signature skill</div>
+      <div class="headline" id="marker-headline">
+        It runs
+        <span class="marker-wrap">
+          <span class="marker-band" id="marker-band"></span>/office-hours
+        </span>
+        first.
+      </div>
+      <div class="subline"  id="marker-subline">Six forcing questions, modeled on YC partner sessions.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance (0 → 2.2s)
+      tl.from("#marker-pretitle", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#marker-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, 0.3);
+      // Marker sweep — band starts fully clipped (invisible) and reveals
+      // left-to-right as if drawn by a highlighter.
+      tl.fromTo("#marker-band",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "power2.inOut" }, 1.1);
+      tl.from("#marker-subline",  { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 1.7);
+
+      // Mid-beats
+      // Beat A (4.5s): marker band breathe (opacity pulse)
+      tl.to("#marker-band", { opacity: 1.0, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 4.5);
+      // Beat B (6.5s): headline scale-up emphasis
+      tl.to("#marker-headline", { scale: 1.025, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 6.5);
+      // Beat C (8.5s): marker SWEEPS BACK and forward again (re-draws the highlight)
+      tl.to("#marker-band", { clipPath: "inset(0 100% 0 0)", duration: 0.5, ease: "power2.inOut" }, 8.5);
+      tl.to("#marker-band", { clipPath: "inset(0 0% 0 0)",   duration: 0.5, ease: "power2.inOut" }, 9.0);
+      // Beat D (11s): subline italic re-emphasis
+      tl.to("#marker-subline", { scale: 1.04, color: "var(--accent-warm)", duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 11);
+      // Beat E (13s): pretitle letter-spacing nudge
+      tl.to("#marker-pretitle", { letterSpacing: "8px", duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 13);
+
+      window.__timelines["scene-marker"] = tl;
+    </script>
+  </div>
+</template>

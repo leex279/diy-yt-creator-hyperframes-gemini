@@ -1,0 +1,165 @@
+<!--
+  scene-badges.html — Product/tool logo grid (~11s).
+
+  Pattern: header → 2x3 grid of brand logo cards (logo + name). Logos reveal
+           at the moment narration names them; remaining cards reveal during
+           "and dozens more". The visual carries the brand recognition that
+           text-only pills couldn't.
+
+  Narration anchors (scene-rel):
+    1.98  "Claude Code."
+    2.66  "Cursor."
+    3.22  "V S Code."
+    4.05  "OpenAI Codex."
+    5.98  "And dozens more."   → fill the remaining 2 tiles (Gemini + GitHub)
+    6.97  "Same file. Same format."
+    9.37  "Zero rewrites."
+-->
+<template id="scene-badges-template">
+  <div data-composition-id="scene-badges"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-badges-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:30px;
+        box-sizing:border-box;
+      }
+      #scene-badges-content .header {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 88px;
+        line-height: 1.05;
+        letter-spacing: -2px;
+        color: var(--accent-ink);
+        max-width: 940px;
+      }
+      #scene-badges-content .header .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-badges-content .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        width: 940px;
+      }
+      #scene-badges-content .card {
+        display: flex; align-items: center; gap: 22px;
+        padding: 22px 28px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-warm);
+        border-radius: 22px;
+      }
+      #scene-badges-content .card .logo {
+        flex: 0 0 auto;
+        width: 96px; height: 96px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      #scene-badges-content .card .logo img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+      #scene-badges-content .card .name {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 30px;
+        letter-spacing: 1px;
+        color: var(--accent-ink);
+        line-height: 1.15;
+        text-align: left;
+        flex: 1;
+      }
+      #scene-badges-content .footer-row {
+        display: flex; gap: 18px; align-items: center;
+        margin-top: 4px;
+      }
+      #scene-badges-content .more-pill {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 38px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        padding: 16px 32px;
+        background: var(--accent-warm);
+        color: var(--text-on-warm);
+        border-radius: 999px;
+      }
+    </style>
+
+    <div id="scene-badges-content">
+      <div class="header" id="badges-header">
+        Same file. <span class="em">Thirty-seven</span> tools.
+      </div>
+      <div class="grid">
+        <div class="card" id="badge-1">
+          <span class="logo"><img src="assets/logos/claude-code-logo-dark.svg" alt="Claude Code"></span>
+          <span class="name">Claude Code</span>
+        </div>
+        <div class="card" id="badge-2">
+          <span class="logo"><img src="assets/logos/cursor-logo.png" alt="Cursor"></span>
+          <span class="name">Cursor</span>
+        </div>
+        <div class="card" id="badge-3">
+          <span class="logo"><img src="assets/logos/vscode-logo.png" alt="VS Code"></span>
+          <span class="name">VS Code</span>
+        </div>
+        <div class="card" id="badge-4">
+          <span class="logo"><img src="assets/logos/openai-logo.png" alt="OpenAI"></span>
+          <span class="name">OpenAI Codex</span>
+        </div>
+        <div class="card" id="badge-5">
+          <span class="logo"><img src="assets/logos/gemini-logo.svg" alt="Gemini"></span>
+          <span class="name">Gemini CLI</span>
+        </div>
+        <div class="card" id="badge-6">
+          <span class="logo"><img src="assets/logos/github-logo.svg" alt="GitHub Copilot"></span>
+          <span class="name">GitHub Copilot</span>
+        </div>
+      </div>
+      <div class="footer-row" id="badges-footer">
+        <span class="more-pill" id="badges-more">+ 31 more</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Header enters first
+      tl.from("#badges-header", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
+
+      // Hide all cards + footer
+      tl.set("#scene-badges-content .card", { y: 30, scale: 0.88, opacity: 0 }, 0);
+      tl.set("#badges-more", { scale: 0.85, opacity: 0 }, 0);
+
+      // Reveal cards aligned to narration anchors (named products in order)
+      tl.to("#badge-1", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 1.80);  // before "Claude Code" 1.98
+      tl.to("#badge-2", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 2.50);  // before "Cursor" 2.66
+      tl.to("#badge-3", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 3.05);  // before "VS Code" 3.22
+      tl.to("#badge-4", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 3.90);  // before "OpenAI Codex" 4.05
+
+      // "And dozens more" at 5.98 → fill remaining 2 tiles together, then the "+31 more" pill pops
+      tl.to("#badge-5", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 5.70);
+      tl.to("#badge-6", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 5.85);
+      tl.to("#badges-more", { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, 6.10);
+
+      // "Thirty-seven" emphasis at "Same file. Same format" ~6.97s
+      tl.to("#badges-header .em", { scale: 1.08, duration: 0.5, ease: "back.out(1.5)", yoyo: true, repeat: 1 }, 6.95);
+
+      // "Zero rewrites" at 9.37 → all cards pulse together
+      tl.to("#scene-badges-content .card", { scale: 1.025, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 9.30);
+
+      window.__timelines["scene-badges"] = tl;
+    </script>
+  </div>
+</template>

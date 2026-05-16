@@ -1,0 +1,120 @@
+<!--
+  scene-video-embed.html — Embedded video clip archetype (Anthropic long-form).
+
+  Wire a real video clip per video — the bare template ships a placeholder
+  div (no video element) so lint stays clean on the bare template.
+
+  OPERATOR: Replace the #vembed-placeholder div with a real video element:
+    div id="vembed-wrapper" class="clip"
+         data-start="0" data-duration="14" data-track-index="1"
+         style="..."
+      video id="vembed-clip"
+             src="assets/clips/demo.mp4"
+             muted
+             style="width:100%; height:100%; object-fit:cover; border-radius:24px;"
+
+  To bring clip audio in (separate track):
+    ffmpeg -i assets/clips/demo.mp4 -vn -acodec libmp3lame assets/clips/demo-audio.mp3
+
+    audio id="vembed-audio"
+           src="assets/clips/demo-audio.mp3"
+           data-start="0"
+           data-duration="14"
+           data-track-index="6"
+           data-volume="0.6"
+
+  Different filename required: pointing video+audio at the same .mp4 triggers
+  duplicate_media_discovery_risk lint warning.
+
+  Never animate the video element directly — animate the wrapper div.
+-->
+<template id="scene-video-embed-template">
+  <div data-composition-id="scene-video-embed"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-vembed-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 28px;
+        box-sizing: border-box;
+      }
+      #vembed-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+      }
+      /* Wrapper for the video element — animate this, never the video directly */
+      #vembed-frame {
+        width: 1440px;
+        max-width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 24px;
+        border: 2px solid var(--border-bright);
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        background: var(--bg-card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #vembed-placeholder {
+        color: var(--text-secondary);
+        font-family: var(--mono);
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 40px;
+      }
+      #vembed-caption {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 28px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        text-align: center;
+        max-width: 1400px;
+      }
+    </style>
+
+    <div id="scene-vembed-content">
+      <div id="vembed-overline">DEMO</div>
+      <div id="vembed-frame">
+        <div id="vembed-placeholder">
+          OPERATOR: Replace this div with a video element pointing at assets/clips/demo.mp4
+        </div>
+      </div>
+      <div id="vembed-caption">Replace with caption describing the clip content</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 16;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.from("#vembed-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#vembed-frame",    { scale: 0.96, opacity: 0, duration: 0.8, ease: "power3.out", immediateRender: false }, 0.4);
+      tl.from("#vembed-caption",  { y: 16, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 1.2);
+
+      // Pin timeline
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-video-embed"] = tl;
+    </script>
+  </div>
+</template>

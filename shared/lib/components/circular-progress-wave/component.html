@@ -1,0 +1,239 @@
+<!--
+  shared/lib/components/circular-progress-wave/component.html
+  Circular SVG progress arc — outer track at 8% opacity; foreground arc
+  fills 0→target%. A bright bead/wave rides the arc's leading edge via
+  a GSAP-driven stroke-dashoffset animation. Optional center number
+  increments in lockstep with the arc.
+
+  Element markup:
+    <div class="circular-progress-wave" data-target="75">
+      <svg class="cpw-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+        <circle class="cpw-track" cx="120" cy="120" r="100"/>
+        <circle class="cpw-arc"   cx="120" cy="120" r="100"/>
+      </svg>
+      <div class="cpw-center">
+        <span class="cpw-number">0</span>
+        <span class="cpw-unit">%</span>
+      </div>
+    </div>
+
+  SOURCE: Original — no template extraction. Authored for shared/lib.
+
+  COMPONENT IS PASTE-IN — split into three sections below.
+
+  ── HOW TO USE ──────────────────────────────────────────────────────────
+
+  1) HTML — paste the wrapper wherever the circular progress should appear.
+     data-target sets the target fill percent (0–100).
+-->
+
+<div class="circular-progress-wave" data-target="75">
+  <svg class="cpw-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- Track (background ring, 8% opacity) -->
+    <circle class="cpw-track" cx="120" cy="120" r="100"/>
+    <!-- Foreground arc — stroke-dashoffset drives the fill -->
+    <circle class="cpw-arc" cx="120" cy="120" r="100"/>
+    <!-- Wave bead — a small bright circle that rides the leading edge.
+         Positioned at SVG (220,120) = the arc's path-start (after parent's -90deg
+         rotation, this renders at visual 12 o'clock). Animated via SVG-native
+         transform="rotate(N 120 120)" attribute so the rotation pivots around
+         the SVG viewBox center, not the bead's own bounding box. -->
+    <circle class="cpw-bead" cx="220" cy="120" r="8" transform="rotate(0 120 120)"/>
+  </svg>
+  <div class="cpw-center">
+    <span class="cpw-number">0</span>
+    <span class="cpw-unit">%</span>
+  </div>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/circular-progress-wave — keep this comment block */
+
+  /* The circumference of r=100 circle: 2π×100 ≈ 628.32 */
+  :root {
+    --cpw-circumference: 628.32;
+  }
+
+  .circular-progress-wave {
+    position: relative;
+    width: var(--cpw-size, 320px);
+    height: var(--cpw-size, 320px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cpw-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Start arc at 12 o'clock (top), rotate -90° */
+    transform: rotate(-90deg);
+    overflow: visible;
+  }
+
+  .cpw-track {
+    fill: none;
+    stroke: var(--accent, #E97458);
+    stroke-width: 14;
+    opacity: 0.08;
+    stroke-linecap: round;
+  }
+
+  .cpw-arc {
+    fill: none;
+    stroke: var(--accent, #E97458);
+    stroke-width: 14;
+    stroke-linecap: round;
+    /* Full circumference hidden = 0% fill */
+    stroke-dasharray: var(--cpw-circumference, 628.32);
+    stroke-dashoffset: var(--cpw-circumference, 628.32);
+    filter: drop-shadow(0 0 8px rgba(233, 116, 88, 0.65))
+            drop-shadow(0 0 20px rgba(233, 116, 88, 0.30));
+  }
+
+  /* Wave bead: small bright circle at the arc's leading edge.
+     Rotation is driven via SVG-native transform attribute (NOT CSS transform),
+     so transform-origin is unused here. */
+  .cpw-bead {
+    fill: #fff;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9))
+            drop-shadow(0 0 14px rgba(233, 116, 88, 0.9));
+    opacity: 0;
+  }
+
+  .cpw-center {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    /* Center text above the SVG */
+    z-index: 1;
+  }
+
+  .cpw-number {
+    font-family: var(--sans, 'Inter', system-ui, sans-serif);
+    font-weight: 900;
+    font-size: var(--cpw-number-size, 80px);
+    line-height: 1.0;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--text, #F5F1EB);
+  }
+
+  .cpw-unit {
+    font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace);
+    font-weight: 700;
+    font-size: var(--cpw-unit-size, 36px);
+    color: var(--accent, #E97458);
+    letter-spacing: 1px;
+    margin-top: -6px;
+  }
+</style>
+
+<!--
+  3) JS — paste this function into the host <script> and call it against
+     your composition's GSAP timeline.
+
+     addCircularProgressWave(tl, sel, at, opts)
+       tl   — the host GSAP timeline (paused)
+       sel  — CSS selector for the .circular-progress-wave wrapper
+       at   — timeline start time (seconds)
+       opts — { target: number (0–100), duration: number }
+                 target   — target fill percent (reads data-target attr if omitted)
+                 duration — fill duration in seconds (default: 1.6)
+
+     SFX wiring (host must add <audio> elements — see recipe.md):
+       1 × cinematic-whoosh  at at + 0.0   (track 3)
+       1 × pop               at at + duration (track 4)
+     2 <audio> elements total.
+-->
+
+<script>
+  function addCircularProgressWave(tl, sel, at, opts) {
+    var o = opts || {};
+    var el = document.querySelector(sel);
+    var target = (o.target !== undefined) ? o.target
+               : (el ? parseFloat(el.getAttribute('data-target')) : 100);
+    var duration = (o.duration !== undefined) ? o.duration : 1.6;
+
+    var arcSel   = sel + ' .cpw-arc';
+    var beadSel  = sel + ' .cpw-bead';
+    var numSel   = sel + ' .cpw-number';
+    var wrapSel  = sel;
+
+    var CIRC = 628.32;
+    // dashoffset for target%: full=628.32(0%) → 0(100%)
+    var targetOffset = CIRC * (1 - target / 100);
+    // Bead angle for target%: starts at 0deg (12 o'clock = top of SVG, compensating -90deg rotate)
+    // The bead orbits the circle at r=100 from cx=120,cy=20 (top point).
+    // We animate a CSS rotate on the bead using transform-origin 120px 120px.
+    var targetAngle = (target / 100) * 360;
+
+    // Hide at t=0
+    tl.set(wrapSel, { opacity: 0 }, 0);
+    tl.set(arcSel, { strokeDashoffset: CIRC }, 0);
+    tl.set(beadSel, { opacity: 0 }, 0);
+
+    // Fade wrapper in
+    tl.to(wrapSel, { opacity: 1, duration: 0.2, ease: 'power1.out' }, at);
+
+    // Arc fill: animate strokeDashoffset from CIRC → targetOffset
+    tl.to(arcSel, {
+      strokeDashoffset: targetOffset,
+      duration: duration,
+      ease: 'power2.inOut'
+    }, at);
+
+    // Bead rides the leading edge — drive the SVG transform attribute directly
+    // via a proxy so the rotation pivots around viewBox center (120,120),
+    // independent of the bead's own bounding box.
+    var beadProxy = { angle: 0 };
+    tl.to(beadSel, { opacity: 1, duration: 0.15, ease: 'power1.out' }, at);
+    tl.to(beadProxy, {
+      angle: targetAngle,
+      duration: duration,
+      ease: 'power2.inOut',
+      onUpdate: function () {
+        var beadEl = document.querySelector(beadSel);
+        if (beadEl) {
+          beadEl.setAttribute('transform', 'rotate(' + beadProxy.angle + ' 120 120)');
+        }
+      }
+    }, at);
+    // Bead fades out as arc reaches target
+    tl.to(beadSel, { opacity: 0, duration: 0.25, ease: 'power1.in' }, at + duration - 0.25);
+
+    // Center number ticks in lockstep with arc
+    var numEl = document.querySelector(numSel);
+    var proxy = { val: 0 };
+    tl.to(proxy, {
+      val: target,
+      duration: duration,
+      ease: 'power2.inOut',
+      onUpdate: function () {
+        if (numEl) numEl.textContent = Math.round(proxy.val);
+      }
+    }, at);
+
+    // Completion: arc glow flash + pop scale
+    tl.to(arcSel, {
+      filter: 'drop-shadow(0 0 20px rgba(233,116,88,0.95)) drop-shadow(0 0 50px rgba(233,116,88,0.50))',
+      duration: 0.12,
+      ease: 'power2.out'
+    }, at + duration);
+    tl.to(arcSel, {
+      filter: 'drop-shadow(0 0 8px rgba(233,116,88,0.65)) drop-shadow(0 0 20px rgba(233,116,88,0.30))',
+      duration: 0.5,
+      ease: 'power2.in'
+    }, at + duration + 0.12);
+  }
+</script>

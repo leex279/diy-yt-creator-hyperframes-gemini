@@ -1,0 +1,240 @@
+/* _hook-styles.css — hook-scene-faithful styles for variants 11-15.
+   Anthropic's playbook headline + 5/2/3 trio + thesis subhead + article + shape backdrop.
+   Tuned for 1280x720 (denser than the 1920x1080 hook scene it mirrors). */
+
+/* ── Shape backdrop ───────────────────────────────────────────── */
+.shape-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.shape-backdrop img {
+  position: absolute;
+  object-fit: contain;
+  opacity: 0.055;
+  filter: brightness(2.2);
+}
+.theme-cream .shape-backdrop img { filter: brightness(0.55); opacity: 0.07; }
+.shape-backdrop .s1 { left: -100px; top: -140px;  width: 580px; height: 580px; transform: rotate(-12deg); }
+.shape-backdrop .s2 { right: -180px; top: 80px;   width: 520px; height: 520px; transform: rotate(28deg); }
+.shape-backdrop .s3 { left: 220px;  bottom: -240px; width: 580px; height: 580px; transform: rotate(-32deg); }
+
+/* ── ANTHROPIC'S PLAYBOOK headline ─────────────────────────────── */
+.hook-title {
+  position: absolute;
+  top: 84px;
+  left: 60px;
+  width: 700px;
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 96px;
+  line-height: 0.92;
+  letter-spacing: -3px;
+  z-index: 3;
+  color: #F5F1EB;
+  text-transform: uppercase;
+}
+.hook-title .accent { color: #E97458; }
+.theme-cream .hook-title { color: #1A1815; }
+.theme-cream .hook-title .accent { color: #C75A3F; }
+
+/* ── 5 / 2 / 3 number trio with labels ─────────────────────────── */
+.hook-numbers {
+  position: absolute;
+  top: 290px;
+  left: 60px;
+  display: flex;
+  flex-direction: row;
+  gap: 36px;
+  z-index: 3;
+}
+.hook-numbers .col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.hook-numbers .num {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 84px;
+  line-height: 0.9;
+  letter-spacing: -3px;
+  font-feature-settings: "tnum";
+}
+.hook-numbers .num.n1 { color: #E97458; text-shadow: 0 0 22px rgba(233, 116, 88, 0.45); }
+.hook-numbers .num.n2 { color: #A78BFA; text-shadow: 0 0 22px rgba(167, 139, 250, 0.45); }
+.hook-numbers .num.n3 { color: #6B9AEF; text-shadow: 0 0 22px rgba(107, 154, 239, 0.45); }
+.theme-cream .hook-numbers .num.n1 { color: #C75A3F; text-shadow: none; }
+.theme-cream .hook-numbers .num.n2 { color: #7C3AED; text-shadow: none; }
+.theme-cream .hook-numbers .num.n3 { color: #2563EB; text-shadow: none; }
+.hook-numbers .lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #9A958D;
+  max-width: 140px;
+  line-height: 1.2;
+}
+.theme-cream .hook-numbers .lbl { color: #5C544B; }
+
+/* ── "JUST PUBLISHED" chip ─────────────────────────────────────── */
+.hook-pub-chip {
+  position: absolute;
+  left: 60px;
+  top: 430px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  background: rgba(233, 116, 88, 0.14);
+  border: 1.5px solid rgba(233, 116, 88, 0.40);
+  border-radius: 8px;
+  color: #E97458;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hook-pub-chip::before {
+  content: "";
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.theme-cream .hook-pub-chip {
+  background: rgba(199, 90, 63, 0.10);
+  border-color: rgba(199, 90, 63, 0.45);
+  color: #C75A3F;
+}
+
+/* ── Thesis subhead (bottom-left) ──────────────────────────────── */
+.hook-sub {
+  position: absolute;
+  left: 60px;
+  bottom: 50px;
+  right: 530px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 1.06;
+  letter-spacing: -1px;
+  color: #F5F1EB;
+  z-index: 3;
+}
+.hook-sub .accent { color: #E97458; }
+.theme-cream .hook-sub { color: #1A1815; }
+.theme-cream .hook-sub .accent { color: #C75A3F; }
+
+/* Marker-under utility tuned for hook-sub */
+.hook-sub .marker {
+  position: relative;
+  display: inline-block;
+}
+.hook-sub .marker::after {
+  content: "";
+  position: absolute;
+  left: -2%; right: -2%;
+  bottom: 2px;
+  height: 6px;
+  background: #E97458;
+  opacity: 0.75;
+  border-radius: 3px;
+}
+.theme-cream .hook-sub .marker::after { background: #C75A3F; }
+
+/* ── "FROM THE ARTICLE →" pill (bottom-right) ──────────────────── */
+.hook-from-pill {
+  position: absolute;
+  right: 70px;
+  bottom: 50px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(233, 116, 88, 0.10);
+  border: 1.5px solid rgba(233, 116, 88, 0.50);
+  color: #E97458;
+  z-index: 3;
+}
+.theme-cream .hook-from-pill {
+  background: rgba(199, 90, 63, 0.10);
+  border-color: rgba(199, 90, 63, 0.50);
+  color: #C75A3F;
+}
+
+/* ── Landscape article card (right side) ───────────────────────── */
+.hook-article-landscape {
+  position: absolute;
+  right: 60px;
+  top: 140px;
+  width: 460px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(233, 116, 88, 0.55);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.55), 0 0 60px rgba(233, 116, 88, 0.22);
+  z-index: 2;
+  background: #0B0F18;
+}
+.hook-article-landscape img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── 9:16 phone frame (vertical article preview) ───────────────── */
+.hook-phone {
+  position: absolute;
+  right: 80px;
+  top: 60px;
+  width: 250px;
+  height: 444px;
+  background: #161B26;
+  border: 6px solid #2a2a30;
+  border-radius: 34px;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.65), 0 0 50px rgba(233, 116, 88, 0.22);
+  overflow: hidden;
+  z-index: 2;
+  box-sizing: border-box;
+}
+.hook-phone::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 86px;
+  height: 18px;
+  background: #2a2a30;
+  border-radius: 11px;
+  z-index: 4;
+}
+.hook-phone .phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 26px;
+  overflow: hidden;
+  background: #0B0F18;
+  position: relative;
+}
+.hook-phone .phone-screen img {
+  /* The article-header.png is landscape (1264×625) — scale it up + position
+     so the title fills the visible phone screen vertically. */
+  position: absolute;
+  width: 380%;
+  height: auto;
+  top: 26%;
+  left: -120%;
+  display: block;
+}

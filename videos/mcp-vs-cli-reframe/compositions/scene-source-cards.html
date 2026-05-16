@@ -1,0 +1,467 @@
+<!--
+  scene-source-cards.html — Sources + adoption (~91s).
+  Narration anchors (t_rel):
+    0.0   "You'll see takes online"                → overline
+    4.2   "Anthropic just reported"                 → headline word-stagger
+    5.5   "97 million monthly SDK downloads"        → adoption #1 counter
+    9.1   "over 10,000 active MCP servers"          → adoption #2 counter
+   12.8   "75+ Claude connectors"                   → adoption #3 counter
+   22.7   "Anthropic's Code Execution article"      → card 1 slides in (paper)
+   27.9   "Cloudflare's Code Mode post"             → card 2 slides in
+   32.4   "Anthropic's Agent Skills"                → card 3 slides in
+   59.2   "What died was the assumption"            → emphasis pulse
+   68.9   "Perplexity moved away from MCP"          → final lift
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden; perspective:2000px;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-source-cards-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 30px;
+        box-sizing:border-box;
+        transform-style: preserve-3d;
+      }
+      #scene-source-cards-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:12px;
+        text-align:center;
+      }
+      #scene-source-cards-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        display: flex; align-items: center; gap: 14px;
+      }
+      #scene-source-cards-content .overline::before,
+      #scene-source-cards-content .overline::after {
+        content: "";
+        width: 60px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-1), transparent);
+      }
+      #scene-source-cards-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 50px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1400px;
+        text-align: center;
+      }
+      #scene-source-cards-content .headline b { color: var(--accent-stat); }
+      #scene-source-cards-content .headline .w { display: inline-block; transform-style: preserve-3d; }
+
+      #scene-source-cards-content .adoption-row {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 0;
+        padding: 14px 36px;
+        border: 1px solid var(--border-bright);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.025);
+        transform-style: preserve-3d;
+      }
+      .adoption-stat {
+        text-align: left;
+        padding: 0 30px;
+        display: flex; flex-direction: column;
+        gap: 4px;
+      }
+      .adoption-stat .num {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 44px;
+        line-height: 1;
+        letter-spacing: -1px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .adoption-stat:nth-child(1) .num { color: var(--accent-1); }
+      .adoption-stat:nth-child(3) .num { color: var(--accent-2); }
+      .adoption-stat:nth-child(5) .num { color: var(--accent-3); }
+      .adoption-stat .label {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .adoption-divider {
+        width: 1px;
+        height: 50px;
+        background: var(--border-bright);
+      }
+
+      #scene-source-cards-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 24px;
+        transform-style: preserve-3d;
+      }
+      .source-card {
+        width: 540px;
+        border-radius: 10px;
+        background: var(--bg-elev);
+        border: 1px solid var(--border-bright);
+        display:flex; flex-direction:column;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+        overflow: hidden;
+        position: relative;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      .source-card .term-bar {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255,255,255,0.025);
+      }
+      .source-card .term-bar .dots { display: flex; gap: 5px; }
+      .source-card .term-bar .dots span { width: 8px; height: 8px; border-radius: 50%; }
+      .source-card .term-bar .dots .r { background: #ef4444; }
+      .source-card .term-bar .dots .y { background: var(--accent-stat); }
+      .source-card .term-bar .dots .g { background: var(--accent-4); }
+      .source-card .term-bar .file {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        flex: 1;
+      }
+      .source-card .term-bar .stamp {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        padding: 3px 8px;
+        border-radius: 3px;
+        background: rgba(52, 211, 153, 0.12);
+        color: var(--accent-4);
+      }
+      .source-card .term-bar .stamp::before { content: "● "; }
+
+      .source-card .body {
+        padding: 22px 26px 24px;
+        display: flex; flex-direction: column;
+        gap: 14px;
+        flex: 1;
+      }
+      .source-card .src-line {
+        display: flex; align-items: baseline; justify-content: space-between;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      .source-card.a .src-line .src { color: #93C5FD; }
+      .source-card.b .src-line .src { color: #67E8F9; }
+      .source-card.c .src-line .src { color: #C4B5FD; }
+      .source-card .src-line .date { color: var(--text-muted); }
+
+      .source-card .ttl {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 26px;
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        color: var(--text);
+      }
+
+      .source-card .receipt-num {
+        display: flex; align-items: baseline; gap: 12px;
+        padding: 14px 0 8px;
+        border-top: 1px dashed var(--border);
+        border-bottom: 1px dashed var(--border);
+        margin: 6px 0;
+      }
+      .source-card .receipt-num .big {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 80px;
+        line-height: 0.9;
+        letter-spacing: -3px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .source-card.a .receipt-num .big { color: var(--accent-1); }
+      .source-card.b .receipt-num .big { color: var(--accent-2); }
+      .source-card.c .receipt-num .big { color: var(--accent-3); }
+      .source-card .receipt-num .unit {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        padding-bottom: 6px;
+      }
+
+      .source-card .lines {
+        list-style: none;
+        display: flex; flex-direction: column;
+        gap: 8px;
+      }
+      .source-card .lines li {
+        display: flex; align-items: baseline; justify-content: space-between;
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 14px;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+      }
+      .source-card .lines li::before {
+        content: "›";
+        color: var(--text-muted);
+        margin-right: 6px;
+      }
+      .source-card .lines li b {
+        color: var(--text);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .source-card .lines li .v {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-weight: 700;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .source-card .barcode {
+        margin-top: auto;
+        display: flex; align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        gap: 12px;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        color: var(--text-muted);
+      }
+      .source-card .barcode .bars {
+        flex: 1;
+        height: 18px;
+        background-image: repeating-linear-gradient(
+          90deg,
+          var(--text-muted) 0 1px,
+          transparent 1px 3px,
+          var(--text-muted) 3px 4px,
+          transparent 4px 6px,
+          var(--text-muted) 6px 9px,
+          transparent 9px 11px
+        );
+        opacity: 0.5;
+      }
+    </style>
+
+    <div id="scene-source-cards-content">
+      <div class="header-block">
+        <div class="overline" id="src-overline">RECEIPTS · OFFICIAL SOURCES</div>
+        <div class="headline" id="src-headline">
+          <span class="w" data-w="0">MCP</span>
+          <span class="w" data-w="1">isn't</span>
+          <span class="w" data-w="2">dying.</span>
+          <b><span class="w" data-w="3">It's</span>
+          <span class="w" data-w="4">becoming</span>
+          <span class="w" data-w="5">infrastructure.</span></b>
+        </div>
+      </div>
+
+      <div class="adoption-row" id="src-adoption-row">
+        <div class="adoption-stat" id="src-adoption-1">
+          <div class="num" id="adopt-num-1">0</div>
+          <div class="label">Monthly SDK downloads</div>
+        </div>
+        <div class="adoption-divider"></div>
+        <div class="adoption-stat" id="src-adoption-2">
+          <div class="num" id="adopt-num-2">0</div>
+          <div class="label">Active public MCP servers</div>
+        </div>
+        <div class="adoption-divider"></div>
+        <div class="adoption-stat" id="src-adoption-3">
+          <div class="num" id="adopt-num-3">0</div>
+          <div class="label">Claude connectors</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="source-card a" id="src-card-1">
+          <div class="term-bar">
+            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+            <div class="file">~/receipts/anthropic.txt</div>
+            <div class="stamp" id="stamp-1">VERIFIED</div>
+          </div>
+          <div class="body">
+            <div class="src-line"><span class="src">ANTHROPIC ENG</span><span class="date">NOV 04 · 2025</span></div>
+            <div class="ttl">Code execution<br>with MCP</div>
+            <div class="receipt-num">
+              <span class="big">98.7<span style="font-size:48px;letter-spacing:-1px;">%</span></span>
+              <span class="unit">context<br>reduction</span>
+            </div>
+            <ul class="lines">
+              <li>Drive → Salesforce <span class="v">150K → 2K</span></li>
+              <li>Pattern <span class="v">typed import</span></li>
+            </ul>
+            <div class="barcode"><span>SRC.01</span><div class="bars"></div><span>A · 11.04.25</span></div>
+          </div>
+        </div>
+
+        <div class="source-card b" id="src-card-2">
+          <div class="term-bar">
+            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+            <div class="file">~/receipts/cloudflare.txt</div>
+            <div class="stamp" id="stamp-2">VERIFIED</div>
+          </div>
+          <div class="body">
+            <div class="src-line"><span class="src">CLOUDFLARE</span><span class="date">FEB 20 · 2026</span></div>
+            <div class="ttl">Code Mode · entire<br>API in 1,000 tokens</div>
+            <div class="receipt-num">
+              <span class="big">99.9<span style="font-size:48px;letter-spacing:-1px;">%</span></span>
+              <span class="unit">context<br>reduction</span>
+            </div>
+            <ul class="lines">
+              <li>2,500-endpoint API <span class="v">1.17M → 1K</span></li>
+              <li>Pattern <span class="v">search + execute</span></li>
+            </ul>
+            <div class="barcode"><span>SRC.02</span><div class="bars"></div><span>C · 02.20.26</span></div>
+          </div>
+        </div>
+
+        <div class="source-card c" id="src-card-3">
+          <div class="term-bar">
+            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+            <div class="file">~/receipts/skills.txt</div>
+            <div class="stamp" id="stamp-3">VERIFIED</div>
+          </div>
+          <div class="body">
+            <div class="src-line"><span class="src">ANTHROPIC DOCS</span><span class="date">AGENT SKILLS</span></div>
+            <div class="ttl">Progressive<br>disclosure · 3 levels</div>
+            <div class="receipt-num">
+              <span class="big">~40<span style="font-size:48px;letter-spacing:-1px;">tok</span></span>
+              <span class="unit">per skill<br>loaded</span>
+            </div>
+            <ul class="lines">
+              <li>L1 metadata <span class="v">~30–50 tok</span></li>
+              <li>L2/L3 loaded <span class="v">on demand</span></li>
+            </ul>
+            <div class="barcode"><span>SRC.03</span><div class="bars"></div><span>A · DOCS</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ══════════ HIDE EVERYTHING AT t=0 ══════════
+      tl.set("#src-overline",         { opacity: 0, y: -14 }, 0);
+      tl.set("#src-headline .w",      { opacity: 0, y: 22, rotationX: 55, transformOrigin: "center bottom" }, 0);
+      tl.set("#src-adoption-row",     { opacity: 0, y: 26, scale: 0.95 }, 0);
+      tl.set("#src-adoption-1, #src-adoption-2, #src-adoption-3", { opacity: 0, y: 16 }, 0);
+      tl.set("#src-card-1", { opacity: 0, y: 80, rotation: -3, rotationY: -25, transformOrigin: "right top" }, 0);
+      tl.set("#src-card-2", { opacity: 0, y: 80, rotation:  1.5, rotationY: 0,  transformOrigin: "center top" }, 0);
+      tl.set("#src-card-3", { opacity: 0, y: 80, rotation: -1, rotationY: 25,  transformOrigin: "left top" }, 0);
+      tl.set("#stamp-1, #stamp-2, #stamp-3", { opacity: 0, scale: 1.8 }, 0);
+
+      // ══════════ NARRATION-SYNCED REVEALS ══════════
+
+      // 0.0s — overline
+      tl.to("#src-overline", { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 0.0);
+
+      // 0.3–2.5s — headline word stagger
+      const hwTimes = [0.3, 0.6, 0.9, 1.2, 1.55, 1.9];
+      hwTimes.forEach((t, i) => {
+        tl.to(`#src-headline .w[data-w="${i}"]`,
+          { opacity: 1, y: 0, rotationX: 0, duration: 0.5, ease: "power3.out" }, t);
+      });
+
+      // 4.5s — adoption row container reveals
+      tl.to("#src-adoption-row", { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 4.5);
+
+      // 5.5s — adoption #1 (97M+ SDK downloads) — counter ticks
+      tl.to("#src-adoption-1", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 5.5);
+      const a1 = { v: 0 };
+      tl.to(a1, {
+        v: 97, duration: 1.2, ease: "power2.out",
+        onUpdate: () => {
+          const el = document.getElementById('adopt-num-1');
+          if (el) el.textContent = Math.round(a1.v) + 'M+';
+        }
+      }, 5.7);
+
+      // 9.1s — adoption #2 (10,000+ MCP servers)
+      tl.to("#src-adoption-2", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 9.1);
+      const a2 = { v: 0 };
+      tl.to(a2, {
+        v: 10000, duration: 1.3, ease: "power2.out",
+        onUpdate: () => {
+          const el = document.getElementById('adopt-num-2');
+          if (el) el.textContent = Math.round(a2.v).toLocaleString() + '+';
+        }
+      }, 9.3);
+
+      // 12.8s — adoption #3 (75+ Claude connectors)
+      tl.to("#src-adoption-3", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 12.8);
+      const a3 = { v: 0 };
+      tl.to(a3, {
+        v: 75, duration: 1.2, ease: "power2.out",
+        onUpdate: () => {
+          const el = document.getElementById('adopt-num-3');
+          if (el) el.textContent = Math.round(a3.v) + '+';
+        }
+      }, 13.0);
+
+      // 22.7s — card 1 (Anthropic Code Execution) drops in with paper rotation
+      tl.to("#src-card-1",
+        { opacity: 1, y: 0, rotation: -2, rotationY: 0, duration: 0.8, ease: "back.out(1.3)" }, 22.7);
+      tl.to("#stamp-1", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 23.4);
+
+      // 27.9s — card 2 (Cloudflare)
+      tl.to("#src-card-2",
+        { opacity: 1, y: 0, rotation: 1.5, rotationY: 0, duration: 0.8, ease: "back.out(1.3)" }, 27.9);
+      tl.to("#stamp-2", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 28.6);
+
+      // 32.4s — card 3 (Anthropic Agent Skills)
+      tl.to("#src-card-3",
+        { opacity: 1, y: 0, rotation: -1, rotationY: 0, duration: 0.8, ease: "back.out(1.3)" }, 32.4);
+      tl.to("#stamp-3", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 33.1);
+
+      // 36.0s — card 1 big number emphasis pulse (single beat)
+      tl.to("#src-card-1 .big", { scale: 1.06, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 1 }, 36.0);
+      // 41.0s — card 2 big number
+      tl.to("#src-card-2 .big", { scale: 1.06, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 1 }, 41.0);
+      // 49.0s — card 3 big number
+      tl.to("#src-card-3 .big", { scale: 1.06, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 1 }, 49.0);
+
+      // 59.2s — All 3 stamps glow simultaneously on "What died was the assumption"
+      tl.to("#stamp-1, #stamp-2, #stamp-3", {
+        boxShadow: "0 0 16px rgba(52, 211, 153, 0.55)",
+        duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 59.2);
+
+      // 68.9s — Final lift: all 3 cards lift together on "Perplexity moved away"
+      tl.to(".source-card",
+        { y: -8, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 68.9);
+
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

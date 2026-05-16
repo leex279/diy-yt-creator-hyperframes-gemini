@@ -1,0 +1,230 @@
+<!--
+  shared/lib/components/portal-ring/component.html
+  Circular dimensional portal — 3 concentric pulsating rings open from a point,
+  hold steady-state, then collapse. Outer ring: 600px diameter, from scale 0 to full
+  with fade-in. Mid ring: 400px, slight delay. Inner ring: 200px with radial-gradient
+  fill (purple core fading to transparent). Each ring rotates continuously at a
+  different speed. 0.6s warm-up flash on open; reverse collapse animation on close.
+
+  DETERMINISM: fully deterministic — no PRNG. No Math.random, no Date.now.
+  Finite rotation repeats calculated from (openDuration + holdSec + closeDuration).
+
+  SFX coupling: cinematic-whoosh (track 3) at at+0.0 (open) +
+                cinematic-whoosh (track 4) at at+openDuration+holdSec (close).
+
+  COMPONENT IS PASTE-IN — three sections below.
+
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this container at the desired z-index layer:
+-->
+
+<div class="portal-ring"></div>
+
+<!--
+  2) CSS — merge into your <style> block:
+-->
+
+<style>
+  /* shared/lib/components/portal-ring — keep this comment block */
+  .portal-ring {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .portal-ring svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .pr-ring-outer { opacity: 0; fill: none; }
+  .pr-ring-mid   { opacity: 0; fill: none; }
+  .pr-ring-inner { opacity: 0; }
+  .pr-open-flash { position: absolute; inset: 0; opacity: 0; background: #FFFFFF; pointer-events: none; }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addPortalRing(tl, ".portal-ring", 12.0);
+       addPortalRing(tl, ".portal-ring", 12.0, {
+         openDuration: 1.0, holdSec: 2.0, closeDuration: 0.8,
+         color: 'var(--portal, #B388FF)'
+       });
+
+     opts:
+       openDuration  — seconds for portal to open (default 1.0)
+       holdSec       — seconds portal stays open at full size (default 2.0)
+       closeDuration — seconds for portal to collapse (default 0.8)
+       color         — ring stroke/fill color CSS value (default var(--portal, #B388FF))
+       originX       — center X in canvas px (default 540)
+       originY       — center Y in canvas px (default 960)
+-->
+
+<script>
+  function addPortalRing(tl, containerSel, at, opts) {
+    var container = document.querySelector(containerSel);
+    if (!container) return;
+
+    var options      = opts || {};
+    var openDur      = options.openDuration  !== undefined ? options.openDuration  : 1.0;
+    var holdSec      = options.holdSec       !== undefined ? options.holdSec       : 2.0;
+    var closeDur     = options.closeDuration !== undefined ? options.closeDuration : 0.8;
+    var color        = options.color         !== undefined ? options.color         : 'var(--portal, #B388FF)';
+    var ox           = options.originX       !== undefined ? options.originX       : 540;
+    var oy           = options.originY       !== undefined ? options.originY       : 960;
+
+    var totalDur     = openDur + holdSec + closeDur;
+
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // Idempotent
+    var svgId = containerSel.replace(/[^a-zA-Z0-9]/g, '_') + '_pr_svg';
+    var existing = container.querySelector('#' + svgId);
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var flashEl = container.querySelector('.pr-open-flash');
+    if (!flashEl) {
+      flashEl = document.createElement('div');
+      flashEl.className = 'pr-open-flash';
+      container.appendChild(flashEl);
+    }
+
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('id', svgId);
+    svg.setAttribute('viewBox', '0 0 1080 1920');
+    container.appendChild(svg);
+
+    // ── Defs: inner ring radial gradient ──
+    var defs = document.createElementNS(ns, 'defs');
+    var gradId = svgId + '_inner_grad';
+    var grad = document.createElementNS(ns, 'radialGradient');
+    grad.setAttribute('id', gradId);
+    grad.setAttribute('cx', '50%'); grad.setAttribute('cy', '50%'); grad.setAttribute('r', '50%');
+    var gs0 = document.createElementNS(ns, 'stop');
+    gs0.setAttribute('offset', '0%');   gs0.setAttribute('stop-color', color); gs0.setAttribute('stop-opacity', '0.45');
+    var gs1 = document.createElementNS(ns, 'stop');
+    gs1.setAttribute('offset', '100%'); gs1.setAttribute('stop-color', color); gs1.setAttribute('stop-opacity', '0');
+    grad.appendChild(gs0); grad.appendChild(gs1);
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    // ── Rings ──
+    function makeRing(cls, r, strokeW, strokeCol) {
+      var c = document.createElementNS(ns, 'circle');
+      c.setAttribute('class', cls);
+      c.setAttribute('cx', ox);
+      c.setAttribute('cy', oy);
+      c.setAttribute('r', r);
+      c.setAttribute('stroke', strokeCol || color);
+      c.setAttribute('stroke-width', strokeW);
+      c.setAttribute('transform-origin', ox + 'px ' + oy + 'px');
+      return c;
+    }
+
+    // Outer ring: 300px radius, thin dashed stroke
+    var outerRing = makeRing('pr-ring-outer', 300, 2.5, color);
+    outerRing.setAttribute('stroke-dasharray', '20 10');
+    svg.appendChild(outerRing);
+
+    // Mid ring: 200px radius, solid stroke slightly thicker
+    var midRing = makeRing('pr-ring-mid', 200, 3.5, color);
+    midRing.setAttribute('stroke-dasharray', '30 8');
+    svg.appendChild(midRing);
+
+    // Inner ring: 100px radius, filled with gradient
+    var innerCircle = document.createElementNS(ns, 'circle');
+    innerCircle.setAttribute('class', 'pr-ring-inner');
+    innerCircle.setAttribute('cx', ox);
+    innerCircle.setAttribute('cy', oy);
+    innerCircle.setAttribute('r', 100);
+    innerCircle.setAttribute('fill', 'url(#' + gradId + ')');
+    innerCircle.setAttribute('stroke', color);
+    innerCircle.setAttribute('stroke-width', '2');
+    innerCircle.setAttribute('transform-origin', ox + 'px ' + oy + 'px');
+    svg.appendChild(innerCircle);
+
+    // ── OPEN phase ──
+    var flashDur = 0.3;
+
+    // Warm-up flash
+    gsap.set(flashEl, { opacity: 0 });
+    tl.to(flashEl, {
+      keyframes: [
+        { opacity: 0.35, duration: 0.12, ease: 'power3.out' },
+        { opacity: 0,    duration: flashDur - 0.12, ease: 'power2.in' }
+      ]
+    }, at);
+
+    // Outer ring open
+    gsap.set(outerRing, { scale: 0, opacity: 0, transformOrigin: ox + 'px ' + oy + 'px' });
+    tl.to(outerRing, { scale: 1, opacity: 0.75, duration: openDur * 0.9, ease: 'back.out(1.4)' }, at + 0.0);
+
+    // Mid ring open (slight delay)
+    gsap.set(midRing, { scale: 0, opacity: 0, transformOrigin: ox + 'px ' + oy + 'px' });
+    tl.to(midRing, { scale: 1, opacity: 0.9, duration: openDur * 0.85, ease: 'back.out(1.6)' }, at + 0.1);
+
+    // Inner circle open (latest)
+    gsap.set(innerCircle, { scale: 0, opacity: 0, transformOrigin: ox + 'px ' + oy + 'px' });
+    tl.to(innerCircle, { scale: 1, opacity: 0.8, duration: openDur * 0.75, ease: 'back.out(2.0)' }, at + 0.2);
+
+    // ── HOLD phase — slow rotation on each ring ──
+    var holdStart = at + openDur;
+    // Finite repeat counts: Math.ceil(holdSec / rotationPeriod)
+    // Outer: 360deg in 4s → repeats = ceil(holdSec / 4)
+    var outerRepeats = Math.ceil(holdSec / 4);
+    var midRepeats   = Math.ceil(holdSec / 6);
+    var innerRepeats = Math.ceil(holdSec / 3);
+
+    // Outer rotation: 90 deg per repeat (4s period → 360deg total)
+    tl.to(outerRing, {
+      rotation: 360,
+      duration: 4,
+      ease: 'none',
+      repeat: outerRepeats,
+      transformOrigin: ox + 'px ' + oy + 'px'
+    }, holdStart);
+
+    // Mid rotation: opposite direction, slower
+    tl.to(midRing, {
+      rotation: -360,
+      duration: 6,
+      ease: 'none',
+      repeat: midRepeats,
+      transformOrigin: ox + 'px ' + oy + 'px'
+    }, holdStart);
+
+    // Inner pulsing opacity (breathes 0.8 → 0.4 → 0.8)
+    var innerBreathRepeats = Math.ceil(holdSec / 3) * 2; // yoyo counts double
+    tl.to(innerCircle, {
+      opacity: 0.4,
+      duration: 1.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: innerBreathRepeats
+    }, holdStart);
+
+    // ── CLOSE phase ──
+    var closeStart = at + openDur + holdSec;
+
+    // Close flash
+    tl.to(flashEl, {
+      keyframes: [
+        { opacity: 0.25, duration: 0.1, ease: 'power3.out' },
+        { opacity: 0,    duration: 0.3, ease: 'power2.in' }
+      ]
+    }, closeStart);
+
+    // Collapse rings (innermost first)
+    tl.to(innerCircle, { scale: 0, opacity: 0, duration: closeDur * 0.65, ease: 'back.in(1.8)', transformOrigin: ox + 'px ' + oy + 'px' }, closeStart + 0.0);
+    tl.to(midRing,     { scale: 0, opacity: 0, duration: closeDur * 0.75, ease: 'back.in(1.5)', transformOrigin: ox + 'px ' + oy + 'px' }, closeStart + 0.08);
+    tl.to(outerRing,   { scale: 0, opacity: 0, duration: closeDur * 0.85, ease: 'back.in(1.3)', transformOrigin: ox + 'px ' + oy + 'px' }, closeStart + 0.16);
+  }
+  // End addPortalRing
+</script>

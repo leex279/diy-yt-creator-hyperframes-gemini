@@ -1,0 +1,273 @@
+﻿<!--
+  scene-workshop-intro.html â€” Friday workshop intro.
+  Shows the Luma event screenshot beside the workshop facts.
+  Para 1 of the script lives in this scene.
+-->
+<template id="scene-workshop-intro-template">
+  <div data-composition-id="scene-workshop-intro"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #wi-content {
+        width:100%; height:100%;
+        padding: 110px 120px 90px;
+        display:grid;
+        grid-template-columns: 1fr 920px;
+        gap: 90px;
+        align-items:center;
+        box-sizing:border-box;
+        position:relative;
+      }
+
+      /* LEFT â€” workshop facts */
+      #wi-eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 0.36em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 28px;
+      }
+      #wi-eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 64px; height: 2px;
+        background: var(--accent-2);
+      }
+      #wi-headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 92px;
+        line-height: 0.98;
+        letter-spacing: -0.025em;
+        color: var(--text);
+        margin-bottom: 36px;
+      }
+      #wi-headline .accent {
+        color: var(--accent);
+      }
+      #wi-headline .accent-2 {
+        color: var(--accent-2);
+      }
+      #wi-subline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 30px;
+        line-height: 1.4;
+        color: var(--text-2);
+        margin-bottom: 50px;
+      }
+
+      .wi-fact-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 0;
+        border-top: 1px solid rgba(96, 165, 250, 0.18);
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 26px;
+        color: var(--text);
+      }
+      .wi-fact-row:last-child {
+        border-bottom: 1px solid rgba(96, 165, 250, 0.18);
+      }
+      .wi-fact-row .dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        flex-shrink: 0;
+        box-shadow: 0 0 14px rgba(59, 130, 246, 0.7);
+      }
+      .wi-fact-row .label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--text-3);
+        width: 110px;
+        flex-shrink: 0;
+      }
+      .wi-fact-row .val {
+        font-weight: 600;
+      }
+
+      /* RIGHT â€” Luma event card */
+      #wi-event-card {
+        position: relative;
+        width: 880px;
+        height: 860px;
+        border-radius: 32px;
+        overflow: hidden;
+        background: #0B0E16;
+        border: 1px solid rgba(96, 165, 250, 0.25);
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.55),
+          0 0 60px rgba(59, 130, 246, 0.18);
+        transform: rotate(2.2deg);
+      }
+      #wi-event-card img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+      }
+      #wi-event-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg,
+          transparent 0%,
+          rgba(7, 9, 15, 0.15) 60%,
+          rgba(7, 9, 15, 0.55) 100%);
+        pointer-events: none;
+      }
+
+      /* Accent corner badge on the event card */
+      #wi-badge {
+        position: absolute;
+        top: 28px; right: 28px;
+        z-index: 5;
+        padding: 12px 22px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #051026;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+      }
+
+      /* Highlight ring that "lands" on the card */
+      #wi-ring {
+        position: absolute;
+        inset: -18px;
+        border-radius: 40px;
+        border: 2px solid var(--accent-2);
+        box-shadow: 0 0 50px rgba(14, 165, 233, 0.4);
+        pointer-events: none;
+      }
+    </style>
+
+    <div id="wi-content">
+      <!-- LEFT column â€” text -->
+      <div>
+        <div id="wi-eyebrow" style="opacity:0;visibility:hidden;">FRIDAY Â· DYNAMOUS COMMUNITY</div>
+        <div id="wi-headline" style="opacity:0;visibility:hidden;">
+          <span class="accent">90 minutes</span><br>
+          live with<br>
+          <span class="accent-2">Cole Medin.</span>
+        </div>
+        <div id="wi-subline" style="opacity:0;visibility:hidden;">
+          Six strategies to scale Claude Code into messy codebases.<br>
+          This video is the quick summary.
+        </div>
+
+        <div class="wi-fact-row" id="wi-fact-1" style="opacity:0;visibility:hidden;">
+          <div class="dot"></div>
+          <div class="label">When</div>
+          <div class="val">Friday, May 15 â€” 18:00 CEST</div>
+        </div>
+        <div class="wi-fact-row" id="wi-fact-2" style="opacity:0;visibility:hidden;">
+          <div class="dot"></div>
+          <div class="label">Host</div>
+          <div class="val">Cole Medin</div>
+        </div>
+        <div class="wi-fact-row" id="wi-fact-3" style="opacity:0;visibility:hidden;">
+          <div class="dot"></div>
+          <div class="label">Room</div>
+          <div class="val">97 engineers</div>
+        </div>
+      </div>
+
+      <!-- RIGHT column â€” event screenshot (with 3D perspective) -->
+      <div style="position:relative; perspective:1600px; transform-style:preserve-3d;">
+        <div id="wi-event-card" style="opacity:0;visibility:hidden; transform-style:preserve-3d; backface-visibility:hidden;">
+          <img src="assets/screenshots/workshop-event.png" alt="Workshop event" crossorigin="anonymous" />
+          <div id="wi-badge">COMMUNITY Â· WORKSHOP</div>
+        </div>
+        <div id="wi-ring" style="opacity:0;visibility:hidden;
+             position:absolute; top:-18px; left:-18px; right:-18px; bottom:-18px;
+             border-radius:40px; border:2px solid var(--accent-2);
+             box-shadow:0 0 50px rgba(14,165,233,0.4); pointer-events:none;
+             transform:rotate(2.2deg);"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial states â€” 3D flipped-away pose for the card
+      tl.set("#wi-event-card",
+        { x: 120, y: 30, scale: 0.8, rotation: -10, rotationY: -85, rotationX: 8, transformOrigin: "50% 50%" }, 0);
+      tl.set("#wi-ring", { scale: 1.12, rotationY: -60 }, 0);
+
+      // Eyebrow
+      tl.to("#wi-eyebrow",
+        { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+
+      // Headline â€” three lines staggered
+      tl.from("#wi-headline .accent",
+        { autoAlpha: 0, y: 36, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.7);
+      tl.fromTo("#wi-headline",
+        { autoAlpha: 0, y: 24 },
+        { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.7);
+
+      // Subline
+      tl.to("#wi-subline",
+        { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.4);
+
+      // Event card â€” 3D reveal: flips from edge into view, then settles
+      tl.to("#wi-event-card",
+        { autoAlpha: 1, duration: 0.2, ease: "power1.out" }, 0.8);
+      tl.to("#wi-event-card",
+        { rotationY: 0, rotationX: 0, duration: 1.1, ease: "power3.out" }, 0.8);
+      tl.to("#wi-event-card",
+        { x: 0, y: 0, scale: 1, rotation: 2.2, duration: 1.0, ease: "back.out(1.4)" }, 0.95);
+      // Subtle 3D parallax tilt after landing â€” adds depth, settles to flat
+      tl.to("#wi-event-card",
+        { rotationY: -3, rotationX: 1.5, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.4);
+
+      // Highlight ring after card lands
+      tl.to("#wi-ring",
+        { autoAlpha: 0.9, scale: 1, rotationY: 0, duration: 0.6, ease: "power2.out" }, 1.8);
+      tl.to("#wi-ring",
+        { autoAlpha: 0.5, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.8);
+
+      // Fact rows â€” step by step (hidden-until-reveal pattern, no overlap)
+      tl.set("#wi-fact-1", { x: -30 }, 0);
+      tl.set("#wi-fact-2", { x: -30 }, 0);
+      tl.set("#wi-fact-3", { x: -30 }, 0);
+
+      tl.to("#wi-fact-1",
+        { autoAlpha: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.4);
+
+      tl.to("#wi-fact-2",
+        { autoAlpha: 1, x: 0, duration: 0.45, ease: "power2.out" }, 4.6);
+
+      tl.to("#wi-fact-3",
+        { autoAlpha: 1, x: 0, duration: 0.45, ease: "power2.out" }, 7.2);
+
+      // Subtle card breath after last fact lands
+      tl.to("#wi-event-card",
+        { scale: 1.015, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 9.0);
+
+      tl.set({}, {}, 14);
+      window.__timelines["scene-workshop-intro"] = tl;
+    </script>
+  </div>
+</template>

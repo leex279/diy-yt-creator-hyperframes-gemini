@@ -1,0 +1,164 @@
+/* ──────────────────────────────────────────────────────────────────────
+   videos/html-vs-markdown-short/tokens/editorial-short.css
+
+   Editorial-light palette for the 60s vertical Short, mirroring the
+   long-form video's design language (videos/html-vs-markdown-claude-code).
+   Same warm cream + serif italic + terracotta accent system, but:
+     - spacing tuned for 1080×1920 vertical safe-zones (top/bottom 240px
+       for YouTube Shorts player chrome)
+     - type sizes bumped per .claude/rules/shorts-typography.md (body
+       text ≥ 32px, hero slam ≥ 140px on a 1080px canvas)
+
+   Scoped to :root so every sub-composition wired via data-composition-src
+   inherits these vars without needing a wrapper.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface (warm cream — same as long-form) ───────────────── */
+  --bg:             #F4F1EA;
+  --bg-card:        #FBF8F1;
+  --bg-surface:     #EFEBE0;
+  --bg-tint:        #E8E1CF;
+
+  --border:         rgba(28, 26, 24, 0.10);
+  --border-bright:  rgba(199, 90, 63, 0.50);
+
+  /* ── Single-accent system — terracotta-led ──────────────────── */
+  --accent-1:       #C75A3F;
+  --accent-2:       #B14938;
+  --accent-3:       #586F4F;
+  --accent-4:       #C75A3F;
+  --accent-warn:    #B14938;
+  --accent-stat:    #1A1815;
+
+  /* Convenience aliases for compatibility with shared lib entries
+     authored against either system. */
+  --primary:        var(--accent-1);
+  --secondary:      var(--accent-2);
+  --tertiary:       var(--accent-3);
+  --highlight:      var(--accent-1);
+  --pivot:          var(--accent-2);
+
+  /* ── Text (warm charcoal on cream) ──────────────────────────── */
+  --text:           #1A1815;
+  --text-secondary: #5C544B;
+  --text-muted:     #8A8175;
+  --text-on-warm:   #FBF8F1;
+  --text-on-deep:   #FBF8F1;
+
+  /* ── Pill chrome ────────────────────────────────────────────── */
+  --pill-bg:        rgba(28, 26, 24, 0.05);
+  --pill-border:    rgba(28, 26, 24, 0.15);
+
+  /* ── Spacing (1080×1920 vertical safe-zone for Shorts) ─────── */
+  --pad-top:        240px;
+  --pad-x:          80px;
+  --pad-bottom:     240px;
+
+  /* ── Type ───────────────────────────────────────────────────── */
+  --serif:          'Source Serif 4', 'Source Serif Pro', 'Playfair Display', 'EB Garamond', Georgia, serif;
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Override the dark-only assumptions the standard short template inherited
+   from its dark-stage forks. Same overrides as the long-form's editorial
+   tokens, just applied to the Short's chrome.
+   ────────────────────────────────────────────────────────────────────── */
+
+#ambient {
+  background:
+    radial-gradient(circle at 20% 12%, rgba(199, 90, 63, 0.07), transparent 55%),
+    radial-gradient(circle at 80% 88%, rgba(177, 73, 56, 0.05), transparent 60%) !important;
+}
+
+#shape-backdrop img {
+  opacity: 0.030 !important;
+  filter: hue-rotate(-15deg) saturate(0.6) !important;
+}
+
+#grain-overlay,
+#noise-overlay {
+  opacity: 0.020 !important;
+  mix-blend-mode: multiply !important;
+}
+
+/* Top banner — anchored on cream, terracotta wordmark */
+#top-banner-wordmark {
+  color: var(--accent-2) !important;
+}
+
+/* Progress bar — recolor to terracotta */
+#progress-track {
+  background: rgba(28, 26, 24, 0.08) !important;
+}
+#progress-fill {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2)) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Editorial-light helper classes — same vocabulary as the long-form so
+   per-scene HTML stays portable.
+   ────────────────────────────────────────────────────────────────────── */
+
+.accent-italic {
+  font-style: italic;
+  color: var(--accent-1);
+  font-family: var(--serif);
+}
+
+.section-number {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 56px;
+  color: var(--accent-1);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.section-overline-mono {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.section-h2-serif {
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 96px;
+  color: var(--text);
+  letter-spacing: -1px;
+  line-height: 1.0;
+}
+
+.body-serif {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 36px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.mono-badge {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--accent-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  letter-spacing: 1px;
+}
+
+.editorial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px 36px;
+  box-shadow: none;
+}

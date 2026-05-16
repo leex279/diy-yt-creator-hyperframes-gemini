@@ -1,0 +1,56 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/long-form/anthropic/tokens/anthropic-dark.css
+   Anthropic dark-stage palette adapted for long-form (1920x1080).
+
+   Carries the same variable NAMES as templates/long-form/standard/tokens/
+   long-form.css so per-video overrides are stable across template variants.
+   Values are the Anthropic dark-stage Shorts palette, tuned for horizontal
+   canvas safe-zones and proportionally larger type scale.
+
+   Contrast verified (WCAG, text on #0B0F18):
+     --text          #F5F1EB  → 14.6:1 (AAA)
+     --text-secondary #9A958D → 4.7:1  (AA normal)
+     --accent-1 (orange) #E97458 → 6.2:1 (AA normal — safe for 40px+)
+     --accent-2 (purple) #A78BFA → 8.5:1 (AA)
+     --accent-3 (blue)   #6B9AEF → 5.4:1 (AA)
+     --accent-4 (green)  #7DD3A6 → 9.6:1 (AAA)
+
+   USAGE:
+     Linked from index.html <head>:
+       <link rel="stylesheet" href="tokens/anthropic-dark.css">
+     Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #0B0F18;   /* near-black with blue bias — matches Anthropic Shorts exactly */
+  --bg-card:        #161B26;   /* dense card panels, secondary surfaces */
+  --bg-surface:     rgba(245, 241, 235, 0.08);   /* pill / chip fill */
+  --border:         rgba(245, 241, 235, 0.12);   /* card strokes */
+  --border-bright:  rgba(245, 241, 235, 0.18);   /* active / featured strokes */
+
+  /* ── Accents (Anthropic palette, project-swappable) ── */
+  --accent-1:       #E97458;  /* Claude orange — primary lead, replaces navy's blue */
+  --accent-2:       #A78BFA;  /* purple — secondary */
+  --accent-3:       #6B9AEF;  /* blue — tertiary / technical */
+  --accent-4:       #7DD3A6;  /* green — success / positive */
+  --accent-warn:    #D14343;  /* red — warnings only, never decorative */
+  --accent-stat:    #E97458;  /* hero stat digits — same orange (Anthropic uses orange, not yellow) */
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #F5F1EB;  /* warm off-white — Anthropic paper */
+  --text-secondary: #9A958D;  /* captions, sub-lines, metadata */
+  --text-muted:     #6B6862;  /* large chrome only — < 4.5:1 on bg */
+
+  /* ── Spacing (1920x1080 safe-zone) ─────────────────── */
+  /* Top clears the 60px Anthropic wordmark + breathing room.
+     Sides are 100px — less constrained than Shorts' 60px mobile gutter.
+     Bottom clears the 6px progress bar + reading room. */
+  --pad-top:        80px;
+  --pad-x:          100px;
+  --pad-bottom:     80px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

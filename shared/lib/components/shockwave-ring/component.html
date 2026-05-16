@@ -1,0 +1,168 @@
+<!--
+  shared/lib/components/shockwave-ring/component.html
+  Expanding ring from a configurable origin — SVG stroke-circle animates
+  r from 0 to 800px with stroke-opacity 1→0 over 0.7s. Chromatic edge bleed:
+  red and cyan clone rings offset ±3px, 10ms delayed. Optional secondary ring
+  at 50% scale for layered depth.
+
+  DETERMINISM: fully deterministic — no PRNG, only math.
+  No Math.random, no Date.now.
+
+  SFX coupling: impact-slam (track 3) + screen-shake (track 4) LAYERED at at+0.0.
+  Percussive — drift must be ≤ 0.05s.
+
+  COMPONENT IS PASTE-IN — three sections below.
+
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this container at the desired layer:
+-->
+
+<div class="shockwave-ring"></div>
+
+<!--
+  2) CSS — merge into your <style> block:
+-->
+
+<style>
+  /* shared/lib/components/shockwave-ring — keep this comment block */
+  .shockwave-ring {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .shockwave-ring svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .sw-ring       { opacity: 0; fill: none; }
+  .sw-ring-ca    { opacity: 0; fill: none; }
+  .sw-ring-inner { opacity: 0; fill: none; }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addShockwaveRing(tl, ".shockwave-ring", 4.0);
+       addShockwaveRing(tl, ".shockwave-ring", 4.0, {
+         originX: 540, originY: 960,
+         duration: 0.7,
+         color: 'var(--shockwave, #FFFFFF)'
+       });
+
+     opts:
+       originX    — center X in canvas px (default 540)
+       originY    — center Y in canvas px (default 960)
+       duration   — animation duration in seconds (default 0.7)
+       color      — stroke color CSS value (default var(--shockwave, #FFFFFF))
+       maxRadius  — outer ring max radius in px (default 800)
+       inner      — boolean, show 50%-scale secondary ring behind primary (default true)
+-->
+
+<script>
+  function addShockwaveRing(tl, containerSel, at, opts) {
+    var container = document.querySelector(containerSel);
+    if (!container) return;
+
+    var options   = opts || {};
+    var ox        = options.originX   !== undefined ? options.originX   : 540;
+    var oy        = options.originY   !== undefined ? options.originY   : 960;
+    var duration  = options.duration  !== undefined ? options.duration  : 0.7;
+    var color     = options.color     !== undefined ? options.color     : 'var(--shockwave, #FFFFFF)';
+    var maxR      = options.maxRadius !== undefined ? options.maxRadius : 800;
+    var showInner = options.inner     !== undefined ? options.inner     : true;
+
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // Idempotent — remove previously injected SVG
+    var svgId = containerSel.replace(/[^a-zA-Z0-9]/g, '_') + '_sw_svg';
+    var existing = container.querySelector('#' + svgId);
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('id', svgId);
+    svg.setAttribute('viewBox', '0 0 1080 1920');
+    container.appendChild(svg);
+
+    // ── Helper: make a stroke circle ──
+    function makeCircle(cls, strokeColor, strokeWidth) {
+      var c = document.createElementNS(ns, 'circle');
+      c.setAttribute('class', cls);
+      c.setAttribute('cx', ox);
+      c.setAttribute('cy', oy);
+      c.setAttribute('r', 0);
+      c.setAttribute('stroke', strokeColor);
+      c.setAttribute('stroke-width', strokeWidth);
+      return c;
+    }
+
+    // Secondary inner ring (behind primary, 50% scale, slightly thinner)
+    var innerRing = null;
+    if (showInner) {
+      innerRing = makeCircle('sw-ring-inner', color, 2.5);
+      svg.appendChild(innerRing);
+    }
+
+    // Chromatic aberration — red clone (origin +3px down)
+    var caRed = makeCircle('sw-ring-ca', '#FF4444', 1.5);
+    caRed.setAttribute('cy', oy + 3);
+    svg.appendChild(caRed);
+
+    // Chromatic aberration — cyan clone (origin -3px up)
+    var caCyan = makeCircle('sw-ring-ca', '#44FFFF', 1.5);
+    caCyan.setAttribute('cy', oy - 3);
+    svg.appendChild(caCyan);
+
+    // Primary ring (on top)
+    var ring = makeCircle('sw-ring', color, 3.5);
+    svg.appendChild(ring);
+
+    // ── GSAP tweens ──
+
+    // Inner ring: expands to 50% of maxR, slightly slower onset
+    if (innerRing) {
+      gsap.set(innerRing, { attr: { r: 0 }, opacity: 0 });
+      tl.to(innerRing, {
+        keyframes: [
+          { attr: { r: maxR * 0.5 * 0.01 }, opacity: 0.5, duration: 0.05, ease: 'power3.out' },
+          { attr: { r: maxR * 0.5 },        opacity: 0,   duration: duration - 0.05, ease: 'power2.out' }
+        ]
+      }, at + 0.04); // 40ms behind primary — slightly behind
+    }
+
+    // CA red ring: 10ms after primary start
+    gsap.set(caRed, { attr: { r: 0 }, opacity: 0 });
+    tl.to(caRed, {
+      keyframes: [
+        { attr: { r: maxR * 0.01 }, opacity: 0.45, duration: 0.05, ease: 'power3.out' },
+        { attr: { r: maxR },        opacity: 0,    duration: duration - 0.05, ease: 'power2.out' }
+      ]
+    }, at + 0.01);
+
+    // CA cyan ring: 10ms after primary start (opposite direction bias)
+    gsap.set(caCyan, { attr: { r: 0 }, opacity: 0 });
+    tl.to(caCyan, {
+      keyframes: [
+        { attr: { r: maxR * 0.01 }, opacity: 0.45, duration: 0.05, ease: 'power3.out' },
+        { attr: { r: maxR },        opacity: 0,    duration: duration - 0.05, ease: 'power2.out' }
+      ]
+    }, at + 0.01);
+
+    // Primary ring: fastest onset
+    gsap.set(ring, { attr: { r: 0 }, opacity: 0 });
+    tl.to(ring, {
+      keyframes: [
+        { attr: { r: maxR * 0.01 }, opacity: 1.0, duration: 0.04, ease: 'power3.out' },
+        { attr: { r: maxR },        opacity: 0,   duration: duration - 0.04, ease: 'power2.out' }
+      ]
+    }, at);
+  }
+  // End addShockwaveRing
+</script>

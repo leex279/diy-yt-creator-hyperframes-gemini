@@ -1,0 +1,306 @@
+<!--
+  shared/lib/blocks/ranking-podium-rise/block.html
+  3-pillar podium: bronze (3rd), silver (2nd), gold (1st) rise sequentially
+  from off-canvas bottom. Each pillar lands with a screen-shake + impact-slam
+  layered pair. Number labels fade in 0.3s after landing. Hold phase then
+  fade-out. 1080×1920, 8s duration.
+
+  Slot:
+    [data-slot="winner-name"] — text on the gold pillar top label
+
+  SOURCE: Original — no template extraction. Authored for shared/lib.
+
+  See ./recipe.md for full wiring instructions.
+-->
+<template id="ranking-podium-rise-template">
+  <div id="ranking-podium-rise"
+       data-composition-id="ranking-podium-rise"
+       data-start="0"
+       data-duration="8"
+       data-width="1080"
+       data-height="1920">
+
+    <!-- Overline -->
+    <div class="clip rpr-overline" id="rpr-overline"
+         data-start="0" data-duration="8" data-track-index="1">RANKINGS</div>
+
+    <!-- Headline -->
+    <div class="clip rpr-headline" id="rpr-headline"
+         data-start="0" data-duration="8" data-track-index="1">Top 3</div>
+
+    <!-- Podium stage -->
+    <div class="rpr-stage" id="rpr-stage">
+
+      <!-- Pillar 3 — Bronze (left, shorter) -->
+      <div class="clip rpr-pillar rpr-p3" id="rpr-p3"
+           data-start="0.6" data-duration="7.4" data-track-index="2">
+        <div class="rpr-pillar-inner">
+          <div class="rpr-medal rpr-medal-3">🥉</div>
+          <div class="rpr-num" id="rpr-num-3">3</div>
+        </div>
+      </div>
+
+      <!-- Pillar 1 — Gold (center, tallest) -->
+      <div class="clip rpr-pillar rpr-p1" id="rpr-p1"
+           data-start="3.0" data-duration="5.0" data-track-index="2">
+        <div class="rpr-pillar-inner">
+          <!-- Crown SVG icon on top -->
+          <div class="rpr-crown" id="rpr-crown" aria-hidden="true">
+            <svg viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg" width="80" height="50">
+              <polygon points="4,36 16,8 32,24 48,8 60,36" fill="none"
+                       stroke="var(--rpr-gold, #FFD700)" stroke-width="4"
+                       stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="4"  cy="36" r="4" fill="var(--rpr-gold, #FFD700)"/>
+              <circle cx="32" cy="24" r="4" fill="var(--rpr-gold, #FFD700)"/>
+              <circle cx="60" cy="36" r="4" fill="var(--rpr-gold, #FFD700)"/>
+            </svg>
+          </div>
+          <div class="rpr-winner-label" id="rpr-winner-label"
+               data-slot="winner-name">WINNER</div>
+          <div class="rpr-num" id="rpr-num-1">1</div>
+        </div>
+      </div>
+
+      <!-- Pillar 2 — Silver (right, medium) -->
+      <div class="clip rpr-pillar rpr-p2" id="rpr-p2"
+           data-start="1.8" data-duration="6.2" data-track-index="2">
+        <div class="rpr-pillar-inner">
+          <div class="rpr-medal rpr-medal-2">🥈</div>
+          <div class="rpr-num" id="rpr-num-2">2</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SFX audio elements ───────────────────────────────────────────
+         6 total: screen-shake + impact-slam LAYERED per pillar landing
+         Pillar 3 lands at t=1.0, pillar 2 at t=2.2, pillar 1 at t=3.4
+         (0.4s after rise starts: back.out(1.4) over 0.55s ≈ peak at ~0.4s)
+         Track 3 = screen-shake, Track 4 = impact-slam, Track 5 = screen-shake (p1)
+    -->
+    <audio id="sfx-rpr-shake-3" class="clip" src="assets/sfx/screen-shake.mp3"
+           data-start="1.0" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+    <audio id="sfx-rpr-slam-3"  class="clip" src="assets/sfx/impact-slam.mp3"
+           data-start="1.0" data-duration="0.63" data-track-index="4" data-volume="0.15"></audio>
+
+    <audio id="sfx-rpr-shake-2" class="clip" src="assets/sfx/screen-shake.mp3"
+           data-start="2.2" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+    <audio id="sfx-rpr-slam-2"  class="clip" src="assets/sfx/impact-slam.mp3"
+           data-start="2.2" data-duration="0.63" data-track-index="4" data-volume="0.15"></audio>
+
+    <audio id="sfx-rpr-shake-1" class="clip" src="assets/sfx/screen-shake.mp3"
+           data-start="3.4" data-duration="0.52" data-track-index="5" data-volume="0.11"></audio>
+    <audio id="sfx-rpr-slam-1"  class="clip" src="assets/sfx/impact-slam.mp3"
+           data-start="3.4" data-duration="0.63" data-track-index="5" data-volume="0.15"></audio>
+
+    <style>
+      #ranking-podium-rise {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        background: var(--bg, #0A0E1A);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding-bottom: 80px;
+        box-sizing: border-box;
+      }
+
+      #ranking-podium-rise .rpr-overline {
+        position: absolute;
+        top: 200px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace);
+        font-weight: 700;
+        font-size: 36px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--rpr-gold, #FFD700);
+        opacity: 0;
+      }
+
+      #ranking-podium-rise .rpr-headline {
+        position: absolute;
+        top: 268px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-family: var(--sans, 'Inter', system-ui, sans-serif);
+        font-weight: 900;
+        font-size: 120px;
+        line-height: 0.95;
+        letter-spacing: -3px;
+        color: var(--text, #F5F1EB);
+        opacity: 0;
+      }
+
+      .rpr-stage {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 16px;
+        width: 100%;
+        padding: 0 60px;
+        box-sizing: border-box;
+      }
+
+      .rpr-pillar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        border-radius: 16px 16px 0 0;
+        transform-origin: bottom center;
+        opacity: 0;
+        /* pillars start below the canvas */
+        transform: translateY(600px);
+      }
+
+      .rpr-p3 {
+        width: 290px;
+        height: 280px;
+        background: linear-gradient(180deg, rgba(205,127,50,0.30) 0%, rgba(205,127,50,0.10) 100%);
+        border: 2px solid rgba(205, 127, 50, 0.50);
+        box-shadow: 0 0 30px rgba(205, 127, 50, 0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+      }
+
+      .rpr-p2 {
+        width: 290px;
+        height: 360px;
+        background: linear-gradient(180deg, rgba(192,192,192,0.30) 0%, rgba(192,192,192,0.08) 100%);
+        border: 2px solid rgba(192, 192, 192, 0.50);
+        box-shadow: 0 0 30px rgba(192, 192, 192, 0.20), inset 0 1px 0 rgba(255,255,255,0.12);
+      }
+
+      .rpr-p1 {
+        width: 320px;
+        height: 440px;
+        background: linear-gradient(180deg, rgba(255,215,0,0.28) 0%, rgba(255,215,0,0.06) 100%);
+        border: 2px solid rgba(255, 215, 0, 0.55);
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.35), 0 0 100px rgba(255,215,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15);
+      }
+
+      .rpr-pillar-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding-bottom: 24px;
+        height: 100%;
+        gap: 8px;
+      }
+
+      .rpr-medal {
+        font-size: 56px;
+        line-height: 1;
+        opacity: 0;
+      }
+
+      .rpr-crown {
+        opacity: 0;
+        margin-bottom: 8px;
+      }
+
+      .rpr-winner-label {
+        font-family: var(--sans, 'Inter', system-ui, sans-serif);
+        font-weight: 800;
+        font-size: 44px;
+        letter-spacing: -0.5px;
+        color: var(--rpr-gold, #FFD700);
+        text-shadow: 0 0 24px rgba(255, 215, 0, 0.55);
+        text-align: center;
+        opacity: 0;
+        max-width: 300px;
+        line-height: 1.1;
+      }
+
+      .rpr-num {
+        font-family: var(--sans, 'Inter', system-ui, sans-serif);
+        font-weight: 900;
+        font-size: 100px;
+        line-height: 0.9;
+        letter-spacing: -2px;
+        font-variant-numeric: tabular-nums;
+        opacity: 0;
+      }
+
+      .rpr-p3 .rpr-num { color: rgba(205, 127, 50, 0.85); }
+      .rpr-p2 .rpr-num { color: rgba(220, 220, 220, 0.85); }
+      .rpr-p1 .rpr-num { color: var(--rpr-gold, #FFD700); text-shadow: 0 0 30px rgba(255,215,0,0.55); }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+
+        // ── t=0 — explicit hide everything ───────────────────────────
+        tl.set('#rpr-overline',    { opacity: 0, y: 20 }, 0);
+        tl.set('#rpr-headline',    { opacity: 0, y: 30 }, 0);
+        tl.set('#rpr-p3',          { opacity: 0, y: 600 }, 0);
+        tl.set('#rpr-p2',          { opacity: 0, y: 600 }, 0);
+        tl.set('#rpr-p1',          { opacity: 0, y: 600 }, 0);
+        tl.set('#rpr-medal-3, .rpr-p3 .rpr-medal', { opacity: 0 }, 0);
+        tl.set('#rpr-medal-2, .rpr-p2 .rpr-medal', { opacity: 0 }, 0);
+        tl.set('#rpr-crown',       { opacity: 0, y: -10, scale: 0.8 }, 0);
+        tl.set('#rpr-winner-label',{ opacity: 0 }, 0);
+        tl.set('#rpr-num-3',       { opacity: 0 }, 0);
+        tl.set('#rpr-num-2',       { opacity: 0 }, 0);
+        tl.set('#rpr-num-1',       { opacity: 0 }, 0);
+
+        // ── t=0.1 — overline + headline enter ────────────────────────
+        tl.to('#rpr-overline', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 0.1);
+        tl.to('#rpr-headline', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.25);
+
+        // ── t=0.6 — pillar 3 (bronze) rises ──────────────────────────
+        tl.to('#rpr-p3', {
+          opacity: 1,
+          y: 0,
+          duration: 0.55,
+          ease: 'back.out(1.4)'
+        }, 0.6);
+        // Number label fades in 0.3s after landing
+        tl.to('#rpr-num-3', { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.25);
+        tl.to('.rpr-p3 .rpr-medal', { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.25);
+
+        // ── t=1.8 — pillar 2 (silver) rises ──────────────────────────
+        tl.to('#rpr-p2', {
+          opacity: 1,
+          y: 0,
+          duration: 0.55,
+          ease: 'back.out(1.4)'
+        }, 1.8);
+        tl.to('#rpr-num-2', { opacity: 1, duration: 0.3, ease: 'power1.out' }, 2.5);
+        tl.to('.rpr-p2 .rpr-medal', { opacity: 1, duration: 0.3, ease: 'power1.out' }, 2.5);
+
+        // ── t=3.0 — pillar 1 (gold) rises ────────────────────────────
+        tl.to('#rpr-p1', {
+          opacity: 1,
+          y: 0,
+          duration: 0.55,
+          ease: 'back.out(1.4)'
+        }, 3.0);
+        tl.to('#rpr-num-1', { opacity: 1, duration: 0.3, ease: 'power1.out' }, 3.65);
+        tl.to('#rpr-crown', {
+          opacity: 1, y: 0, scale: 1.0,
+          duration: 0.45, ease: 'back.out(1.8)'
+        }, 3.7);
+        tl.to('#rpr-winner-label', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 3.85);
+
+        // ── t=4.5–6.5 — hold all visible ─────────────────────────────
+        // (no action needed — elements remain visible)
+
+        // ── t=7.0–8.0 — fade out ─────────────────────────────────────
+        tl.to('#ranking-podium-rise', { opacity: 0, duration: 0.8, ease: 'power2.in' }, 7.0);
+
+        window.__timelines['ranking-podium-rise'] = tl;
+      })();
+    </script>
+
+  </div>
+</template>

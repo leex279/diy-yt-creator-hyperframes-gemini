@@ -37,6 +37,8 @@ Copy this template, fill in the fields, save as `.md`, and pass the path to `/di
 
 **Key Angle**: [The single most compelling narrative angle, or leave blank for auto-detection]
 
+**Thesis**: [One sentence. Falsifiable — must be a claim that could be wrong. Forces the script to argue something instead of describing the topic. Example: "Claude Code's plan-first agent mode prevents the codebase damage that direct-edit agents cause — but only when the developer reads the plan before approving." Leave blank in autonomous mode if Phase 0 should derive it from research.]
+
 **Must-Mention Points**:
 - [Specific feature, stat, or claim to include]
 - [Another key point]
@@ -45,6 +47,14 @@ Copy this template, fill in the fields, save as `.md`, and pass the path to `/di
 - [e.g., kubectl = cube-C T L, nginx = engine-x]
 
 **Voice/Style Notes**: [Any specific preferences — e.g., "no humor", "include a question hook", "end with GitHub link"]
+
+## Receipts
+
+[At least 3 named, linkable, verifiable items — OR explicitly mark `topic_type: CONCEPT` to override the gate. Each receipt = URL + version/date + one-line summary. Phase 0's Receipt Gate (Step 0H) blocks pipeline if neither condition is met. This prevents the model from inventing "studies show 73%..." stats during script generation.]
+
+1. <URL> — <version or date> — <one-line summary of what this verifies>
+2. <URL> — <version or date> — <one-line summary>
+3. <URL> — <version or date> — <one-line summary>
 ```
 
 ---
@@ -62,6 +72,8 @@ Copy this template, fill in the fields, save as `.md`, and pass the path to `/di
 | **Target Audience**     | Recommended | Phase 0, Phase 2            | Shapes messaging hierarchy and pain-point selection                                    |
 | **Key Angle**           | No        | Phase 0                       | Overrides the auto-detected narrative angle from Phase 0's competitive analysis        |
 | **Must-Mention Points** | No        | Phase 2 (enforced inclusions) | Treated as hard requirements in script drafting                                        |
+| **Thesis**              | No        | Phase 0 (synthesis), Phase 1 (structure), Phase 2.5 (cohesion check) | One-sentence falsifiable claim. If omitted, Phase 0 derives one from research. Forces script to argue, not describe. |
+| **Receipts**            | Yes (≥3, OR topic_type=CONCEPT) | Phase 0 gate, Phase 2 (per-scene binding), Phase 2b (cross-check) | Minimum 3 named, linkable items. Phase 0 Step 0H blocks the pipeline otherwise. Override: `topic_type: CONCEPT` for abstract topics with no linkable artifacts. |
 | **Technical Terms**     | No        | Phase 2a                      | Fed into ElevenLabs TTS optimization for pronunciation accuracy                        |
 | **Voice/Style Notes**   | No        | Phase 2                       | Free-form modifier applied during script writing                                       |
 
@@ -88,6 +100,12 @@ Resolution is template-driven in HyperFrames. The Anthropic Shorts template ship
 - https://www.anthropic.com/news/skills
 
 **Target Audience**: developers building with Claude
+
+## Receipts
+
+1. https://www.anthropic.com/news/skills — 2025-10 — Skills launch announcement, names mechanism + install pattern
+2. https://docs.claude.com/en/docs/claude-code/skills — 2025-10 — Skills docs, lists discovery + invocation rules
+3. https://github.com/anthropics/claude-code/releases — 2025-10 — Release notes confirming Skills shipped in v1.x.y
 ```
 
 This is enough to drive the full pipeline. Everything else gets auto-derived.
@@ -117,6 +135,8 @@ This is enough to drive the full pipeline. Everything else gets auto-derived.
 
 **Key Angle**: Skills compress recurring workflows into one-line invocations — the productivity unlock most CC users haven't installed yet
 
+**Thesis**: Claude Code Skills are not "another extension system" — they're the first install mechanism that lets ChatGPT-grade prompt engineering ship as version-controlled artifacts inside the repo, and most CC users haven't installed one yet because the discovery surface is silent.
+
 **Must-Mention Points**:
 - Skills are markdown files that bundle prompts + tools + reference docs
 - Discoverable via natural language ("create a slash command")
@@ -127,4 +147,10 @@ This is enough to drive the full pipeline. Everything else gets auto-derived.
 - skill (lowercase) — the artifact
 
 **Voice/Style Notes**: Open with a number. End with the install command as the CTA.
+
+## Receipts
+
+1. https://www.anthropic.com/news/skills — 2025-10 — Launch post, names the mechanism
+2. https://docs.claude.com/en/docs/claude-code/skills — 2025-10 — Authoritative docs on discovery + invocation
+3. https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2025-10 — Release notes confirming the version Skills shipped in
 ```

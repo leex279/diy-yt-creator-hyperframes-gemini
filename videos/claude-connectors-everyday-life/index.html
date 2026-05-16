@@ -400,13 +400,31 @@
     font-size: 48px;
     line-height: 0.7;
   }
+  /* ────────────────────────────────────────────────
+     Debate-sparking CTA question per .claude/rules/engagement-cta.md.
+     Matches the FINAL spoken line: "AI living inside every app,
+     useful or creepy? Drop your pick below."
+     ──────────────────────────────────────────────── */
+  #p4-cta-question {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    color: var(--orange);
+    text-align: center;
+    max-width: 940px;
+    margin-top: 12px;
+  }
+  #p4-cta-question .em { color: var(--text); font-style: italic; }
+  #p4-cta-question .creepy { color: #ff7a47; font-style: italic; }
 </style>
 </head>
 <body>
 <div id="root"
      data-composition-id="main"
      data-start="0"
-     data-duration="43.2"
+     data-duration="52"
      data-width="1080"
      data-height="1920">
 
@@ -501,6 +519,12 @@
       <div id="p4-quote">The browser tab era is <span class="em">ending.</span></div>
       <div id="p4-url">claude.com/connectors</div>
       <div id="p4-subscribe">Subscribe<span class="arrow">→</span></div>
+      <!-- MANDATORY debate-sparking CTA question per .claude/rules/engagement-cta.md.
+           Matches the spoken closer "AI living inside every app, useful or creepy?". -->
+      <div id="p4-cta-question">
+        AI living inside every app &mdash;<br/>
+        <span class="em">useful</span>, or <span class="creepy">creepy?</span>
+      </div>
     </div>
   </div>
 
@@ -510,7 +534,7 @@
   <audio id="narration"
          src="audio/narration.wav"
          data-start="1.0"
-         data-duration="40.72"
+         data-duration="50.43"
          data-track-index="2"
          data-volume="1"></audio>
 </div>
@@ -519,40 +543,43 @@
   window.__timelines = window.__timelines || {};
   const tl = gsap.timeline({ paused: true });
 
+  // Audio anchor: narration starts at comp 1.0s; all transcript values below are
+  // word-relative — add +1.0 to get comp-time. Transcript at videos/<slug>/transcript.json.
+
   // ─────────────────────────────────────────────────────
-  // Ambient: slow warm breath across full duration
+  // Ambient: slow warm breath across full duration (52s)
   // ─────────────────────────────────────────────────────
   tl.fromTo("#ambient",
     { opacity: 0.85, scale: 1.0 },
-    { opacity: 1.0, scale: 1.04, duration: 21.6, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    { opacity: 1.0, scale: 1.04, duration: 26.0, ease: "sine.inOut", yoyo: true, repeat: 1 },
     0);
 
-  // Progress bar fills linearly across the composition (43.2s total)
+  // Progress bar fills linearly across the composition (52s total)
   tl.fromTo("#progress-fill",
     { width: 0 },
-    { width: 1080, duration: 43.2, ease: "none" },
+    { width: 1080, duration: 52, ease: "none" },
     0);
 
   // Top banner fade-in
   tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 1 — Hero slam (0-7.3s) : entrances on spoken words
-  //   audio starts at comp 1.0s; "Claude" 1.058 / "fifteen" 1.813 / "conversation." 7.502
+  // PHASE 1 — Hero slam (0-6.8s) : entrances on spoken words
+  //   "Claude" 1.07 / "fifteen" 1.70 / "Living" 5.86 / "conversation." 6.65
   // ═══════════════════════════════════════════════════════
   tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
-  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.6);   // lands on "Claude"
-  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.9, ease: "back.out(1.7)" }, 0.91);  // lands on "fifteen"
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.65);  // lands on "Claude"
+  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.9, ease: "back.out(1.7)" }, 0.95);  // lands on "fifteen"
   // Inline shake on the slam frame — 4 short ticks ±5px
-  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.81);
-  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.86);
-  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.91);
-  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.96);
-  tl.from("#p1-sub",      { y: 24, opacity: 0, duration: 0.55, ease: "power3.out" }, 2.22);  // lands on "new connectors."
-  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.34);   // lands on "Living inside the conversation"
+  tl.to("#p1-hero",       { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.70);
+  tl.to("#p1-hero",       { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.75);
+  tl.to("#p1-hero",       { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.80);
+  tl.to("#p1-hero",       { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.85);
+  tl.from("#p1-sub",      { y: 24, opacity: 0, duration: 0.55, ease: "power3.out" }, 2.10);  // lands on "new connectors."
+  tl.from("#p1-caption",  { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.80);   // lands on "Living inside the conversation"
 
-  // ─── Transition phase1 → phase2 at 7.3s (after "conversation.") ───
-  const T1 = 7.3;
+  // ─── Transition phase1 → phase2 at 6.85s (after "conversation.") ───
+  const T1 = 6.85;
   tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
   tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
   tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
@@ -561,19 +588,18 @@
   tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 2 — Stat pill row (7.7-22.9s) : entrances only
+  // PHASE 2 — Stat pill row (7.5-23.5s) : entrances on word anchors
+  //   "Ask" 8.23 / AllTrails-walk 9.80-16.5 / "No tabs" 17.49 / "two hundred" 20.40 / "everyday life." 23.45-23.84
   // ═══════════════════════════════════════════════════════
-  const P2 = 7.7;
-  // Narrator beats in phase 2: "Ask…hike" 7.9-9.2 / AllTrails example 9.9-15.5 / "Browse photos" 15.6-16.6
-  //   "No tabs. No copy paste." 16.7-18.5 / "directory crossed two hundred" 18.7-20.9 / "everyday life." 22.7-23.1
+  const P2 = 7.55;
   tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
   tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
-  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 1.0);   // early visual recap of "15"
-  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 19.2);       // lands on "two hundred"
-  tl.from("#p2-callout",  { y: 24, opacity: 0, duration: 0.7, ease: "sine.out" }, 16.7);                 // lands on "No tabs"
+  tl.from("#p2-pill-1",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, P2 + 1.0);    // early visual recap of "15"
+  tl.from("#p2-callout",  { y: 24, opacity: 0, duration: 0.7, ease: "sine.out" }, 17.40);                  // lands on "No tabs"
+  tl.from("#p2-pill-2",   { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, 20.30);       // lands on "two hundred"
 
-  // ─── Transition phase2 → phase3 at 22.88s (after "everyday life.") ───
-  const T2 = 22.88;
+  // ─── Transition phase2 → phase3 at 23.9s (after "everyday life.") ───
+  const T2 = 23.9;
   tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
   tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
   tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
@@ -582,23 +608,22 @@
   tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 3 — Power-chain steps (23.3-38.8s) : cards land on each app's name
-  //   "Power users chain them." 23.4-24.5 / "Pull a query from Amplitude." 24.6-26.1
-  //   "Turn it into a Canva deck." 26.3-27.6 / "Drop the link into Asana." 28.0-29.2
-  //   "One conversation. Five tools. Zero tabs." 29.5-32.0
-  //   bridge (held in phase 3): "Claude always asks…books." 32.2-34.5 / "data stays siloed…apps." 34.6-36.7
-  //                              "Anyone can submit a connector to the directory now." 36.7-39.2
+  // PHASE 3 — Power-chain steps (24.5-43.0s) : cards land on each app's name
+  //   "Power users" 24.54 / "Pull" 26.63 / "Turn" 28.27 / "Drop" 30.50
+  //   "One conversation. Five tools. Zero tabs." 31.89-34.55
+  //   bridge: "Claude always asks…books." 35.56-37.5 / "data stays siloed…" 38.91-40.5
+  //           "Anyone can submit…directory now." 41.04-43.5
   // ═══════════════════════════════════════════════════════
-  const P3 = 23.28;
+  const P3 = 24.55;
   tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
-  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 24.3);   // lands on "Pull"
-  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 26.0);   // lands on "Turn it into a Canva"
-  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 27.65);  // lands on "Drop the link"
-  tl.from("#p3-tally",    { y: 24, opacity: 0, duration: 0.7, ease: "sine.out" }, 29.5);                       // lands on "One conversation"
+  tl.from("#p3-card-1",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 26.55);  // lands on "Pull"
+  tl.from("#p3-card-2",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 28.20);  // lands on "Turn"
+  tl.from("#p3-card-3",   { x: -40, scale: 0.95, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, 30.40);  // lands on "Drop"
+  tl.from("#p3-tally",    { y: 24, opacity: 0, duration: 0.7, ease: "sine.out" }, 31.80);                       // lands on "One conversation"
 
-  // ─── Transition phase3 → phase4 at 38.84s (just before "The browser tab era") ───
-  // (phase 3 sustains through the "Claude always asks / data stays siloed / Anyone can submit" bridge)
-  const T3 = 38.84;
+  // ─── Transition phase3 → phase4 at 43.0s (just before "The browser tab era") ───
+  // (phase 3 sustains through "Claude always asks / data stays siloed / Anyone can submit")
+  const T3 = 43.0;
   tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
   tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
   tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
@@ -607,16 +632,21 @@
   tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
 
   // ═══════════════════════════════════════════════════════
-  // PHASE 4 — CTA URL slam (39.2-43.2s) : entrances on spoken words
-  //   "The browser tab era is ending." 39.3-41.0 / "Link below." 41.1-41.7
+  // PHASE 4 — CTA + debate question (43.5-52s) : entrances on spoken words
+  //   "browser tab era" 44.56 / "ending." 45.72 / "AI living inside every app" 46.30
+  //   "useful" 48.24 / "creepy?" 48.95 / "Drop your pick below." 50.28
   // ═══════════════════════════════════════════════════════
-  const P4 = 39.24;
-  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
-  tl.from("#p4-quote",     { y: 40, opacity: 0, duration: 0.9, ease: "power3.out" }, P4 + 0.42);   // lands on "ending."
-  tl.from("#p4-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, P4 + 1.5);  // appears after "ending."
-  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 2.0);    // lands on "Link below."
+  const P4 = 43.55;
+  tl.from("#p4-overline",     { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-quote",        { y: 40, opacity: 0, duration: 0.9, ease: "power3.out" }, P4 + 0.4);   // lands on "browser tab era is ending."
+  tl.from("#p4-url",          { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, P4 + 2.0);  // brand URL chrome
+  tl.from("#p4-subscribe",    { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 2.5);    // subscribe pill
+  // CTA debate question — REQUIRED per .claude/rules/engagement-cta.md
+  // Lands at "AI living inside every app, useful or creepy?" — comp-time 46.30
+  tl.from("#p4-cta-question", { y: 28, opacity: 0, duration: 0.6, ease: "power2.out" }, 46.20);
 
-  // Phase 4 stays fully visible to the end (43.2s)
+  // Phase 4 stays fully visible to the end (52s) — held final frame is thumbnail-grade
+  // (per .claude/rules/shorts-thumbnail-frames.md, the question persists through loop)
 
   window.__timelines["main"] = tl;
 </script>

@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>OpenClaw — 100 Codex Agents (long-form)</title>
+<link rel="stylesheet" href="tokens/claw.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080 obsidian + crab-red.
+     Tokens live in tokens/claw.css (scoped to :root).
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient wash — slow crab-red breath under all scenes */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 20%, rgba(201, 42, 42, 0.08), transparent 55%),
+      radial-gradient(circle at 78% 78%, rgba(34, 211, 238, 0.05), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(201, 42, 42, 0.04), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — 14 claw-themed silhouettes at low opacity */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.045;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* Top chrome — persistent OpenClaw wordmark */
+  #top-banner {
+    position: absolute;
+    top: 22px;
+    left: 0;
+    width: 1920px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Slim progress bar */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(201, 42, 42, 0.55);
+  }
+
+  /* Sub-composition wrappers — scenes layered on track 1.
+     First scene visible at t=0; subsequent scenes start hidden
+     and the root crossfadeScenes() function flips them in. */
+  .scene-wrapper {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-01-hook-wrap            { z-index: 1; opacity: 1; }
+  #scene-02-thesis-wrap          { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-03-avalanche-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-05-clawsweeper-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-06-crabbox-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-07-clawpatch-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-09-fleet-recap-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-10-community-split-wrap { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-11-cost-twist-wrap      { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-12-support-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-13-cta-wrap             { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Hostinger midroll mounts — track 20, high z-index, overlays scenes during window. */
+  #hostinger-midroll-1-mount,
+  #hostinger-midroll-2-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* Captions wrapper sits above scenes, below noise overlay */
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<!--
+  AUDIO STRATEGY (Phase 4 REDUX-2 — TTS heteronym fixes + s11 framing fix):
+    Narration regen: chunks 39/54/55/89 regenerated after script edits:
+      - s06 "CLI" -> "C L I"
+      - s07 "npm" -> "N P M", "CLI" -> "C L I"
+      - s11 "four words long" -> "one sentence" (the reply IS the full sentence)
+    New narration.wav = 525.27s (was 524.99s, +0.28s shift).
+    Padding splice points now derive from end-of-last-word in s05 and s07
+    transcripts. The result is audio/narration-padded.wav (565.27s) which plays
+    continuously across the full composition. Composition total: 570.01s = 9:30
+    (565.27s narration + ~4.7s thumbnail-grade final-frame freeze).
+
+    Hostinger midroll narration audio (assets/hostinger-midroll-narration-trimmed.wav,
+    19.5s with 500ms fade-out) is wired as two HTML audio elements at the midroll
+    positions, on tracks 22 and 23 (separate from the main narration on track 2).
+
+  TIMING TABLE (scene id, data-start, data-duration) — see SCENE-ANCHORS.md:
+    01 scene-01-hook              0.000   29.930
+    02 scene-02-thesis           29.930   28.745
+    03 scene-03-avalanche        58.675   41.876
+    05 scene-05-clawsweeper     100.551   64.376
+    04 hostinger-midroll-1      164.927   20.000   (hostinger audio layered on track 22)
+    06 scene-06-crabbox         184.927   79.897
+    07 scene-07-clawpatch       264.824   60.974
+    08 hostinger-midroll-2      325.797   20.000   (hostinger audio layered on track 23)
+    09 scene-09-fleet-recap     345.797   40.320
+    10 scene-10-community-split 386.118  105.113
+    11 scene-11-cost-twist      491.231   35.618
+    12 scene-12-support         526.849   12.515
+    13 scene-13-cta             539.365   30.646   (last ~4.7s held still — thumbnail)
+-->
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="570.01"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Ambient + shape backdrop — sit behind scenes -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Persistent top banner — OpenClaw wordmark -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/openclaw-wordmark.svg" alt="OpenClaw" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — 13 scenes total (incl. 2 Hostinger midrolls)
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-01-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-01-hook"
+       data-composition-src="compositions/scene-01-hook.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-02-thesis-wrap" class="scene-wrapper"
+       data-composition-id="scene-02-thesis"
+       data-composition-src="compositions/scene-02-thesis.html"
+       data-start="29.930"
+       data-track-index="1"></div>
+
+  <div id="scene-03-avalanche-wrap" class="scene-wrapper"
+       data-composition-id="scene-03-avalanche"
+       data-composition-src="compositions/scene-03-avalanche.html"
+       data-start="58.675"
+       data-track-index="1"></div>
+
+  <div id="scene-05-clawsweeper-wrap" class="scene-wrapper"
+       data-composition-id="scene-05-clawsweeper"
+       data-composition-src="compositions/scene-05-clawsweeper.html"
+       data-start="100.551"
+       data-track-index="1"></div>
+
+  <!-- Hostinger midroll #1 — NEW POSITION: after s05 (was after s03 in v1).
+       Hostinger narration audio wired on track 22 in the audio block below. -->
+  <div id="hostinger-midroll-1-mount"
+       data-composition-id="hostinger-midroll"
+       data-composition-src="compositions/hostinger-midroll.html"
+       data-start="164.927"
+       data-duration="20"
+       data-track-index="20"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-06-crabbox-wrap" class="scene-wrapper"
+       data-composition-id="scene-06-crabbox"
+       data-composition-src="compositions/scene-06-crabbox.html"
+       data-start="184.927"
+       data-track-index="1"></div>
+
+  <div id="scene-07-clawpatch-wrap" class="scene-wrapper"
+       data-composition-id="scene-07-clawpatch"
+       data-composition-src="compositions/scene-07-clawpatch.html"
+       data-start="264.824"
+       data-track-index="1"></div>
+
+  <!-- Hostinger midroll #2 — same logical position (after s07). Hostinger narration
+       audio wired on track 23 in the audio block below. -->
+  <div id="hostinger-midroll-2-mount"
+       data-composition-id="hostinger-midroll"
+       data-composition-src="compositions/hostinger-midroll.html"
+       data-start="325.797"
+       data-duration="20"
+       data-track-index="20"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-09-fleet-recap-wrap" class="scene-wrapper"
+       data-composition-id="scene-09-fleet-recap"
+       data-composition-src="compositions/scene-09-fleet-recap.html"
+       data-start="345.797"
+       data-track-index="1"></div>
+
+  <div id="scene-10-community-split-wrap" class="scene-wrapper"
+       data-composition-id="scene-10-community-split"
+       data-composition-src="compositions/scene-10-community-split.html"
+       data-start="386.118"
+       data-track-index="1"></div>
+
+  <div id="scene-11-cost-twist-wrap" class="scene-wrapper"
+       data-composition-id="scene-11-cost-twist"
+       data-composition-src="compositions/scene-11-cost-twist.html"
+       data-start="491.231"
+       data-track-index="1"></div>
+
+  <div id="scene-12-support-wrap" class="scene-wrapper"
+       data-composition-id="scene-12-support"
+       data-composition-src="compositions/scene-12-support.html"
+       data-start="526.849"
+       data-track-index="1"></div>
+
+  <div id="scene-13-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-13-cta"
+       data-composition-src="compositions/scene-13-cta.html"
+       data-start="539.365"
+       data-track-index="1"></div>
+
+  <!-- Captions sub-composition — populated by `npx hyperframes transcribe` -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <!-- Audio bed — narration plays the padded WAV (564.99s) across the full comp.
+       Narration ends at composition t=565s; remaining 5s of timeline is silent
+       freeze-frame for the thumbnail-grade s13 final frame. -->
+  <audio id="narration"
+         src="audio/narration-padded.wav"
+         data-start="0"
+         data-duration="570.01"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Hostinger midroll narration — plays during the 20s midroll silence windows.
+       Trimmed to 19.5s with 500ms fade-out so it doesn't bleed into the next scene.
+       Layered on dedicated tracks 22/23 to avoid conflict with the main narration. -->
+  <audio id="hostinger-narration-1"
+         src="assets/hostinger-midroll-narration-trimmed.wav"
+         data-start="164.927"
+         data-duration="19.5"
+         data-track-index="22"
+         data-volume="1"></audio>
+
+  <audio id="hostinger-narration-2"
+         src="assets/hostinger-midroll-narration-trimmed.wav"
+         data-start="325.797"
+         data-duration="19.5"
+         data-track-index="23"
+         data-volume="1"></audio>
+
+  <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 14 shapes.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Subtle ambient drift — yoyo translate + rotation. Finite repeat for determinism.
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  spawnShapes('openclaw-100-codex-fleet', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 570.010;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath across full duration (slow sine yoyo, ~30s period)
+  // Repeat count = floor(570 / 60) - 1 = 8 (each yoyo cycle is 2 * 30s)
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 17 },
+    0);
+
+  // Shape drift
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'openclaw-100-codex-fleet', TOTAL_DURATION);
+
+  // Linear progress fill across the composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in — one-shot
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, 0.2);
+
+  // Hide the OpenClaw top banner during both Hostinger midroll windows
+  // (Hostinger's own brand chrome takes over — avoid double-branding)
+  // Midroll #1: 164.927 → 184.927
+  tl.to("#top-banner", { opacity: 0, duration: 0.5 }, 164.4);
+  tl.set("#top-banner", { opacity: 0 }, 164.93);  // hard-kill to survive non-linear seeks
+  tl.to("#top-banner", { opacity: 1, duration: 0.5 }, 184.8);
+  // Midroll #2: 325.797 → 345.797
+  tl.to("#top-banner", { opacity: 0, duration: 0.5 }, 325.3);
+  tl.set("#top-banner", { opacity: 0 }, 325.80);  // hard-kill to survive non-linear seeks
+  tl.to("#top-banner", { opacity: 1, duration: 0.5 }, 345.8);
+
+  // ─── Scene labels — anchors so duration changes don't cascade ───
+  tl.addLabel("s01",  0)
+    .addLabel("s02",  29.930)
+    .addLabel("s03",  58.675)
+    .addLabel("s05",  100.551)
+    .addLabel("s04",  164.927)  // hostinger midroll #1 (NEW position — after s05)
+    .addLabel("s06",  184.927)
+    .addLabel("s07",  264.824)
+    .addLabel("s08",  325.797)  // hostinger midroll #2
+    .addLabel("s09",  345.797)
+    .addLabel("s10",  386.118)
+    .addLabel("s11",  491.231)
+    .addLabel("s12",  526.849)
+    .addLabel("s13",  539.365);
+
+  // ─── Crossfades between adjacent scenes ───
+  // Each crossfade fires ~0.4s before the next scene's data-start.
+  // Scenes that hand off to Hostinger midrolls fade out under the high-z midroll,
+  // and we explicitly hide them so they don't paint through.
+  crossfadeScenes(tl, "#scene-01-hook-wrap",            "#scene-02-thesis-wrap",          "s02-=0.4");
+  crossfadeScenes(tl, "#scene-02-thesis-wrap",          "#scene-03-avalanche-wrap",       "s03-=0.4");
+  crossfadeScenes(tl, "#scene-03-avalanche-wrap",       "#scene-05-clawsweeper-wrap",     "s05-=0.4");
+  // s05 -> s04 (Hostinger #1) — fade s05 out under the midroll
+  tl.to("#scene-05-clawsweeper-wrap", { opacity: 0, duration: 0.5, ease: "power1.in" }, 164.4);
+  tl.set("#scene-05-clawsweeper-wrap", { opacity: 0 }, 164.93);  // hard-kill at clip boundary
+  tl.set("#scene-05-clawsweeper-wrap", { visibility: "hidden" }, 165.0);
+  // s04 -> s06
+  tl.set("#scene-06-crabbox-wrap", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, 184.3);
+  tl.to("#scene-06-crabbox-wrap",  { opacity: 1, duration: 0.4, ease: "power1.inOut" }, 184.5);
+  tl.to("#scene-06-crabbox-wrap",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out" }, 184.7);
+  crossfadeScenes(tl, "#scene-06-crabbox-wrap",         "#scene-07-clawpatch-wrap",       "s07-=0.4");
+  // s07 -> s08 (Hostinger #2) — fade s07 out under the midroll
+  tl.to("#scene-07-clawpatch-wrap", { opacity: 0, duration: 0.5, ease: "power1.in" }, 325.3);
+  tl.set("#scene-07-clawpatch-wrap", { opacity: 0 }, 325.80);  // hard-kill at clip boundary
+  tl.set("#scene-07-clawpatch-wrap", { visibility: "hidden" }, 325.9);
+  // s08 -> s09
+  tl.set("#scene-09-fleet-recap-wrap", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, 345.2);
+  tl.to("#scene-09-fleet-recap-wrap",  { opacity: 1, duration: 0.4, ease: "power1.inOut" }, 345.4);
+  tl.to("#scene-09-fleet-recap-wrap",  { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out" }, 345.6);
+  crossfadeScenes(tl, "#scene-09-fleet-recap-wrap",     "#scene-10-community-split-wrap", "s10-=0.4");
+  crossfadeScenes(tl, "#scene-10-community-split-wrap", "#scene-11-cost-twist-wrap",      "s11-=0.4");
+  crossfadeScenes(tl, "#scene-11-cost-twist-wrap",      "#scene-12-support-wrap",         "s12-=0.4");
+  crossfadeScenes(tl, "#scene-12-support-wrap",         "#scene-13-cta-wrap",             "s13-=0.4");
+
+  // Pad timeline to the full composition duration so the renderer captures
+  // the trailing 5s of thumbnail-grade held still frames.
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

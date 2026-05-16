@@ -1,0 +1,168 @@
+<!--
+  shared/lib/components/ember-rise/component.html
+  30+ glowing ember particles rising upward like cinders from a fire.
+  Each ember is a radial-gradient SVG circle (4–12px diameter) spawned
+  across the bottom of the canvas, rising Y from 1900 → –100 over
+  `riseDuration` seconds with sinusoidal horizontal drift and opacity
+  fade-in + fade-out. Spawns are staggered over totalDuration/3 so the
+  fire looks continuous rather than a single burst.
+
+  DETERMINISM: mulberry32 PRNG, seed 0xEMBER = 0x454D4245. No Math.random.
+  No Date.now. Finite repeat counts calculated from duration.
+
+  SFX coupling: cinematic-whoosh (track 3) SINGLE at at+0.0, volume 0.06
+  (quieter than table default — this is sustained ambient, not a hit).
+
+  COMPONENT IS PASTE-IN — three sections below.
+
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste at z-index layer just above background, below content:
+-->
+
+<div id="ember-rise" data-no-capture></div>
+
+<!--
+  2) CSS — merge into your <style> block:
+-->
+
+<style>
+  /* shared/lib/components/ember-rise — keep this comment block */
+  #ember-rise {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #ember-rise svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .er-ember { opacity: 0; }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addEmberRise(tl, "#ember-rise", 0);
+       addEmberRise(tl, "#ember-rise", 0, {
+         totalDuration: 24, count: 30, riseDuration: 4
+       });
+
+     opts:
+       totalDuration — total seconds the effect runs (default 24)
+       count         — number of ember particles (default 30)
+       riseDuration  — seconds each ember takes to rise from bottom to top (default 4)
+-->
+
+<script>
+  function addEmberRise(tl, containerSel, at, opts) {
+    var container = document.querySelector(containerSel);
+    if (!container) return;
+
+    var options       = opts || {};
+    var totalDuration = options.totalDuration !== undefined ? options.totalDuration : 24;
+    var count         = options.count         !== undefined ? options.count         : 30;
+    var riseDuration  = options.riseDuration  !== undefined ? options.riseDuration  : 4;
+
+    // ── mulberry32 PRNG — seed 0xEMBER = 0x454D4245 ──
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    var rand = mulberry32(0x454D4245 ^ (count * 17));
+
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // Idempotent
+    var svgId = containerSel.replace(/[^a-zA-Z0-9]/g, '_') + '_er_svg';
+    var existing = container.querySelector('#' + svgId);
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('id', svgId);
+    svg.setAttribute('viewBox', '0 0 1080 1920');
+    container.appendChild(svg);
+
+    // Defs: one radial gradient per ember color tier (orange, amber, red-orange, white-core)
+    var defs = document.createElementNS(ns, 'defs');
+    var emberColors = [
+      { id: svgId + '_eg0', inner: '#FFEEAA', outer: 'rgba(255,160,0,0)' },  // warm amber
+      { id: svgId + '_eg1', inner: '#FF8C00', outer: 'rgba(255,80,0,0)'   },  // orange
+      { id: svgId + '_eg2', inner: '#FF4500', outer: 'rgba(255,20,0,0)'   },  // red-orange
+      { id: svgId + '_eg3', inner: '#FFFFFF', outer: 'rgba(255,220,150,0)' }  // white core
+    ];
+
+    emberColors.forEach(function(ec) {
+      var grad = document.createElementNS(ns, 'radialGradient');
+      grad.setAttribute('id', ec.id);
+      grad.setAttribute('cx', '50%'); grad.setAttribute('cy', '50%'); grad.setAttribute('r', '50%');
+      var s0 = document.createElementNS(ns, 'stop');
+      s0.setAttribute('offset', '0%');   s0.setAttribute('stop-color', ec.inner);
+      var s1 = document.createElementNS(ns, 'stop');
+      s1.setAttribute('offset', '100%'); s1.setAttribute('stop-color', ec.outer);
+      grad.appendChild(s0); grad.appendChild(s1);
+      defs.appendChild(grad);
+    });
+    svg.appendChild(defs);
+
+    // ── Spawn window: stagger spawns over totalDuration/3 ──
+    var spawnWindow = totalDuration / 3;
+
+    for (var i = 0; i < count; i++) {
+      var r       = 2 + rand() * 5;       // radius 2–7px
+      var spawnX  = 60 + rand() * 960;     // X spread 60–1020
+      var spawnDelay = rand() * spawnWindow;
+      var driftAmp   = 20 + rand() * 60;   // px horizontal drift amplitude
+      var driftPhase = rand() * Math.PI * 2;
+      var colorIdx   = Math.floor(rand() * emberColors.length);
+      var fadeDur    = riseDuration * 0.25; // fade in/out over 25% of rise
+
+      var circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('class', 'er-ember');
+      circle.setAttribute('cx', spawnX);
+      circle.setAttribute('cy', 1920);    // start at bottom
+      circle.setAttribute('r', r);
+      circle.setAttribute('fill', 'url(#' + emberColors[colorIdx].id + ')');
+      svg.appendChild(circle);
+
+      // Build per-ember timeline proxy for physics
+      (function(el, sX, dAmp, dPhase, spawnAt) {
+        var proxy = { progress: 0 };
+        var startY = 1920;
+        var endY   = -80;
+
+        gsap.set(el, { opacity: 0 });
+
+        tl.to(proxy, {
+          progress: 1,
+          duration: riseDuration,
+          ease: 'none',
+          onUpdate: function() {
+            var p      = proxy.progress;
+            var y      = startY + (endY - startY) * p;
+            var drift  = dAmp * Math.sin(dPhase + p * Math.PI * 2.5);
+            var fadeIn  = Math.min(1, p / (fadeDur / riseDuration));
+            var fadeOut = Math.min(1, (1 - p) / (fadeDur / riseDuration));
+            var opacity = Math.min(fadeIn, fadeOut) * 0.85;
+            gsap.set(el, { x: sX + drift, y: y, opacity: opacity });
+          },
+          onStart: function() {
+            gsap.set(el, { opacity: 0 });
+          }
+        }, at + spawnAt);
+      })(circle, spawnX, driftAmp, driftPhase, spawnDelay);
+    }
+  }
+  // End addEmberRise
+</script>

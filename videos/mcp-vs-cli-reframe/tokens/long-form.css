@@ -1,0 +1,64 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/long-form/standard/tokens/long-form.css
+   "Terminal documentary" palette — extended for MCP vs CLI reframe.
+
+   Same long-form dark-stage baseline, but with bolder accent saturation
+   and an explicit terminal/code aesthetic. Mono is promoted from
+   supporting role to co-hero with Inter.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #05080F;                /* deeper ink than navy */
+  --bg-elev:        #0A0F1B;                /* one tier lifted (card seats) */
+  --bg-card:        rgba(255, 255, 255, 0.035);
+  --bg-surface:     rgba(255, 255, 255, 0.07);
+  --border:         rgba(255, 255, 255, 0.08);
+  --border-bright:  rgba(255, 255, 255, 0.16);
+  --rule:           rgba(255, 255, 255, 0.06);
+
+  /* ── Accents (terminal-style, hotter saturation) ───── */
+  --accent-1:       #3B82F6;   /* electric blue   — MCP camp / sources A */
+  --accent-2:       #22D3EE;   /* live cyan       — secondary / runtime */
+  --accent-3:       #A78BFA;   /* violet          — CLI camp / sources C */
+  --accent-4:       #34D399;   /* mint green      — success / imports */
+  --accent-warn:    #FB923C;   /* hot orange      — debate / hero */
+  --accent-stat:    #FACC15;   /* lemon yellow    — money number */
+  --accent-pink:    #F472B6;   /* magenta accent  — vs divider */
+
+  /* Token-tier text variants for AA on small text */
+  --blue-100:       #DBEAFE;
+  --blue-300:       #93C5FD;
+  --cyan-200:       #A5F3FC;
+  --cyan-300:       #67E8F9;
+  --violet-200:     #DDD6FE;
+  --violet-300:     #C4B5FD;
+  --green-200:      #A7F3D0;
+  --orange-200:     #FED7AA;
+
+  /* Glow alphas */
+  --glow-orange:    rgba(251, 146, 60, 0.55);
+  --glow-yellow:    rgba(250, 204, 21, 0.55);
+  --glow-cyan:      rgba(34, 211, 238, 0.50);
+  --glow-violet:    rgba(167, 139, 250, 0.50);
+  --glow-green:     rgba(52, 211, 153, 0.50);
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #F4F6FA;
+  --text-secondary: #9AA3B2;
+  --text-muted:     #5B6473;
+  --text-dim:       #3A4250;
+
+  /* ── Spacing (1920x1080 safe-zone) ─────────────────── */
+  --pad-top:        96px;
+  --pad-x:          120px;
+  --pad-bottom:     96px;
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Grid + scan motion vars (consumed by background animations) */
+  --grid-unit:      48px;
+  --grid-color:     rgba(167, 139, 250, 0.05);
+}

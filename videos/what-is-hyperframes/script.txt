@@ -1,7 +1,9 @@
-Building videos with code usually means React. State. JSX. Build steps. HyperFrames takes a different path. It is just HTML. Plus GSAP. That is the whole stack.
+What is HyperFrames? Video, with HTML.
 
-Here is what you get out of the box. One CLI. Lint. Preview. Render. Zero config to start. Sub-compositions for scene splits. A built-in registry for shared blocks. Determinism baked in. No randomness. No clocks. No network fetches at render time.
+Just an HTML file plus GSAP. To start, npx hyperframes init. No build step. No config.
 
-Three rules to remember. Number 1. Every timed element needs data-start and data-duration. That is how the renderer knows when each clip enters and exits. Number 2. Add class equals clip for visibility control. The framework hides anything outside its time window. Number 3. Register your GSAP timeline on window dot double-underscore timelines. The renderer drives playback from there.
+Three rules to remember. Number one. data-start tells the renderer when each clip enters and exits. Number two. class equals clip controls visibility. Number three. Register your GSAP timeline on window dot double-underscore timelines.
 
-That is HyperFrames in 90 seconds. Docs are at hyperframes dot heygen dot com. Subscribe if you want more breakdowns like this one. See you in the next video.
+Then npx hyperframes preview to view in the browser. npx hyperframes render to ship an MP4. Deterministic. No randomness. No clocks. No network at render time.
+
+Docs are at hyperframes dot heygen dot com. Subscribe for more breakdowns.

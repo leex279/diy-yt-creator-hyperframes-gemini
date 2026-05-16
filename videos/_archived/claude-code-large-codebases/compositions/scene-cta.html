@@ -1,0 +1,375 @@
+<!--
+  scene-cta.html — Scene 13 / CTA + Archon callout + thumbnail-grade final frame
+  Scene duration: 32.754s (525.246s → 558s)
+  Spoken: "So that is Anthropic's playbook. The harness, the three patterns, and the order
+  to build them in. If you want to see how to actually build a harness like this, check out
+  the Archon video. Claude Code's harness builder. Link on screen. Anthropic says the
+  harness matters more than the model. Do you buy it? Or is it still mostly Claude doing
+  the work? Drop your pick below. Harness or model. Which one is doing the work?"
+  On-screen #cta-question: "Harness or model — which one is doing the work?"
+
+  YouTube end-card safe zone: bottom-right 480x320 reserved CLEAR during the last 20s for
+  YouTube Studio-configured video/subscribe tiles. All chrome shifted left/up to avoid it.
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-cta-content {
+        width: 100%; height: 100%;
+        padding: 80px 100px 80px;
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: flex-start;
+        gap: 18px;
+        box-sizing: border-box;
+        position: relative;
+      }
+      #cta-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #cta-topic-slam {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 104px;
+        line-height: 0.95;
+        letter-spacing: -3px;
+        color: var(--text);
+        max-width: 1380px;
+      }
+      #cta-topic-slam .accent { color: var(--accent-1); }
+      #cta-recap-row {
+        display: flex; flex-direction: row;
+        gap: 14px; align-items: center;
+        flex-wrap: wrap;
+      }
+      .cta-recap-chip {
+        padding: 12px 22px;
+        border-radius: 999px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 1px;
+        color: var(--text);
+      }
+      .cta-recap-chip .num {
+        color: var(--accent-1);
+        font-weight: 900;
+        margin-right: 8px;
+      }
+      #cta-thesis {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 34px;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+        color: var(--text-secondary);
+        max-width: 1380px;
+        position: relative;
+        display: inline-block;
+      }
+      #cta-thesis .accent { color: var(--accent-1); }
+      #cta-mark-thesis {
+        display: block;
+        height: 4px;
+        width: 0;
+        background: var(--accent-1);
+        border-radius: 2px;
+        margin: 6px 0 0;
+        box-shadow: 0 0 16px rgba(233, 116, 88, 0.55);
+      }
+      /* MANDATORY — debate-sparking CTA question (engagement-cta.md) */
+      #cta-question {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 68px;
+        line-height: 1.05;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1380px;
+      }
+      #cta-question .accent { color: var(--accent-1); }
+      .cta-pills {
+        display: flex; flex-direction: row;
+        align-items: center;
+        gap: 18px;
+      }
+      .cta-pill-item {
+        padding: 16px 28px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 2px;
+        color: var(--text);
+        display: inline-flex; align-items: center;
+        gap: 10px;
+      }
+      .cta-pill-item.subscribe {
+        background: linear-gradient(135deg,
+          rgba(233, 116, 88, 0.22) 0%,
+          rgba(233, 116, 88, 0.07) 100%);
+        border-color: rgba(233, 116, 88, 0.55);
+      }
+      .cta-pill-item.subscribe .arrow {
+        color: var(--accent-1);
+        font-weight: 900;
+        font-size: 26px;
+      }
+
+      /* === ARCHON callout — upper-right, points down to YouTube end-card tile === */
+      #archon-card {
+        position: absolute;
+        top: 90px;
+        right: 90px;
+        width: 460px;
+        padding: 22px 26px 24px;
+        border-radius: 18px;
+        background: linear-gradient(135deg,
+          rgba(167, 139, 250, 0.22) 0%,
+          rgba(107, 154, 239, 0.10) 100%);
+        border: 2px solid rgba(167, 139, 250, 0.55);
+        box-shadow: 0 14px 36px rgba(167, 139, 250, 0.20);
+        z-index: 5;
+      }
+      #archon-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 6px;
+      }
+      #archon-wordmark {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 64px;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      #archon-subtitle {
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 26px;
+        line-height: 1.2;
+        color: var(--text-secondary);
+        margin-bottom: 14px;
+      }
+      #archon-subtitle .accent { color: var(--accent-1); }
+      #archon-url {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 1.5px;
+        color: var(--accent-2);
+        padding: 10px 16px;
+        background: rgba(167, 139, 250, 0.10);
+        border: 1.5px solid rgba(167, 139, 250, 0.40);
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #archon-url .play {
+        color: var(--accent-4);
+        font-size: 20px;
+      }
+
+      /* Down-arrow pointer toward the YouTube end-card slot (bottom-right) */
+      #archon-pointer {
+        position: absolute;
+        right: 170px;
+        bottom: 360px;
+        width: 80px;
+        height: 80px;
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 80px;
+        line-height: 1;
+        color: var(--accent-2);
+        text-shadow: 0 0 24px rgba(167, 139, 250, 0.55);
+        z-index: 4;
+      }
+      #archon-pointer-label {
+        position: absolute;
+        right: 100px;
+        bottom: 460px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        z-index: 4;
+      }
+
+      /* === YouTube end-card safe zone — visible debug border in preview, transparent in render ===
+         Reserved bottom-right 480x320 for YT end-card tile + subscribe button.
+         No content from this scene should occupy this region in the final 20s. */
+      #yt-endcard-safezone {
+        position: absolute;
+        right: 60px;
+        bottom: 60px;
+        width: 480px;
+        height: 320px;
+        border: 2px dashed rgba(245, 241, 235, 0.10);
+        border-radius: 16px;
+        pointer-events: none;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #yt-endcard-label {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 18px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(245, 241, 235, 0.20);
+        text-align: center;
+        line-height: 1.4;
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <div id="cta-overline">ANTHROPIC'S PLAYBOOK</div>
+      <div id="cta-topic-slam">The <span class="accent">harness</span> matters more than the model.</div>
+
+      <div id="cta-recap-row">
+        <div class="cta-recap-chip" id="cta-chip-harness"><span class="num">1.</span>Harness</div>
+        <div class="cta-recap-chip" id="cta-chip-patterns"><span class="num">3.</span>Patterns</div>
+        <div class="cta-recap-chip" id="cta-chip-order"><span class="num">7.</span>In order</div>
+      </div>
+
+      <div id="cta-thesis">
+        Anthropic says the harness matters more than the model.
+        <span id="cta-mark-thesis"></span>
+      </div>
+
+      <!-- MANDATORY: debate-sparking question (matches spoken closing + youtube description) -->
+      <div id="cta-question"><span class="accent">Harness</span> or <span class="accent">model</span> &mdash; which one is doing the work?</div>
+
+      <div class="cta-pills">
+        <div class="cta-pill-item" id="cta-comment">
+          <span class="icon">&#x270F;</span>
+          <span>Drop your pick</span>
+        </div>
+        <div class="cta-pill-item subscribe" id="cta-subscribe">
+          <span>Subscribe</span>
+          <span class="arrow">&rarr;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Archon callout — enters when narrator says "Archon" -->
+    <div id="archon-card">
+      <div id="archon-overline">WATCH NEXT</div>
+      <div id="archon-wordmark">ARCHON</div>
+      <div id="archon-subtitle">Claude Code's <span class="accent">harness builder</span>.</div>
+      <div id="archon-url"><span class="play">&#x25B6;</span><span>youtube.com/watch?v=Ys3OPLKJHuw</span></div>
+    </div>
+
+    <!-- Pointer toward the YouTube end-card safe zone -->
+    <div id="archon-pointer-label">end card</div>
+    <div id="archon-pointer">&#x2198;</div>
+
+    <!-- Safe zone marker for YouTube end-card tile placement -->
+    <div id="yt-endcard-safezone">
+      <div id="yt-endcard-label">YOUTUBE<br>END CARD<br>TILE AREA</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 32.754;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // scene_start abs = 525.246 — all times below are scene-relative (composition - 525.246)
+
+      // === INITIAL STATE — hide all chrome ===
+      tl.set("#cta-overline",        { y: 16, opacity: 0 }, 0);
+      tl.set("#cta-topic-slam",      { y: 24, opacity: 0 }, 0);
+      tl.set("#cta-chip-harness",    { y: 16, opacity: 0 }, 0);
+      tl.set("#cta-chip-patterns",   { y: 16, opacity: 0 }, 0);
+      tl.set("#cta-chip-order",      { y: 16, opacity: 0 }, 0);
+      tl.set("#cta-thesis",          { y: 18, opacity: 0 }, 0);
+      tl.set("#cta-question",        { y: 28, scale: 0.94, opacity: 0 }, 0);
+      tl.set("#cta-comment",         { y: 16, opacity: 0 }, 0);
+      tl.set("#cta-subscribe",       { y: 16, opacity: 0 }, 0);
+      tl.set("#archon-card",         { y: -40, scale: 0.92, opacity: 0 }, 0);
+      tl.set("#archon-pointer",      { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#archon-pointer-label",{ opacity: 0, y: -10 }, 0);
+      tl.set("#yt-endcard-safezone", { opacity: 0 }, 0);
+
+      // === Brand chrome enters at t=0 ===
+      tl.to("#cta-overline",   { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0.0);
+      tl.to("#cta-topic-slam", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.1);
+      // hero-slam shake
+      tl.to("#cta-topic-slam", { x: 5,  duration: 0.04, ease: "none" }, 0.35);
+      tl.to("#cta-topic-slam", { x: -5, duration: 0.04, ease: "none" }, 0.40);
+      tl.to("#cta-topic-slam", { x: 3,  duration: 0.04, ease: "none" }, 0.45);
+      tl.to("#cta-topic-slam", { x: 0,  duration: 0.04, ease: "none" }, 0.50);
+
+      // === Recap chips — word "harness," at scene_rel 2.543 ===
+      tl.to("#cta-chip-harness",  { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 2.543);
+      tl.to("#cta-chip-patterns", { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 3.367);
+      tl.to("#cta-chip-order",    { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 4.000);
+
+      // === ARCHON callout — enters before narrator says "Archon" (9.694) ===
+      // Card slides down + scales in around scene_rel 8.0 so it's settled when narrator names it
+      tl.to("#archon-card", { y: 0, scale: 1, opacity: 1, duration: 0.75, ease: "back.out(1.5)" }, 8.0);
+      // Wordmark inline pulse when narrator hits "Archon" word
+      tl.to("#archon-wordmark", { scale: 1.06, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, 9.694);
+      // URL pill glow-pulse when narrator says "Link on screen" (scene_rel 13.270)
+      tl.to("#archon-url", { boxShadow: "0 0 24px rgba(167, 139, 250, 0.65)", duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 13.270);
+
+      // Pointer arrow + label reveal — comes in just after the URL pulse
+      tl.to("#archon-pointer-label", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 13.6);
+      tl.to("#archon-pointer", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 13.8);
+      // Pointer subtle bob — 5 finite cycles (no repeat:-1)
+      tl.to("#archon-pointer", { y: 12, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 9 }, 14.5);
+      // Safe-zone marker softly fades in to hint where the YT tile lands
+      tl.to("#yt-endcard-safezone", { opacity: 1, duration: 0.6, ease: "power2.out" }, 14.0);
+
+      // === Thesis line — word "Anthropic" at scene_rel 14.569 ===
+      tl.to("#cta-thesis", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 14.569);
+      tl.to("#cta-mark-thesis", { width: "75%", duration: 1.8, ease: "power2.out" }, 15.2);
+
+      // === Subscribe pill enters before "Drop" beat ===
+      tl.to("#cta-subscribe", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 19.0);
+      tl.to("#cta-subscribe", { boxShadow: "0 0 0 6px rgba(233, 116, 88, 0.32)", duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 5 }, 19.5);
+
+      // === Comment pill — word "Drop" at scene_rel 22.197 ===
+      tl.to("#cta-comment", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 22.197);
+
+      // === #cta-question — word "Harness" at scene_rel 23.625 (engagement-cta.md mandatory) ===
+      tl.to("#cta-question", { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 23.625);
+      tl.to("#cta-question", { scale: 1.04, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 25.5);
+
+      // === Held YouTube end-card window (last ~5s) — everything frozen, viewer can interact with YT tiles ===
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

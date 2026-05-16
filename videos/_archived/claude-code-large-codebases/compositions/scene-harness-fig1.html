@@ -1,0 +1,244 @@
+<!--
+  scene-harness-fig1.html — Scene 5 / Image-3D-Reveal #1 (38.126s).
+  Hero: assets/blog/fig1-harness.png. 7 callout-pills beside the figure (not overlays):
+  CLAUDE.md / Hooks / Skills / Plugins / MCP / LSP / Sub-agents.
+  Marker sweep on "order matters" and "common mistake" synthetic captions.
+-->
+<template id="scene-harness-fig1-template">
+  <div data-composition-id="scene-harness-fig1"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-fig1-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 18px;
+        box-sizing: border-box;
+      }
+      #fig1-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #fig1-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 50px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1600px;
+      }
+      #fig1-row {
+        display: flex; flex-direction: row;
+        align-items: center; justify-content: center;
+        gap: 32px;
+        width: 100%;
+      }
+      #fig1-stage {
+        perspective: 2000px;
+        transform-style: preserve-3d;
+        position: relative;
+      }
+      #fig1-stage img {
+        display: block;
+        width: 1100px;
+        max-height: 620px;
+        border-radius: 18px;
+        border: 2px solid rgba(233, 116, 88, 0.45);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55),
+                    0 0 80px rgba(233, 116, 88, 0.20);
+        object-fit: contain;
+        background: #161B26;
+      }
+      #fig1-pills {
+        display: flex; flex-direction: column;
+        gap: 10px;
+        min-width: 360px;
+      }
+      .fig1-pill {
+        display: flex; align-items: center;
+        gap: 14px;
+        padding: 12px 18px;
+        border-radius: 14px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-bright);
+      }
+      .fig1-pill-num {
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 28px;
+        color: var(--accent-1);
+        min-width: 38px;
+      }
+      .fig1-pill-text {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 24px;
+        color: var(--text);
+        letter-spacing: -0.5px;
+      }
+      .fig1-pill-tag {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      .fig1-pill.cap .fig1-pill-num { color: var(--accent-3); }
+      #fig1-caption {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 1px;
+        color: var(--text);
+        margin-top: 6px;
+        position: relative;
+        display: inline-block;
+      }
+      #fig1-caption .accent { color: var(--accent-1); }
+      #fig1-mark-order {
+        display: block;
+        height: 4px;
+        width: 0;
+        background: var(--accent-1);
+        border-radius: 2px;
+        margin-top: 4px;
+        box-shadow: 0 0 14px rgba(233, 116, 88, 0.55);
+      }
+      #fig1-confusion {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 1.5px;
+        color: var(--accent-warn);
+        text-transform: uppercase;
+        position: relative;
+        display: inline-block;
+      }
+      #fig1-mark-confusion {
+        display: block;
+        height: 4px;
+        width: 0;
+        background: var(--accent-warn);
+        border-radius: 2px;
+        margin-top: 4px;
+        box-shadow: 0 0 14px rgba(209, 67, 67, 0.55);
+      }
+    </style>
+
+    <div id="scene-fig1-content">
+      <div id="fig1-overline">FROM THE ARTICLE &middot; FIGURE 1</div>
+      <div id="fig1-headline">The 7-component harness Anthropic ships.</div>
+      <div id="fig1-row">
+        <div id="fig1-stage">
+          <img id="fig1-img" src="../assets/blog/fig1-harness.png" alt="Anthropic harness diagram — 5 extension points + 2 capabilities">
+        </div>
+        <div id="fig1-pills">
+          <div class="fig1-pill" id="fig1-pill-1"><span class="fig1-pill-num">1</span><span class="fig1-pill-text">CLAUDE.md</span><span class="fig1-pill-tag">extension</span></div>
+          <div class="fig1-pill" id="fig1-pill-2"><span class="fig1-pill-num">2</span><span class="fig1-pill-text">Hooks</span><span class="fig1-pill-tag">extension</span></div>
+          <div class="fig1-pill" id="fig1-pill-3"><span class="fig1-pill-num">3</span><span class="fig1-pill-text">Skills</span><span class="fig1-pill-tag">extension</span></div>
+          <div class="fig1-pill" id="fig1-pill-4"><span class="fig1-pill-num">4</span><span class="fig1-pill-text">Plugins</span><span class="fig1-pill-tag">extension</span></div>
+          <div class="fig1-pill" id="fig1-pill-5"><span class="fig1-pill-num">5</span><span class="fig1-pill-text">MCP servers</span><span class="fig1-pill-tag">extension</span></div>
+          <div class="fig1-pill cap" id="fig1-pill-6"><span class="fig1-pill-num">6</span><span class="fig1-pill-text">LSP</span><span class="fig1-pill-tag">capability</span></div>
+          <div class="fig1-pill cap" id="fig1-pill-7"><span class="fig1-pill-num">7</span><span class="fig1-pill-text">Sub-agents</span><span class="fig1-pill-tag">capability</span></div>
+        </div>
+      </div>
+      <div id="fig1-caption">
+        And the <span class="accent">order matters</span> &mdash; each layer builds on the one before.
+        <span id="fig1-mark-order"></span>
+      </div>
+      <div id="fig1-confusion">
+        Common mistake: building MCP first.
+        <span id="fig1-mark-confusion"></span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 38.126;
+      const YOYO_CYCLE = 12;
+      const yoyoRepeats = Math.max(0, Math.floor(SCENE_DURATION / YOYO_CYCLE) - 1);
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // scene_start = 134.126 — times below are scene-relative
+      tl.set("#fig1-overline",   { y: 18, opacity: 0 }, 0);
+      tl.set("#fig1-headline",   { y: 24, opacity: 0 }, 0);
+      tl.set("#fig1-pill-1",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-pill-2",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-pill-3",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-pill-4",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-pill-5",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-pill-6",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-pill-7",     { x: -30, opacity: 0 }, 0);
+      tl.set("#fig1-caption",    { y: 16, opacity: 0 }, 0);
+      tl.set("#fig1-confusion",  { y: 16, opacity: 0 }, 0);
+
+      tl.to("#fig1-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.0);
+      tl.to("#fig1-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.3);
+
+      // 3D entrance from t=0
+      tl.fromTo("#fig1-stage",
+        { scale: 0.7, rotationY: -25, opacity: 0, transformPerspective: 2000 },
+        { scale: 1.0, rotationY: 0,   opacity: 1, duration: 1.2, ease: "back.out(1.4)", immediateRender: false },
+        0.0);
+
+      // Micro-yoyo after settle
+      tl.to("#fig1-stage", {
+        rotationY: 1.5,
+        duration: YOYO_CYCLE / 2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: yoyoRepeats,
+        immediateRender: false
+      }, 1.8);
+
+      // 7 callout pills — narration-anchored scene-relative times
+      // Pill 1 "CLAUDE.md" — word "CLAUDE" at 142.346 → scene 8.220
+      tl.to("#fig1-pill-1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 8.220);
+      // Pill 2 "Hooks" — 144.540 → scene 10.414
+      tl.to("#fig1-pill-2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 10.414);
+      // Pill 3 "Skills" — 145.074 → scene 10.948
+      tl.to("#fig1-pill-3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 10.948);
+      // Pill 4 "Plugins" — 145.654 → scene 11.528
+      tl.to("#fig1-pill-4", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 11.528);
+      // Pill 5 "MCP" — 146.580 → scene 12.454
+      tl.to("#fig1-pill-5", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 12.454);
+      // Pill 6 "LSP" — 150.860 → scene 16.734
+      tl.to("#fig1-pill-6", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 16.734);
+      // Pill 7 "Sub-agents" — 152.333 → scene 18.207
+      tl.to("#fig1-pill-7", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 18.207);
+
+      // Caption "order matters" — word "order" at 159.156 → scene 25.030
+      tl.to("#fig1-caption", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 25.030);
+      tl.to("#fig1-mark-order", { width: "60%", duration: 0.8, ease: "power2.out" }, 25.030);
+
+      // Breath beat — scale-pulse on Pill 1 (CLAUDE.md "first" emphasis) at scene 29.988
+      tl.to("#fig1-pill-1", { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 29.988);
+
+      // Confusion line — word "common" at 170.174 → scene 36.048
+      tl.to("#fig1-confusion", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 35.0);
+      tl.to("#fig1-mark-confusion", { width: "70%", duration: 0.8, ease: "power2.out" }, 36.048);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-harness-fig1"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,6 +1,6 @@
 ---
 name: engagement-hooks-framework
-description: Engineer outstanding hooks and high-retention narration for video scripts using the Triple-Threat Hook (visual + text + spoken alignment), Violent Contrast (200-unit lean-and-snap), One-Question-Loop sentence flow, and Lego-Brick outlier deconstruction. Use when authoring or auditing scripts for diy-yt-creator videos (Phase 2 / Phase 2.5), when the user asks to "improve the hook", "make the intro stronger", "increase retention", "audit script engagement", "deconstruct outlier videos", or when an existing script feels slow, generic, or fails to stop the scroll. Complements (does NOT replace) phase2-script and phase2-5-critique.
+description: Engineer outstanding hooks and high-retention narration for video scripts using the Triple-Threat Hook (visual + text + spoken alignment), Violent Contrast (200-unit lean-and-snap), One-Question-Loop sentence flow, Lego-Brick outlier deconstruction, and Anti-Slop methodology (Receipts + Thesis + JCRR + Specificity Ladder). Use when authoring or auditing scripts for diy-yt-creator videos (Phase 2 / Phase 2.5), when the user asks to "improve the hook", "make the intro stronger", "increase retention", "audit script engagement", "deconstruct outlier videos", "audit for AI slop", "make it sound less AI", or when an existing script feels slow, generic, fails to stop the scroll, or sounds like ChatGPT wrote it. Complements (does NOT replace) phase2-script and phase2-5-critique.
 ---
 
 # Engagement Hooks Framework
@@ -11,13 +11,14 @@ Engineer hooks and narration that earn the click AND hold attention. Distilled f
 
 This skill is an **enhancement layer** on top of `/diy-yt-creator:phase2-script` and `/diy-yt-creator:phase2-5-critique`. The existing pipeline enforces voice rules, banned phrases, story arc, and CTA structure. This skill enforces what those gates don't catch: **whether the hook physically stops the scroll, whether each sentence pulls the next one in, and whether visual + text + spoken hook align as one weapon.**
 
-Use this skill in three modes:
+Use this skill in four modes:
 
 | Mode | When | Output |
 |---|---|---|
 | **Author** | Inside Phase 2 (Step 3) — writing the hook + first 60s | Hook block + opening narration that passes the audit |
 | **Audit** | After Phase 2 / before Phase 2.5 — review a draft | Per-line audit report: which checks pass, which fail, suggested rewrites |
 | **Deconstruct** | Before Phase 1 — analyze outlier reference videos | Lego-Brick deconstruction: which bricks held world-class, which need iteration |
+| **Anti-Slop** | Before Phase 2 (gate check) OR after Phase 2.5 (deep methodology audit) | Verifies Phase 0 Receipts + Thesis gates are clean, then audits the script for Generality / Unsourced Authority / Filler — the three structural causes of slop |
 
 ## Workflow
 
@@ -45,6 +46,22 @@ Use this skill in three modes:
 4. Hold the world-class bricks (8+) constant. Iterate aggressively on the lacking ones (≤5).
 5. Output: a "carry-forward" list that feeds Phase 1 plan generation.
 
+### Mode 4: Anti-Slop audit
+
+Use when: the user asks "make it sound less AI", "audit for slop", "the script feels generic"; OR before Phase 2 starts to confirm the receipt gate is clean; OR after Phase 2.5 passes but the result still feels off.
+
+1. **Read** [`references/anti-slop.md`](references/anti-slop.md) for the methodology layer (Receipts gate, Thesis rule, JCRR test, Specificity Ladder, 50% Deletion rule).
+2. **Verify Phase 0 gates** — open `videos/<slug>/research/content-brief.md`:
+   - `## Receipts` section has ≥ 3 entries (or `topic_type: CONCEPT` override is documented)
+   - `## Thesis` section has one falsifiable sentence
+   - If either fails: STOP and report to user — Phase 0 must re-run before script work continues
+3. **Audit the script** at `videos/<slug>/scripts/full-script.md`:
+   - **Thesis check**: Does the body argue the brief's thesis? Or does it describe the topic without arguing? Quote the thesis verbatim and quote the 1-3 lines from the script that argue it (or note "thesis is not argued").
+   - **Specificity Ladder**: Find any abstract sentence not followed by a specific one within 1-2 lines. Quote with line numbers.
+   - **JCRR breakdown**: For each scene, classify sentences as Judgment / Claim / Reason / Receipt / Filler. Flag stretches of > 2 consecutive Filler sentences.
+   - **Authority-Without-Evidence**: grep for `experts agree`, `studies show`, `research suggests`, `many developers find`, `it's widely known`, `as we all know`. Each instance: confirm an inline source is named in the same sentence; flag if not.
+4. **Report** as advisory — does NOT override Phase 2.5's verdict. Anti-slop is methodology; Phase 2.5 is the blocking gate. If anti-slop finds issues that Phase 2.5 missed, the user decides whether to rewrite.
+
 ## Reference files
 
 Read only the file matching the current mode — keeps context lean.
@@ -55,6 +72,7 @@ Read only the file matching the current mode — keeps context lean.
 - [`references/audit-checklist.md`](references/audit-checklist.md) — Engagement audit (Eyes-Closed Test, Two Dopamine Hits, density rules). Audit mode.
 - [`references/lego-brick-deconstruction.md`](references/lego-brick-deconstruction.md) — Outlier-video deconstruction template. Deconstruct mode.
 - [`references/winning-patterns.md`](references/winning-patterns.md) — Annotated hook patterns extracted from the 5 reference transcripts.
+- [`references/anti-slop.md`](references/anti-slop.md) — Receipts gate, Thesis rule, JCRR test, Specificity Ladder, 50% Deletion. Anti-Slop mode. Layered on top of (does NOT duplicate) the banned-phrase enforcement in `brand-voice-news-explainer.md` §B.1.
 
 ## Hard rules across all modes
 

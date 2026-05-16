@@ -1,0 +1,60 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/claude-code-version/tokens/claude-code-dark.css
+   Vertical Shorts (1080x1920) GitHub-dark + Claude Code accent triad.
+
+   Forked from the anthropic shorts inline-tokens block + the long-form
+   claude-code-version palette (templates/long-form/claude-code-version/
+   tokens/long-form.css). Variant difference vs anthropic shorts:
+   palette only — the spacing tokens (--pad-top, --pad-x, --pad-bottom)
+   match the shorts safe-zone, NOT long-form.
+
+   Scoped to :root so every block / sub-comp inherits the vars without
+   needing a wrapper. Override per video by re-declaring any var in a
+   tighter scope.
+
+   Linked once from index.html <head>:
+     <link rel="stylesheet" href="tokens/claude-code-dark.css">
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #0D1117;  /* GitHub-dark canvas (matches long-form variant) */
+  --card:           rgba(255, 255, 255, 0.04);
+  --card-bright:    rgba(255, 255, 255, 0.08);
+  --border:         rgba(255, 255, 255, 0.10);
+  --border-bright:  rgba(255, 255, 255, 0.18);
+
+  /* ── Text ──────────────────────────────────────────── */
+  --text:           #F1F3F4;
+  --text-secondary: #9AA0A6;
+  --text-muted:     #64748B;
+  --text-dim:       #9AA0A6;  /* alias for legacy `text-dim` consumers */
+
+  /* ── Claude Code accents ────────────────────────────── */
+  --accent-1:       #58A6FF;  /* cyan-blue — primary lead, version slam */
+  --accent-3:       #A371F7;  /* purple — tertiary */
+  --accent-4:       #3FB950;  /* green — success / improved */
+  --accent-warn:    #F78166;  /* orange — caution + hero stats */
+  --accent-stat:    #F78166;  /* alias — Claude Code uses one orange */
+
+  /* Legacy short-template accent aliases (so the lib's blocks/components
+     that reference --orange / --purple / --blue / --green still resolve).
+     Mapped to the closest Claude Code hue. */
+  --orange:         #F78166;  /* maps to --accent-warn */
+  --purple:         #A371F7;
+  --blue:           #58A6FF;
+  --green:          #3FB950;
+  --red:            #F85149;  /* GitHub danger red — warnings only, never decorative */
+
+  --pill-bg:        rgba(255, 255, 255, 0.06);
+  --pill-border:    rgba(255, 255, 255, 0.18);
+
+  /* ── Spacing (1080x1920 safe-zone, mobile UI overlay) ── */
+  --pad-top:        180px;    /* clears VersionBranding logo stack (240w × ~50h × 2 + gap = ~160px) */
+  --pad-x:          60px;
+  --pad-bottom:     180px;    /* clears mobile UI footer + progress bar */
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

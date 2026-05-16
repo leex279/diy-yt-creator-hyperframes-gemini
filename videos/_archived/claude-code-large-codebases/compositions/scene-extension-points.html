@@ -1,0 +1,235 @@
+<!--
+  scene-extension-points.html — Scene 6 / List-cards harness breakdown (93.620s).
+  7 cards step-by-step revealed at "one." through "seven." narration anchors.
+  CLAUDE.md / Hooks / Skills / Plugins / LSP / MCP / Sub-agents.
+-->
+<template id="scene-extension-points-template">
+  <div data-composition-id="scene-extension-points"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-ep-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 22px;
+        box-sizing: border-box;
+      }
+      #ep-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #ep-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 50px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1700px;
+      }
+      .ep-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: 1fr 1fr;
+        gap: 16px;
+        width: 100%;
+      }
+      .ep-card {
+        padding: 18px 20px 20px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(167, 139, 250, 0.10), rgba(167, 139, 250, 0.03));
+        border: 1.5px solid rgba(167, 139, 250, 0.32);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+        display: flex; flex-direction: column;
+        gap: 8px;
+        position: relative;
+      }
+      .ep-card.cap {
+        background: linear-gradient(135deg, rgba(107, 154, 239, 0.10), rgba(107, 154, 239, 0.03));
+        border-color: rgba(107, 154, 239, 0.35);
+      }
+      .ep-card-head {
+        display: flex; align-items: baseline; gap: 10px;
+      }
+      .ep-card-num {
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 30px;
+        color: var(--accent-2);
+        letter-spacing: -1px;
+      }
+      .ep-card.cap .ep-card-num { color: var(--accent-3); }
+      .ep-card-label {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.1;
+        color: var(--text);
+        letter-spacing: -0.5px;
+      }
+      .ep-card-desc {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 28px;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+      .ep-card-tag {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .ep-card.cap .ep-card-tag { color: var(--accent-3); }
+      .ep-card-warn {
+        margin-top: 4px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        color: #FF8B8B;
+        letter-spacing: 0.5px;
+      }
+      .ep-card-warn .ep-mark {
+        display: block;
+        height: 3px;
+        width: 0;
+        background: var(--accent-warn);
+        border-radius: 2px;
+        margin-top: 3px;
+        box-shadow: 0 0 10px rgba(209, 67, 67, 0.55);
+      }
+      .ep-card-warn .ep-mark-dont {
+        display: inline-block;
+        height: 4px;
+        width: 0;
+        background: var(--accent-warn);
+        border-radius: 2px;
+        vertical-align: bottom;
+        margin-left: 6px;
+        box-shadow: 0 0 10px rgba(209, 67, 67, 0.55);
+      }
+    </style>
+
+    <div id="scene-ep-content">
+      <div id="ep-overline">THE 7-COMPONENT HARNESS</div>
+      <div id="ep-headline">Here is the breakdown, card by card.</div>
+      <div class="ep-grid">
+        <div class="ep-card" id="ep-card-1">
+          <div class="ep-card-head"><div class="ep-card-num">1</div><div class="ep-card-label">CLAUDE.md</div></div>
+          <div class="ep-card-tag">EXTENSION</div>
+          <div class="ep-card-desc">Context files Claude reads automatically at every session.</div>
+        </div>
+        <div class="ep-card" id="ep-card-2">
+          <div class="ep-card-head"><div class="ep-card-num">2</div><div class="ep-card-label">Hooks</div></div>
+          <div class="ep-card-tag">EXTENSION</div>
+          <div class="ep-card-desc">Stop hook reflects on a session and proposes CLAUDE.md updates.</div>
+        </div>
+        <div class="ep-card" id="ep-card-3">
+          <div class="ep-card-head"><div class="ep-card-num">3</div><div class="ep-card-label">Skills</div></div>
+          <div class="ep-card-tag">EXTENSION</div>
+          <div class="ep-card-desc">On-demand expertise via progressive disclosure.</div>
+        </div>
+        <div class="ep-card" id="ep-card-4">
+          <div class="ep-card-head"><div class="ep-card-num">4</div><div class="ep-card-label">Plugins</div></div>
+          <div class="ep-card-tag">EXTENSION</div>
+          <div class="ep-card-desc">Bundle skills + hooks + MCP. Distribute what works.</div>
+        </div>
+        <div class="ep-card cap" id="ep-card-5">
+          <div class="ep-card-head"><div class="ep-card-num">5</div><div class="ep-card-label">LSP</div></div>
+          <div class="ep-card-tag">CAPABILITY</div>
+          <div class="ep-card-desc">Symbol-level precision for C, C++, Java navigation at scale.</div>
+        </div>
+        <div class="ep-card" id="ep-card-6">
+          <div class="ep-card-head"><div class="ep-card-num">6</div><div class="ep-card-label">MCP servers</div></div>
+          <div class="ep-card-tag">EXTENSION</div>
+          <div class="ep-card-desc">Expose structured search as a tool Claude can call.</div>
+          <div class="ep-card-warn">
+            Common confusion &mdash; teams build MCP first.<br/>
+            <span style="font-weight:900;font-size:28px;">Don't<span class="ep-mark-dont" id="ep-mark-dont"></span></span>
+            <span class="ep-mark" id="ep-mark-confusion"></span>
+          </div>
+        </div>
+        <div class="ep-card cap" id="ep-card-7" style="grid-column: span 2;">
+          <div class="ep-card-head"><div class="ep-card-num">7</div><div class="ep-card-label">Sub-agents</div></div>
+          <div class="ep-card-tag">CAPABILITY</div>
+          <div class="ep-card-desc">Isolated Claude instances. Take a task, return only the final result to the parent.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 93.620;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // scene_start = 172.252 — times below are scene-relative
+
+      tl.set("#ep-overline", { y: 20, opacity: 0 }, 0);
+      tl.set("#ep-headline", { y: 24, opacity: 0 }, 0);
+      tl.set("#ep-card-1",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#ep-card-2",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#ep-card-3",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#ep-card-4",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#ep-card-5",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#ep-card-6",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#ep-card-7",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+      tl.to("#ep-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.0);
+      tl.to("#ep-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.3);
+
+      // Card anchors (scene-relative, derived from retention-strategy.md):
+      //   Card 1 (CLAUDE.md):     174.470 → 2.218
+      //   Card 2 (Hooks):         184.116 → 11.864
+      //   Card 3 (Skills):        194.484 → 22.232
+      //   Card 4 (Plugins):       204.642 → 32.390
+      //   Card 5 (LSP):           225.865 → 53.613
+      //   Card 6 (MCP):           240.725 → 68.473
+      //   Card 7 (Sub-agents):    257.362 → 85.110
+
+      tl.to("#ep-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 2.218);
+      tl.to("#ep-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 11.864);
+      tl.to("#ep-card-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 22.232);
+      tl.to("#ep-card-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 32.390);
+
+      // Card 4 sub-beat: "large retail organization" callout — narration scene ~43.568
+      tl.to("#ep-card-4", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 43.568);
+
+      tl.to("#ep-card-5", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 53.613);
+      // Card 5 sub-beat — "enterprise software co." callout ~57.608
+      tl.to("#ep-card-5", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 57.608);
+
+      tl.to("#ep-card-6", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 68.473);
+
+      // Marker on "common confusion" — narration scene ~79.004
+      tl.to("#ep-mark-confusion", { width: "80%", duration: 0.7, ease: "power2.out" }, 79.004);
+      // Marker on "Don't" — narration scene ~82.578
+      tl.to("#ep-mark-dont", { width: 60, duration: 0.4, ease: "power2.out" }, 82.578);
+
+      tl.to("#ep-card-7", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 85.110);
+
+      // Tail glow-pulse — all cards lock in
+      tl.to(".ep-card", { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.02 }, 90.748);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-extension-points"] = tl;
+    </script>
+  </div>
+</template>

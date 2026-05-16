@@ -1,0 +1,1489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Gemma 4 — Multi-Token Prediction Drafters Explained</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="tokens/google-cinematic.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 Google brand stage. Phase mutex
+     layout, sub-slide crossfades inside long phases.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root.theme-cinematic {
+    background:
+      radial-gradient(circle at 20% 18%, rgba(66,133,244,0.22) 0%, transparent 38%),
+      radial-gradient(circle at 82% 32%, rgba(234,67,53,0.16) 0%, transparent 36%),
+      radial-gradient(circle at 50% 75%, rgba(52,168,83,0.18) 0%, transparent 42%),
+      radial-gradient(circle at 90% 90%, rgba(251,188,5,0.12) 0%, transparent 36%),
+      linear-gradient(180deg, #06080F 0%, #0A0F1F 50%, #06080F 100%);
+  }
+
+  #root.theme-cinematic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 90% 30% at 50% 100%, rgba(52,168,83,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  #slide-frame {
+    position: absolute;
+    inset: 32px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  #top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    width: 18%;
+    background: linear-gradient(90deg, var(--g-green), var(--g-yellow));
+    z-index: 4;
+  }
+
+  #particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+  }
+  #particles circle { will-change: transform, opacity; }
+
+  #glogo {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: none;
+  }
+  #glogo img {
+    height: 120px;
+    width: auto;
+    filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.45));
+  }
+
+  #footer-handle {
+    position: absolute;
+    top: 56px;
+    right: 64px;
+    z-index: 5;
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-40);
+    pointer-events: none;
+    padding-bottom: 6px;
+  }
+  #footer-handle .at {
+    color: var(--accent);
+    display: inline-block;
+    line-height: 1.4;
+  }
+
+  #progress-rail {
+    position: absolute;
+    bottom: 110px;
+    left: 80px;
+    right: 80px;
+    z-index: 4;
+    pointer-events: none;
+  }
+  #progress-rail .rail-track {
+    position: relative;
+    height: 2px;
+    background: linear-gradient(90deg,
+      rgba(66,133,244,0.45),
+      rgba(234,67,53,0.45),
+      rgba(251,188,5,0.45),
+      rgba(52,168,83,0.45),
+      rgba(66,133,244,0.45));
+    border-radius: 2px;
+  }
+  #progress-rail .rail-dots {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+  }
+  #progress-rail .rail-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+  #progress-rail .rail-dot .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #2A3148;
+    border: 2px solid #3A4360;
+    transition: none;
+  }
+  #progress-rail .rail-dot.active .dot {
+    width: 36px;
+    height: 36px;
+    border-color: transparent;
+    box-shadow: 0 0 24px var(--dot-color, var(--g-blue));
+    background: var(--dot-color, var(--g-blue));
+  }
+  #progress-rail .rail-dot[data-color="blue"]   { --dot-color: var(--g-blue); }
+  #progress-rail .rail-dot[data-color="red"]    { --dot-color: var(--g-red); }
+  #progress-rail .rail-dot[data-color="yellow"] { --dot-color: var(--g-yellow); }
+  #progress-rail .rail-dot[data-color="green"]  { --dot-color: var(--g-green); }
+  #progress-rail .rail-dot .label {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ink-40);
+    position: absolute;
+    top: 44px;
+    white-space: nowrap;
+  }
+  #progress-rail .rail-dot.active .label {
+    color: var(--dot-color, var(--g-blue));
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  /* Phases — full-bleed, layered. Phase 1 visible at start. */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+
+  .phase-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Common typography */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--accent);
+    margin-bottom: 32px;
+  }
+  .headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -2px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 32px;
+  }
+  .headline.xl { font-size: 148px; }
+  .headline.l  { font-size: 128px; }
+  .headline.m  { font-size: 104px; }
+  .headline.s  { font-size: 88px;  }
+  .subhead {
+    font-family: var(--sans);
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-60);
+    margin: 0 0 60px;
+  }
+
+  /* Phase 1 — hero stage */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .hero-figure {
+    position: relative;
+    width: 760px;
+    margin: 16px auto 0;
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 28px 100px -20px rgba(66,133,244,0.45),
+      0 0 80px rgba(66,133,244,0.18);
+    background: var(--card-bright);
+  }
+  .hero-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .hero-figure img { width: 100%; height: auto; display: block; }
+  .hero-figure figcaption {
+    font-family: var(--mono);
+    font-size: 24px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+    padding: 18px 28px 20px;
+    text-align: left;
+    border-top: 1px solid var(--border);
+    background: rgba(10,14,26,0.85);
+  }
+  .hero-figure figcaption .src-handle { color: var(--accent); }
+
+  .p1-faster-pill {
+    position: absolute;
+    top: 32px;
+    right: 28px;
+    z-index: 3;
+    padding: 10px 22px;
+    background: rgba(52,168,83,0.18);
+    border: 1.5px solid var(--g-green);
+    border-radius: 999px;
+    color: var(--g-green);
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    box-shadow: 0 0 30px rgba(52,168,83,0.35);
+  }
+
+  /* Sub-slide stage scaffolding */
+  .p2-stage, .p3-stage, .p4-stage {
+    position: relative;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .p2-slide, .p3-slide, .p4-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p2-slide.is-default-visible,
+  .p3-slide.is-default-visible,
+  .p4-slide.is-default-visible { opacity: 1; visibility: visible; }
+  .p2-slide[data-color="blue"],   .p3-slide[data-color="blue"],   .p4-slide[data-color="blue"]   { --slot-color: var(--g-blue);   --slot-glow: rgba(66,133,244,0.45); }
+  .p2-slide[data-color="yellow"], .p3-slide[data-color="yellow"], .p4-slide[data-color="yellow"] { --slot-color: var(--g-yellow); --slot-glow: rgba(251,188,5,0.45); }
+  .p2-slide[data-color="green"],  .p3-slide[data-color="green"],  .p4-slide[data-color="green"]  { --slot-color: var(--g-green);  --slot-glow: rgba(52,168,83,0.45); }
+  .p2-slide[data-color="red"],    .p3-slide[data-color="red"],    .p4-slide[data-color="red"]    { --slot-color: var(--g-red);    --slot-glow: rgba(234,67,53,0.45); }
+
+  .slot-num {
+    font-family: var(--mono);
+    font-size: 96px;
+    font-weight: 800;
+    color: var(--slot-color, var(--accent));
+    line-height: 1;
+    letter-spacing: -2px;
+    text-shadow: 0 0 50px var(--slot-glow, var(--accent-glow));
+    margin-bottom: -8px;
+  }
+
+  .p2-slide .eyebrow,
+  .p3-slide .eyebrow,
+  .p4-slide .eyebrow { color: var(--slot-color, var(--accent)); }
+
+  .stage-bullets, .stage-pills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 920px;
+  }
+  .stage-bullets li, .stage-pills li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 28px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--slot-color, var(--accent));
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    will-change: opacity, transform;
+  }
+  .stage-pills li[data-color="blue"]   { --slot-color: var(--g-blue); }
+  .stage-pills li[data-color="yellow"] { --slot-color: var(--g-yellow); }
+  .stage-pills li[data-color="green"]  { --slot-color: var(--g-green); }
+  .stage-pills li[data-color="red"]    { --slot-color: var(--g-red); }
+  .bullet-tag {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--slot-color, var(--accent));
+    min-width: 110px;
+  }
+  .bullet-detail {
+    flex: 1;
+    font-family: var(--sans);
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--ink-100);
+    line-height: 1.25;
+  }
+  .bullet-detail .accent-mono {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--slot-color, var(--accent));
+  }
+
+  .p2-slide h2, .p3-slide h2, .p4-slide h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 84px;
+    line-height: 0.98;
+    letter-spacing: -1.5px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 12px;
+  }
+
+  /* 2A — autoregressive terminal */
+  .p2a-terminal {
+    width: 920px;
+    background: #0A0E18;
+    border: 1px solid var(--border-bright);
+    border-radius: 18px;
+    padding: 36px 40px;
+    font-family: var(--mono);
+    font-size: 38px;
+    line-height: 1.6;
+    color: var(--ink-80);
+    text-align: left;
+    position: relative;
+  }
+  .p2a-terminal::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+  }
+  .p2a-terminal .prompt { color: var(--ink-40); margin-right: 12px; }
+  .p2a-terminal .draft  { color: var(--g-yellow); }
+  .p2a-line { line-height: 1.55; }
+
+  /* 2B — speculative decoding hero figure */
+  .p2b-figure {
+    position: relative;
+    width: 760px;
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 24px 80px -20px rgba(66,133,244,0.45),
+      0 0 60px rgba(66,133,244,0.20);
+    background: #ffffff;
+  }
+  .p2b-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .p2b-figure img { width: 100%; height: auto; display: block; }
+  .p2b-callout {
+    position: absolute;
+    z-index: 3;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .p2b-callout.tokens {
+    top: 38%;
+    left: 36%;
+    background: rgba(251,188,5,0.92);
+    color: #0A0E18;
+    border: 1px solid var(--g-yellow);
+    box-shadow: 0 0 24px rgba(251,188,5,0.4);
+  }
+  .p2b-callout.parallel {
+    top: 64%;
+    right: -16px;
+    background: rgba(66,133,244,0.92);
+    color: #ffffff;
+    border: 1px solid var(--g-blue);
+    box-shadow: 0 0 24px rgba(66,133,244,0.4);
+  }
+
+  /* 3A1 — drafter architecture (solo figure, big & readable) */
+  .p3a-figure {
+    position: relative;
+    width: 660px;
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 24px 80px -20px rgba(66,133,244,0.45),
+      0 0 60px rgba(66,133,244,0.20);
+    background: #ffffff;
+  }
+  .p3a-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .p3a-figure img { width: 100%; height: auto; display: block; }
+  .p3a-fig-pin {
+    position: absolute;
+    z-index: 3;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    white-space: nowrap;
+  }
+  .p3a-fig-pin.pin-mtp {
+    top: 38%;
+    left: -54px;
+    background: rgba(66,133,244,0.95);
+    color: #ffffff;
+    border: 1px solid var(--g-blue);
+    box-shadow: 0 0 28px rgba(66,133,244,0.55);
+  }
+  .p3a-fig-pin.pin-e2b {
+    top: 12%;
+    right: -54px;
+    background: rgba(52,168,83,0.95);
+    color: #ffffff;
+    border: 1px solid var(--g-green);
+    box-shadow: 0 0 28px rgba(52,168,83,0.55);
+  }
+
+  /* 3A2 — spec chips solo (no figure), bigger values */
+  #p3-slide-a2 .p3a-stat-grid {
+    width: 920px;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  #p3-slide-a2 .p3a-chip {
+    padding: 36px 40px;
+  }
+  #p3-slide-a2 .p3a-chip .chip-label {
+    font-size: 28px;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+  #p3-slide-a2 .p3a-chip .chip-value {
+    font-size: 96px;
+    letter-spacing: -2px;
+  }
+  #p3-slide-a2 .p3a-chip .chip-sub {
+    font-size: 22px;
+    margin-top: 10px;
+  }
+
+  .p3a-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 920px;
+    margin-top: 10px;
+  }
+  .p3a-chip {
+    position: relative;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    padding: 24px 28px;
+    background: var(--card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    text-align: left;
+  }
+  .p3a-chip::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 14px; bottom: 14px;
+    width: 4px;
+    background: var(--chip-color, var(--g-blue));
+    border-radius: 0 4px 4px 0;
+  }
+  .p3a-chip[data-color="blue"]   { --chip-color: var(--g-blue); }
+  .p3a-chip[data-color="red"]    { --chip-color: var(--g-red); }
+  .p3a-chip[data-color="yellow"] { --chip-color: var(--g-yellow); }
+  .p3a-chip[data-color="green"]  { --chip-color: var(--g-green); }
+  .p3a-chip .chip-label {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--chip-color, var(--g-blue));
+    margin-bottom: 6px;
+  }
+  .p3a-chip .chip-value {
+    font-family: var(--sans);
+    font-size: 56px;
+    font-weight: 800;
+    color: var(--ink-100);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .p3a-chip .chip-sub {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--ink-60);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* 3D — efficient embedder big stat */
+  .p3d-bigstat {
+    text-align: center;
+    margin: 0 0 8px;
+  }
+  .p3d-bigstat .num {
+    font-family: var(--sans);
+    font-size: 200px;
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -6px;
+    background: linear-gradient(135deg, var(--g-blue) 0%, var(--g-green) 50%, var(--g-yellow) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(66,133,244,0.25));
+  }
+  .p3d-bigstat .label {
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-size: 28px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+  }
+  .p3d-badge {
+    margin: 8px auto 0;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: rgba(52,168,83,0.18);
+    border: 1.5px solid var(--g-green);
+    color: var(--g-green);
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: inline-block;
+    box-shadow: 0 0 24px rgba(52,168,83,0.3);
+  }
+
+  /* 4A — result pills */
+  .p4a-pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    width: 920px;
+  }
+  .p4a-pill {
+    padding: 28px 18px;
+    border-radius: 18px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-top: 4px solid var(--pill-color, var(--g-blue));
+    text-align: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .p4a-pill[data-color="blue"]   { --pill-color: var(--g-blue); }
+  .p4a-pill[data-color="green"]  { --pill-color: var(--g-green); }
+  .p4a-pill[data-color="yellow"] { --pill-color: var(--g-yellow); }
+  .p4a-pill .pill-tag {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--pill-color, var(--g-blue));
+    margin-bottom: 6px;
+  }
+  .p4a-pill .pill-detail {
+    font-family: var(--sans);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink-100);
+    line-height: 1.15;
+  }
+
+  .p4a-out-now {
+    margin-top: 6px;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(52,168,83,0.22), rgba(66,133,244,0.22));
+    border: 1.5px solid var(--g-green);
+    color: var(--g-green);
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    display: inline-block;
+    box-shadow: 0 0 36px rgba(52,168,83,0.35);
+  }
+
+  /* Persistent Dynamous overlays */
+  #dynamous-badge {
+    position: absolute;
+    top: 56px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 22px 12px 14px;
+    background: rgba(15, 23, 42, 0.78);
+    border: 1.5px solid rgba(168, 85, 247, 0.35);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0.92;
+    box-shadow:
+      0 6px 22px rgba(0, 0, 0, 0.55),
+      0 0 28px rgba(168, 85, 247, 0.20);
+  }
+  #dynamous-badge-mark { height: 56px; width: auto; display: block; }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.6px;
+    color: #f1f5f9;
+  }
+  #dynamous-discount-bubble {
+    position: absolute;
+    bottom: 220px;
+    left: 60px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 28px;
+    height: 28px;
+    display: block;
+    background-image: url('assets/dynamous-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #ddb-url      { font-weight: 700; font-size: 22px; color: #e2e8f0; letter-spacing: 0.3px; }
+  #ddb-discount {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 20px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer  { font-weight: 600; font-size: 20px; color: #94a3b8; }
+
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<script src="video.config.js"></script>
+<div id="root"
+     class="theme-cinematic"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="169.2"
+     data-width="1080"
+     data-height="1920">
+
+  <svg id="particles"
+       width="100%" height="100%"
+       preserveAspectRatio="none"
+       data-layout-allow-overflow="true"
+       xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <div id="slide-frame"></div>
+  <div id="top-line"></div>
+
+  <div id="glogo">
+    <img src="assets/google-logo.png" alt="Google" />
+  </div>
+
+  <div id="footer-handle"><span class="at" data-layout-allow-overflow="true">@</span>smartcode.diy</div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <div id="progress-rail">
+    <div class="rail-track"></div>
+    <div class="rail-dots">
+      <div class="rail-dot" data-color="blue"   data-step="0"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">SETUP</div></div>
+      <div class="rail-dot" data-color="red"    data-step="1"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">DECODE</div></div>
+      <div class="rail-dot" data-color="yellow" data-step="2"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">DRAFT</div></div>
+      <div class="rail-dot" data-color="green"  data-step="3"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">VERIFY</div></div>
+      <div class="rail-dot" data-color="blue"   data-step="4"><div class="dot"></div><div class="label" data-layout-allow-overflow="true">SHIP</div></div>
+    </div>
+  </div>
+
+  <!-- ── Dynamous overlays — guard removes when disabled in video.config.js -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="0"
+       data-duration="6"
+       data-track-index="10">
+    <span id="ddb-mark"></span>
+    <span id="ddb-url">Dynamous.ai</span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-pointer">in the link &darr;</span>
+  </div>
+
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="164.12"
+       data-duration="5"
+       data-track-index="12"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO (0 → 10s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="eyebrow" id="p1-eyebrow">GEMMA 4</div>
+      <h1 class="headline l" id="p1-headline">Faster inference with MTP drafters.</h1>
+      <figure class="hero-figure" id="p1-figure">
+        <img src="assets/blog-header-shot.png" alt="Google blog post: Accelerating Gemma 4: faster inference with multi-token prediction drafters" />
+        <div class="p1-faster-pill" id="p1-faster-pill">&uarr; FASTER</div>
+        <figcaption id="p1-figcaption"><span class="src-handle">@blog.google</span> &middot; MAY 5, 2026</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — SPECULATIVE DECODING (10.4 → 60.95s)
+       3 sub-slides: 2A bottleneck, 2B fix, 2C verify
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content p2-stage">
+
+      <!-- 2A — The bottleneck -->
+      <div id="p2-slide-a" class="p2-slide is-default-visible" data-color="red">
+        <div class="eyebrow">THE BOTTLENECK</div>
+        <h2>One token at a time.</h2>
+        <ul class="stage-bullets" id="p2a-bullets">
+          <li id="p2a-bullet-1"><span class="bullet-tag">SAME</span><span class="bullet-detail">Same compute, every token.</span></li>
+          <li id="p2a-bullet-2"><span class="bullet-tag">EASY OR HARD</span><span class="bullet-detail">Easy words. Hard words. Same cost.</span></li>
+        </ul>
+        <div class="p2a-terminal" id="p2a-terminal">
+          <div class="p2a-line"><span class="prompt">&gt;</span>"Actions speak <span class="draft" id="p2a-pred">louder than words.</span>"</div>
+        </div>
+      </div>
+
+      <!-- 2B — The fix (speculative decoding) -->
+      <div id="p2-slide-b" class="p2-slide" data-color="blue">
+        <div class="eyebrow">THE FIX</div>
+        <h2>Speculative decoding.</h2>
+        <div class="p2b-figure" id="p2b-figure">
+          <img src="assets/x-image-2.jpg" alt="Speculative decoding flow: target then draft then verify in parallel" />
+          <div class="p2b-callout tokens" id="p2b-cb-tokens">4 TOKENS</div>
+          <div class="p2b-callout parallel" id="p2b-cb-parallel">PARALLEL VERIFY</div>
+        </div>
+      </div>
+
+      <!-- 2C — Verify behavior -->
+      <div id="p2-slide-c" class="p2-slide" data-color="green">
+        <div class="eyebrow">VERIFY</div>
+        <h2>Agree, accept. Disagree, replace.</h2>
+        <ul class="stage-pills" id="p2c-pills">
+          <li id="p2c-pill-1" data-color="green"><span class="bullet-tag">AGREE</span><span class="bullet-detail">All <span class="accent-mono">4 tokens</span> accepted.</span></li>
+          <li id="p2c-pill-2" data-color="red"><span class="bullet-tag">DISAGREE</span><span class="bullet-detail">Accept up to the disagreement.</span></li>
+          <li id="p2c-pill-3" data-color="yellow"><span class="bullet-tag">REPLACE</span><span class="bullet-detail">Target swaps in its own token.</span></li>
+          <li id="p2c-pill-4" data-color="blue"><span class="bullet-tag">RESULT</span><span class="bullet-detail">Multiple tokens per <span class="accent-mono">single forward pass</span>.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — MTP WITH GEMMA 4 (61.35 → 140.75s)
+       4 sub-slides: 3A specs, 3B target activations, 3C kv cache, 3D efficient embedder
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content p3-stage">
+
+      <!-- 3A1 — Drafter architecture (solo figure, big & readable) -->
+      <div id="p3-slide-a1" class="p3-slide is-default-visible" data-color="blue">
+        <div class="eyebrow">MTP HEAD</div>
+        <h2>Inside the drafter.</h2>
+        <div class="p3a-figure" id="p3a-figure">
+          <img src="assets/x-image-1.jpg" alt="Gemma 4 Draft Model architecture for E2B" />
+          <div class="p3a-fig-pin pin-mtp"  id="p3a-pin-mtp" data-layout-allow-overflow="true">MTP HEAD</div>
+          <div class="p3a-fig-pin pin-e2b"  id="p3a-pin-e2b" data-layout-allow-overflow="true">TARGET&nbsp;&middot;&nbsp;E2B</div>
+        </div>
+      </div>
+
+      <!-- 3A2 — Spec chips (solo, bigger values) -->
+      <div id="p3-slide-a2" class="p3-slide" data-color="blue">
+        <div class="eyebrow">TINY DRAFTER</div>
+        <h2>76M params. Four layers.</h2>
+        <div class="p3a-stat-grid" id="p3a-stats">
+          <div class="p3a-chip" data-color="blue" id="p3a-chip-1">
+            <div class="chip-label">Params</div>
+            <div class="chip-value">76M</div>
+            <div class="chip-sub">drafter only</div>
+          </div>
+          <div class="p3a-chip" data-color="red" id="p3a-chip-2">
+            <div class="chip-label">Layers</div>
+            <div class="chip-value">4</div>
+            <div class="chip-sub">decoder blocks</div>
+          </div>
+          <div class="p3a-chip" data-color="yellow" id="p3a-chip-3">
+            <div class="chip-label">Embed</div>
+            <div class="chip-value">256</div>
+            <div class="chip-sub">drafter dim</div>
+          </div>
+          <div class="p3a-chip" data-color="green" id="p3a-chip-4">
+            <div class="chip-label">Dense E2B</div>
+            <div class="chip-value">1536</div>
+            <div class="chip-sub">target dim</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3B — Target Activations -->
+      <div id="p3-slide-b" class="p3-slide" data-color="blue">
+        <div class="eyebrow">ENHANCEMENT 01</div>
+        <div class="slot-num" id="p3b-num">01</div>
+        <h2>Target activations.</h2>
+        <ul class="stage-bullets" id="p3b-bullets">
+          <li id="p3b-bullet-1"><span class="bullet-tag">REUSE</span><span class="bullet-detail">Final activations from the target model.</span></li>
+          <li id="p3b-bullet-2"><span class="bullet-tag">CONCAT</span><span class="bullet-detail">Joined with drafter token embeddings.</span></li>
+          <li id="p3b-bullet-3"><span class="bullet-tag">PROJECT</span><span class="bullet-detail">Down from <span class="accent-mono">1536 to 256</span> values.</span></li>
+          <li id="p3b-bullet-4"><span class="bullet-tag">WHY</span><span class="bullet-detail">Don't waste compute the target already paid for.</span></li>
+        </ul>
+      </div>
+
+      <!-- 3C — KV Cache Sharing -->
+      <div id="p3-slide-c" class="p3-slide" data-color="red">
+        <div class="eyebrow">ENHANCEMENT 02</div>
+        <div class="slot-num" id="p3c-num">02</div>
+        <h2>KV cache sharing.</h2>
+        <ul class="stage-bullets" id="p3c-bullets">
+          <li id="p3c-bullet-1"><span class="bullet-tag">NO OWN</span><span class="bullet-detail">Drafter doesn't build its own KV cache.</span></li>
+          <li id="p3c-bullet-2"><span class="bullet-tag">CROSS-ATTEND</span><span class="bullet-detail">Reads the target model's existing cache.</span></li>
+          <li id="p3c-bullet-3"><span class="bullet-tag">LOCAL</span><span class="bullet-detail">Reuses target's last local KV cache.</span></li>
+          <li id="p3c-bullet-4"><span class="bullet-tag">GLOBAL</span><span class="bullet-detail">Last layer is always global. Cache shared.</span></li>
+        </ul>
+      </div>
+
+      <!-- 3D — Efficient Embedder -->
+      <div id="p3-slide-d" class="p3-slide" data-color="yellow">
+        <div class="eyebrow">ENHANCEMENT 03</div>
+        <div class="slot-num" id="p3d-num">03</div>
+        <h2>Efficient embedder.</h2>
+        <div class="p3d-bigstat" id="p3d-stat">
+          <div class="num">262,144</div>
+          <div class="label">Token vocabulary</div>
+        </div>
+        <ul class="stage-bullets" id="p3d-bullets">
+          <li id="p3d-bullet-1"><span class="bullet-tag">EXPENSIVE</span><span class="bullet-detail">Full logits over all tokens is too costly.</span></li>
+          <li id="p3d-bullet-2"><span class="bullet-tag">CLUSTER</span><span class="bullet-detail">Embeddings grouped by meaning.</span></li>
+          <li id="p3d-bullet-3"><span class="bullet-tag">TWO STEP</span><span class="bullet-detail">Cluster logits first. Then resolve top tokens.</span></li>
+        </ul>
+        <div class="p3d-badge" id="p3d-badge">E2B + E4B ONLY</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — RESULT + CTA (141.15 → 169.12s)
+       Single sub-slide; endcard takes over for last 5s.
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content p4-stage">
+      <div id="p4-slide-a" class="p4-slide is-default-visible" data-color="green">
+        <div class="eyebrow">THE RESULT</div>
+        <h2 id="p4-headline">Significant speedups, similar quality.</h2>
+        <p class="subhead" id="p4-subhead" style="margin: 0 0 32px;">Built for low latency and on-device apps.</p>
+
+        <div class="p4a-pills" id="p4a-pills">
+          <div class="p4a-pill" data-color="blue" id="p4a-pill-1">
+            <div class="pill-tag">Latency</div>
+            <div class="pill-detail">Low</div>
+          </div>
+          <div class="p4a-pill" data-color="green" id="p4a-pill-2">
+            <div class="pill-tag">Device</div>
+            <div class="pill-detail">On-device</div>
+          </div>
+          <div class="p4a-pill" data-color="yellow" id="p4a-pill-3">
+            <div class="pill-tag">Drop-in</div>
+            <div class="pill-detail">Same quality</div>
+          </div>
+        </div>
+
+        <div class="p4a-out-now" id="p4a-out-now">OUT NOW &middot; GEMMA 4 LINEUP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION — single track
+       ═══════════════════════════════════════════════════════ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="167.62"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- ─── SFX cues ─── -->
+  <audio id="sfx-impact"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="1.20"
+         data-duration="0.6"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <audio id="sfx-whoosh-t1"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="10.02"
+         data-duration="1.0"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-scale-2a"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="22.02"
+         data-duration="0.6"
+         data-track-index="4"
+         data-volume="0.15"></audio>
+
+  <audio id="sfx-whoosh-t2"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="60.95"
+         data-duration="1.0"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-pop-3a"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="70.91"
+         data-duration="0.5"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-t3"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="140.75"
+         data-duration="1.0"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+
+  <audio id="sfx-pop-4a"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="147.93"
+         data-duration="0.4"
+         data-track-index="4"
+         data-volume="0.10"></audio>
+
+  <!-- VIDEO_CONFIG guard -->
+  <script>
+  (function () {
+    var d = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+    if (!d.badge) {
+      var e = document.getElementById('dynamous-badge');
+      if (e) e.remove();
+    }
+    if (!d.moduleInterstitial) {
+      var e = document.getElementById('dynamous-module-interstitial-wrap');
+      if (e) e.remove();
+    }
+    if (!d.discountBubble) {
+      var e = document.getElementById('dynamous-discount-bubble');
+      if (e) e.remove();
+    } else {
+      var bubble = document.getElementById('dynamous-discount-bubble');
+      var ctaStart = d.discountBubbleStart != null ? d.discountBubbleStart : 141.15;
+      if (bubble) {
+        bubble.dataset.start    = String(ctaStart);
+        bubble.dataset.duration = String(d.discountBubbleDuration || 22);
+      }
+    }
+    if (!d.endcard) {
+      var e = document.getElementById('dynamous-endcard-mount');
+      if (e) e.remove();
+    } else {
+      var mount = document.getElementById('dynamous-endcard-mount');
+      var root  = document.getElementById('root');
+      var total = parseFloat((root && root.getAttribute('data-duration')) || '169.2');
+      var ecStart = d.endcardStart != null ? d.endcardStart : Math.max(0, total - 5);
+      if (mount) mount.dataset.start = String(ecStart);
+    }
+  })();
+  </script>
+</div>
+
+<script>
+  // Particles — 60 deterministic dots
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnParticles(seedPrefix, container, count) {
+    const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853'];
+    const ns = 'http://www.w3.org/2000/svg';
+    const nodes = [];
+    for (let i = 0; i < count; i++) {
+      const x = seedHash(seedPrefix + '-x-' + i) * 100;
+      const y = seedHash(seedPrefix + '-y-' + i) * 100;
+      const r = 3 + seedHash(seedPrefix + '-r-' + i) * 6;
+      const op = 0.25 + seedHash(seedPrefix + '-o-' + i) * 0.55;
+      const ci = Math.floor(seedHash(seedPrefix + '-c-' + i) * colors.length);
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('cx', x + '%');
+      c.setAttribute('cy', y + '%');
+      c.setAttribute('r', String(r));
+      c.setAttribute('fill', colors[ci]);
+      c.setAttribute('opacity', String(op));
+      c.dataset.dx  = String((seedHash(seedPrefix + '-dx-' + i) - 0.5) * 80);
+      c.dataset.dy  = String((seedHash(seedPrefix + '-dy-' + i) - 0.5) * 80);
+      c.dataset.dur = String(8 + seedHash(seedPrefix + '-dt-' + i) * 8);
+      c.dataset.del = String(seedHash(seedPrefix + '-de-' + i) * 4);
+      container.appendChild(c);
+      nodes.push(c);
+    }
+    return nodes;
+  }
+  const PARTICLE_NODES = spawnParticles('gemma-mtp-short', document.getElementById('particles'), 60);
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 169.2;
+  const tl = gsap.timeline({ paused: true });
+
+  // Particle drift — global breathing yoyo
+  tl.fromTo("#particles",
+    { opacity: 0.55, scale: 1.0, transformOrigin: "50% 50%" },
+    { opacity: 0.75, scale: 1.04, duration: 84, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // Per-particle drift
+  PARTICLE_NODES.forEach(function (c) {
+    var dx  = parseFloat(c.dataset.dx);
+    var dy  = parseFloat(c.dataset.dy);
+    var dur = parseFloat(c.dataset.dur);
+    var del = parseFloat(c.dataset.del);
+    var cycles = Math.max(1, Math.floor((TOTAL_DURATION - del) / dur));
+    if (cycles % 2 === 1) cycles += 1;
+    tl.to(c, {
+      x: dx, y: dy,
+      duration: dur,
+      ease: "sine.inOut",
+      yoyo: true, repeat: cycles
+    }, del);
+  });
+
+  // Reposition particles at each phase transition
+  function repositionParticlesPerPhase(tl, particleNodes, seedPrefix, phaseStartTimes) {
+    if (!particleNodes.length || !phaseStartTimes.length) return;
+    phaseStartTimes.forEach(function (sceneT, sceneIdx) {
+      var positions = particleNodes.map(function (_, i) {
+        var seed = seedPrefix + '-phase' + sceneIdx + '-' + i;
+        return {
+          cx: seedHash(seed + '-x') * 100,
+          cy: seedHash(seed + '-y') * 100,
+        };
+      });
+      tl.to(particleNodes, {
+        attr: {
+          cx: function (i) { return positions[i].cx + '%'; },
+          cy: function (i) { return positions[i].cy + '%'; },
+        },
+        duration: 1.0,
+        ease: 'power2.inOut',
+      }, sceneT - 0.3);
+    });
+  }
+
+  // Progress bar
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Persistent chrome entrance
+  tl.from("#top-line", { scaleX: 0, transformOrigin: "0 50%", duration: 0.7, ease: "power3.out" }, 0.2);
+  tl.from("#glogo",    { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.3);
+  tl.from("#footer-handle", { opacity: 0, duration: 0.6, ease: "power2.out" }, 0.6);
+  tl.from("#progress-rail", { opacity: 0, duration: 0.6, ease: "power2.out" }, 0.8);
+
+  function activateRailDot(atTime, stepIndex) {
+    tl.set("#progress-rail .rail-dot", { className: "rail-dot" }, atTime);
+    if (stepIndex >= 0) {
+      tl.set("#progress-rail .rail-dot:nth-child(" + (stepIndex + 1) + ")",
+        { className: "rail-dot active" }, atTime);
+    }
+  }
+
+  // Sub-slide crossfade — flicker-free
+  function crossfade(outSel, inSel, at) {
+    var FADE = 0.45;
+    tl.to(outSel, { opacity: 0, duration: FADE, ease: "power2.in" }, at);
+    tl.set(outSel, { visibility: "hidden" }, at + FADE);
+    tl.set(inSel,  { opacity: 0, visibility: "visible" }, at);
+    tl.to(inSel,   { opacity: 1, duration: FADE, ease: "power2.out" }, at + 0.05);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero (0 → 10s)
+  // ═══════════════════════════════════════════════════════
+  tl.set("#p1-figcaption", { opacity: 0 }, 0);
+  tl.set("#p1-faster-pill", { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" }, 0);
+
+  tl.from("#p1-eyebrow",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.9);
+  tl.from("#p1-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, 1.2);
+  tl.from("#p1-figure",   { y: 40, scale: 0.94, opacity: 0, duration: 0.8, ease: "power3.out" }, 1.7);
+  tl.to("#p1-figcaption", { opacity: 1, duration: 0.5, ease: "power2.out" }, 5.5);
+  tl.to("#p1-faster-pill", { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.7)" }, 6.6);
+
+  // ─── Transition phase1 → phase2 at T1 = 10.02 ───
+  const T1 = 10.02;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — Speculative decoding (10.4 → 60.95s): rail dot 1 (DECODE)
+  // ═══════════════════════════════════════════════════════
+  const P2 = 10.42;
+  activateRailDot(P2, 1);
+
+  // Hide all sub-slide reveal elements at t=0
+  tl.set("#p2a-bullet-1, #p2a-bullet-2", { opacity: 0, x: -20 }, 0);
+  tl.set("#p2a-terminal", { opacity: 0, y: 30, scale: 0.97 }, 0);
+  tl.set("#p2a-pred", { opacity: 0 }, 0);
+  tl.set("#p2b-figure", { opacity: 0, y: 40, scale: 0.94 }, 0);
+  tl.set("#p2b-cb-tokens", { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p2b-cb-parallel", { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p2c-pill-1, #p2c-pill-2, #p2c-pill-3, #p2c-pill-4", { opacity: 0, x: -20 }, 0);
+
+  // 2A — Bottleneck (P2 → 32.0s)
+  tl.from("#p2-slide-a .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-slide-a h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+  tl.to("#p2a-bullet-1", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 12.50);
+  tl.to("#p2a-bullet-2", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 17.50);
+  tl.to("#p2a-terminal", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 22.02);
+  tl.to("#p2a-pred",     { opacity: 1, duration: 0.45, ease: "power2.out" }, 25.65);
+
+  // ─── Sub-slide crossfade 2A → 2B at 31.85s ───
+  crossfade("#p2-slide-a", "#p2-slide-b", 31.85);
+
+  // 2B — The fix (32.2 → 45.0s)
+  tl.from("#p2-slide-b .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 32.50);
+  tl.from("#p2-slide-b h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 32.80);
+  tl.to("#p2b-figure",     { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 33.50);
+  tl.to("#p2b-cb-tokens",  { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 39.55);
+  tl.to("#p2b-cb-parallel",{ opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 41.64);
+
+  // ─── Sub-slide crossfade 2B → 2C at 44.95s ───
+  crossfade("#p2-slide-b", "#p2-slide-c", 44.95);
+
+  // 2C — Verify behavior (45.3 → 60.95s)
+  tl.from("#p2-slide-c .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 45.45);
+  tl.from("#p2-slide-c h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 45.75);
+  tl.to("#p2c-pill-1", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 47.65);
+  tl.to("#p2c-pill-2", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 50.55);
+  tl.to("#p2c-pill-3", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 53.79);
+  tl.to("#p2c-pill-4", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 57.50);
+
+  // ─── Transition phase2 → phase3 at T2 = 60.95 ───
+  const T2 = 60.95;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — MTP with Gemma 4 (61.35 → 140.75s): rail dot 2 (DRAFT)
+  // ═══════════════════════════════════════════════════════
+  const P3 = 61.35;
+  activateRailDot(P3, 2);
+
+  // Hide reveal elements at t=0
+  tl.set("#p3a-figure", { opacity: 0, y: 30, scale: 0.95 }, 0);
+  tl.set("#p3a-pin-mtp, #p3a-pin-e2b", { opacity: 0, scale: 0.6, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p3a-chip-1, #p3a-chip-2, #p3a-chip-3, #p3a-chip-4", { opacity: 0, y: 24, scale: 0.94 }, 0);
+  tl.set("#p3b-num", { opacity: 0, scale: 0.6, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p3b-bullet-1, #p3b-bullet-2, #p3b-bullet-3, #p3b-bullet-4", { opacity: 0, x: -20 }, 0);
+  tl.set("#p3c-num", { opacity: 0, scale: 0.6, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p3c-bullet-1, #p3c-bullet-2, #p3c-bullet-3, #p3c-bullet-4", { opacity: 0, x: -20 }, 0);
+  tl.set("#p3d-num", { opacity: 0, scale: 0.6, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p3d-stat", { opacity: 0, scale: 0.85, transformOrigin: "50% 50%" }, 0);
+  tl.set("#p3d-bullet-1, #p3d-bullet-2, #p3d-bullet-3", { opacity: 0, x: -20 }, 0);
+  tl.set("#p3d-badge", { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" }, 0);
+
+  // 3A1 — Drafter architecture solo (P3 → ~70s)
+  tl.from("#p3-slide-a1 .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.from("#p3-slide-a1 h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P3 + 0.3);
+  tl.to("#p3a-figure", { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" }, 62.05);
+  // Pin annotations on the architecture figure
+  tl.to("#p3a-pin-mtp", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 65.52);
+  tl.to("#p3a-pin-e2b", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 67.34);
+
+  // ─── Sub-slide crossfade 3A1 → 3A2 at 70.4s ───
+  // (narration: "Around 76 million parameters" lands at 70.91 — chips appear immediately on 3A2)
+  crossfade("#p3-slide-a1", "#p3-slide-a2", 70.4);
+
+  // 3A2 — Spec chips solo (70.4 → 82.45s)
+  tl.from("#p3-slide-a2 .eyebrow", { y: 20, opacity: 0, duration: 0.45, ease: "power2.out" }, 70.45);
+  tl.from("#p3-slide-a2 h2",       { y: 30, opacity: 0, duration: 0.55, ease: "power3.out" }, 70.65);
+  tl.to("#p3a-chip-1", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 70.91);
+  tl.to("#p3a-chip-2", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 72.42);
+  tl.to("#p3a-chip-3", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 75.00);
+  tl.to("#p3a-chip-4", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 78.20);
+
+  // ─── Sub-slide crossfade 3A2 → 3B at 82.45s ───
+  crossfade("#p3-slide-a2", "#p3-slide-b", 82.45);
+
+  // 3B — Target Activations (82.6 → 100.6s)
+  tl.from("#p3-slide-b .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 82.65);
+  tl.to("#p3b-num", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 82.95);
+  tl.from("#p3-slide-b h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 83.30);
+  tl.to("#p3b-bullet-1", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 85.13);
+  tl.to("#p3b-bullet-2", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 88.50);
+  tl.to("#p3b-bullet-3", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 92.34);
+  tl.to("#p3b-bullet-4", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 96.88);
+
+  // ─── Sub-slide crossfade 3B → 3C at 100.45s ───
+  crossfade("#p3-slide-b", "#p3-slide-c", 100.45);
+
+  // 3C — KV Cache Sharing (100.6 → 117.33s)
+  tl.from("#p3-slide-c .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 100.65);
+  tl.to("#p3c-num", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 100.95);
+  tl.from("#p3-slide-c h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 101.30);
+  tl.to("#p3c-bullet-1", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 102.46);
+  tl.to("#p3c-bullet-2", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 105.59);
+  tl.to("#p3c-bullet-3", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 108.71);
+  tl.to("#p3c-bullet-4", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 112.58);
+
+  // ─── Sub-slide crossfade 3C → 3D at 117.18s ───
+  crossfade("#p3-slide-c", "#p3-slide-d", 117.18);
+
+  // 3D — Efficient Embedder (117.33 → 140.75s)
+  tl.from("#p3-slide-d .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 117.38);
+  tl.to("#p3d-num", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 117.68);
+  tl.from("#p3-slide-d h2",       { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 118.05);
+  tl.to("#p3d-stat", { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 119.30);
+  tl.to("#p3d-bullet-1", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 124.48);
+  tl.to("#p3d-bullet-2", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 128.59);
+  tl.to("#p3d-bullet-3", { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 131.79);
+  tl.to("#p3d-badge",    { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.7)" }, 137.97);
+
+  // ─── Transition phase3 → phase4 at T3 = 140.75 ───
+  const T3 = 140.75;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                          duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1,                         duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1,      duration: 0.5, ease: "power1.out",   overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Result + CTA (141.15 → 169.12s): rail dot 4 (SHIP)
+  // ═══════════════════════════════════════════════════════
+  const P4 = 141.15;
+  activateRailDot(P4, 4);
+
+  tl.set("#p4-subhead", { opacity: 0, y: 20 }, 0);
+  tl.set("#p4a-pill-1, #p4a-pill-2, #p4a-pill-3", { opacity: 0, y: 30, scale: 0.94 }, 0);
+  tl.set("#p4a-out-now", { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" }, 0);
+
+  tl.from("#p4-slide-a .eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-headline",         { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P4 + 0.3);
+  tl.to("#p4-subhead",            { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 145.33);
+  tl.to("#p4a-pill-1", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 147.93);
+  tl.to("#p4a-pill-2", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 150.84);
+  tl.to("#p4a-pill-3", { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 153.16);
+  tl.to("#p4a-out-now", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 156.81);
+  tl.to("#p4a-out-now", {
+    boxShadow: "0 0 60px rgba(52,168,83,0.7)",
+    duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 2
+  }, 160.07);
+
+  // Reposition particles at every phase transition
+  repositionParticlesPerPhase(tl, PARTICLE_NODES, 'gemma-mtp-short', [T1, T2, T3]);
+
+  // ─── VIDEO_CONFIG opt-in GSAP wiring ───
+  var _dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+  if (_dyn.badge) {
+    tl.from('#dynamous-badge', { opacity: 0, x: -12, duration: 0.6, ease: 'power2.out' }, 3.0);
+  }
+  if (_dyn.discountBubble) {
+    var _ctaStart = _dyn.discountBubbleStart != null ? _dyn.discountBubbleStart : 141.15;
+    var _bubDur   = _dyn.discountBubbleDuration || 22;
+    tl.from('#dynamous-discount-bubble', { y: 16, opacity: 0, duration: 0.5, ease: 'power2.out' }, _ctaStart);
+    tl.to(  '#dynamous-discount-bubble', { opacity: 0, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, _ctaStart + _bubDur - 0.4);
+  }
+  if (_dyn.endcard) {
+    var _ecStart = _dyn.endcardStart != null ? _dyn.endcardStart : Math.max(0, TOTAL_DURATION - 5);
+    var _fadeAt  = Math.max(0, _ecStart - 0.5);
+    tl.to('#phase4',         { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#dynamous-badge', { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#progress-rail',  { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#footer-handle',  { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+    tl.to('#glogo',          { opacity: 0, duration: 0.45, ease: 'power2.in', overwrite: 'auto' }, _fadeAt);
+  }
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

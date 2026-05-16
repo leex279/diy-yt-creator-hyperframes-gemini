@@ -1,0 +1,182 @@
+<!--
+  scene-stat.html — Three stat tiles for the token-budget receipt (~10.5s).
+
+  Pattern: small label → vertical stack of THREE stat tiles. Each tile holds a
+           huge number + suffix + context line. Tiles reveal one at a time at
+           the narration anchor for their number. Final caption emphasizes the
+           payoff.
+
+  Narration anchors (scene-rel):
+    1.46  "hundred"      → tile 1 (100 tokens / to advertise)
+    4.13  "Five thousand"→ tile 2 (5,000 tokens / to run)
+    5.75  "Zero"         → tile 3 (0 tokens / until activation)
+    8.21  "Many skills"  → caption emphasis
+-->
+<template id="scene-stat-template">
+  <div data-composition-id="scene-stat"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-stat-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:20px;
+        box-sizing:border-box;
+      }
+      #scene-stat-content .label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 38px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-stat-content .stat-grid {
+        display: flex; flex-direction: column;
+        gap: 18px;
+        width: 940px;
+      }
+      #scene-stat-content .stat-tile {
+        display: flex; align-items: baseline; justify-content: space-between;
+        padding: 22px 36px;
+        background: var(--bg-card);
+        border: 2.5px solid var(--accent-warm);
+        border-radius: 24px;
+        text-align: left;
+      }
+      #scene-stat-content .stat-tile.t3 {
+        border-color: var(--accent-deep);
+      }
+      #scene-stat-content .num {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 160px;
+        line-height: 1.0;
+        letter-spacing: -6px;
+        color: var(--accent-warm);
+        font-variant-numeric: tabular-nums lining-nums;
+        flex: 0 0 auto;
+      }
+      #scene-stat-content .t3 .num {
+        color: var(--accent-deep);
+      }
+      #scene-stat-content .meta {
+        display: flex; flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        flex: 1 1 auto;
+        margin-left: 24px;
+        min-width: 0;
+      }
+      #scene-stat-content .lbl {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 32px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+        line-height: 1.0;
+      }
+      #scene-stat-content .ctx {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 36px;
+        color: var(--text-secondary);
+        line-height: 1.1;
+        text-align: right;
+      }
+      #scene-stat-content .caption {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-style: italic;
+        font-size: 42px;
+        color: var(--text);
+        max-width: 920px;
+        line-height: 1.3;
+        margin-top: 6px;
+      }
+      #scene-stat-content .caption em {
+        font-style: italic;
+        color: var(--accent-warm);
+        font-weight: 700;
+      }
+    </style>
+
+    <div id="scene-stat-content">
+      <div class="label" id="stat-label">Token budget per skill</div>
+      <div class="stat-grid">
+        <div class="stat-tile t1" id="stat-t1">
+          <span class="num" id="stat-num-1">0</span>
+          <span class="meta">
+            <span class="lbl">tokens</span>
+            <span class="ctx">to advertise</span>
+          </span>
+        </div>
+        <div class="stat-tile t2" id="stat-t2">
+          <span class="num" id="stat-num-2">0</span>
+          <span class="meta">
+            <span class="lbl">tokens</span>
+            <span class="ctx">to run</span>
+          </span>
+        </div>
+        <div class="stat-tile t3" id="stat-t3">
+          <span class="num" id="stat-num-3">0</span>
+          <span class="meta">
+            <span class="lbl">tokens</span>
+            <span class="ctx">until activation</span>
+          </span>
+        </div>
+      </div>
+      <div class="caption" id="stat-caption"><em>Many</em> skills. <em>Tiny</em> context footprint.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Counter helpers
+      const c1 = { v: 0 };
+      const c2 = { v: 0 };
+      const n1El = document.getElementById('stat-num-1');
+      const n2El = document.getElementById('stat-num-2');
+      const set1 = () => { n1El.textContent = Math.round(c1.v).toLocaleString('en-US'); };
+      const set2 = () => { n2El.textContent = Math.round(c2.v).toLocaleString('en-US'); };
+
+      // Label fades in first
+      tl.from("#stat-label", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+
+      // Hide all tiles + caption from t=0
+      tl.set("#stat-t1, #stat-t2, #stat-t3", { y: 30, scale: 0.94, opacity: 0 }, 0);
+      tl.set("#stat-caption", { y: 16, opacity: 0 }, 0);
+
+      // Tile 1 reveals just before "A hundred tokens" at 1.46 → roll 0→100
+      tl.to("#stat-t1", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 1.0);
+      tl.to(c1, { v: 100, duration: 1.0, ease: "power2.out",
+                  onStart: set1, onUpdate: set1 }, 1.3);
+
+      // Tile 2 reveals just before "Five thousand tokens" at 4.13 → roll 0→5000
+      tl.to("#stat-t2", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 3.6);
+      tl.to(c2, { v: 5000, duration: 1.4, ease: "power2.out",
+                  onStart: set2, onUpdate: set2 }, 3.9);
+
+      // Tile 3 reveals just before "Zero tokens" at 5.75 — no counter roll, just settles at 0
+      tl.to("#stat-t3", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 5.3);
+
+      // Caption fades up before "Many skills" at 8.21
+      tl.to("#stat-caption", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 7.8);
+
+      // "Many" + "Tiny" word emphases (anchors: Many 8.21, Tiny 9.04)
+      tl.to("#stat-caption em:nth-of-type(1)", { scale: 1.08, duration: 0.35, ease: "back.out(2)", yoyo: true, repeat: 1 }, 8.2);
+      tl.to("#stat-caption em:nth-of-type(2)", { scale: 1.08, duration: 0.35, ease: "back.out(2)", yoyo: true, repeat: 1 }, 9.0);
+
+      window.__timelines["scene-stat"] = tl;
+    </script>
+  </div>
+</template>

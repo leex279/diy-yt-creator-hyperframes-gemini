@@ -1,0 +1,193 @@
+<template id="subscribe-banner-template">
+  <div data-composition-id="subscribe-banner"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; pointer-events:none;">
+
+    <div id="sb-banner">
+      <div class="sb-card">
+        <div class="sb-profile">
+          <img class="sb-profile-img"
+               src="../assets/profile-leex.png"
+               alt="Channel avatar"
+               crossorigin="anonymous" />
+        </div>
+
+        <div class="sb-info">
+          <div class="sb-channel" id="sb-channel">DIY SMART CODE</div>
+          <div class="sb-creator" id="sb-creator">Thomas</div>
+        </div>
+
+        <div class="sb-actions">
+          <div class="sb-button">
+            <span class="sb-button-label">Subscribe</span>
+          </div>
+          <div class="sb-divider"></div>
+          <div class="sb-bell">
+            <div class="sb-bell-rotor">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C10.34 2 9 3.34 9 5V5.29C6.6 6.16 5 8.43 5 11V17L3 19V20H21V19L19 17V11C19 8.43 17.4 6.16 15 5.29V5C15 3.34 13.66 2 12 2Z" fill="white" />
+                <path d="M12 23C13.1 23 14 22.1 14 21H10C10 22.1 10.9 23 12 23Z" fill="white" />
+              </svg>
+            </div>
+            <div class="sb-notif-dot"></div>
+          </div>
+          <div class="sb-ripple sb-ripple-ring"></div>
+          <div class="sb-ripple sb-ripple-fill"></div>
+        </div>
+
+        <svg class="sb-cursor" width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 2L5 19L9.5 14.5L13.5 23L16 22L12 13L18 13L5 2Z"
+                fill="white" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </div>
+
+    <style>
+      #sb-banner {
+        position: absolute;
+        bottom: 96px;
+        left: 50%;
+        z-index: 30;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .sb-card {
+        display: flex; align-items: center; gap: 22px;
+        background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        padding: 16px 26px;
+        border-radius: 22px;
+        border: 4px solid #1e293b;
+        box-shadow: 0 6px 32px rgba(0, 0, 0, 0.28);
+        position: relative;
+        min-width: 580px;
+      }
+      .sb-profile {
+        flex-shrink: 0; width: 84px; height: 84px;
+        border-radius: 50%; overflow: hidden;
+        border: 5px solid #dc2626;
+      }
+      .sb-profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .sb-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+      .sb-channel {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 28px; font-weight: 800; color: #0f172a;
+        letter-spacing: 0.5px; white-space: nowrap;
+      }
+      .sb-creator {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 19px; font-weight: 500; color: #64748b; white-space: nowrap;
+      }
+      .sb-actions { display: flex; align-items: stretch; gap: 0; position: relative; flex-shrink: 0; }
+      .sb-button {
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        padding: 16px 32px;
+        border-radius: 16px 0 0 16px;
+        box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2);
+        transform-origin: center center;
+      }
+      .sb-button-label {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 22px; font-weight: 800; color: #ffffff;
+        letter-spacing: 1.4px; text-transform: uppercase; white-space: nowrap;
+      }
+      .sb-divider { width: 2px; align-self: stretch; background: #dc2626; }
+      .sb-bell {
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        padding: 16px 22px;
+        border-radius: 0 16px 16px 0;
+        position: relative;
+        box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2);
+      }
+      .sb-bell-rotor { transform-origin: center top; color: #ffffff; line-height: 0; }
+      .sb-notif-dot {
+        position: absolute; top: 10px; right: 16px;
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        background: #fbbf24;
+        border: 2.5px solid #dc2626;
+      }
+      .sb-ripple {
+        position: absolute; right: 24px; top: 50%; margin-top: -32px;
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        transform-origin: center center;
+      }
+      .sb-ripple-ring { border: 4px solid rgba(239, 68, 68, 0.7); background: transparent; }
+      .sb-ripple-fill { background: rgba(239, 68, 68, 0.25); }
+      .sb-cursor {
+        position: absolute; right: 36px; bottom: -12px;
+        opacity: 0;
+        filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.4));
+        pointer-events: none;
+        z-index: 5;
+        transform-origin: top left;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ── Hide everything at t=0 ──
+      tl.set('#sb-banner', { opacity: 0, y: 80, xPercent: -50 }, 0);
+      tl.set('.sb-profile', { opacity: 0, scale: 0.4 }, 0);
+      tl.set('.sb-channel', { opacity: 0, x: -30 }, 0);
+      tl.set('.sb-creator', { opacity: 0, x: -30 }, 0);
+      tl.set('.sb-actions', { opacity: 0, x: 60 }, 0);
+      tl.set('.sb-button', { scale: 1 }, 0);
+      tl.set('.sb-bell-rotor', { rotation: 0 }, 0);
+      tl.set('.sb-notif-dot', { scale: 1 }, 0);
+      tl.set('.sb-ripple-ring', { opacity: 0, scale: 0.4 }, 0);
+      tl.set('.sb-ripple-fill', { opacity: 0, scale: 0.3 }, 0);
+      tl.set('.sb-cursor', { opacity: 0, x: 80, y: 60, scale: 1 }, 0);
+
+      // ── Banner spring-in ──
+      tl.to('#sb-banner', { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.4)', overwrite: 'auto' }, 0);
+      tl.to('.sb-profile', { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)', overwrite: 'auto' }, 0.27);
+      tl.to('.sb-channel', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, 0.47);
+      tl.to('.sb-creator', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' }, 0.6);
+      tl.to('.sb-actions', { opacity: 1, x: 0, duration: 0.55, ease: 'back.out(1.3)', overwrite: 'auto' }, 0.93);
+
+      // ── Idle bell swing ──
+      tl.fromTo('.sb-bell-rotor',
+        { rotation: -14 },
+        { rotation: 14, duration: 0.475, ease: 'sine.inOut', yoyo: true, repeat: 7 }, 1.33);
+
+      // ── Mouse cursor ──
+      tl.to('.sb-cursor', { opacity: 1, duration: 0.4, ease: 'power1.out', overwrite: 'auto' }, 3.0);
+      tl.to('.sb-cursor', { x: 0, y: 0, duration: 1.23, ease: 'power2.inOut', overwrite: 'auto' }, 3.5);
+      tl.to('.sb-cursor', { scale: 0.82, duration: 0.05, overwrite: 'auto' }, 5.0);
+      tl.to('.sb-cursor', { scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }, 5.05);
+      tl.to('.sb-cursor', { opacity: 0, duration: 0.33, ease: 'power1.in', overwrite: 'auto' }, 5.53);
+
+      // ── Click effect ──
+      tl.to('.sb-button', { scale: 0.96, duration: 0.05, overwrite: 'auto' }, 5.0);
+      tl.to('.sb-button', { scale: 1, duration: 0.4, ease: 'back.out(1.5)', overwrite: 'auto' }, 5.05);
+      tl.set('.sb-ripple-ring', { opacity: 1, scale: 0.4 }, 5.0);
+      tl.to('.sb-ripple-ring', { opacity: 0, scale: 2.2, duration: 0.7, ease: 'power1.out', overwrite: 'auto' }, 5.0);
+      tl.set('.sb-ripple-fill', { opacity: 0.9, scale: 0.3 }, 5.0);
+      tl.to('.sb-ripple-fill', { opacity: 0, scale: 1.6, duration: 0.47, ease: 'power1.out', overwrite: 'auto' }, 5.0);
+
+      // ── Bell burst ──
+      tl.fromTo('.sb-bell-rotor',
+        { rotation: -22 },
+        { rotation: 22, duration: 0.15, ease: 'sine.inOut', yoyo: true, repeat: 7 }, 5.0);
+      tl.to('.sb-bell-rotor', { rotation: 0, duration: 0.1, ease: 'sine.out' }, 6.2);
+      tl.to('.sb-notif-dot', { scale: 1.25, duration: 0.2, ease: 'power2.out', overwrite: 'auto' }, 5.0);
+      tl.to('.sb-notif-dot', { scale: 1, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, 5.4);
+
+      // ── Banner fly out ──
+      tl.to('#sb-banner', { opacity: 0, y: 120, duration: 0.6, ease: 'back.in(1.0)', overwrite: 'auto' }, 6.83);
+
+      window.__timelines["subscribe-banner"] = tl;
+    </script>
+
+  </div>
+</template>

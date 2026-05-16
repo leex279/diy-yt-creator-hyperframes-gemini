@@ -1,0 +1,252 @@
+<!--
+  scene-source-cards.html — Scene 08: Steelman (168.33 - 198.12, 29.79s)
+  Three sticky-note style objection cards. Each shows the agent's likely tool and
+  why it's not the right job for code search.
+
+  Scene-local anchors (local = root - 168.33):
+    0.00   "But my agent already has search"  → title
+    2.16   "Read and Glob"                    → card 1 + 2 setup
+    3.56   "Different jobs"                   → "WRONG JOB" stamps
+    8.41   "Read opens a file you point at"   → card 1 spotlight
+    10.89  "Glob lists files by name"         → card 2 spotlight
+    12.92  "Neither understands code"         → both pulse
+    14.72  "That's what ast-grep adds"        → ast-grep contrast card
+    17.88  "But this sounds technical"        → card 3 enters
+    22.10  "one line to your agent's config"  → resolved chip
+    28.22  "terminal stays untouched"         → final pulse
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1556"
+       data-height="998"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, -apple-system, sans-serif; color:var(--fg-default);
+              background: var(--bg-editor);">
+
+    <style>
+      #s08 { position: absolute; inset: 0; padding: 50px 60px; box-sizing: border-box; }
+
+      #s08-head {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1.5px;
+        color: var(--fg-bright);
+      }
+      #s08-head .em { color: var(--warn); }
+      #s08-sub {
+        margin-top: 10px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 22px;
+        color: var(--fg-muted);
+      }
+
+      /* Objection cards row */
+      .obj-row {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 22px;
+      }
+      .obj-card {
+        position: relative;
+        background: #fffbe6;
+        border-radius: 8px;
+        padding: 22px 22px 26px;
+        color: #1c1c1c;
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+        transform: rotate(-1.5deg);
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+      }
+      .obj-card:nth-child(2) { transform: rotate(0.5deg); background: #fef5e1; }
+      .obj-card:nth-child(3) { transform: rotate(1.5deg); background: #fff8d6; }
+
+      .obj-card .quote {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.15;
+        color: #1c1c1c;
+      }
+      .obj-card .quote::before { content: '"'; color: #8a6d2c; margin-right: 4px; }
+      .obj-card .quote::after  { content: '"'; color: #8a6d2c; margin-left: 4px; }
+      .obj-card .tool-line {
+        margin-top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 800;
+        padding: 8px 12px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        border-radius: 6px;
+        align-self: flex-start;
+      }
+      .obj-card .tool-line .ico { color: var(--syn-string); }
+
+      .obj-card .verdict {
+        margin-top: 16px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 900;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: #b73229;
+        line-height: 1.15;
+      }
+      .obj-card .verdict.ok { color: #2c7853; }
+
+      .obj-card .stamp {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 900;
+        font-size: 20px;
+        letter-spacing: 3px;
+        padding: 8px 14px;
+        border: 3px solid #b73229;
+        color: #b73229;
+        border-radius: 6px;
+        transform: rotate(-8deg);
+        background: rgba(183, 50, 41, 0.06);
+      }
+      .obj-card .stamp.ok {
+        border-color: #2c7853;
+        color: #2c7853;
+        background: rgba(44, 120, 83, 0.06);
+      }
+
+      /* Bottom resolution chip */
+      #s08-resolve {
+        margin-top: 30px;
+        background: var(--bg-deep);
+        border: 2px solid var(--ok);
+        border-radius: 10px;
+        padding: 22px 28px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      #s08-resolve .arrow {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 48px;
+        color: var(--ok);
+        line-height: 1;
+      }
+      #s08-resolve .text {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 30px;
+        color: var(--fg-bright);
+        line-height: 1.2;
+      }
+      #s08-resolve .text .em { color: var(--ok); }
+      #s08-resolve .text .sub {
+        display: block;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 20px;
+        color: var(--fg-muted);
+        margin-top: 6px;
+        letter-spacing: 1px;
+      }
+    </style>
+
+    <div id="s08">
+      <div id="s08-head">
+        <span class="em">"But my agent already</span> has search."
+      </div>
+      <div id="s08-sub">// yes — and it's the dumb one</div>
+
+      <div class="obj-row">
+        <div class="obj-card" id="obj-1">
+          <div class="quote">My agent has Read</div>
+          <div class="tool-line"><span class="ico">▣</span>Read(file_path)</div>
+          <div class="verdict">opens one file<br/>you already named</div>
+          <div class="stamp" id="stamp-1">WRONG JOB</div>
+        </div>
+        <div class="obj-card" id="obj-2">
+          <div class="quote">My agent has Glob</div>
+          <div class="tool-line"><span class="ico">▣</span>Glob("**/*.ts")</div>
+          <div class="verdict">lists files<br/>by filename pattern</div>
+          <div class="stamp" id="stamp-2">WRONG JOB</div>
+        </div>
+        <div class="obj-card" id="obj-3">
+          <div class="quote">This sounds technical</div>
+          <div class="tool-line"><span class="ico">▣</span>add 1 line · config</div>
+          <div class="verdict ok">30 seconds.<br/>no terminal.</div>
+          <div class="stamp ok" id="stamp-3">DONE</div>
+        </div>
+      </div>
+
+      <div id="s08-resolve">
+        <span class="arrow">→</span>
+        <span class="text">
+          You add <span class="em">one line</span> to your agent's config.
+          <span class="sub">// your agent gains the new search · the terminal stays untouched</span>
+        </span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // HIDE
+      tl.set("#s08-head",   { opacity: 0, y: -16 }, 0);
+      tl.set("#s08-sub",    { opacity: 0, y: -8 }, 0);
+      tl.set("#obj-1",      { opacity: 0, y: 28, rotate: -8 }, 0);
+      tl.set("#obj-2",      { opacity: 0, y: 28, rotate: -8 }, 0);
+      tl.set("#obj-3",      { opacity: 0, y: 28, rotate: -8 }, 0);
+      tl.set("#stamp-1",    { opacity: 0, scale: 1.5, rotate: 10 }, 0);
+      tl.set("#stamp-2",    { opacity: 0, scale: 1.5, rotate: 10 }, 0);
+      tl.set("#stamp-3",    { opacity: 0, scale: 1.5, rotate: 10 }, 0);
+      tl.set("#s08-resolve",{ opacity: 0, y: 18 }, 0);
+
+      // Head — local 0
+      tl.to("#s08-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
+      tl.to("#s08-sub",  { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.55);
+
+      // Card 1 — "Read" (local 2.16)
+      tl.to("#obj-1", { opacity: 1, y: 0, rotate: -1.5, duration: 0.5, ease: "back.out(1.4)" }, 2.16);
+      // Stamp 1 — local 3.56 "Different jobs"
+      tl.to("#stamp-1", { opacity: 1, scale: 1, rotate: -8, duration: 0.45, ease: "back.out(2.5)" }, 3.56);
+
+      // Card 2 — "Read opens a file" (local 8.41)
+      tl.to("#obj-2", { opacity: 1, y: 0, rotate: 0.5, duration: 0.5, ease: "back.out(1.4)" }, 8.41);
+      // Card 1 spotlight pulse
+      tl.to("#obj-1", { scale: 1.04, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.41);
+      // Stamp 2 — local 10.89 "Glob lists"
+      tl.to("#stamp-2", { opacity: 1, scale: 1, rotate: -8, duration: 0.45, ease: "back.out(2.5)" }, 10.89);
+      tl.to("#obj-2", { scale: 1.04, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 10.89);
+
+      // "Neither understands code" — both pulse + reveal (local 12.92)
+      tl.to("#obj-1", { scale: 1.03, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.92);
+      tl.to("#obj-2", { scale: 1.03, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.92);
+
+      // Card 3 — "But this sounds technical" (local 17.88)
+      tl.to("#obj-3", { opacity: 1, y: 0, rotate: 1.5, duration: 0.5, ease: "back.out(1.4)" }, 17.88);
+      // DONE stamp on card 3 — local 19.0
+      tl.to("#stamp-3", { opacity: 1, scale: 1, rotate: -8, duration: 0.45, ease: "back.out(2.5)" }, 19.0);
+
+      // Resolve chip — "one line to config" (local 22.10)
+      tl.to("#s08-resolve", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 22.10);
+
+      // Final pulse — "terminal stays untouched" (local 28.22)
+      tl.to("#s08-resolve", {
+        boxShadow: "0 0 28px rgba(78, 201, 176, 0.6)",
+        duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 28.22);
+
+      tl.set({}, {}, 29.79);
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

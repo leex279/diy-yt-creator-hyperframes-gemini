@@ -1,0 +1,353 @@
+<!--
+  scene-architecture-stack.html — Code Mode runtime (~82s).
+  Narration anchors (t_rel):
+    0.0   "So what is Code Mode"                  → overline
+    3.1   "The model writes code"                  → headline word-stagger
+   10.1   "The agent on top, picks the right…"    → L1 Agent
+   13.6   "Below it, the runtime executes"        → L2 Runtime
+   17.5   "Underneath the runtime, bash gives"    → L3 Bash
+   27.9   "Beside bash, typed module imports"      → L4 Imports
+   47.5   "And underneath all of it, M C P"       → L5 MCP
+   ~70+   "M C P's typed contracts, plus C L I's   → synth lockup
+          lazy loading, in one runtime"
+-->
+<template id="scene-architecture-stack-template">
+  <div data-composition-id="scene-architecture-stack"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden; perspective:2200px;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-architecture-stack-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 28px;
+        box-sizing:border-box;
+        transform-style: preserve-3d;
+      }
+      #scene-architecture-stack-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:10px;
+        text-align:center;
+      }
+      #scene-architecture-stack-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+        display: flex; align-items: center; gap: 14px;
+      }
+      #scene-architecture-stack-content .overline::before,
+      #scene-architecture-stack-content .overline::after {
+        content: "";
+        width: 60px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-3), transparent);
+      }
+      #scene-architecture-stack-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 50px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      #scene-architecture-stack-content .headline b { color: var(--accent-stat); }
+      #scene-architecture-stack-content .headline .w { display: inline-block; transform-style: preserve-3d; }
+
+      #scene-architecture-stack-content .ide {
+        width: 1500px;
+        border-radius: 14px;
+        background: var(--bg-elev);
+        border: 1px solid var(--border-bright);
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        transform-style: preserve-3d;
+      }
+      .ide-bar {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px 22px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255,255,255,0.02);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .ide-bar .dots { display: flex; gap: 5px; }
+      .ide-bar .dots span { width: 9px; height: 9px; border-radius: 50%; }
+      .ide-bar .dots .r { background: #ef4444; }
+      .ide-bar .dots .y { background: var(--accent-stat); }
+      .ide-bar .dots .g { background: var(--accent-4); }
+      .ide-bar .file { color: var(--accent-3); }
+      .ide-bar .spacer { flex: 1; }
+      .ide-bar .meta { color: var(--text-muted); font-size: 11px; letter-spacing: 1.5px; }
+      .ide-bar .meta .live { color: var(--accent-4); }
+      .ide-bar .meta .live::before { content: "● "; }
+
+      .ide-body {
+        padding: 18px 0 22px;
+        display: flex; flex-direction: column;
+        gap: 6px;
+        position: relative;
+      }
+      .arch-layer {
+        position: relative;
+        display: grid;
+        grid-template-columns: 80px 70px 220px 1fr 140px;
+        align-items: center;
+        gap: 0;
+        padding: 14px 22px 14px 0;
+        font-family: var(--mono);
+        font-size: 17px;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      .arch-layer .ln {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 15px;
+        color: var(--text-muted);
+        text-align: right;
+        padding-right: 18px;
+        border-right: 1px solid var(--border);
+        font-variant-numeric: tabular-nums;
+      }
+      .arch-layer .tag {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        padding: 3px 8px;
+        margin-left: 18px;
+        border-radius: 3px;
+        background: rgba(255,255,255,0.06);
+        text-align: center;
+        width: fit-content;
+      }
+      .arch-layer.l1 .tag { color: var(--accent-1); background: rgba(59,130,246,0.12); }
+      .arch-layer.l2 .tag { color: var(--accent-2); background: rgba(6,182,212,0.12); }
+      .arch-layer.l3 .tag { color: var(--accent-warn); background: rgba(251,146,60,0.12); }
+      .arch-layer.l4 .tag { color: var(--accent-3); background: rgba(167,139,250,0.12); }
+      .arch-layer.l5 .tag { color: var(--accent-4); background: rgba(52,211,153,0.12); }
+
+      .arch-layer .name {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: -0.3px;
+        color: var(--text);
+        padding-left: 14px;
+      }
+      .arch-layer .code {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 17px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        padding: 0 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .arch-layer .code .kw { color: #c084fc; font-weight: 700; }
+      .arch-layer .code .fn { color: var(--accent-2); }
+      .arch-layer .code .str { color: var(--accent-4); }
+      .arch-layer .code .com { color: var(--text-muted); font-style: italic; }
+      .arch-layer .code .num { color: var(--accent-warn); }
+      .arch-layer .code .id { color: var(--text); }
+      .arch-layer .cost {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-align: right;
+        color: var(--accent-4);
+      }
+      .arch-layer .cost .dim { color: var(--text-muted); font-weight: 500; }
+
+      .ide-body .cursor {
+        position: absolute;
+        left: 0; right: 0;
+        height: 60px;
+        background: linear-gradient(90deg, rgba(167,139,250,0.10), rgba(167,139,250,0.0));
+        border-left: 3px solid var(--accent-3);
+        pointer-events: none;
+        opacity: 0;
+        top: 0;
+      }
+
+      #scene-architecture-stack-content .synth {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+        text-align: center;
+        margin-top: 6px;
+        display: flex; align-items: center; gap: 14px;
+        justify-content: center;
+      }
+      #scene-architecture-stack-content .synth .sep { color: var(--accent-3); }
+      #scene-architecture-stack-content .synth > span { transform-style: preserve-3d; display:inline-block; }
+    </style>
+
+    <div id="scene-architecture-stack-content">
+      <div class="header-block">
+        <div class="overline" id="arch-overline">CODE MODE · THE RUNTIME</div>
+        <div class="headline" id="arch-headline">
+          <span class="w" data-w="0">Five</span>
+          <span class="w" data-w="1">layers.</span>
+          <b><span class="w" data-w="2">The</span>
+          <span class="w" data-w="3">agent</span>
+          <span class="w" data-w="4">picks</span>
+          <span class="w" data-w="5">per</span>
+          <span class="w" data-w="6">task.</span></b>
+        </div>
+      </div>
+
+      <div class="ide" id="arch-ide">
+        <div class="ide-bar">
+          <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+          <div class="file">runtime.ts</div>
+          <div class="spacer"></div>
+          <div class="meta"><span class="live">live</span> · v8 isolate · 5 layers</div>
+        </div>
+
+        <div class="ide-body" id="arch-stack">
+          <div class="cursor" id="arch-cursor"></div>
+
+          <div class="arch-layer l1" id="arch-l1">
+            <div class="ln">01</div>
+            <div class="tag">L1</div>
+            <div class="name">Agent</div>
+            <div class="code"><span class="com">// writes a few lines per task</span> &nbsp; <span class="kw">import</span> <span class="id">{ ship }</span> <span class="kw">from</span> <span class="str">"@tools/deploy"</span></div>
+            <div class="cost"><span class="dim">cost</span> ~80 tok</div>
+          </div>
+
+          <div class="arch-layer l2" id="arch-l2">
+            <div class="ln">02</div>
+            <div class="tag">L2</div>
+            <div class="name">Runtime</div>
+            <div class="code"><span class="kw">await</span> <span class="fn">sandbox.run</span>(code, <span class="str">"v8-isolate"</span>) &nbsp; <span class="com">// or workers-loader · claude-shell</span></div>
+            <div class="cost"><span class="dim">isolate</span> 1 ms</div>
+          </div>
+
+          <div class="arch-layer l3" id="arch-l3">
+            <div class="ln">03</div>
+            <div class="tag">L3</div>
+            <div class="name">$ bash</div>
+            <div class="code"><span class="kw">$</span> <span class="fn">git</span> log <span class="str">--oneline</span> | <span class="fn">grep</span> fix | <span class="fn">head</span> <span class="num">-20</span></div>
+            <div class="cost">0 schema</div>
+          </div>
+
+          <div class="arch-layer l4" id="arch-l4">
+            <div class="ln">04</div>
+            <div class="tag">L4</div>
+            <div class="name">imports</div>
+            <div class="code"><span class="kw">import</span> <span class="id">{ slack, github }</span> <span class="kw">from</span> <span class="str">"@tools/*"</span> &nbsp; <span class="com">// types travel</span></div>
+            <div class="cost">typed</div>
+          </div>
+
+          <div class="arch-layer l5" id="arch-l5">
+            <div class="ln">05</div>
+            <div class="tag">L5</div>
+            <div class="name">mcp</div>
+            <div class="code"><span class="fn">mcp.search</span>(<span class="str">"crm.lead"</span>) <span class="kw">→</span> <span class="fn">mcp.execute</span>(name, args) &nbsp; <span class="com">// 2 tools, not 100</span></div>
+            <div class="cost">oauth · audit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="synth" id="arch-synth">
+        <span>TYPED CONTRACTS</span>
+        <span class="sep">/</span>
+        <span>LAZY LOADING</span>
+        <span class="sep">/</span>
+        <span>ONE RUNTIME</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ══════════ HIDE EVERYTHING AT t=0 ══════════
+      tl.set("#arch-overline",       { opacity: 0, y: -14 }, 0);
+      tl.set("#arch-headline .w",    { opacity: 0, y: 22, rotationX: 55, transformOrigin: "center bottom" }, 0);
+      tl.set("#arch-ide",            { opacity: 0, rotationX: -22, y: 80, scale: 0.96, transformOrigin: "center top" }, 0);
+      tl.set("#arch-l1, #arch-l2, #arch-l3, #arch-l4, #arch-l5",
+                                     { opacity: 0, x: -24, rotationY: 18, transformOrigin: "left center" }, 0);
+      tl.set("#arch-cursor",         { opacity: 0, top: 0 }, 0);
+      tl.set("#arch-synth > span",   { opacity: 0, y: 16 }, 0);
+
+      // ══════════ NARRATION-SYNCED REVEALS ══════════
+
+      // 0.0s — overline
+      tl.to("#arch-overline", { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 0.0);
+
+      // 0.3–2.4s — headline word stagger
+      const hwTimes = [0.3, 0.6, 1.0, 1.3, 1.6, 1.9, 2.2];
+      hwTimes.forEach((t, i) => {
+        tl.to(`#arch-headline .w[data-w="${i}"]`,
+          { opacity: 1, y: 0, rotationX: 0, duration: 0.5, ease: "power3.out" }, t);
+      });
+
+      // 5.5s — IDE frame tilts up into view (3D rotateX from below)
+      tl.to("#arch-ide", { opacity: 1, rotationX: 0, y: 0, scale: 1, duration: 1.2, ease: "expo.out" }, 5.5);
+
+      // 10.1s — L1 Agent layer enters + cursor lands on it
+      tl.to("#arch-l1", { opacity: 1, x: 0, rotationY: 0, duration: 0.65, ease: "back.out(1.4)" }, 10.1);
+      tl.to("#arch-cursor", { opacity: 0.85, top: 0, duration: 0.4, ease: "power2.out" }, 10.2);
+
+      // 13.6s — L2 Runtime
+      tl.to("#arch-l2", { opacity: 1, x: 0, rotationY: 0, duration: 0.65, ease: "back.out(1.4)" }, 13.6);
+      tl.to("#arch-cursor", { top: 60, duration: 0.4, ease: "power2.inOut" }, 13.7);
+
+      // 17.5s — L3 Bash
+      tl.to("#arch-l3", { opacity: 1, x: 0, rotationY: 0, duration: 0.65, ease: "back.out(1.4)" }, 17.5);
+      tl.to("#arch-cursor", { top: 120, duration: 0.4, ease: "power2.inOut" }, 17.6);
+      // L3 name emphasis when narrator says "bash"
+      tl.to("#arch-l3 .name",
+        { color: "#FB923C", textShadow: "0 0 24px rgba(251, 146, 60, 0.7)",
+          duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 18.2);
+
+      // 27.9s — L4 Imports
+      tl.to("#arch-l4", { opacity: 1, x: 0, rotationY: 0, duration: 0.65, ease: "back.out(1.4)" }, 27.9);
+      tl.to("#arch-cursor", { top: 180, duration: 0.45, ease: "power2.inOut" }, 28.0);
+      tl.to("#arch-l4 .name",
+        { color: "#A78BFA", textShadow: "0 0 24px rgba(167, 139, 250, 0.7)",
+          duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 28.6);
+
+      // 47.5s — L5 MCP
+      tl.to("#arch-l5", { opacity: 1, x: 0, rotationY: 0, duration: 0.65, ease: "back.out(1.4)" }, 47.5);
+      tl.to("#arch-cursor", { top: 240, duration: 0.45, ease: "power2.inOut" }, 47.6);
+      tl.to("#arch-l5 .name",
+        { color: "#34D399", textShadow: "0 0 24px rgba(52, 211, 153, 0.7)",
+          duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 48.3);
+
+      // 62.0s — synth lockup reveal (each chip with stagger)
+      tl.to("#arch-synth > span", {
+        opacity: 1, y: 0, duration: 0.55, ease: "power2.out",
+        stagger: 0.12
+      }, 62.0);
+
+      // 66.0s — final full-stack lift on "in one runtime"
+      tl.to("#arch-stack",
+        { scale: 1.015, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 66.0);
+
+      window.__timelines["scene-architecture-stack"] = tl;
+    </script>
+  </div>
+</template>

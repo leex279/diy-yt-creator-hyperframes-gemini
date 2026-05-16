@@ -1,0 +1,246 @@
+<!--
+  scene-problem.html — THE PROBLEM (9.86–31.18s, scene-rel 0–21.32)
+  Word anchors (scene-rel = abs - 9.86):
+    0.00  "Here is what is actually slow"
+    4.30  "You feed it a prompt"
+    5.43  "It runs one full forward pass"  → token #1 reveals
+    8.07  "It produces one token"
+    9.33  "You append that token"
+   11.32  "You run the whole model again"  → token #2 reveals
+   13.06  "For the next token"             → token #3 reveals
+   14.83  "And the next"                   → token #4 reveals
+   16.08  "A seventy billion parameter"
+   18.75  "Spinning up"
+   19.85  "For one word"                   → "70B → 1 word" stamp
+-->
+<template id="scene-problem-template">
+  <div data-composition-id="scene-problem"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sp-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .sp-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sp-headline {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 116px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 920px;
+      }
+      .sp-headline .sp-slow {
+        color: var(--accent-1);
+      }
+      .sp-prompt {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 34px;
+        color: var(--text-secondary);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-top: 4px;
+      }
+      .sp-prompt .sp-prompt-tag {
+        font-family: var(--mono);
+        font-weight: 800;
+        color: var(--accent-1);
+        margin-right: 12px;
+      }
+      .sp-stage {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-top: 6px;
+      }
+      .sp-model-block {
+        flex: 0 0 360px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 22px;
+        padding: 24px 20px;
+        text-align: center;
+        box-shadow: 0 14px 32px rgba(28, 26, 24, 0.14);
+      }
+      .sp-model-block .label {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 4px;
+      }
+      .sp-model-block .name {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 96px;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -2px;
+      }
+      .sp-model-block .sub {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        margin-top: 6px;
+      }
+      .sp-arrow {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 64px;
+        color: var(--accent-1);
+      }
+      .sp-tokens {
+        flex: 1 1 auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-content: center;
+      }
+      .sp-token {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 38px;
+        letter-spacing: 1px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-3);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 12px 18px;
+      }
+      .sp-cost {
+        margin-top: 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .sp-cost-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .sp-cost-stamp {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 76px;
+        line-height: 1;
+        letter-spacing: -1px;
+        color: var(--accent-1);
+      }
+      .sp-cost-stamp em {
+        font-style: italic;
+        color: var(--text);
+      }
+    </style>
+
+    <div id="sp-content">
+      <div class="sp-overline" id="sp-overline">THE BOTTLENECK</div>
+      <div class="sp-headline" id="sp-headline">
+        One forward pass.<br/>
+        <span class="sp-slow" id="sp-slow">One token.</span>
+      </div>
+
+      <div class="sp-prompt" id="sp-prompt">
+        <span class="sp-prompt-tag">PROMPT &raquo;</span>"The sky is&hellip;"
+      </div>
+
+      <div class="sp-stage">
+        <div class="sp-model-block" id="sp-model">
+          <div class="label">MODEL</div>
+          <div class="name">70B</div>
+          <div class="sub">SPINNING UP</div>
+        </div>
+        <div class="sp-arrow" id="sp-arrow">&rarr;</div>
+        <div class="sp-tokens" id="sp-tokens">
+          <span class="sp-token" id="sp-tok-1">blue</span>
+          <span class="sp-token" id="sp-tok-2">.</span>
+          <span class="sp-token" id="sp-tok-3">The</span>
+          <span class="sp-token" id="sp-tok-4">sun</span>
+        </div>
+      </div>
+
+      <div class="sp-cost" id="sp-cost">
+        <div class="sp-cost-label">FOR EVERY TOKEN</div>
+        <div class="sp-cost-stamp"><em>70B params</em> &nbsp;&rarr;&nbsp; one word</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sp-overline", { y: -8, opacity: 0 }, 0);
+      tl.set("#sp-headline", { y: 24, opacity: 0 }, 0);
+      tl.set("#sp-slow",     { opacity: 0 }, 0);
+      tl.set("#sp-prompt",   { y: 24, opacity: 0 }, 0);
+      tl.set("#sp-model",    { x: -32, opacity: 0, scale: 0.9 }, 0);
+      tl.set("#sp-arrow",    { opacity: 0 }, 0);
+      tl.set("#sp-tok-1",    { opacity: 0, y: 16, scale: 0.8 }, 0);
+      tl.set("#sp-tok-2",    { opacity: 0, y: 16, scale: 0.8 }, 0);
+      tl.set("#sp-tok-3",    { opacity: 0, y: 16, scale: 0.8 }, 0);
+      tl.set("#sp-tok-4",    { opacity: 0, y: 16, scale: 0.8 }, 0);
+      tl.set("#sp-cost",     { y: 24, opacity: 0 }, 0);
+
+      tl.to("#sp-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#sp-headline", { y: 0, opacity: 1, duration: 0.55 }, 0.20);
+      tl.to("#sp-slow",     { opacity: 1, duration: 0.4 }, 1.00);
+
+      tl.to("#sp-prompt", { y: 0, opacity: 1, duration: 0.5 }, 4.30);
+
+      tl.to("#sp-model",  { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 5.43);
+      tl.to("#sp-arrow",  { opacity: 1, duration: 0.3 }, 5.90);
+      // Model "spinning up" pulse — repeats throughout
+      tl.to("#sp-model",  { scale: 1.04, duration: 0.4, yoyo: true, repeat: 7, ease: "sine.inOut" }, 6.0);
+
+      // Token reveals — one per "next token" / "next" / "again" beat
+      tl.to("#sp-tok-1",  { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 8.07);
+      tl.to("#sp-tok-2",  { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 11.32);
+      tl.to("#sp-tok-3",  { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 13.06);
+      tl.to("#sp-tok-4",  { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 14.83);
+
+      // 70B → 1 word stamp lands on "spinning up / for one word"
+      tl.to("#sp-cost", { y: 0, opacity: 1, duration: 0.5 }, 16.08);
+      tl.to("#sp-cost", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1 }, 19.85);
+      // Pad timeline so HyperFrames keeps the scene mounted past last tween.
+      tl.to({}, { duration: 1 }, 200);
+
+
+      window.__timelines["scene-problem"] = tl;
+    </script>
+  </div>
+</template>

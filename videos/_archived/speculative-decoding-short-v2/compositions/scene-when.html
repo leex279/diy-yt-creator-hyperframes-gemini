@@ -1,0 +1,228 @@
+<!--
+  scene-when.html — WHEN IT WORKS / WHEN IT BREAKS (97.10–118.27s, scene-rel 0–21.17)
+  Word anchors (scene-rel = abs - 97.10):
+    0.00  "But the speedup is not constant"
+    1.66  "Math"        → tag 1 (left ✓)
+    2.18  "Code"        → tag 2 (left ✓)
+    3.51  "Boilerplate" → tag 3 (left ✓)
+    4.33  "The draft is right almost every time"
+    7.25  "Massive speedup"               → ✓ verdict (left)
+    8.28  "Creative writing"  → tag 1 (right ✗)
+    9.30  "Open prose"        → tag 2 (right ✗)
+   10.95  "Every word branches a hundred ways"
+   12.89  "The draft guesses wrong"
+   14.87  "The speedup collapses"          → ✗ verdict (right)
+   16.00  "Same model. Same prompt"
+   18.34  "Different speed depending on what you ask"
+-->
+<template id="scene-when-template">
+  <div data-composition-id="scene-when"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sw-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .sw-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sw-h {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 96px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sw-h .em { color: var(--accent-1); }
+      .sw-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .sw-col {
+        background: var(--bg-card);
+        border: 2px solid var(--border-bright);
+        border-radius: 22px;
+        padding: 24px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 540px;
+      }
+      .sw-col.win  { border-color: var(--accent-3); }
+      .sw-col.lose { border-color: var(--accent-1); }
+      .sw-col-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .sw-icon {
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 56px;
+        line-height: 1;
+      }
+      .sw-icon.ok { color: var(--accent-3); }
+      .sw-icon.no { color: var(--accent-1); }
+      .sw-col-title {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 56px;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -1px;
+      }
+      .sw-tag {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 36px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 18px;
+        color: var(--text);
+        align-self: flex-start;
+      }
+      .sw-col.win  .sw-tag { border-color: var(--accent-3); color: var(--accent-3); }
+      .sw-col.lose .sw-tag { border-color: var(--accent-1); color: var(--accent-1); }
+      .sw-verdict {
+        margin-top: auto;
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 52px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+      }
+      .sw-col.win  .sw-verdict { color: var(--accent-3); }
+      .sw-col.lose .sw-verdict { color: var(--accent-1); }
+      .sw-bottom {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-style: italic;
+        font-size: 44px;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 24px;
+      }
+      .sw-bottom .em {
+        color: var(--accent-1);
+        font-weight: 800;
+      }
+    </style>
+
+    <div id="sw-content">
+      <div class="sw-overline" id="sw-overline">THE TRADE-OFF</div>
+      <div class="sw-h" id="sw-h">Speedup is <span class="em">prompt-dependent.</span></div>
+
+      <div class="sw-grid">
+        <div class="sw-col win" id="sw-win">
+          <div class="sw-col-head">
+            <div class="sw-icon ok" id="sw-icon-ok">&check;</div>
+            <div class="sw-col-title">Wins</div>
+          </div>
+          <div class="sw-tag" id="sw-w1">Math</div>
+          <div class="sw-tag" id="sw-w2">Code</div>
+          <div class="sw-tag" id="sw-w3">Boilerplate</div>
+          <div class="sw-verdict" id="sw-w-verdict">Massive speedup.</div>
+        </div>
+
+        <div class="sw-col lose" id="sw-lose">
+          <div class="sw-col-head">
+            <div class="sw-icon no" id="sw-icon-no">&times;</div>
+            <div class="sw-col-title">Breaks</div>
+          </div>
+          <div class="sw-tag" id="sw-l1">Creative writing</div>
+          <div class="sw-tag" id="sw-l2">Open prose</div>
+          <div class="sw-tag" id="sw-l3">100 valid next words</div>
+          <div class="sw-verdict" id="sw-l-verdict">Speedup collapses.</div>
+        </div>
+      </div>
+
+      <div class="sw-bottom" id="sw-bottom">
+        Same model. Same prompt length. <span class="em">Different speed</span> depending on what you ask.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sw-overline",  { y: -8, opacity: 0 }, 0);
+      tl.set("#sw-h",         { y: 24, opacity: 0 }, 0);
+      tl.set("#sw-win",       { x: -32, opacity: 0 }, 0);
+      tl.set("#sw-icon-ok",   { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#sw-w1",        { x: -16, opacity: 0 }, 0);
+      tl.set("#sw-w2",        { x: -16, opacity: 0 }, 0);
+      tl.set("#sw-w3",        { x: -16, opacity: 0 }, 0);
+      tl.set("#sw-w-verdict", { opacity: 0, y: 16 }, 0);
+      tl.set("#sw-lose",      { x: 32, opacity: 0 }, 0);
+      tl.set("#sw-icon-no",   { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#sw-l1",        { x: 16, opacity: 0 }, 0);
+      tl.set("#sw-l2",        { x: 16, opacity: 0 }, 0);
+      tl.set("#sw-l3",        { x: 16, opacity: 0 }, 0);
+      tl.set("#sw-l-verdict", { opacity: 0, y: 16 }, 0);
+      tl.set("#sw-bottom",    { y: 16, opacity: 0 }, 0);
+
+      tl.to("#sw-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#sw-h",        { y: 0, opacity: 1, duration: 0.55 }, 0.20);
+
+      // LEFT column lands first (Wins)
+      tl.to("#sw-win",     { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 1.30);
+      tl.to("#sw-icon-ok", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 1.55);
+
+      // 3 win tags — paced to "Math / Code / Boilerplate"
+      tl.to("#sw-w1", { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 1.66);
+      tl.to("#sw-w2", { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 2.18);
+      tl.to("#sw-w3", { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 3.51);
+
+      // Win verdict at "Massive speedup"
+      tl.to("#sw-w-verdict", { y: 0, opacity: 1, duration: 0.5 }, 7.25);
+
+      // RIGHT column appears at "Creative writing"
+      tl.to("#sw-lose",    { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 8.10);
+      tl.to("#sw-icon-no", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 8.30);
+
+      tl.to("#sw-l1", { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 8.28);
+      tl.to("#sw-l2", { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 9.30);
+      tl.to("#sw-l3", { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 10.95);
+
+      // Lose verdict at "Speedup collapses"
+      tl.to("#sw-l-verdict", { y: 0, opacity: 1, duration: 0.5 }, 14.87);
+      tl.to("#sw-l-verdict", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1 }, 15.30);
+
+      // Bottom takeaway at "Different speed depending on what you ask"
+      tl.to("#sw-bottom", { y: 0, opacity: 1, duration: 0.5 }, 16.00);
+      // Pad timeline so HyperFrames keeps the scene mounted past last tween.
+      tl.to({}, { duration: 1 }, 200);
+
+
+      window.__timelines["scene-when"] = tl;
+    </script>
+  </div>
+</template>

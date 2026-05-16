@@ -1,0 +1,136 @@
+<!--
+  shared/lib/components/rubber-band-snap/component.html
+  Element stretches vertically like a rubber band then snaps back with a
+  spring overshoot. Three stages:
+    Stage 1 (0.0 → 0.4s): scaleY 1.0 → (1 + stretch), power2.in
+    Stage 2 (0.4 → 0.5s): hold at peak stretch (brief tension pause)
+    Stage 3 (0.5 → 0.7s): snap back to 1.0 with back.out(2.5) overshoot
+  A motion-blur filter (blur 1.5px → 0) fires during the stretch phase.
+  `intensity` (0–1) scales the stretch amount (default 0.6 → stretch 1.36).
+
+  SOURCE: original — no template source.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — wrap the element you want to snap in a .rubber-band-snap div.
+
+  SFX COUPLING:
+    cue: spring-pop   data-volume: 0.11   track-index: 3
+    offset: at + 0.5  (snap release moment — NOT at start)
+
+  Audio element to wire in your host index.html (adjust data-start):
+    <audio id="sfx-rb-snap-1"
+           class="clip"
+           src="assets/sfx/spring-pop.mp3"
+           data-start="<AT + 0.5>"
+           data-duration="0.52"
+           data-track-index="3"
+           data-volume="0.11"></audio>
+
+  ALIGNMENT CHECK:
+    SFX fires at data-start == at + 0.5 (the snap release moment).
+    The visual snap at Stage 3 starts at at + 0.5. Drift must be ≤ 0.05s
+    (percussive snap onset).
+-->
+
+<div class="rubber-band-snap" data-rb id="rb-1"><!-- [your content] --></div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/rubber-band-snap — keep this comment block */
+  .rubber-band-snap {
+    display: inline-block;
+    /* transform-origin center-bottom so the stretch looks like it's pulling
+       downward from a fixed top anchor */
+    transform-origin: center bottom;
+    will-change: transform, filter;
+  }
+</style>
+
+<!--
+  3) JS — call addRubberBandSnap() from the host root timeline.
+
+  SIGNATURE:
+    addRubberBandSnap(tl, sel, at, opts)
+
+  PARAMETERS:
+    tl          — a paused gsap.timeline
+    sel         — CSS selector resolving to ONE .rubber-band-snap element
+    at          — insertion time on tl (seconds)
+    opts        — optional config object:
+      duration    = 0.7    total snap duration (stages 1+2+3 proportional)
+      intensity   = 0.6    0–1 scale. 1.0 → stretch to scaleY 1.6; 0.0 → no stretch
+
+  TIMING BREAKDOWN (proportional to duration):
+    Stage 1: 0.0 → duration*0.571  (stretch — power2.in)
+    Stage 2: duration*0.571 → duration*0.714  (hold at peak)
+    Stage 3: duration*0.714 → duration*1.0  (snap back — back.out(2.5))
+
+  USAGE:
+    addRubberBandSnap(tl, "#my-badge", P2 + 1.0);
+    addRubberBandSnap(tl, "#my-badge", P2 + 1.0, { duration: 0.9, intensity: 0.8 });
+
+  CONSTRAINTS:
+    - transform-origin is center bottom (CSS above). Content stretches downward
+      from a fixed top anchor — adjust CSS if you need center-center behavior.
+    - The blur filter uses CSS filter: blur(Npx). Not all browsers render this
+      at sub-pixel accuracy during fast tweens; it degrades gracefully.
+    - Wire spring-pop <audio> at data-start == at + 0.5 (see top comment).
+    - Element should already be visible (entered) when this effect fires.
+      Use to add tactile weight to an entrance, or as a reaction on interaction.
+-->
+
+<script>
+  function addRubberBandSnap(tl, sel, at, opts) {
+    opts = opts || {};
+    var duration  = opts.duration  !== undefined ? opts.duration  : 0.7;
+    var intensity = opts.intensity !== undefined ? opts.intensity : 0.6;
+
+    // Clamp intensity
+    intensity = Math.max(0, Math.min(1, intensity));
+
+    // Stretch target: intensity 1.0 → scaleY 1.6; 0.6 → 1.36; 0.0 → 1.0
+    var stretchY = 1.0 + intensity * 0.6;
+
+    // Timing offsets (proportional)
+    var t1End   = at + duration * 0.571; // end of stretch
+    var t2End   = at + duration * 0.714; // end of hold
+    var t3End   = at + duration;         // snap complete
+
+    var stretchDur = t1End - at;
+    var holdDur    = t2End - t1End;
+    var snapDur    = t3End - t2End;
+
+    // Stage 1: stretch + blur onset
+    tl.to(sel, {
+      scaleY: stretchY,
+      filter: 'blur(1.5px)',
+      duration: stretchDur,
+      ease: 'power2.in'
+    }, at);
+
+    // Stage 2: hold at peak (blur maintained)
+    tl.to(sel, {
+      scaleY: stretchY,
+      filter: 'blur(1.5px)',
+      duration: holdDur,
+      ease: 'none'
+    }, t1End);
+
+    // Stage 3: snap back with back.out overshoot + blur clears
+    tl.to(sel, {
+      scaleY: 1.0,
+      filter: 'blur(0px)',
+      duration: snapDur,
+      ease: 'back.out(2.5)'
+    }, t2End);
+  }
+</script>

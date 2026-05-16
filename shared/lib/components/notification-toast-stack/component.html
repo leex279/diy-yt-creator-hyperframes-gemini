@@ -1,0 +1,218 @@
+<!--
+  shared/lib/components/notification-toast-stack/component.html
+  Three macOS-style notification toasts stacking vertically in the top-right
+  corner. Each toast slides in from off-canvas right (back.out(1.4)), staggers
+  by 0.6s, holds for holdSec, then all slide out together.
+
+  SOURCE: original — no template source.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this element wherever the toast stack should appear.
+     Set data-toasts to a JSON array of {icon, title, sub} objects.
+     icon is a CSS color string used for the 16×16 app-icon circle.
+-->
+
+<div class="notification-toast-stack" id="toast-stack-1"
+  data-toasts='[{"icon":"#FF6B6B","title":"Build complete","sub":"Render finished in 4m"},{"icon":"#4FC3F7","title":"New message","sub":"Cole: check the PR"},{"icon":"#A5D6A7","title":"Deploy ready","sub":"Vercel · prod · 12s ago"}]'>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/notification-toast-stack — keep this comment block */
+  .notification-toast-stack {
+    position: absolute;
+    top: 40px;
+    right: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .nts-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 360px;
+    height: 80px;
+    padding: 0 18px;
+    background: rgba(30, 30, 32, 0.82);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.45),
+      0 2px 8px rgba(0,0,0,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    box-sizing: border-box;
+    will-change: transform, opacity;
+    /* Start off-canvas right — JS will override via gsap.set */
+  }
+
+  .nts-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .nts-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .nts-title {
+    font-family: var(--font-sans, 'Inter', sans-serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.92);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+
+  .nts-sub {
+    font-family: var(--font-sans, 'Inter', sans-serif);
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.50);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+</style>
+
+<!--
+  3) JS — call addNotificationToastStack() from the host root timeline.
+
+  SIGNATURE:
+    addNotificationToastStack(tl, sel, at, opts)
+
+  PARAMETERS:
+    tl         — a paused gsap.timeline
+    sel        — CSS selector resolving to ONE .notification-toast-stack element
+    at         — insertion time on tl (seconds) — first toast slides in at this time
+    opts       — optional config object:
+      holdSec  = 4     seconds all toasts remain visible before sliding out
+      stagger  = 0.6   delay between consecutive toast slide-ins (seconds)
+
+  USAGE EXAMPLES:
+    addNotificationToastStack(tl, "#toast-stack-1", P1 + 1.0);
+    addNotificationToastStack(tl, "#toast-stack-1", P1 + 1.0, { holdSec: 5, stagger: 0.8 });
+
+  SFX COUPLING:
+    Wire one `pop` <audio> per toast at at+0, at+stagger, at+stagger*2
+    (track-index 3, 4, 5 respectively).
+
+    Example for 3 toasts (stagger=0.6):
+    <audio id="sfx-toast-1" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<at+0.0>" data-duration="0.52" data-track-index="3" data-volume="0.10"></audio>
+    <audio id="sfx-toast-2" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<at+0.6>" data-duration="0.52" data-track-index="4" data-volume="0.10"></audio>
+    <audio id="sfx-toast-3" class="clip" src="assets/sfx/pop.mp3"
+           data-start="<at+1.2>" data-duration="0.52" data-track-index="5" data-volume="0.10"></audio>
+
+  CONSTRAINTS:
+    - The element must have data-toasts set before this function is called.
+    - toasts array is parsed from JSON; malformed JSON silently produces 0 toasts.
+    - holdSec starts from when the LAST toast finishes sliding in.
+    - All toasts slide out together after the hold.
+    - Works in inline (single-file) compositions only; not for sub-composition use.
+-->
+
+<script>
+  function addNotificationToastStack(tl, sel, at, opts) {
+    opts = opts || {};
+    var holdSec = opts.holdSec !== undefined ? opts.holdSec : 4;
+    var stagger  = opts.stagger  !== undefined ? opts.stagger  : 0.6;
+
+    var root = document.querySelector(sel);
+    if (!root) return;
+
+    // Parse toast data
+    var toastsData = [];
+    try {
+      toastsData = JSON.parse(root.getAttribute('data-toasts') || '[]');
+    } catch(e) { return; }
+    if (!toastsData.length) return;
+
+    // Build DOM
+    root.innerHTML = '';
+    var toastEls = [];
+    for (var i = 0; i < toastsData.length; i++) {
+      var d = toastsData[i];
+      var toast = document.createElement('div');
+      toast.className = 'nts-toast';
+      toast.id = (root.id || 'nts') + '-t' + i;
+
+      var icon = document.createElement('div');
+      icon.className = 'nts-icon';
+      icon.style.background = d.icon || '#888';
+
+      var body = document.createElement('div');
+      body.className = 'nts-body';
+
+      var title = document.createElement('div');
+      title.className = 'nts-title';
+      title.textContent = d.title || '';
+
+      var sub = document.createElement('div');
+      sub.className = 'nts-sub';
+      sub.textContent = d.sub || '';
+
+      body.appendChild(title);
+      body.appendChild(sub);
+      toast.appendChild(icon);
+      toast.appendChild(body);
+      root.appendChild(toast);
+      toastEls.push(toast);
+    }
+
+    var slideOutX = 420; // px off-canvas right
+
+    // Hide all toasts off-canvas at t=0
+    for (var i = 0; i < toastEls.length; i++) {
+      gsap.set(toastEls[i], { x: slideOutX, opacity: 0 });
+    }
+
+    // Slide in each toast with stagger
+    for (var i = 0; i < toastEls.length; i++) {
+      tl.to(toastEls[i], {
+        x: 0,
+        opacity: 1,
+        duration: 0.55,
+        ease: 'back.out(1.4)'
+      }, at + i * stagger);
+    }
+
+    // Hold — last toast finishes at: at + (n-1)*stagger + 0.55
+    var lastIn = at + (toastEls.length - 1) * stagger + 0.55;
+    var slideOutAt = lastIn + holdSec;
+
+    // Slide all out together
+    for (var i = 0; i < toastEls.length; i++) {
+      tl.to(toastEls[i], {
+        x: slideOutX,
+        opacity: 0,
+        duration: 0.45,
+        ease: 'power2.in'
+      }, slideOutAt);
+    }
+  }
+</script>

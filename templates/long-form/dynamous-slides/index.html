@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Long-form Dynamous-Slides Template — Demo</title>
+<link rel="stylesheet" href="tokens/dynamous.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080. Dynamous deep-navy stage.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient wash — slow blue+cyan breath under all scenes */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 22% 18%, rgba(59, 130, 246, 0.14), transparent 55%),
+      radial-gradient(circle at 80% 82%, rgba(14, 165, 233, 0.09), transparent 60%),
+      radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.05), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Hairline grid backdrop — anchors the stage. Mask radial-faded. */
+  #grid-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(96, 165, 250, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(96, 165, 250, 0.07) 1px, transparent 1px);
+    background-size: 96px 96px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 30%, transparent 100%);
+            mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 30%, transparent 100%);
+  }
+
+  /* Shape backdrop — 14 deterministic shapes at low opacity */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.04;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Persistent blue halo — slow yoyo glow that drifts behind every scene */
+  #bg-halo {
+    position: absolute;
+    top: -340px; right: -340px;
+    width: 1300px; height: 1300px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.32;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
+    filter: blur(40px);
+  }
+  #bg-halo-2 {
+    position: absolute;
+    bottom: -400px; left: -300px;
+    width: 1100px; height: 1100px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+    background: radial-gradient(circle, var(--accent-3) 0%, transparent 60%);
+    filter: blur(40px);
+  }
+
+  /* Film-grain overlay — fractal noise via SVG feTurbulence */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+  }
+
+  /* Vignette — cinematic edge darkening on every scene */
+  #vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 7;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — persistent Dynamous wordmark banner
+     ────────────────────────────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    width: 1920px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    height: 56px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+    opacity: 0.92;
+  }
+
+  /* Progress bar — Dynamous Blue with glow */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.75);
+  }
+
+  /* Scene wrappers — crossfaded by root timeline */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-hook-wrap            { z-index: 1; opacity: 1; }
+  #scene-headline-accent-wrap { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-big-stat-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-tension-pivot-wrap   { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-pillars-3-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-list-reveal-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-card-wrap      { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap             { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Captions sit above scenes, below noise */
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+
+  /* Flash overlay — used for hero / pivot transitions (driven by GSAP) */
+  #flash-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.9) 0%, rgba(59, 130, 246, 0.4) 30%, transparent 70%);
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="120"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Background stack — sits behind every scene -->
+  <div id="ambient"></div>
+  <div id="grid-bg"></div>
+  <div id="shape-backdrop"></div>
+  <div id="bg-halo"></div>
+  <div id="bg-halo-2"></div>
+
+  <!-- Persistent Dynamous top banner -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/dynamous-logo-light.svg" alt="Dynamous" />
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — sub-composition mounts.
+       data-track-index="1"; NO data-duration on the wrapper
+       (sub-composition's internal timeline owns its length).
+       Scene starts in seconds:
+         0   → hook-wordmark        (3.0s hold + reveal)
+         10  → headline-accent      (10s)
+         25  → big-stat             (10s)
+         40  → tension-pivot        (10s)
+         55  → pillars-3            (15s)
+         75  → list-reveal          (20s)
+         95  → quote-card           (12s)
+         110 → cta                  (10s)
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-hook-wordmark"
+       data-composition-src="compositions/scene-hook-wordmark.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-headline-accent-wrap" class="scene-wrapper"
+       data-composition-id="scene-headline-accent"
+       data-composition-src="compositions/scene-headline-accent.html"
+       data-start="10"
+       data-track-index="1"></div>
+
+  <div id="scene-big-stat-wrap" class="scene-wrapper"
+       data-composition-id="scene-big-stat"
+       data-composition-src="compositions/scene-big-stat.html"
+       data-start="25"
+       data-track-index="1"></div>
+
+  <div id="scene-tension-pivot-wrap" class="scene-wrapper"
+       data-composition-id="scene-tension-pivot"
+       data-composition-src="compositions/scene-tension-pivot.html"
+       data-start="40"
+       data-track-index="1"></div>
+
+  <div id="scene-pillars-3-wrap" class="scene-wrapper"
+       data-composition-id="scene-pillars-3"
+       data-composition-src="compositions/scene-pillars-3.html"
+       data-start="55"
+       data-track-index="1"></div>
+
+  <div id="scene-list-reveal-wrap" class="scene-wrapper"
+       data-composition-id="scene-list-reveal"
+       data-composition-src="compositions/scene-list-reveal.html"
+       data-start="75"
+       data-track-index="1"></div>
+
+  <div id="scene-quote-card-wrap" class="scene-wrapper"
+       data-composition-id="scene-quote-card"
+       data-composition-src="compositions/scene-quote-card.html"
+       data-start="95"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="110"
+       data-track-index="1"></div>
+
+  <!-- Captions sub-composition — populated by `npx hyperframes transcribe`. -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <!-- Flash overlay (manipulated by GSAP at chosen boundaries) -->
+  <div id="flash-overlay"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUDIO BED — operator uncomments and tunes per video.
+       Track 2 = narration; Track 3 = 3-segment bg-music.
+       Volume caps per .claude/rules/audio-design.md.
+       NEVER use class="clip" on <audio>.
+
+       Narration block: id=narration src=audio/narration.wav
+         data-start=0 data-duration=120 data-track-index=2 data-volume=1
+
+       BG music hook block: id=bg-music-hook src=audio/bg-music-hook.mp3
+         data-start=0 data-duration=12 data-track-index=3 data-volume=0.12
+
+       BG music body block: id=bg-music-body src=audio/bg-music-body.mp3
+         data-start=12 data-duration=93 data-track-index=3 data-volume=0.07
+
+       BG music CTA block: id=bg-music-cta src=audio/bg-music-cta.mp3
+         data-start=105 data-duration=15 data-track-index=3 data-volume=0.12
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Film-grain overlay — last child, tints stack via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+
+  <!-- Vignette is appended last in the DOM so it draws above all scene content -->
+  <div id="vignette"></div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Deterministic seeded scatter for the shape backdrop (no Math.random).
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 12, w = 1920, h = 1080, minSize = 220, sizeRange = 200;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  // Crossfade two scene wrappers — Dynamous variant uses a brief blue tint
+  // on the flash overlay at the transition center.
+  function crossfadeScenes(tl, fromSel, toSel, atTime, flash) {
+    tl.to(fromSel, { filter: "blur(18px)", scale: 1.03, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(18px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+
+    if (flash) {
+      // Pulse the blue flash overlay across the crossfade midpoint
+      tl.to("#flash-overlay", { opacity: 0.55, duration: 0.18, ease: "power2.out", overwrite: "auto" }, atTime + 0.35);
+      tl.to("#flash-overlay", { opacity: 0,    duration: 0.45, ease: "power2.in",  overwrite: "auto" }, atTime + 0.55);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  spawnShapes('long-form-dynamous-slides', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 120;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath across full duration
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Blue-halo slow yoyo — Dynamous brand "halo always alive"
+  tl.to("#bg-halo",
+    { opacity: 0.48, scale: 1.06, duration: 12, ease: "sine.inOut",
+      yoyo: true, repeat: Math.floor(TOTAL_DURATION / 24), transformOrigin: "50% 50%" },
+    0);
+  tl.to("#bg-halo-2",
+    { opacity: 0.34, scale: 1.05, duration: 14, ease: "sine.inOut",
+      yoyo: true, repeat: Math.floor(TOTAL_DURATION / 28), transformOrigin: "50% 50%" },
+    0);
+
+  // Drift the shapes
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'),
+    'long-form-dynamous-slides', TOTAL_DURATION);
+
+  // Linear progress fill across the composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Scene labels — anchors so duration tweaks don't cascade
+  tl.addLabel("hook",            0)
+    .addLabel("headline-accent", 10)
+    .addLabel("big-stat",        25)
+    .addLabel("tension-pivot",   40)
+    .addLabel("pillars-3",       55)
+    .addLabel("list-reveal",     75)
+    .addLabel("quote-card",      95)
+    .addLabel("cta",            110);
+
+  // Crossfades — `flash: true` on the hero-reveal + CTA-landing boundaries
+  crossfadeScenes(tl, "#scene-hook-wrap",            "#scene-headline-accent-wrap", "headline-accent-=0.4", false);
+  crossfadeScenes(tl, "#scene-headline-accent-wrap", "#scene-big-stat-wrap",        "big-stat-=0.4",        false);
+  crossfadeScenes(tl, "#scene-big-stat-wrap",        "#scene-tension-pivot-wrap",   "tension-pivot-=0.4",   true);
+  crossfadeScenes(tl, "#scene-tension-pivot-wrap",   "#scene-pillars-3-wrap",       "pillars-3-=0.4",       false);
+  crossfadeScenes(tl, "#scene-pillars-3-wrap",       "#scene-list-reveal-wrap",     "list-reveal-=0.4",     false);
+  crossfadeScenes(tl, "#scene-list-reveal-wrap",     "#scene-quote-card-wrap",      "quote-card-=0.4",      false);
+  crossfadeScenes(tl, "#scene-quote-card-wrap",      "#scene-cta-wrap",             "cta-=0.4",             true);
+
+  // Pad timeline to full composition duration so renderer captures
+  // the trailing static frames of the last scene.
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

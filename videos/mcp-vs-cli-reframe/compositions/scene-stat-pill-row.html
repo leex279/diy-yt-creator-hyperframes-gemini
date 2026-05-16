@@ -1,0 +1,418 @@
+<!--
+  scene-stat-pill-row.html — The reframe receipts (~68s).
+  Narration anchors (t_rel):
+    0.0   "Here's the move that resolved it"   → overline
+    2.6   "On November fourth 2025"            → headline word-stagger
+    9.7   "Their example was simple"            → Anthropic pill 3D flip-in
+   15.2   "The old way"                          → 'from' bar fills 0 → 150K
+   25.4   "The new way"                          → 'to' bar fills 0 → 2K (tiny)
+   31.6   "98.7 percent drop"                    → percentage counter ticks
+   34.3   "Three months later, Cloudflare"      → Cloudflare pill 3D flip-in
+   42.9   "Using just two functions"             → caption
+   47.1   "The traditional version"               → 'from' bar fills 0 → 1.17M
+   52.8   "The new version"                       → 'to' bar fills 0 → 1K (sliver)
+   55.2   "99.9 percent reduction"                → percentage counter ticks
+   58.1   "The fix wasn't a different protocol"  → synth lands
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden; perspective:2200px;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-stat-pill-row-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 30px;
+        box-sizing:border-box;
+        transform-style: preserve-3d;
+      }
+      #scene-stat-pill-row-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:10px;
+        text-align:center;
+      }
+      #scene-stat-pill-row-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        display: flex; align-items: center; gap: 14px;
+      }
+      #scene-stat-pill-row-content .overline::before,
+      #scene-stat-pill-row-content .overline::after {
+        content: "";
+        width: 60px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-warn), transparent);
+      }
+      #scene-stat-pill-row-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 58px;
+        line-height: 1.05;
+        letter-spacing: -1.5px;
+        color: var(--text);
+        max-width: 1500px;
+        text-align: center;
+      }
+      #scene-stat-pill-row-content .headline b { color: var(--accent-stat); }
+      #scene-stat-pill-row-content .headline .w { display: inline-block; transform-style: preserve-3d; }
+
+      #scene-stat-pill-row-content .pills {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 36px;
+        transform-style: preserve-3d;
+      }
+      .stat-pill {
+        width: 660px;
+        padding: 36px 36px 30px;
+        border-radius: 14px;
+        background: var(--bg-elev);
+        border: 1px solid var(--border-bright);
+        display:flex; flex-direction:column;
+        gap: 16px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        position: relative;
+        overflow: hidden;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      .stat-pill::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+      }
+      .stat-pill.warn::before { background: linear-gradient(90deg, var(--accent-warn), transparent); }
+      .stat-pill.purple::before { background: linear-gradient(90deg, var(--accent-3), transparent); }
+
+      .stat-pill .hdr {
+        display: flex; align-items: center; justify-content: space-between;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .stat-pill.warn .hdr .src { color: var(--accent-warn); }
+      .stat-pill.purple .hdr .src { color: var(--accent-3); }
+      .stat-pill .hdr .date { color: var(--text-muted); }
+      .stat-pill .hdr .ok {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: var(--accent-4); font-weight: 700;
+      }
+      .stat-pill .hdr .ok::before { content: "●"; font-size: 8px; }
+
+      .stat-pill .pct-row {
+        display: flex; align-items: baseline;
+        gap: 18px;
+      }
+      .stat-pill .pct {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 180px;
+        line-height: 0.88;
+        letter-spacing: -10px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .stat-pill .pct .sign {
+        font-size: 80px; font-weight: 700;
+        vertical-align: 38px; margin-left: -4px; letter-spacing: -2px;
+      }
+      .stat-pill.warn .pct {
+        color: var(--accent-warn);
+        text-shadow: 0 0 70px var(--glow-orange);
+      }
+      .stat-pill.purple .pct {
+        color: var(--accent-3);
+        text-shadow: 0 0 70px var(--glow-violet);
+      }
+      .stat-pill .pct-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        padding-bottom: 12px;
+      }
+      .stat-pill .pct-label .drop { color: var(--accent-4); }
+
+      .stat-pill .shatter {
+        display: flex; flex-direction: column;
+        gap: 8px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+      }
+      .stat-pill .shatter .row {
+        display: flex; align-items: center;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: 1.5px;
+      }
+      .stat-pill .shatter .row .lbl {
+        width: 60px; color: var(--text-muted); text-transform: uppercase;
+      }
+      .stat-pill .shatter .row .bar {
+        flex: 1; height: 14px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 2px; position: relative;
+        overflow: hidden; border: 1px solid var(--border);
+        margin: 0 14px;
+      }
+      .stat-pill .shatter .row .bar .fill {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 0;
+      }
+      .stat-pill.warn .shatter .from .fill { background: rgba(251, 146, 60, 0.7); box-shadow: 0 0 10px var(--glow-orange); }
+      .stat-pill.warn .shatter .to   .fill { background: var(--accent-4); box-shadow: 0 0 10px var(--glow-green); }
+      .stat-pill.purple .shatter .from .fill { background: rgba(167, 139, 250, 0.7); box-shadow: 0 0 10px var(--glow-violet); }
+      .stat-pill.purple .shatter .to   .fill { background: var(--accent-4); box-shadow: 0 0 10px var(--glow-green); }
+      .stat-pill .shatter .row .num {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 17px;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        min-width: 130px; text-align: right; letter-spacing: 0;
+      }
+
+      .stat-pill .caption {
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 17px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        padding-top: 6px;
+      }
+      .stat-pill .caption b { color: var(--text); font-weight: 700; }
+
+      #scene-stat-pill-row-content .synth {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+        text-align: center;
+        margin-top: 4px;
+        display: flex; align-items: center; gap: 14px;
+        justify-content: center;
+      }
+      #scene-stat-pill-row-content .synth .dim { color: var(--text-muted); font-weight: 500; }
+    </style>
+
+    <div id="scene-stat-pill-row-content">
+      <div class="header-block">
+        <div class="overline" id="stat-row-overline">THE REFRAME · VERIFIED</div>
+        <div class="headline" id="stat-row-headline">
+          <span class="w" data-w="0">Same</span>
+          <span class="w" data-w="1">protocol.</span>
+          <span class="w" data-w="2">Different</span>
+          <span class="w" data-w="3">binding.</span>
+          <b><span class="w" data-w="4">99%</span>
+          <span class="w" data-w="5">less</span>
+          <span class="w" data-w="6">context.</span></b>
+        </div>
+      </div>
+
+      <div class="pills">
+        <div class="stat-pill warn" id="stat-pill-1">
+          <div class="hdr">
+            <span class="src">ANTHROPIC</span>
+            <span class="date">NOV 04 · 2025</span>
+            <span class="ok">VERIFIED</span>
+          </div>
+          <div class="pct-row" id="pct-row-1">
+            <span class="pct"><span id="pct-1">0.0</span><span class="sign">%</span></span>
+            <span class="pct-label">drop <span class="drop">▼</span></span>
+          </div>
+          <div class="shatter">
+            <div class="row from" id="shat-1-from">
+              <span class="lbl">before</span>
+              <div class="bar"><div class="fill" id="bar-1-from"></div></div>
+              <span class="num" id="num-1-from">0</span>
+            </div>
+            <div class="row to" id="shat-1-to">
+              <span class="lbl">after</span>
+              <div class="bar"><div class="fill" id="bar-1-to"></div></div>
+              <span class="num" id="num-1-to">0</span>
+            </div>
+          </div>
+          <div class="caption" id="cap-1"><b>Google Drive → Salesforce</b> · transcript through model on every step → typed import of just what's needed</div>
+        </div>
+
+        <div class="stat-pill purple" id="stat-pill-2">
+          <div class="hdr">
+            <span class="src">CLOUDFLARE</span>
+            <span class="date">FEB 20 · 2026</span>
+            <span class="ok">VERIFIED</span>
+          </div>
+          <div class="pct-row" id="pct-row-2">
+            <span class="pct"><span id="pct-2">0.0</span><span class="sign">%</span></span>
+            <span class="pct-label">drop <span class="drop">▼</span></span>
+          </div>
+          <div class="shatter">
+            <div class="row from" id="shat-2-from">
+              <span class="lbl">before</span>
+              <div class="bar"><div class="fill" id="bar-2-from"></div></div>
+              <span class="num" id="num-2-from">0</span>
+            </div>
+            <div class="row to" id="shat-2-to">
+              <span class="lbl">after</span>
+              <div class="bar"><div class="fill" id="bar-2-to"></div></div>
+              <span class="num" id="num-2-to">0</span>
+            </div>
+          </div>
+          <div class="caption" id="cap-2"><b>2,500-endpoint API</b> · 100+ schemas → just two functions · <b>search</b> + <b>execute</b></div>
+        </div>
+      </div>
+
+      <div class="synth" id="stat-row-synth">
+        <span class="dim">// the fix wasn't a different protocol — it was a different</span>
+        <span>BINDING</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      function fmt(n) { return Math.round(n).toLocaleString(); }
+      function setNum(id, v, decimals) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = decimals ? v.toFixed(decimals) : fmt(v);
+      }
+
+      // ══════════ HIDE EVERYTHING AT t=0 ══════════
+      tl.set("#stat-row-overline",    { opacity: 0, y: -14 }, 0);
+      tl.set("#stat-row-headline .w", { opacity: 0, y: 24, rotationX: 60, transformOrigin: "center bottom" }, 0);
+      tl.set("#stat-pill-1",          { opacity: 0, rotationY: 180, z: -200, scale: 0.85, transformOrigin: "center center" }, 0);
+      tl.set("#stat-pill-2",          { opacity: 0, rotationY: -180, z: -200, scale: 0.85, transformOrigin: "center center" }, 0);
+      tl.set("#pct-row-1, #pct-row-2",{ opacity: 0 }, 0);
+      tl.set("#shat-1-from, #shat-1-to, #shat-2-from, #shat-2-to", { opacity: 0, x: -16 }, 0);
+      tl.set("#cap-1, #cap-2",        { opacity: 0, y: 10 }, 0);
+      tl.set("#stat-row-synth",       { opacity: 0, y: 18 }, 0);
+
+      // ══════════ NARRATION-SYNCED REVEALS ══════════
+
+      // 0.0s — overline
+      tl.to("#stat-row-overline", { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 0.0);
+
+      // 0.3–2.5s — headline word stagger
+      const hwTimes = [0.3, 0.6, 0.9, 1.2, 1.55, 1.85, 2.15];
+      hwTimes.forEach((t, i) => {
+        tl.to(`#stat-row-headline .w[data-w="${i}"]`,
+          { opacity: 1, y: 0, rotationX: 0, duration: 0.5, ease: "power3.out" }, t);
+      });
+
+      // ── ANTHROPIC PILL ────────────────────────────────
+      // 9.7s — pill flips in (full 3D coin flip from back)
+      tl.to("#stat-pill-1",
+        { opacity: 1, rotationY: 0, z: 0, scale: 1, duration: 1.1, ease: "back.out(1.4)" }, 9.7);
+
+      // 11.5s — caption ("Google Drive → Salesforce") reveals
+      tl.to("#cap-1", { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 11.5);
+
+      // 15.2s — "before" bar appears + fills 0 → 150K over 1.8s
+      tl.to("#shat-1-from", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 15.2);
+      const f1 = { v: 0 };
+      tl.to(f1, {
+        v: 150000, duration: 2.0, ease: "power2.out",
+        onUpdate: () => {
+          document.getElementById('bar-1-from').style.width = '100%';
+          setNum('num-1-from', f1.v);
+        }
+      }, 15.5);
+
+      // 25.4s — "after" bar appears + fills 0 → 2K (tiny sliver vs 150K = ~1.3% width)
+      tl.to("#shat-1-to", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 25.4);
+      const t1 = { v: 0 };
+      tl.to(t1, {
+        v: 2000, duration: 1.4, ease: "power2.out",
+        onUpdate: () => {
+          document.getElementById('bar-1-to').style.width = (t1.v / 150000 * 100) + '%';
+          setNum('num-1-to', t1.v);
+        }
+      }, 25.6);
+
+      // 31.6s — pct-row reveals + counter ticks 0 → 98.7
+      tl.to("#pct-row-1", { opacity: 1, duration: 0.5, ease: "power2.out" }, 31.6);
+      const p1 = { v: 0 };
+      tl.to(p1, {
+        v: 98.7, duration: 1.6, ease: "power2.out",
+        onUpdate: () => setNum('pct-1', p1.v, 1)
+      }, 31.7);
+      tl.to("#stat-pill-1 .pct",
+        { textShadow: "0 0 130px rgba(251, 146, 60, 0.9)", scale: 1.04,
+          duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 33.2);
+
+      // ── CLOUDFLARE PILL ──────────────────────────────
+      // 34.3s — second pill flips in
+      tl.to("#stat-pill-2",
+        { opacity: 1, rotationY: 0, z: 0, scale: 1, duration: 1.1, ease: "back.out(1.4)" }, 34.3);
+
+      // 42.9s — caption ("2,500-endpoint API · search + execute") reveals
+      tl.to("#cap-2", { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 42.9);
+
+      // 47.1s — "before" bar for Cloudflare → 1.17M
+      tl.to("#shat-2-from", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 47.1);
+      const f2 = { v: 0 };
+      tl.to(f2, {
+        v: 1170000, duration: 2.2, ease: "power2.out",
+        onUpdate: () => {
+          document.getElementById('bar-2-from').style.width = '100%';
+          setNum('num-2-from', f2.v);
+        }
+      }, 47.4);
+
+      // 52.8s — "after" bar → 1K (sliver)
+      tl.to("#shat-2-to", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 52.8);
+      const t2 = { v: 0 };
+      tl.to(t2, {
+        v: 1000, duration: 1.2, ease: "power2.out",
+        onUpdate: () => {
+          document.getElementById('bar-2-to').style.width = (t2.v / 1170000 * 100) + '%';
+          setNum('num-2-to', t2.v);
+        }
+      }, 53.0);
+
+      // 55.2s — pct-row reveals + counter ticks 0 → 99.9
+      tl.to("#pct-row-2", { opacity: 1, duration: 0.5, ease: "power2.out" }, 55.2);
+      const p2 = { v: 0 };
+      tl.to(p2, {
+        v: 99.9, duration: 1.4, ease: "power2.out",
+        onUpdate: () => setNum('pct-2', p2.v, 1)
+      }, 55.3);
+      tl.to("#stat-pill-2 .pct",
+        { textShadow: "0 0 130px rgba(167, 139, 250, 0.9)", scale: 1.04,
+          duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 56.7);
+
+      // 58.1s — synth headline reveals "different BINDING"
+      tl.to("#stat-row-synth", { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 58.1);
+      tl.to("#stat-row-synth span:last-child",
+        { textShadow: "0 0 36px rgba(250, 204, 21, 0.85)", scale: 1.04,
+          duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 59.0);
+
+      // 62.0s — headline emphasis on final "99% less context"
+      tl.to("#stat-row-headline b",
+        { textShadow: "0 0 30px rgba(250, 204, 21, 0.7)",
+          duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 62.0);
+
+      window.__timelines["scene-stat-pill-row"] = tl;
+    </script>
+  </div>
+</template>

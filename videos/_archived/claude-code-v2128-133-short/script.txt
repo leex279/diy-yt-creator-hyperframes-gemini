@@ -1,0 +1,15 @@
+28 new features. 78 bug fixes. 4 improvements. The biggest pass landed on M C P stability, and your hooks just got a lot smarter.
+
+First. Hooks now read the active effort level. The CLAUDE EFFORT environment variable flows into hooks and into every Bash subprocess. Adapt your logging or skip expensive work when you are on low effort. CI integrations finally get the context they always needed.
+
+Second. The dash dash plugin URL flag fetches a plugin zip archive directly from any URL. Session scoped, zero install, zero footprint. Try a plugin in seconds and toss it when you are done.
+
+Third. Set CLAUDE CODE DISABLE ALTERNATE SCREEN to one and your conversation stays in the terminal's native scrollback. No more fullscreen alternate screen swap. Your output is right there in the history where you can search it.
+
+Fourth. Subagents finally discover project, user, and plugin skills through the Skill tool again. The regression that broke subagent skill use is gone. If you build with subagents, this one alone is worth the update.
+
+Fifth. The refresh token race that wiped shared credentials is patched. Parallel sessions no longer dead end at four oh one after a refresh. If you run multiple agents at once, this fix is the headline.
+
+Sixth. The one hour prompt cache T T L was being silently downgraded to five minutes. Now honored. ENABLE PROMPT CACHING ONE H actually does what it says.
+
+Which patch made your day? Drop a comment below.

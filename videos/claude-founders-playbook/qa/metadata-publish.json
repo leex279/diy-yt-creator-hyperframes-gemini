@@ -1,0 +1,93 @@
+{
+  "agent": "video-metadata-publish",
+  "video_slug": "claude-founders-playbook",
+  "review_date": "2026-05-16",
+  "review_pass": "final-extended-9-scene",
+  "verdict": "PASS",
+  "description_file": "videos/claude-founders-playbook/youtube-description.md",
+  "char_count": 1437,
+  "char_count_prev": 1294,
+  "char_delta": "+143",
+  "char_count_target_range": "1300-1500 (Shorts)",
+  "char_count_verdict": "PASS",
+  "first_200_chars_keyword_check": {
+    "primary_keywords_required": ["Claude Code", "Anthropic", "Founder's Playbook"],
+    "primary_keywords_found": ["Claude Code", "Anthropic", "Founder's Playbook"],
+    "additional_keywords_in_first_200": ["AI-native startups", "four named killers", "Idea", "MVP", "agentic technical debt", "Launch"],
+    "verdict": "PASS"
+  },
+  "structure_audit": {
+    "rule": ".claude/rules/youtube-metadata.md",
+    "order": [
+      "SEO hook paragraph",
+      "Resources block",
+      "Hostinger affiliate block (in ---- separators)",
+      "Engagement question",
+      "Hashtags"
+    ],
+    "dynamous_block": "absent (per meta.json dynamousPromotion=false)",
+    "chapters_block": "absent (Shorts rule - PASS)",
+    "key_changes_block": "absent (cut per rule)",
+    "key_concepts_block": "absent (cut per rule)",
+    "verdict": "PASS"
+  },
+  "hostinger_byte_match": {
+    "expected": "Self-host your AI agents & projects on Hostinger (10% OFF):\nhttps://hostinger.com/DIYSMARTCODE",
+    "match": true,
+    "wrapped_in_dashes": true,
+    "wording": "Try Hostinger style (affiliate-only, not 'Sponsored by') - PASS per memory feedback_hostinger_affiliate_not_sponsored"
+  },
+  "hashtags": {
+    "count": 22,
+    "count_prev": 20,
+    "range_target": "15-25",
+    "delta": "+2",
+    "added": ["#AgenticTechDebt", "#StartupFailureModes"],
+    "removed": [],
+    "verdict": "PASS"
+  },
+  "urls_in_description": [
+    {
+      "url": "https://claude.com/blog/the-founders-playbook",
+      "verdict": "validated_today_in_phase_yt_pre_extension"
+    },
+    {
+      "url": "https://claude.com/blog/building-companies-with-claude-code",
+      "verdict": "validated_today_in_phase_yt_pre_extension"
+    },
+    {
+      "url": "https://www.cbinsights.com/research/report/startup-failure-reasons-top/",
+      "verdict": "validated_today_in_phase_yt_pre_extension"
+    },
+    {
+      "url": "https://hostinger.com/DIYSMARTCODE",
+      "verdict": "canonical_affiliate_url"
+    }
+  ],
+  "urls_revalidated_in_this_pass": false,
+  "urls_revalidation_skipped_rationale": "All 3 resource URLs were live in the pre-extension Phase YT run earlier today (2026-05-16); no content changes since.",
+  "cta_cross_reference": {
+    "spoken_in_script_txt": "Are you running this playbook, or still validating with vibes?",
+    "visible_in_index_html_cta_question": "Running this playbook, or still validating with vibes?",
+    "in_description": "Are you running this playbook, or still validating with vibes?",
+    "anchor_words": ["playbook", "vibes"],
+    "all_three_aligned": true,
+    "rule": ".claude/rules/engagement-cta.md",
+    "verdict": "PASS"
+  },
+  "banned_sections_present": {
+    "key_changes_bullet_list": false,
+    "key_concepts_paragraph": false,
+    "key_stats_block": false,
+    "about_this_video": false,
+    "standalone_cta_command": false,
+    "long_debate_preamble": false,
+    "verdict": "PASS (none present)"
+  },
+  "findings": {
+    "blocker": [],
+    "high": [],
+    "medium": [],
+    "low": []
+  }
+}

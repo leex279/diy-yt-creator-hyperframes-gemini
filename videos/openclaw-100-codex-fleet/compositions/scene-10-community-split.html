@@ -1,0 +1,409 @@
+<!--
+  scene-10-community-split.html — Community split (105.9s, comp-time 387.14-493.04).
+
+  5 camp cards, slow-staggered to spoken "Camp N" word anchors.
+  Each card paraphrases the camp's reaction — NO @-handles, NO direct quotes,
+  per brief Section 2 + 6 rule.
+
+  Scene-internal anchors (audio - 347.139):
+     0.0   "Which is why the reaction split..."
+     3.7   Camp one (dry skeptics)
+    22.0   Camp two (forward-looking)
+    39.6   Camp three (cost optimizers)
+    60.6   Camp four (admiring)
+    74.1   Camp five (confused)
+    92.5   "Notice that none of them..."
+
+  Sub-beats every ~4s during each camp window keep the visual surface alive
+  (per visual-pacing-5s.md): typewriter taglines, scale pulses on key chips.
+-->
+<template id="scene-10-community-split-template">
+  <div data-composition-id="scene-10-community-split"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s10-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 18px;
+        box-sizing:border-box;
+      }
+      #s10-header {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 8px;
+        text-align: center;
+      }
+      #s10-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s10-headline {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 60px;
+        line-height: 1.05;
+        letter-spacing: -1.5px;
+        color: var(--text);
+      }
+      #s10-camps {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 18px;
+        width: 100%;
+        max-width: 1720px;
+        flex: 1;
+        margin-top: 4px;
+      }
+      .s10-camp {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 18px;
+        padding: 22px 18px;
+        display:flex; flex-direction:column;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      }
+      .s10-camp::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; right: 0;
+        height: 6px;
+        background: var(--accent-1);
+      }
+      .s10-camp.c2::before { background: var(--accent-2); }
+      .s10-camp.c3::before { background: var(--accent-stat); }
+      .s10-camp.c4::before { background: var(--accent-4); }
+      .s10-camp.c5::before { background: var(--text-muted); }
+      .s10-camp .idx {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+      }
+      .s10-camp .icon { font-size: 38px; line-height: 1; margin: 4px 0; }
+      .s10-camp .tag {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 26px;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .s10-camp .body {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .s10-camp .body-frag {
+        display: block;
+      }
+      .s10-camp .receipt {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 1.5px;
+        color: var(--accent-stat);
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+      #s10-progress-dots {
+        display:flex; gap: 12px;
+        margin-top: -4px;
+      }
+      .s10-progress-dot {
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid var(--border-bright);
+      }
+      .s10-progress-dot.active {
+        background: var(--accent-1);
+        border-color: var(--accent-1);
+        box-shadow: 0 0 14px rgba(201, 42, 42, 0.55);
+      }
+      .s10-mark-wrap {
+        position: relative;
+        display: inline-block;
+      }
+      .s10-mark-bar {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -4px;
+        height: 4px;
+        background: var(--accent-1);
+        border-radius: 2px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      .s10-camp.c2 .s10-mark-bar { background: var(--accent-2); }
+      .s10-camp.c3 .s10-mark-bar { background: var(--accent-stat); }
+      .s10-camp.c4 .s10-mark-bar { background: var(--accent-4); }
+      .s10-camp.c5 .s10-mark-bar { background: var(--text-secondary); }
+
+      #s10-note {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 30px;
+        line-height: 1.3;
+        color: var(--text);
+        text-align: center;
+        max-width: 1400px;
+        margin-top: 8px;
+      }
+      #s10-note em { font-style: italic; color: var(--accent-1); }
+      #s10-which-chip {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+        padding: 10px 22px;
+        border-radius: 999px;
+        background: rgba(252, 211, 77, 0.10);
+        border: 1.5px solid rgba(252, 211, 77, 0.5);
+      }
+    </style>
+
+    <div id="s10-content">
+      <div id="s10-header">
+        <div id="s10-overline">5 CAMPS</div>
+        <div id="s10-headline">The reaction split roughly five ways.</div>
+      </div>
+
+      <div id="s10-progress-dots">
+        <div class="s10-progress-dot" id="s10-dot-1"></div>
+        <div class="s10-progress-dot" id="s10-dot-2"></div>
+        <div class="s10-progress-dot" id="s10-dot-3"></div>
+        <div class="s10-progress-dot" id="s10-dot-4"></div>
+        <div class="s10-progress-dot" id="s10-dot-5"></div>
+      </div>
+
+      <div id="s10-camps">
+        <div class="s10-camp c1" id="s10-camp-1">
+          <div class="idx">CAMP 01</div>
+          <div class="icon">&#129317;</div>
+          <div class="tag"><span class="s10-mark-wrap">Lean? Really?<span class="s10-mark-bar" id="s10-mark-1"></span></span></div>
+          <div class="body">
+            <span class="body-frag" id="s10-c1-s1">Dry skeptics &mdash; Steipete called it "extremely lean."</span>
+            <span class="body-frag" id="s10-c1-s2">"100 parallel agents + 3 custom-built tools = opposite of lean."</span>
+            <span class="body-frag" id="s10-c1-s3">"The dictionary needs an update."</span>
+            <span class="receipt" id="s10-c1-r">&asymp; 25% of replies</span>
+          </div>
+        </div>
+        <div class="s10-camp c2" id="s10-camp-2">
+          <div class="idx">CAMP 02</div>
+          <div class="icon">&#128526;</div>
+          <div class="tag"><span class="s10-mark-wrap">Commodity soon<span class="s10-mark-bar" id="s10-mark-2"></span></span></div>
+          <div class="body">
+            <span class="body-frag" id="s10-c2-s1">Forward-looking. Only a handful can run this in 2026.</span>
+            <span class="body-frag" id="s10-c2-s2">But the cost of intelligence keeps falling.</span>
+            <span class="body-frag" id="s10-c2-s3">In 18&ndash;36 months, default for most teams. steipete agreed.</span>
+            <span class="receipt" id="s10-c2-r">&asymp; 20% of replies</span>
+          </div>
+        </div>
+        <div class="s10-camp c3" id="s10-camp-3">
+          <div class="idx">CAMP 03</div>
+          <div class="icon">&#128176;</div>
+          <div class="tag"><span class="s10-mark-wrap">Cheaper models?<span class="s10-mark-bar" id="s10-mark-3"></span></span></div>
+          <div class="body">
+            <span class="body-frag" id="s10-c3-s1">Cost optimizers. "Tried Cerebras / Grok / Qwen?"</span>
+            <span class="body-frag" id="s10-c3-s2">Deterministic hooks instead of LLMs?</span>
+            <span class="body-frag" id="s10-c3-s3">"You could trim the bill dramatically." steipete had a different answer.</span>
+            <span class="receipt" id="s10-c3-r">&asymp; 20% of replies</span>
+          </div>
+        </div>
+        <div class="s10-camp c4" id="s10-camp-4">
+          <div class="idx">CAMP 04</div>
+          <div class="icon">&#128591;</div>
+          <div class="tag"><span class="s10-mark-wrap">So much to learn<span class="s10-mark-bar" id="s10-mark-4"></span></span></div>
+          <div class="body">
+            <span class="body-frag" id="s10-c4-s1">Admiring. "Every time I see your workflow I realize how narrow my thinking is."</span>
+            <span class="body-frag" id="s10-c4-s2">They want a roadmap &mdash; even a slice of the fleet.</span>
+            <span class="receipt" id="s10-c4-r">&asymp; 20% of replies</span>
+          </div>
+        </div>
+        <div class="s10-camp c5" id="s10-camp-5">
+          <div class="idx">CAMP 05</div>
+          <div class="icon">&#129488;</div>
+          <div class="tag"><span class="s10-mark-wrap">What am I looking at?<span class="s10-mark-bar" id="s10-mark-5"></span></span></div>
+          <div class="body">
+            <span class="body-frag" id="s10-c5-s1">Confused &mdash; smallest but loudest.</span>
+            <span class="body-frag" id="s10-c5-s2">Screenshotting parts of the post: "<span class="s10-mark-wrap">wait, what am I even looking at?<span class="s10-mark-bar" id="s10-c5-s2-mark"></span></span>"</span>
+            <span class="body-frag" id="s10-c5-s3">Defaults far enough out that some viewers can't parse the stack.</span>
+            <span class="receipt" id="s10-c5-r">&asymp; 10% of replies</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="s10-which-chip">Which camp is yours?</div>
+
+      <div id="s10-note">
+        <span id="s10-note-1">Notice:</span>
+        <span id="s10-note-2"><em>none</em> of these</span>
+        <span id="s10-note-3">is the camp the post is actually arguing for.</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        tl.set("#s10-overline", { opacity: 0, y: 16 }, 0);
+        tl.set("#s10-headline", { opacity: 0, y: 20 }, 0);
+        ["#s10-camp-1","#s10-camp-2","#s10-camp-3","#s10-camp-4","#s10-camp-5"].forEach(s =>
+          tl.set(s, { opacity: 0, y: 30, scale: 0.95 }, 0));
+        ["#s10-mark-1","#s10-mark-2","#s10-mark-3","#s10-mark-4","#s10-mark-5"].forEach(s =>
+          tl.set(s, { scaleX: 0 }, 0));
+        // Hide all body fragments + receipts on every camp from t=0
+        for (let c = 1; c <= 5; c++) {
+          tl.set("#s10-c" + c + "-s1", { opacity: 0, y: 8 }, 0);
+          tl.set("#s10-c" + c + "-s2", { opacity: 0, y: 8 }, 0);
+          tl.set("#s10-c" + c + "-r",  { opacity: 0, y: 8 }, 0);
+          tl.set("#s10-dot-" + c,      { opacity: 0.5 }, 0);
+        }
+        // Camps 1, 2, 3, and 5 have an extra fragment (s3)
+        tl.set("#s10-c1-s3", { opacity: 0, y: 8 }, 0);
+        tl.set("#s10-c2-s3", { opacity: 0, y: 8 }, 0);
+        tl.set("#s10-c3-s3", { opacity: 0, y: 8 }, 0);
+        tl.set("#s10-c5-s3", { opacity: 0, y: 8 }, 0);
+        tl.set("#s10-note", { opacity: 0, y: 16 }, 0);
+        tl.set("#s10-note-1", { opacity: 0 }, 0);
+        tl.set("#s10-note-2", { opacity: 0 }, 0);
+        tl.set("#s10-note-3", { opacity: 0 }, 0);
+        tl.set("#s10-progress-dots", { opacity: 0, y: 8 }, 0);
+        tl.set("#s10-which-chip", { opacity: 0, y: 12, scale: 0.9 }, 0);
+
+        tl.to("#s10-overline", { opacity: 1, y: 0, duration: 0.5 }, 0);
+        tl.to("#s10-headline", { opacity: 1, y: 0, duration: 0.6 }, 0.3);
+        // Progress dot row reveals together with the headline
+        tl.to("#s10-progress-dots", { opacity: 1, y: 0, duration: 0.5 }, 0.6);
+
+        // ─────────────────────────────────────────────
+        // CAMP 1 — "Camp one is the dry skeptics" @ 3.87s
+        // Window 3.5 → 22.0; body sentences staggered to narration anchors
+        // ─────────────────────────────────────────────
+        tl.to("#s10-camp-1", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 3.5);
+        tl.to("#s10-mark-1", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 4.5);
+        tl.to("#s10-dot-1", { opacity: 1, duration: 0.2 }, 3.4);
+        tl.to("#s10-dot-1", { background: "var(--accent-1)", borderColor: "var(--accent-1)", boxShadow: "0 0 14px rgba(201, 42, 42, 0.55)", duration: 0.4 }, 3.7);
+        // s1 ("extremely lean" framing) @ narration "Steipete called the operation extremely lean" 6.13s
+        tl.to("#s10-c1-s1", { opacity: 1, y: 0, duration: 0.5 }, 6.0);
+        // s2 ("100 parallel agents = opposite of lean") @ narration "A hundred parallel agents" 9.46s
+        tl.to("#s10-c1-s2", { opacity: 1, y: 0, duration: 0.5 }, 9.5);
+        // Receipt @ "The pushback is wry, not hostile" @ 17.09s
+        tl.to("#s10-c1-r",  { opacity: 1, y: 0, duration: 0.4 }, 14.5);
+        // s3 ("dictionary needs an update") @ narration "The dictionary needs an update" 19.42s
+        tl.to("#s10-c1-s3", { opacity: 1, y: 0, duration: 0.5 }, 19.4);
+
+        // ─────────────────────────────────────────────
+        // CAMP 2 — "Camp two is the forward-looking" @ 22.16s
+        // Window 22.0 → 39.6
+        // ─────────────────────────────────────────────
+        tl.to("#s10-camp-2", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 21.8);
+        tl.to("#s10-mark-2", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 22.8);
+        tl.to("#s10-dot-2", { opacity: 1, duration: 0.2 }, 21.7);
+        tl.to("#s10-dot-2", { background: "var(--accent-2)", borderColor: "var(--accent-2)", boxShadow: "0 0 14px rgba(34, 211, 238, 0.55)", duration: 0.4 }, 22.0);
+        // s1 ("Only a handful in 2026") @ "Yes, only a handful of orgs can run this in 2026" 24.03s
+        tl.to("#s10-c2-s1", { opacity: 1, y: 0, duration: 0.5 }, 25.0);
+        // s2 ("But the cost of intelligence keeps falling") @ "But the cost of intelligence keeps falling" 28.56s
+        tl.to("#s10-c2-s2", { opacity: 1, y: 0, duration: 0.5 }, 28.5);
+        // s3 ("18-36 months default + steipete agreed") @ "In eighteen to thirty-six months" 31.47s
+        tl.to("#s10-c2-s3", { opacity: 1, y: 0, duration: 0.5 }, 31.5);
+        // Receipt @ "Steipete agreed with this take publicly" @ 36.83s
+        tl.to("#s10-c2-r",  { opacity: 1, y: 0, duration: 0.4 }, 36.5);
+
+        // ─────────────────────────────────────────────
+        // CAMP 3 — "Camp three is the cost optimizers" @ 39.75s
+        // Window 39.4 → 60.6
+        // ─────────────────────────────────────────────
+        tl.to("#s10-camp-3", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 39.4);
+        tl.to("#s10-mark-3", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 40.4);
+        tl.to("#s10-dot-3", { opacity: 1, duration: 0.2 }, 39.3);
+        tl.to("#s10-dot-3", { background: "var(--accent-stat)", borderColor: "var(--accent-stat)", boxShadow: "0 0 14px rgba(252, 211, 77, 0.55)", duration: 0.4 }, 39.6);
+        // s1 ("Tried Cerebras / Grok / Qwen?") @ "Have you tried Cerebras?" 45.05s
+        tl.to("#s10-c3-s1", { opacity: 1, y: 0, duration: 0.5 }, 45.0);
+        // s2 ("Deterministic hooks instead of LLMs?") @ "Deterministic hooks instead of LLM hooks?" 47.47s
+        tl.to("#s10-c3-s2", { opacity: 1, y: 0, duration: 0.5 }, 47.5);
+        // s3 ("trim the bill dramatically; steipete had a different answer") @ "You could trim the bill dramatically" 50.99s
+        tl.to("#s10-c3-s3", { opacity: 1, y: 0, duration: 0.5 }, 51.0);
+        // Receipt @ "Some of these suggestions are genuinely good" @ 52.79s
+        tl.to("#s10-c3-r",  { opacity: 1, y: 0, duration: 0.4 }, 55.5);
+
+        // ─────────────────────────────────────────────
+        // CAMP 4 — "Camp four is admiring" @ 60.74s
+        // Window 60.4 → 74.1
+        // ─────────────────────────────────────────────
+        tl.to("#s10-camp-4", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 60.4);
+        tl.to("#s10-mark-4", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 61.4);
+        tl.to("#s10-dot-4", { opacity: 1, duration: 0.2 }, 60.3);
+        tl.to("#s10-dot-4", { background: "var(--accent-4)", borderColor: "var(--accent-4)", boxShadow: "0 0 14px rgba(139, 92, 246, 0.55)", duration: 0.4 }, 60.6);
+        // s1 ("Every time I see your workflow") @ "Every time I see your workflow" 64.63s
+        tl.to("#s10-c4-s1", { opacity: 1, y: 0, duration: 0.5 }, 64.5);
+        // s2 ("They want a roadmap") @ "They want a roadmap" 69.29s
+        tl.to("#s10-c4-s2", { opacity: 1, y: 0, duration: 0.5 }, 69.2);
+        // Receipt @ narration end of camp 4 (~72.5)
+        tl.to("#s10-c4-r",  { opacity: 1, y: 0, duration: 0.4 }, 72.5);
+
+        // ─────────────────────────────────────────────
+        // CAMP 5 — "And camp five, smallest but loudest, is just confused" @ 74.05s
+        // Window 73.9 → 92.3
+        // ─────────────────────────────────────────────
+        tl.to("#s10-camp-5", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 73.9);
+        tl.to("#s10-mark-5", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 74.9);
+        tl.to("#s10-dot-5", { opacity: 1, duration: 0.2 }, 73.8);
+        tl.to("#s10-dot-5", { background: "var(--text-muted)", borderColor: "var(--text-muted)", boxShadow: "0 0 14px rgba(148, 163, 184, 0.55)", duration: 0.4 }, 74.1);
+        // s1 ("Confused — smallest but loudest") @ narration "smallest but loudest, is just confused" 75.20-77.19s
+        tl.to("#s10-c5-s1", { opacity: 1, y: 0, duration: 0.5 }, 75.5);
+        // s2 ("Screenshotting parts of the post...") @ "People screenshotting parts" 78.27s
+        tl.to("#s10-c5-s2", { opacity: 1, y: 0, duration: 0.5 }, 78.2);
+        // Sub-mark sweep on "wait, what am I even looking at?" @ "wait, what am I even looking at?" 80.77s
+        tl.set("#s10-c5-s2-mark", { scaleX: 0 }, 0);
+        tl.to("#s10-c5-s2-mark", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 81.0);
+        // s3 ("Defaults far enough out") @ "The defaults Steipete uses are far enough out" 83.79s
+        tl.to("#s10-c5-s3", { opacity: 1, y: 0, duration: 0.5 }, 83.7);
+        // Receipt @ "viewers literally can't parse the stack" @ 87.78s — pulls receipt earlier so the eye keeps moving
+        tl.to("#s10-c5-r",  { opacity: 1, y: 0, duration: 0.4 }, 87.5);
+
+        // "Which camp is yours?" chip enters at narration "which camp is yours" @ 96.32s
+        // Sourced: narration says exactly "you already know which camp is yours"
+        tl.to("#s10-which-chip", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 96.0);
+
+        // Note line — split into 3 fragments revealed step-by-step
+        // Frame at narration "If you've ever scrolled past a tweet like this" @ 89.94s (transition beat)
+        tl.to("#s10-note",   { opacity: 1, y: 0, duration: 0.6 }, 91.5);
+        // "Notice:" @ "Notice that none of them" 98.12s
+        tl.to("#s10-note-1", { opacity: 1, duration: 0.3 }, 98.0);
+        // "none of these" @ "none of them are the camp" 98.86s
+        tl.to("#s10-note-2", { opacity: 1, duration: 0.4 }, 99.0);
+        // "is the camp the post is actually arguing for" @ "is the camp the post is actually arguing for" 100.30s
+        tl.to("#s10-note-3", { opacity: 1, duration: 0.5 }, 100.3);
+        // Mid-note re-emphasis pulses
+        tl.to("#s10-note-2 em", { scale: 1.12, color: "var(--accent-1)", duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 103.0);
+
+        tl.set({}, {}, 105.9);
+        window.__timelines["scene-10-community-split"] = tl;
+      })();
+    </script>
+  </div>
+</template>

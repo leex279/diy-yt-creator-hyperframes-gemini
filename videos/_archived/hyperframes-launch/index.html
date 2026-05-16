@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Agentic Video is HTML — HyperFrames Launch</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Full design system
+     in DESIGN.md. The "world" is much larger than the
+     viewport: a hub + 6 hex-arranged spokes inside a
+     4080x4518 camera box. A GSAP-driven camera transform
+     pans + scales between sections instead of phase
+     mutex / fade transitions.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOKENS — palette + spacing + type. Reuses Anthropic dark visual style;
+     swap `tokens/anthropic-dark.css` content for a different palette.
+     TOKENS: shared/lib/tokens/anthropic-dark.css */
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+
+    /* World geometry — every section position is computed from these
+       so changing the radius re-flows the whole map. */
+    --world-w: 4080px;
+    --world-h: 4518px;
+    --section-w: 1080px;
+    --section-h: 1920px;
+
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+
+  /* Ambient warm wash — viewport-fixed (NOT inside the camera so it
+     stays as a constant glow regardless of camera move).
+     COMPONENT: shared/lib/components/ambient-radial/ */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ──────────────────────────────────────────────────
+     CAMERA — the giant world canvas. Transform-origin 0 0
+     so translate(x,y) scale(s) maps a camera-local point
+     (Lx, Ly) to screen (Lx*s + tx, Ly*s + ty). To put a
+     camera-local point at viewport center (540, 960):
+       tx = 540 - Lx*s
+       ty = 960 - Ly*s
+     All section coordinates and the camera transforms in
+     the script tag are derived from this rule.
+     ────────────────────────────────────────────────── */
+  #camera {
+    position: absolute;
+    width: var(--world-w);
+    height: var(--world-h);
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    z-index: 1;
+    /* Initial state — map view (scale 0.26 centered on world middle) — is
+       set by `tl.set('#camera', { x:10, y:373, scale:0.26 }, 0)` in the
+       script tag. NEVER add a `transform:` here; GSAP's x/y/scale and CSS
+       transforms conflict (HyperFrames lint flags it). */
+  }
+
+  /* World fill — subtle vignette inside the camera. Drawn behind sections
+     so the area between sections doesn't read as flat black. */
+  #world-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(233,116,88,0.04), transparent 55%),
+      radial-gradient(circle at 50% 50%, #0E1320 0%, #0B0F18 70%);
+    pointer-events: none;
+  }
+
+  /* Shape backdrop — populated per-section by spawnShapesPerSection()
+     in the script. Each section has its own scattered shape group so the
+     map shows shapes everywhere; section view shows that section's shapes.
+     Anchored on its parent .section so positions are local to the section. */
+  .section-shapes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .section-shapes img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* SVG connection lines — drawn between hub center and each spoke center
+     in camera-local coordinates. Each <line> uses pathLength=1 + a 1-unit
+     dasharray + dashoffset 1, then GSAP animates dashoffset to 0 to draw
+     the line in. Lines fade slightly once the dive begins so they don't
+     compete with section content at full zoom. */
+  #connections {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #connections line {
+    stroke: rgba(245, 241, 235, 0.18);
+    stroke-width: 6;
+    stroke-linecap: round;
+    fill: none;
+  }
+
+  /* ──────────────────────────────────────────────────
+     SECTIONS — 7 absolute-positioned tiles inside #camera.
+     Each is 1080x1920. Coordinates pre-computed from a
+     hex layout with R=1500 around hub at (2040, 2259):
+       HUB    centre (2040, 2259)  → top:1299  left:1500
+       S1 NW  centre (1290,  960)  → top:   0  left: 750
+       S2 NE  centre (2790,  960)  → top:   0  left:2250
+       S3  E  centre (3540, 2259)  → top:1299  left:3000
+       S4 SE  centre (2790, 3558)  → top:2598  left:2250
+       S5 SW  centre (1290, 3558)  → top:2598  left: 750
+       S6  W  centre ( 540, 2259)  → top:1299  left:   0
+     ────────────────────────────────────────────────── */
+  .section {
+    position: absolute;
+    width: var(--section-w);
+    height: var(--section-h);
+    overflow: hidden;
+  }
+  #sec-hub { top:1299px; left:1500px; }
+  #sec-1   { top:   0px; left: 750px; }
+  #sec-2   { top:   0px; left:2250px; }
+  #sec-3   { top:1299px; left:3000px; }
+  #sec-4   { top:2598px; left:2250px; }
+  #sec-5   { top:2598px; left: 750px; }
+  #sec-6   { top:1299px; left:   0px; }
+
+  /* Per-section ground tile — gives each section a soft accent wash that
+     reads as "you're inside this room" at section zoom and as a coloured
+     map node at zoomed-out view. */
+  .section-tile {
+    position: absolute;
+    inset: 60px;
+    border-radius: 60px;
+    pointer-events: none;
+  }
+  #sec-hub .section-tile { background: radial-gradient(circle at 50% 40%, rgba(233,116,88,0.16), transparent 60%); }
+  #sec-1   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(167,139,250,0.14), transparent 60%); }
+  #sec-2   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(107,154,239,0.14), transparent 60%); }
+  #sec-3   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(125,211,166,0.14), transparent 60%); }
+  #sec-4   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(167,139,250,0.14), transparent 60%); }
+  #sec-5   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(107,154,239,0.14), transparent 60%); }
+  #sec-6   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(125,211,166,0.14), transparent 60%); }
+
+  /* Section node badge — visible at all camera depths. Acts as the readable
+     anchor in map view (where the full content is too small to read) and as
+     the "phase 03" chip at section zoom. Centered horizontally near the top
+     of each section so the connecting lines, which terminate at the section
+     centre, visually "lead into" the badge. */
+  .section-node {
+    position: absolute;
+    left: 390px;
+    top: 280px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 4px solid;
+    background: rgba(11,15,24,0.78);
+    backdrop-filter: blur(6px);
+  }
+  .section-node .node-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 0.9;
+    letter-spacing: -3px;
+  }
+  .section-node .node-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  /* Per-section node accent. The big badge for HUB and the colour rotation
+     for spokes (purple / blue / green / purple / blue / green). */
+  #sec-hub .section-node {
+    width: 380px; height: 380px;
+    left: 350px; top: 240px;
+    border-color: var(--orange);
+    box-shadow: 0 0 80px rgba(233,116,88,0.45), inset 0 0 60px rgba(233,116,88,0.20);
+  }
+  #sec-hub .section-node .node-num { color: var(--orange); font-size: 130px; text-shadow: 0 0 40px rgba(233,116,88,0.6); }
+  #sec-hub .section-node .node-label { color: var(--orange); }
+
+  #sec-1 .section-node, #sec-4 .section-node { border-color: var(--purple); box-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  #sec-1 .section-node .node-num, #sec-4 .section-node .node-num { color: var(--purple); }
+
+  #sec-2 .section-node, #sec-5 .section-node { border-color: var(--blue); box-shadow: 0 0 60px rgba(107,154,239,0.40); }
+  #sec-2 .section-node .node-num, #sec-5 .section-node .node-num { color: var(--blue); }
+
+  #sec-3 .section-node, #sec-6 .section-node { border-color: var(--green); box-shadow: 0 0 60px rgba(125,211,166,0.40); }
+  #sec-3 .section-node .node-num, #sec-6 .section-node .node-num { color: var(--green); }
+
+  /* "Visited" check — small green tick that appears on a node after the
+     camera has visited it. Used in the final completion screen so the map
+     reads as a finished journey when the camera pulls back at the end.
+     Sits inside the badge (NOT overlapping the ring) so the contrast
+     stack is just green-on-dark — passes WCAG AA without depending on
+     whatever happens to be behind the badge's outer edge. */
+  .node-check {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #0B0F18;
+    color: var(--green);
+    border: 3px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 1;
+    box-shadow: 0 0 14px rgba(125,211,166,0.55);
+    opacity: 0;
+  }
+
+  /* Section content — the "rich" content visible only at section zoom.
+     Fades in when the camera arrives, fades out before the camera leaves.
+     Sits below the badge with the standard padding rhythm. */
+  .section-content {
+    position: absolute;
+    top: 620px;
+    left: 60px;
+    width: 960px;
+    bottom: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 920px;
+  }
+  .body {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 880px;
+  }
+  .accent-pill {
+    margin-top: 12px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  /* Hub overline + accent variants (one accent per section per the
+     anthropic-dark accent rotation rule). */
+  #sec-hub .overline { color: var(--orange); }
+  #sec-1 .overline, #sec-4 .overline { color: var(--purple); }
+  #sec-2 .overline, #sec-5 .overline { color: var(--blue); }
+  #sec-3 .overline, #sec-6 .overline { color: var(--green); }
+
+  /* Hub content lays out a true scroll-stop hero with a slam word — same
+     pattern as the anthropic template's phase 1 but framed by the larger
+     hub badge above it. */
+  #sec-hub .section-content {
+    top: 700px;
+    gap: 24px;
+  }
+  #sec-hub .hero-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.9;
+    letter-spacing: -8px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     SECTION CALLOUT — secondary content card revealed mid-section
+     so the visual surface keeps changing every 5s in a 18-25s section.
+     One per spoke; the variant class controls the inner layout.
+     ────────────────────────────────────────────────── */
+  .section-callout {
+    margin-top: 12px;
+    width: 880px;
+    padding: 22px 26px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(245,241,235,0.06), rgba(245,241,235,0.02));
+    border: 1.5px solid rgba(245,241,235,0.16);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.30);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  /* Variant: list — vertical stack of items with X / check marks */
+  .callout-list { gap: 8px; }
+  .callout-list .row {
+    display: flex; flex-direction: row; align-items: center; gap: 18px;
+    width: 100%;
+    font-family: var(--sans); font-weight: 700; font-size: 38px;
+    color: var(--text);
+  }
+  .callout-list .row .mark {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--sans); font-weight: 900; font-size: 28px;
+    line-height: 1;
+  }
+  .callout-list .row .mark.x  { background: rgba(209,67,67,0.18); color: var(--red);   border: 2px solid rgba(209,67,67,0.55); }
+  .callout-list .row .mark.ok { background: rgba(125,211,166,0.18); color: var(--green); border: 2px solid rgba(125,211,166,0.55); }
+  .callout-list .row .label { flex: 1; text-align: left; }
+  /* Variant: code — monospace block (lines or single line) */
+  .callout-code {
+    font-family: var(--mono); font-weight: 600; font-size: 38px;
+    color: var(--text); letter-spacing: 1px; text-align: left;
+    background: rgba(11,15,24,0.55);
+    padding: 22px 26px;
+    border-radius: 16px;
+    width: 100%;
+  }
+  .callout-code .line { line-height: 1.45; }
+  .callout-code .accent { color: var(--orange); }
+  /* Variant: chips — horizontal row of small accent pills */
+  .callout-chips {
+    flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: center;
+  }
+  .callout-chips .chip {
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: var(--mono); font-weight: 700; font-size: 30px;
+    letter-spacing: 1px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    color: var(--text);
+  }
+  /* Variant: pills — bigger, accent-color pills (for stat / brand pairs) */
+  .callout-pills {
+    flex-direction: row; gap: 18px; justify-content: center;
+  }
+  .callout-pills .pill {
+    padding: 18px 30px;
+    border-radius: 18px;
+    font-family: var(--sans); font-weight: 800; font-size: 42px;
+    line-height: 1;
+  }
+  .callout-pills .pill.purple { background: rgba(167,139,250,0.18); color: var(--purple); border: 2px solid rgba(167,139,250,0.5); }
+  .callout-pills .pill.blue   { background: rgba(107,154,239,0.18); color: var(--blue);   border: 2px solid rgba(107,154,239,0.5); }
+  .callout-pills .pill.green  { background: rgba(125,211,166,0.18); color: var(--green);  border: 2px solid rgba(125,211,166,0.5); }
+  .callout-pills .pill.orange { background: rgba(233,116,88,0.18);  color: var(--orange); border: 2px solid rgba(233,116,88,0.5); }
+  /* Variant: stat — single big number/phrase + caption */
+  .callout-stat {
+    align-items: center; padding: 26px 30px;
+  }
+  .callout-stat .num {
+    font-family: var(--sans); font-weight: 900; font-size: 96px;
+    line-height: 0.9; letter-spacing: -3px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .callout-stat .cap {
+    margin-top: 6px;
+    font-family: var(--mono); font-weight: 700; font-size: 28px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  /* Per-section accent on the callout-stat number */
+  #sec-2 .callout-stat .num { color: var(--blue); text-shadow: 0 0 36px rgba(107,154,239,0.45); }
+  #sec-5 .callout-stat .num { color: var(--blue); text-shadow: 0 0 36px rgba(107,154,239,0.45); }
+
+  /* Sub-callout on hub — tiny mono chip below the accent pill */
+  .hub-meta {
+    margin-top: 14px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: rgba(125,211,166,0.10);
+    border: 1.5px solid rgba(125,211,166,0.40);
+    font-family: var(--mono); font-weight: 700; font-size: 28px;
+    letter-spacing: 1.5px;
+    color: var(--green);
+  }
+
+  /* ──────────────────────────────────────────────────
+     VIEWPORT-FIXED CHROME — sits above #camera, never moves.
+     The top banner and progress bar must stay anchored to
+     the viewport regardless of camera scale / position so
+     they read as constants throughout the journey.
+     ────────────────────────────────────────────────── */
+  /* COMPONENT: shared/lib/components/top-banner-wordmark/ */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* COMPONENT: shared/lib/components/progress-bar/ */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* Map-overlay heading — only visible during the establishing shot and
+     the final completion screen. Sits in the viewport's top safe zone
+     (just under the banner) so it reads independently of camera state. */
+  #map-overlay {
+    position: absolute;
+    top: 220px;
+    left: 60px;
+    width: 960px;
+    z-index: 9;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #map-overlay .map-overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+  #map-overlay .map-headline {
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 88px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--text);
+  }
+  #map-overlay .map-sub {
+    margin-top: 16px;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 1.25;
+    color: var(--text-dim);
+  }
+
+  /* Final-frame CTA pill — sits at viewport bottom during the completion
+     screen. Subordinate to the map (per shorts-thumbnail-frames rule
+     the topic must dominate, the CTA is small). */
+  #final-cta {
+    position: absolute;
+    bottom: 140px;
+    left: 0;
+    width: 1080px;
+    z-index: 9;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #final-cta .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 40px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #final-cta .cta-pill .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 52px;
+    line-height: 0.7;
+  }
+
+  /* Film-grain overlay — sits above EVERYTHING so it tints the whole stack
+     regardless of camera state. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="159.5"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient wash — viewport-fixed (not inside camera). -->
+  <div id="ambient"></div>
+
+  <!-- Camera — the transformed wrapper. All section content lives inside. -->
+  <div id="camera">
+    <div id="world-bg"></div>
+
+    <!-- Connection lines (camera-local coordinates).
+         Hub centre is (2040, 2259); each line terminates at the spoke centre. -->
+    <svg id="connections" viewBox="0 0 4080 4518" preserveAspectRatio="none">
+      <line id="line-hub-1" x1="2040" y1="2259" x2="1290" y2="960"  pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-2" x1="2040" y1="2259" x2="2790" y2="960"  pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-3" x1="2040" y1="2259" x2="3540" y2="2259" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-4" x1="2040" y1="2259" x2="2790" y2="3558" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-5" x1="2040" y1="2259" x2="1290" y2="3558" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+      <line id="line-hub-6" x1="2040" y1="2259" x2=" 540" y2="2259" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" />
+    </svg>
+
+    <!-- HUB — section 0, the start node. Hero hook lives here. -->
+    <div id="sec-hub" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">00</div>
+        <div class="node-label">START</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="hub-content">
+        <div class="overline">Open Sourced Today</div>
+        <div class="hero-slam" id="hub-slam">HTML.</div>
+        <div class="accent-pill">Agentic video toolchain</div>
+        <div class="hub-meta" id="hub-meta">made with HyperFrames itself ✓</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 1 — top-left -->
+    <div id="sec-1" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">01</div>
+        <div class="node-label">Problem</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s1-content">
+        <div class="overline">The Problem</div>
+        <div class="headline">Every video tool is built for humans.</div>
+        <div class="body">JSON and XML timelines. Layers. Keyframes. Years of muscle memory.</div>
+        <div class="section-callout callout-list" id="s1-callout">
+          <div class="row"><div class="mark x">✗</div><div class="label">After Effects</div></div>
+          <div class="row"><div class="mark x">✗</div><div class="label">DaVinci Resolve</div></div>
+          <div class="row"><div class="mark x">✗</div><div class="label">Premiere</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 2 — top-right -->
+    <div id="sec-2" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">02</div>
+        <div class="node-label">Insight</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s2-content">
+        <div class="overline">The Insight</div>
+        <div class="headline">Agents already speak the web.</div>
+        <div class="body">Billions of HTML pages. Millions of CSS and JS animations. Hundreds of thousands of GSAP snippets.</div>
+        <div class="section-callout callout-stat" id="s2-callout">
+          <div class="num">BILLIONS</div>
+          <div class="cap">of pages in their training data</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 3 — right (chapter break) -->
+    <div id="sec-3" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">03</div>
+        <div class="node-label">How</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s3-content">
+        <div class="overline">The How</div>
+        <div class="headline">Three data attributes.</div>
+        <div class="body">Add them to any HTML element and it becomes a video timeline.</div>
+        <div class="section-callout callout-code" id="s3-callout">
+          <div class="line"><span class="accent">data-start</span>=<span>"0"</span></div>
+          <div class="line"><span class="accent">data-duration</span>=<span>"5"</span></div>
+          <div class="line"><span class="accent">data-track-index</span>=<span>"1"</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 4 — bottom-right -->
+    <div id="sec-4" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">04</div>
+        <div class="node-label">Magic</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s4-content">
+        <div class="overline">The Magic</div>
+        <div class="headline">Anything browser-native works.</div>
+        <div class="body">Whatever the agent already knows from the open web, it can use directly. No wrappers.</div>
+        <div class="section-callout callout-chips" id="s4-callout">
+          <div class="chip">GSAP</div>
+          <div class="chip">Three.js</div>
+          <div class="chip">D3</div>
+          <div class="chip">Lottie</div>
+          <div class="chip">Google Fonts</div>
+          <div class="chip">CSS anim</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 5 — bottom-left -->
+    <div id="sec-5" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">05</div>
+        <div class="node-label">Catalyst</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s5-content">
+        <div class="overline">The Catalyst</div>
+        <div class="headline">November 2025 changed everything.</div>
+        <div class="body">HeyGen swapped in the new models. Quality became reliable. HyperFrames converged.</div>
+        <div class="section-callout callout-pills" id="s5-callout">
+          <div class="pill blue">Gemini 3</div>
+          <div class="pill blue">Opus 4.5</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 6 — left (chapter break — final stop) -->
+    <div id="sec-6" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">06</div>
+        <div class="node-label">Try It</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s6-content">
+        <div class="overline">Open Source</div>
+        <div class="headline">Apache 2.0. Try it now.</div>
+        <div class="body">Point your agent at the skill. Hand it a topic. Watch it write a video.</div>
+        <div class="section-callout callout-code" id="s6-callout">
+          <div class="line"><span class="accent">$</span> npx skills add <span class="accent">heygen-com/hyperframes</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /#camera -->
+
+  <!-- Persistent top banner. Anthropic wordmark from shared/logos/. -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Map-view overlay — visible during the establishing shot AND the
+       final completion screen. The same element is reused so the loop
+       (final frame becomes the next opening frame) stays consistent. -->
+  <div id="map-overlay">
+    <div class="map-overline">HyperFrames v1.0</div>
+    <div class="map-headline">Agentic video<br/>is HTML.</div>
+    <div class="map-sub" id="map-overlay-sub">Open sourced today by HeyGen</div>
+  </div>
+
+  <!-- Final-frame CTA pill — visible only on the completion screen. -->
+  <div id="final-cta">
+    <div class="cta-pill">github.com/heygen-com/hyperframes<span class="arrow">→</span></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX
+       Rules:        .claude/rules/audio-design.md
+       Cue catalog:  shared/audio/MANIFEST.md
+       Sync into this project (after you copy this template):
+         bash scripts/sync-video-sfx.sh videos/<slug> cinematic-whoosh impact-slam scale-slam pop
+       Then uncomment the blocks below and tune the data-* values per scene.
+
+       The defaults below cue every camera move with a cinematic-whoosh.
+       This is intentional for the game-map metaphor: each move is a
+       physical journey beat, and the audio grounds it. Direct pans get
+       a softer whoosh (0.08); chapter zoom-out-in moves get the standard
+       0.11; the dive-in and final pull-back layer impact-slam / scale-slam.
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Narration — TTS via ElevenLabs, audio starts at camera-arrival on HUB (t=3.0). -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="3.0"
+         data-duration="152.78"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — every camera move gets a whoosh; dive-in and pull-back layer impact/slam.
+       Each whoosh's data-start equals the camera tween's `at` time (per audio-design.md
+       "SFX must be aligned to their visual triggers" + game-map DESIGN.md). -->
+  <audio id="sfx-dive-whoosh"  class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="2.50"   data-duration="0.84" data-track-index="3" data-volume="0.13"></audio>
+  <audio id="sfx-dive-impact"  class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="2.85"   data-duration="0.50" data-track-index="4" data-volume="0.15"></audio>
+
+  <audio id="sfx-pan-1"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="21.21"  data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+  <audio id="sfx-pan-2"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="43.06"  data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+
+  <audio id="sfx-chapter-1"    class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="67.60"  data-duration="0.80" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-pan-4"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="91.96"  data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+  <audio id="sfx-pan-5"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="113.30" data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+  <audio id="sfx-pan-6"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="136.01" data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+
+  <audio id="sfx-pullback"     class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="155.84" data-duration="1.40" data-track-index="3" data-volume="0.13"></audio>
+  <audio id="sfx-completion"   class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="157.14" data-duration="0.60" data-track-index="4" data-volume="0.13"></audio>
+
+  <!-- Film-grain overlay — last child so it sits on top and tints everything via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Deterministic hash — same xmur3-style PRNG as the Anthropic template
+  // so shape scatter is reproducible across renders.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // Per-section shape scatter — each .section-shapes container gets its own
+  // 8-shape distribution, keyed by the section id so HUB and S1..S6 each have
+  // a stable but distinct pattern. Rejection-sampled for spacing.
+  function spawnShapesPerSection(seedPrefix, container, count) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const w = 1080, h = 1920, minSize = 220, sizeRange = 240;
+    const minDist = 380, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:'  + (best.cy - best.size / 2) + 'px;' +
+        'width:'  + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Spawn shapes inside each section. Per-section count is modest (8) so the
+  // 7-section total of 56 shapes still feels like ambient texture rather than
+  // a busy field. Each section's seed includes its id so the patterns differ.
+  ['hub','1','2','3','4','5','6'].forEach((sid) => {
+    const el = document.querySelector('#sec-' + sid + ' .section-shapes');
+    if (el) spawnShapesPerSection('game-map-' + sid, el, 8);
+  });
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─────────────────────────────────────────────────────
+  // Initial state — every section's content hidden, every node check
+  // hidden, all connection lines un-drawn. Camera starts on the map view.
+  // ─────────────────────────────────────────────────────
+  tl.set('#camera', { x: 10, y: 373, scale: 0.26 }, 0);
+  tl.set('.section-content', { opacity: 0 }, 0);
+  tl.set('.node-check', { opacity: 0, scale: 0.6 }, 0);
+  tl.set('#map-overlay', { opacity: 0 }, 0);
+  tl.set('#final-cta', { opacity: 0 }, 0);
+
+  // Top banner fade-in (one-shot, then static)
+  tl.from('#top-banner', { y: -20, opacity: 0, duration: 0.6, ease: 'power2.out' }, 0.2);
+
+  // Progress bar fills linearly across the composition (159.5s total)
+  tl.fromTo('#progress-fill',
+    { width: 0 },
+    { width: 1080, duration: 159.5, ease: 'none' },
+    0);
+
+  // ═══════════════════════════════════════════════════════
+  // ESTABLISHING SHOT (0 - 2.5s)
+  // Map view holds; connection lines draw in sequentially so the viewer
+  // sees the structure of the journey. Map-overlay headline fades in.
+  // ═══════════════════════════════════════════════════════
+  tl.to('#map-overlay', { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
+  ['#line-hub-1','#line-hub-2','#line-hub-3','#line-hub-4','#line-hub-5','#line-hub-6']
+    .forEach((sel, i) => {
+      tl.to(sel, { strokeDashoffset: 0, duration: 0.5, ease: 'power2.inOut' }, 0.6 + i * 0.25);
+    });
+
+  // ═══════════════════════════════════════════════════════
+  // CAMERA-MOVE TIMING ANCHORS — derived from transcript.json word ends:
+  //   HUB block ends at audio 18.11 → video 21.21 (with +3.0 narration offset)
+  //   S1  block ends at audio 39.96 → video 42.96
+  //   S2  block ends at audio 64.50 → video 67.50
+  //   S3  block ends at audio 88.86 → video 91.86
+  //   S4  block ends at audio 110.20 → video 113.20
+  //   S5  block ends at audio 132.91 → video 135.91
+  //   S6  block ends at audio 152.54 → video 155.54
+  // Each camera move starts ~0.10s after the prior block's last word.
+  // S2/S3 audio gap is 0.4s, so the chapter break is shortened to 0.8s.
+  // ═══════════════════════════════════════════════════════
+  const VIEWS = {
+    map: { x:    10, y:   373, scale: 0.26 },
+    hub: { x: -1500, y: -1299, scale: 1.00 },
+    s1:  { x:  -750, y:     0, scale: 1.00 },
+    s2:  { x: -2250, y:     0, scale: 1.00 },
+    s3:  { x: -3000, y: -1299, scale: 1.00 },
+    s4:  { x: -2250, y: -2598, scale: 1.00 },
+    s5:  { x:  -750, y: -2598, scale: 1.00 },
+    s6:  { x:     0, y: -1299, scale: 1.00 },
+  };
+
+  function fadeContent(outId, inId, t, moveDuration) {
+    if (outId) tl.to(outId, { opacity: 0, duration: 0.30, ease: 'power1.in' }, t);
+    if (inId)  tl.to(inId,  { opacity: 1, duration: 0.40, ease: 'power2.out' }, t + moveDuration * 0.55);
+  }
+
+  // ─── 1. DIVE-IN: map → HUB at t=2.5 ─────────────────────
+  tl.to('#map-overlay', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.4);
+  tl.to('#camera', { ...VIEWS.hub, duration: 0.5, ease: 'power2.inOut' }, 2.5);
+  fadeContent(null, '#hub-content', 2.5, 0.5);
+
+  // HUB content micro-beats (3.0 → 21.21, 18.2s)
+  tl.from('#sec-hub .overline',     { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 3.7);
+  tl.from('#sec-hub .hero-slam',    { scale: 0.82, opacity: 0, duration: 0.7, ease: 'back.out(1.7)', immediateRender: false }, 4.4);
+  // Inline shake on the hero slam — same percussive beat the anthropic template uses
+  tl.to('#sec-hub .hero-slam',      { x:  5, duration: 0.04, ease: 'none', overwrite: 'auto' }, 4.95);
+  tl.to('#sec-hub .hero-slam',      { x: -5, duration: 0.04, ease: 'none', overwrite: 'auto' }, 5.00);
+  tl.to('#sec-hub .hero-slam',      { x:  4, duration: 0.04, ease: 'none', overwrite: 'auto' }, 5.05);
+  tl.to('#sec-hub .hero-slam',      { x:  0, duration: 0.04, ease: 'none', overwrite: 'auto' }, 5.10);
+  tl.from('#sec-hub .accent-pill',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 5.6);
+  // The meta-receipt chip — "made with HyperFrames itself" — at the visual-pacing anchor
+  tl.from('#sec-hub .hub-meta',     { y: 20, opacity: 0, duration: 0.5, ease: 'back.out(1.5)', immediateRender: false }, 13.5);
+  tl.to('#sec-hub .node-check',     { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 20.6);
+
+  // ─── 2. PAN to S1 at t=21.21 ────────────────────────────
+  tl.to('#camera', { ...VIEWS.s1, duration: 0.5, ease: 'power2.inOut' }, 21.21);
+  fadeContent('#hub-content', '#s1-content', 21.21, 0.5);
+  // S1 content micro-beats (21.71 → 42.96, 21.3s) — overline / headline / body / 3 list rows
+  tl.from('#sec-1 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 22.0);
+  tl.from('#sec-1 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 22.5);
+  tl.from('#sec-1 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 23.4);
+  tl.from('#s1-callout .row:nth-child(1)', { x: -30, opacity: 0, duration: 0.5, ease: 'back.out(1.5)', immediateRender: false }, 30.5);
+  tl.from('#s1-callout .row:nth-child(2)', { x: -30, opacity: 0, duration: 0.5, ease: 'back.out(1.5)', immediateRender: false }, 33.5);
+  tl.from('#s1-callout .row:nth-child(3)', { x: -30, opacity: 0, duration: 0.5, ease: 'back.out(1.5)', immediateRender: false }, 36.5);
+  tl.to('#sec-1 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 42.5);
+
+  // ─── 3. PAN to S2 at t=43.06 ────────────────────────────
+  tl.to('#camera', { ...VIEWS.s2, duration: 0.5, ease: 'power2.inOut' }, 43.06);
+  fadeContent('#s1-content', '#s2-content', 43.06, 0.5);
+  // S2 content micro-beats (43.56 → 67.50, 24.0s) — overline / headline / body / stat
+  tl.from('#sec-2 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 43.9);
+  tl.from('#sec-2 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 44.4);
+  tl.from('#sec-2 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 45.3);
+  tl.from('#s2-callout',       { y: 30, opacity: 0, scale: 0.92, duration: 0.7, ease: 'back.out(1.6)', immediateRender: false }, 53.0);
+  tl.from('#s2-callout .cap',  { y: 14, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 60.0);
+  tl.to('#sec-2 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 67.0);
+
+  // ─── 4. CHAPTER BREAK: S2 → MAP → S3 at t=67.60 (0.8s total) ─
+  // Tighter than the template default because the audio gap S2→S3 is only 0.4s.
+  // The map view is glimpsed for ~0.4s before the camera dives into S3.
+  tl.to('#s2-content', { opacity: 0, duration: 0.25, ease: 'power1.in' }, 67.60);
+  tl.to('#camera',     { ...VIEWS.map, duration: 0.4, ease: 'power2.in' }, 67.60);
+  tl.to('#camera',     { ...VIEWS.s3,  duration: 0.4, ease: 'power2.out' }, 68.00);
+  tl.to('#s3-content', { opacity: 1, duration: 0.35, ease: 'power2.out' }, 68.10);
+  // S3 content micro-beats (68.10 → 91.86, 23.8s) — overline / headline / body / 3 code lines
+  tl.from('#sec-3 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 68.9);
+  tl.from('#sec-3 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 69.4);
+  tl.from('#sec-3 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 70.3);
+  tl.from('#s3-callout .line:nth-child(1)', { x: -20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 78.0);
+  tl.from('#s3-callout .line:nth-child(2)', { x: -20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 81.0);
+  tl.from('#s3-callout .line:nth-child(3)', { x: -20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 84.0);
+  tl.to('#sec-3 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 91.4);
+
+  // ─── 5. PAN to S4 at t=91.96 ────────────────────────────
+  tl.to('#camera', { ...VIEWS.s4, duration: 0.5, ease: 'power2.inOut' }, 91.96);
+  fadeContent('#s3-content', '#s4-content', 91.96, 0.5);
+  // S4 content micro-beats (92.46 → 113.20, 20.7s) — overline / headline / body / 6 staggered chips
+  tl.from('#sec-4 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 92.7);
+  tl.from('#sec-4 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 93.2);
+  tl.from('#sec-4 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 94.1);
+  // 6 chips revealed as a tight stagger — chip-name aligns with narration "GSAP / Three.js / D3 / Lottie / Google Fonts"
+  tl.from('#s4-callout .chip:nth-child(1)', { y: 14, opacity: 0, duration: 0.35, ease: 'back.out(1.5)', immediateRender: false }, 100.5);
+  tl.from('#s4-callout .chip:nth-child(2)', { y: 14, opacity: 0, duration: 0.35, ease: 'back.out(1.5)', immediateRender: false }, 102.0);
+  tl.from('#s4-callout .chip:nth-child(3)', { y: 14, opacity: 0, duration: 0.35, ease: 'back.out(1.5)', immediateRender: false }, 103.5);
+  tl.from('#s4-callout .chip:nth-child(4)', { y: 14, opacity: 0, duration: 0.35, ease: 'back.out(1.5)', immediateRender: false }, 105.0);
+  tl.from('#s4-callout .chip:nth-child(5)', { y: 14, opacity: 0, duration: 0.35, ease: 'back.out(1.5)', immediateRender: false }, 106.5);
+  tl.from('#s4-callout .chip:nth-child(6)', { y: 14, opacity: 0, duration: 0.35, ease: 'back.out(1.5)', immediateRender: false }, 108.0);
+  tl.to('#sec-4 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 112.7);
+
+  // ─── 6. PAN to S5 at t=113.30 ───────────────────────────
+  tl.to('#camera', { ...VIEWS.s5, duration: 0.5, ease: 'power2.inOut' }, 113.30);
+  fadeContent('#s4-content', '#s5-content', 113.30, 0.5);
+  // S5 content micro-beats (113.80 → 135.91, 22.1s) — overline / headline / body / 2 model pills
+  tl.from('#sec-5 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 114.0);
+  tl.from('#sec-5 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 114.5);
+  tl.from('#sec-5 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 115.4);
+  tl.from('#s5-callout .pill:nth-child(1)', { y: 20, opacity: 0, scale: 0.9, duration: 0.55, ease: 'back.out(1.6)', immediateRender: false }, 122.5);
+  tl.from('#s5-callout .pill:nth-child(2)', { y: 20, opacity: 0, scale: 0.9, duration: 0.55, ease: 'back.out(1.6)', immediateRender: false }, 125.0);
+  // Subtle scale-pulse on the headline near the end — re-anchors the eye
+  tl.to('#sec-5 .headline',    { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 130.0);
+  tl.to('#sec-5 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 135.4);
+
+  // ─── 7. PAN to S6 at t=136.01 ───────────────────────────
+  tl.to('#camera', { ...VIEWS.s6, duration: 0.5, ease: 'power2.inOut' }, 136.01);
+  fadeContent('#s5-content', '#s6-content', 136.01, 0.5);
+  // S6 content micro-beats (136.51 → 155.54, 19.0s) — overline / headline / body / code line
+  tl.from('#sec-6 .overline',  { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, 136.7);
+  tl.from('#sec-6 .headline',  { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 137.2);
+  tl.from('#sec-6 .body',      { y: 24, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 138.1);
+  tl.from('#s6-callout',       { y: 20, opacity: 0, scale: 0.95, duration: 0.6, ease: 'back.out(1.5)', immediateRender: false }, 145.5);
+  tl.to('#sec-6 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 155.3);
+
+  // ─── 8. PULL-BACK to MAP (completion screen) at t=155.84 ─
+  tl.to('#s6-content', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 155.84);
+  tl.to('#camera',     { ...VIEWS.map, duration: 1.5, ease: 'power2.inOut' }, 155.84);
+  // Switch the map-overlay copy to its "completion" state and fade in
+  tl.set('#map-overlay-sub', { innerText: 'Open source. Apache 2.0. Try it.' }, 157.1);
+  tl.to('#map-overlay', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 157.1);
+  tl.to('#final-cta',   { opacity: 1, duration: 0.5, ease: 'power2.out' }, 157.4);
+
+  // Final hold from 157.6s to 159.5s — every element is at its final transform.
+
+  window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

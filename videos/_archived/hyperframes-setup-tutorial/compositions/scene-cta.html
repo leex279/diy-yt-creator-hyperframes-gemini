@@ -1,0 +1,270 @@
+<!--
+  scene-cta.html — Closing CTA in two acts:
+    Act 1 (0-7s): "That's the full pipeline" — 8-chip visual chain
+                  (Node, FFmpeg, agent, init, prompt, preview, check, render)
+                  reveals one chip per spoken word, anchored to transcript.
+    Act 2 (7-20s): debate question + comment / subscribe pills.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-cta-content {
+        width:100%; height:100%;
+        padding: 90px var(--pad-x) 80px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 32px;
+        box-sizing:border-box;
+      }
+
+      /* --- Act 1: pipeline chain ---------------------------------- */
+      .pipeline-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 22px;
+      }
+      .pipeline-block .pl-overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-warn);
+      }
+      .pipeline-block .pl-headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 44px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+      .pipeline-row {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 12px; flex-wrap: wrap;
+        max-width: 1700px;
+      }
+      .pl-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 12px 18px; border-radius: 14px;
+        background: rgba(255,255,255,.05);
+        border: 1.5px solid rgba(255,255,255,.14);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; color: var(--text);
+      }
+      .pl-chip .num {
+        font-size: 12px; letter-spacing: 2px;
+        color: #b8c0cc;
+        padding: 3px 7px; border-radius: 5px;
+        background: rgba(255,255,255,.10);
+      }
+      .pl-chip.warn { border-color: rgba(249,115,22,.55); background: linear-gradient(135deg, rgba(249,115,22,.16), rgba(249,115,22,.04)); }
+      .pl-chip.warn .num { color: var(--accent-warn); }
+      .pl-chip.purple { border-color: rgba(139,92,246,.55); background: linear-gradient(135deg, rgba(139,92,246,.18), rgba(139,92,246,.04)); }
+      .pl-chip.purple .num { color: var(--accent-3); }
+      .pl-chip.cyan { border-color: rgba(6,182,212,.55); background: linear-gradient(135deg, rgba(6,182,212,.18), rgba(6,182,212,.04)); }
+      .pl-chip.cyan .num { color: var(--accent-2); }
+      .pl-chip.blue { border-color: rgba(59,130,246,.55); background: linear-gradient(135deg, rgba(59,130,246,.18), rgba(59,130,246,.04)); }
+      .pl-chip.blue .num { color: var(--accent-1); }
+      .pl-chip.green { border-color: rgba(34,197,94,.55); background: linear-gradient(135deg, rgba(34,197,94,.18), rgba(34,197,94,.04)); }
+      .pl-chip.green .num { color: var(--accent-4); }
+      .pl-chip.gold { border-color: rgba(251,188,4,.55); background: linear-gradient(135deg, rgba(251,188,4,.16), rgba(251,188,4,.04)); }
+      .pl-chip.gold .num { color: var(--accent-stat); }
+      .pl-arrow {
+        font-family: var(--mono); font-weight: 800;
+        font-size: 20px; color: var(--text-secondary);
+      }
+      .pl-foot {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 20px; letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #58e5a0;
+      }
+
+      /* --- Act 2: debate + CTAs ----------------------------------- */
+      .cta-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 24px;
+      }
+      .cta-block .debate {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 64px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1500px;
+      }
+      .cta-block .debate .accent { color: var(--accent-warn); }
+      .cta-block .cta-options {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 16px; flex-wrap: wrap;
+      }
+      .cta-opt {
+        display:inline-flex; align-items:center; gap: 12px;
+        padding: 14px 22px; border-radius: 14px;
+        background: rgba(255,255,255,.05);
+        border: 1.5px solid rgba(255,255,255,.18);
+        font-family: var(--sans); font-weight: 700;
+        font-size: 24px; color: var(--text);
+      }
+      .cta-opt .emoji { font-size: 26px; }
+      .cta-opt-other {
+        background: linear-gradient(135deg, rgba(251,188,4,.16), rgba(251,188,4,.04));
+        border-color: rgba(251,188,4,.55);
+        color: #fbd649;
+      }
+      .cta-block .pills {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 22px;
+        margin-top: 12px;
+      }
+      .cta-pill {
+        padding: 18px 32px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: var(--text);
+        display:inline-flex; align-items:center;
+        gap: 14px;
+      }
+      .cta-pill.comment .icon { color: var(--accent-2); }
+      .cta-pill.subscribe {
+        background: linear-gradient(135deg,
+                      rgba(249, 115, 22, 0.18) 0%,
+                      rgba(249, 115, 22, 0.05) 100%);
+        border-color: rgba(249, 115, 22, 0.55);
+      }
+      .cta-pill.subscribe .arrow {
+        color: var(--accent-warn);
+        font-weight: 900;
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <!-- Act 1: pipeline summary chain -->
+      <div class="pipeline-block" id="cta-act1">
+        <div class="pl-overline" id="cta-pl-over">THE FULL PIPELINE</div>
+        <div class="pl-headline" id="cta-pl-head">From zero to MP4</div>
+        <div class="pipeline-row" id="cta-pl-row">
+          <div class="pl-chip warn"   id="cta-c-1"><span class="num">1</span><span>Node</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip purple" id="cta-c-2"><span class="num">2</span><span>FFmpeg</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip cyan"   id="cta-c-3"><span class="num">3</span><span>agent</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip blue"   id="cta-c-4"><span class="num">4</span><span>init</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip cyan"   id="cta-c-5"><span class="num">5</span><span>prompt</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip blue"   id="cta-c-6"><span class="num">6</span><span>preview</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip green"  id="cta-c-7"><span class="num">7</span><span>check</span></div>
+          <span class="pl-arrow">&rarr;</span>
+          <div class="pl-chip gold"   id="cta-c-8"><span class="num">8</span><span>render</span></div>
+        </div>
+        <div class="pl-foot" id="cta-pl-foot">★ ALL OPEN SOURCE ★</div>
+      </div>
+
+      <!-- Act 2: debate + CTA pills -->
+      <div class="cta-block" id="cta-act2">
+        <div class="debate" id="cta-debate">
+          What kind of video would you <span class="accent">build first</span>?
+        </div>
+        <div class="cta-options" id="cta-options">
+          <div class="cta-opt" id="cta-opt-1"><span class="emoji">📺</span>Title card</div>
+          <div class="cta-opt" id="cta-opt-2"><span class="emoji">🎓</span>Tutorial</div>
+          <div class="cta-opt" id="cta-opt-3"><span class="emoji">🚀</span>Product demo</div>
+          <div class="cta-opt cta-opt-other" id="cta-opt-4"><span class="emoji">✨</span>Something else?</div>
+        </div>
+        <div class="pills">
+          <div class="cta-pill comment" id="cta-comment">
+            <span class="icon">&#x270F;</span>
+            <span>Drop your idea below</span>
+          </div>
+          <div class="cta-pill subscribe" id="cta-subscribe">
+            <span>Subscribe</span>
+            <span class="arrow">&rarr;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      // Initial states
+      tl.set("#cta-pl-over",  { y: 18, opacity: 0 }, 0);
+      tl.set("#cta-pl-head",  { y: 22, opacity: 0 }, 0);
+      tl.set("#cta-pl-row .pl-chip", { y: 18, scale: 0.85, opacity: 0 }, 0);
+      tl.set("#cta-pl-row .pl-arrow", { opacity: 0 }, 0);
+      tl.set("#cta-pl-foot",  { y: 14, opacity: 0 }, 0);
+      tl.set("#cta-act2",     { y: 30, opacity: 0 }, 0);
+      tl.set("#cta-debate",   { y: 40, opacity: 0 }, 0);
+      tl.set("#cta-options .cta-opt", { y: 18, scale: 0.9, opacity: 0 }, 0);
+      tl.set("#cta-comment",  { y: 24, opacity: 0 }, 0);
+      tl.set("#cta-subscribe",{ y: 24, opacity: 0 }, 0);
+
+      // Header — narration: "That's the full pipeline." (+0.30s to ~+1.0s)
+      tl.to("#cta-pl-over", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.to("#cta-pl-head", { y: 0, opacity: 1, duration: 0.5 }, 0.25);
+
+      // 8 chips — synced to spoken word starts:
+      // Node +1.67, FFmpeg +2.24, agent +3.21, init +3.84,
+      // prompt +4.28, preview +4.79, check +5.30, render +5.72
+      tl.to("#cta-c-1", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 1.65);
+      tl.to("#cta-c-2", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 2.22);
+      tl.to("#cta-c-3", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 3.19);
+      tl.to("#cta-c-4", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 3.82);
+      tl.to("#cta-c-5", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 4.26);
+      tl.to("#cta-c-6", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 4.77);
+      tl.to("#cta-c-7", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 5.28);
+      tl.to("#cta-c-8", { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 5.70);
+      // Arrows fade in continuously between Node and render
+      tl.to("#cta-pl-row .pl-arrow", { opacity: 1, duration: 0.3, stagger: 0.55, ease: "power2.out" }, 1.85);
+
+      // "All open source." narration at +7.06s
+      tl.to("#cta-pl-foot", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 7.0);
+
+      // Act 2 — narration anchors (transcript-verified 2026-05-07):
+      //   "So tell me — what kind of video would you build first?" +8.02 → "build first?" +10.41
+      //   "A title card,"      +12.00 / "title card" +12.10
+      //   "a tutorial,"        +12.84
+      //   "a product demo,"    +13.51
+      //   "something else?"    +14.25
+      //   "Drop your idea in the comments." +15.95
+      //   "Links in the description."        +17.52
+      //   "Subscribe for more."              +19.62
+      tl.to("#cta-act2",   { y: 0, opacity: 1, duration: 0.5 }, 7.95);
+      tl.to("#cta-debate", { y: 0, opacity: 1, duration: 0.6, ease: "expo.out" }, 7.95);
+      // 4 option chips synced to each spoken option
+      tl.to("#cta-opt-1", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 12.05); // "title card"
+      tl.to("#cta-opt-2", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 12.80); // "tutorial"
+      tl.to("#cta-opt-3", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 13.46); // "product demo"
+      tl.to("#cta-opt-4", { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 14.21); // "something else"
+      tl.to("#cta-comment",   { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 15.90); // "Drop your idea"
+      tl.to("#cta-subscribe", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 19.55); // "Subscribe for more"
+
+      // Subscribe pulse — finite repeat after it appears
+      tl.to("#cta-subscribe", {
+        boxShadow: "0 0 0 6px rgba(249, 115, 22, 0.35)",
+        duration: 0.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 3
+      }, 20.20);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

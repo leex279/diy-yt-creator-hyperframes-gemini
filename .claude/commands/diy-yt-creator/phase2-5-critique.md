@@ -1,5 +1,5 @@
 ---
-description: "Phase 2.5 — LLM script critique loop: six-pass quality gate before TTS"
+description: "Phase 2.5 — LLM script critique loop: seven-pass quality gate before TTS (Pass 7 advisory)"
 argument-hint: <slug>
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ---
@@ -7,19 +7,21 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 <objective>
 Execute Phase 2.5 of the HyperFrames pipeline.
 
-**Goal**: Catch structural problems in the script before TTS generation. Run a six-pass automated critique that gates progress to Phase 2a.
+**Goal**: Catch structural problems in the script before TTS generation. Run a seven-pass automated critique that gates progress to Phase 2a. Passes 1-6 are blocking; Pass 7 (JCRR Line Audit) is advisory and reports a methodology score that does NOT block.
 
 **Input**: `videos/<slug>/scripts/full-script.md` (from Phase 2)
 **Output**: `videos/<slug>/scripts/critique-report.md`
-**Gate condition**: Hook Score (QG-1) ≥ 7.0 AND Story Arc QG-2a (Arc 1+2+4 average) ≥ 7.0 AND CTA Strength QG-2b (Arc 3 standalone) ≥ 7.0 AND Loop Opener count (QG-3) ≥ required minimum AND banned phrase count (QG-4) == 0 AND (Pass 6 / QG-5: connector density + direct address + engagement CTA all pass — SKIPPED for `voice_profile == tutorial`).
+**Gate condition (BLOCKING)**: Hook Score (QG-1) ≥ 7.0 AND Story Arc QG-2a (Arc 1+2+4 average) ≥ 7.0 AND CTA Strength QG-2b (Arc 3 standalone) ≥ 7.0 AND Loop Opener count (QG-3) ≥ required minimum AND banned phrase count (QG-4) == 0 AND (Pass 6 / QG-5: connector density + direct address + engagement CTA all pass — SKIPPED for `voice_profile == tutorial`).
 
-If ANY gate fails, the script is BLOCKED from Phase 2a until the issue is fixed and Phase 2.5 is re-run.
+**Advisory (NON-blocking)**: Pass 7 (JCRR Line Audit) — reports methodology score and per-section breakdown but does not block. Promotion to blocking happens after ship data calibrates the threshold.
+
+If ANY blocking gate fails, the script is BLOCKED from Phase 2a until the issue is fixed and Phase 2.5 is re-run.
 </objective>
 
 <autonomous-mode>
 ## When called from /diy-yt-creator:full-auto
 
-Run all six passes automatically (Pass 6 skips if `voice_profile == tutorial`). If all gates pass, proceed to Phase 2a immediately. If any gate fails, STOP orchestration and report which gate(s) failed with specific actionable issues. Do not ask questions.
+Run all seven passes automatically (Pass 6 skips if `voice_profile == tutorial`; Pass 7 always runs as advisory). If all blocking gates pass, proceed to Phase 2a immediately — Pass 7 results are recorded in the report regardless. If any blocking gate fails, STOP orchestration and report which gate(s) failed with specific actionable issues. Do not ask questions.
 </autonomous-mode>
 
 <process>
@@ -222,17 +224,50 @@ Do scene-opening sentences mention viewer problem or gain BEFORE technical expla
 | 3-4   | Mostly feature-led                |
 | 1-2   | All feature-led (information dump)|
 
-### Arc Element 3 — CTA Strength
+### Arc Element 3 — CTA Strength (Debate-Sparking Check)
 
-Must pass all three: debate-sparking question + specific video reference + under 15 words.
+This sub-gate enforces the [`engagement-cta.md`](../../rules/engagement-cta.md) rule: every video's final spoken line MUST be a debate-sparking question that splits the audience. Applies to ALL `voice_profile` values (including tutorial).
 
-| Score | Criteria                          |
-| ----- | --------------------------------- |
-| 9-10  | All three criteria met            |
-| 7-8   | Two criteria met                  |
-| 5-6   | One criterion met                 |
-| 3-4   | Generic CTA                       |
-| 1-2   | No CTA or pure channel plug       |
+Score four binary checks. Each check passes (1 point) or fails (0).
+
+| Check | Test | Pass condition |
+|---|---|---|
+| **C1** | Ends with `?` | The final 1-2 sentences contain a question mark on a question (not rhetorical mid-sentence). |
+| **C2** | Binary or short-list answerable | Question can be answered in 1-5 words by any viewer in 5 seconds. `"X or Y?"` / `"Yes/no?"` / `"Which one?"` / `"Hype or hot air?"` PASS. `"How would you architect this?"` / `"What did you learn?"` FAIL. |
+| **C3** | Polarizing / contrarian stance | Question takes a side, dares disagreement, OR forces side-picking. Pure-neutral `"What do you think?"` FAILS. Dead-or-alive (`"Is X over or just hype?"`), pick-a-winner (`"Which feature wins?"`), hot-take (`"Useful or terrifying?"`) all PASS. |
+| **C4** | References specific video claim | Question anchors to a concrete stat / product / framing the viewer just watched. Generic disconnected closers FAIL. |
+
+**Banned closers** (zero tolerance — automatic 1/10 score if matched):
+
+- `"What do you think?"` / `"What are your thoughts?"`
+- `"Let me know in the comments"` standalone (no anchoring question)
+- `"Like and subscribe if you enjoyed"`
+- `"Drop your thoughts below"`
+- `"How would you build this differently?"`
+- `"Did this help you?"`
+- `"Anything I missed?"`
+- `"Link below."` as the sole closer
+
+### Arc 3 Scoring formula
+
+```
+banned_match = the closer contains any banned phrase (case-insensitive)
+if banned_match:
+    arc3_score = 1   # automatic floor
+else:
+    checks_passed = C1 + C2 + C3 + C4   # 0..4
+    arc3_score = {0: 1, 1: 3, 2: 5, 3: 8, 4: 10}[checks_passed]
+```
+
+| Score | Meaning |
+|---|---|
+| 10 | All four checks pass — strong debate-CTA |
+| 8 | Three of four — minor weakness (e.g., specific-reference is implicit not explicit) |
+| 5 | Half the checks — coin-flip whether viewers will engage |
+| 3 | One check — likely banned-pattern adjacent |
+| 1 | Banned-phrase match OR zero criteria met |
+
+**QG-2b passes when arc3_score ≥ 7.** A 5/10 or lower CTA blocks the script regardless of how strong the rest of the arc is.
 
 ### Arc Element 4 — Narrative Cohesion
 
@@ -442,10 +477,12 @@ Scan body scenes (NOT hook, NOT CTA) for at least one second-person sentence mat
 
 ### Check 3 — Engagement CTA Closer (0, 1, or 2)
 
+For `news-explainer` / `comparison`, the closer wraps the Arc 3 debate-question with comments-ask + subscribe-ask. Both must be present in addition to the question.
+
 Scan the FINAL scene for ALL three components:
 
-1. **Rhetorical / debate question** — sentence ends with `?` and is open-ended (not a question being immediately answered)
-2. **Comments-ask** — contains one of: `comments`, `let me know`, `tell me below`, `drop your take`
+1. **Rhetorical / debate question** — sentence ends with `?` and is open-ended (not a question being immediately answered). Quality is enforced separately by QG-2b (Arc Element 3) — this check only confirms presence.
+2. **Comments-ask** — contains one of: `comments`, `let me know`, `tell me below`, `drop your take`, `drop your pick`
 3. **Subscribe-ask** — contains one of: `subscribe`, `for more <topic>`, `follow for more`
 
 | Score | Criteria                                                  |
@@ -455,6 +492,8 @@ Scan the FINAL scene for ALL three components:
 | 0     | One or zero present (declarative non-engagement closer)   |
 
 **QG-5c passes if score ≥ 2.**
+
+**Note**: QG-5c only checks for component PRESENCE. The actual debate-spark quality of the question (binary/short-list, polarizing, specific-to-video, low-cost-to-answer) is enforced by QG-2b, which applies to ALL voice profiles including tutorial. A script can pass QG-5c with a weak question if comments+subscribe asks are both present, but it cannot pass QG-2b without a strong question. Both gates must pass for news-explainer/comparison; only QG-2b binds for tutorial.
 
 ### Scoring & Output Format
 
@@ -475,6 +514,88 @@ QG-5 PASS: QG-5a passes (score ≥ 6) AND QG-5b passes (score == 2) AND QG-5c pa
 - If QG-5b fails: propose 2 candidate direct-address sentences using the canonical patterns above, anchored to the topic's viewer experience
 - If QG-5c fails: propose a replacement final scene using the canonical CTA template `"[Rhetorical question about the topic]? Let me know in the comments. And subscribe for more [topic] news."`
 
+---
+
+## Pass 7: JCRR Line Audit (Methodology — ADVISORY)
+
+**ADVISORY ONLY**. Pass 7 reports a methodology score and per-section breakdown. It does NOT block the gate. Promotion to a blocking gate happens after ship data calibrates the threshold across multiple shipped videos.
+
+The premise: every sentence in narration should be one of four types. Sentences that are none of these are **filler** and should be deleted. See `engagement-hooks-framework/references/anti-slop.md` for the methodology explanation.
+
+### Sentence classification
+
+For every sentence in body scenes (NOT hook, NOT CTA — those have their own scoring), classify as:
+
+| Type | Definition | Example |
+|---|---|---|
+| **J** — Judgment | Narrator's opinion or angle | "This is a bigger shift than most developers realize." |
+| **C** — Claim | Verifiable factual statement | "The context window expanded from 200K to 1M tokens in v3." |
+| **R-reason** — Reason | Explains why a claim matters | "That means entire repos fit in a single session without truncation." |
+| **R-receipt** — Receipt | Inline source attribution | "The March 12th changelog lists this as the primary change." |
+| **F** — Filler | None of the above | "Let's now look at why this matters." |
+
+**Filler patterns** (always classify as F):
+
+- Restatement: "In other words..." / "What I'm saying is..."
+- Meta-narration: "Let's look at..." / "Now that we've covered X, let's move to Y."
+- Empty transition: "Here's where it gets interesting..."
+- Section summary: "So that's how X works."
+- Vague amplifier: "This is huge." / "This changes everything."
+
+### Audit method
+
+For each body scene:
+
+1. Extract every sentence (split on `. `, `! `, `? `).
+2. Skip the hook scene (Scene 00 / Scene 01) and the CTA scene (the final scene with the engagement-CTA closer). Pass 1 + Pass 4 + Pass 6 already score those.
+3. Classify each remaining sentence.
+4. Compute per-scene and overall percentages.
+
+### Output Format
+
+```
+| Scene    | Sentences | J | C | R-reason | R-receipt | F (filler) | Filler %  |
+| -------- | --------- | - | - | -------- | --------- | ---------- | --------- |
+| Scene 02 | 8         | 1 | 4 | 2        | 0         | 1          | 12.5%     |
+| Scene 03 | 6         | 0 | 2 | 1        | 0         | 3          | 50.0%     |
+| ...      | ...       | . | . | ...      | ...       | ...        | ...       |
+| **Total**| **N**     | N | N | N        | N         | N          | **X.X%**  |
+```
+
+Then list any **runs of > 2 consecutive Filler sentences** with line citations:
+
+```
+Run 1 — Scene 03, sentences 4-6:
+  s4: "Let's now look at how this works."  [F]
+  s5: "It's actually pretty straightforward."  [F]
+  s6: "Here's what's happening under the hood."  [F]
+  → Recommendation: Cut all three. Lead Scene 03 with the Claim sentence directly.
+```
+
+### Methodology score
+
+```
+overall_filler_pct = (total F sentences / total body sentences) * 100
+overall_jcrr_pct = 100 - overall_filler_pct
+
+Methodology rating:
+  ≥ 90% JCRR  → STRONG (lean, every sentence carries information)
+  80-89% JCRR → GOOD (typical for shipped tight scripts)
+  70-79% JCRR → SOFT (some filler, consider cutting)
+  < 70% JCRR  → WEAK (large filler tax, recommend rewrite pass)
+```
+
+**Pass 7 always passes (advisory).** The rating is informational. Filler runs > 2 are flagged with rewrite suggestions but do NOT block.
+
+### Why Pass 7 is advisory
+
+Two reasons:
+
+1. **LLM classification drift**: per-sentence labeling varies between runs. The percentage is more reliable than per-sentence verdicts.
+2. **No calibrated threshold**: we don't yet know what JCRR % correlates with retention. Once we ship 3-5 videos with Pass 7 scores recorded, we can promote it to blocking with a defensible threshold.
+
+When Pass 7 is upgraded to blocking, this section will document the threshold and the ship-data evidence behind it.
+
 </process>
 
 <output>
@@ -491,8 +612,9 @@ Produce the final gate summary table:
 | QG-3  | Loop Opener Frequency              | PASS / FAIL | X found, Y required                                         |
 | QG-4  | AI-Phrasing Detection              | PASS / FAIL | X banned phrases found                                      |
 | QG-5  | Narrative Flow & Direct Address    | PASS / FAIL / SKIPPED | (skipped if voice_profile == tutorial)            |
+| QG-7  | JCRR Methodology (advisory)        | ADVISORY    | X.X% JCRR / Y filler runs > 2 (rating: STRONG/GOOD/SOFT/WEAK) |
 
-**Overall Verdict**: PASS or FAIL — ALL applicable gates must pass. QG-5 returns SKIPPED for tutorial profile (counts as PASS for verdict purposes).
+**Overall Verdict**: PASS or FAIL — ALL applicable BLOCKING gates (QG-1..QG-5) must pass. QG-5 returns SKIPPED for tutorial profile (counts as PASS for verdict purposes). **QG-7 is advisory and does NOT affect the verdict** — its rating is recorded for future calibration.
 
 ### On PASS
 

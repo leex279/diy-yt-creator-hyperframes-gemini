@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" fill="none">
+  <!-- Terminal window with prompt cursor -->
+  <rect x="120" y="170" width="760" height="660" rx="36" ry="36"
+        stroke="#3B82F6" stroke-width="14" fill="none"/>
+  <!-- Top chrome -->
+  <line x1="120" y1="280" x2="880" y2="280" stroke="#3B82F6" stroke-width="6"/>
+  <!-- Window dots -->
+  <circle cx="190" cy="225" r="16" fill="#60A5FA"/>
+  <circle cx="246" cy="225" r="16" fill="#60A5FA"/>
+  <circle cx="302" cy="225" r="16" fill="#60A5FA"/>
+  <!-- Prompt $ -->
+  <path d="M 240 460
+           Q 220 440, 220 420
+           Q 220 400, 260 400
+           Q 300 400, 300 420
+           M 260 380 L 260 500"
+        stroke="#60A5FA" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <!-- Code line bars -->
+  <rect x="350" y="400" width="380" height="20" rx="8" fill="#3B82F6"/>
+  <rect x="350" y="460" width="280" height="20" rx="8" fill="#3B82F6"/>
+  <rect x="350" y="520" width="340" height="20" rx="8" fill="#3B82F6"/>
+  <!-- Blinking-style cursor block -->
+  <rect x="260" y="600" width="40" height="56" fill="#60A5FA"/>
+</svg>

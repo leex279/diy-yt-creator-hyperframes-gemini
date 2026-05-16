@@ -1,0 +1,150 @@
+[SCENE: hook]
+Markdown is dying.
+
+And the people killing it... built Claude Code.
+
+Thariq works on Claude Code at Anthropic. Last week he dropped a thesis that broke the dev internet.
+
+Seven hundred and fifty thousand views. Two point seven thousand likes. Three hundred forty reposts.
+
+And the replies are split. But again and again, you see the same line. Wait. You stopped too?
+
+He claims markdown is the wrong format for every spec, every plan, every P R writeup you hand to your agent. Almost all of it. Out.
+
+And he has the receipts.
+
+This is the unreasonable effectiveness of H T M L.
+
+By the end of this video you will know exactly why your codebase is about to look very different. And whether that is a good thing.
+
+[SCENE: image-hero]
+Here is what H T M L can carry that markdown cannot.
+
+01. Information density.
+
+Markdown can carry headings. Bold. A bullet list. A table if you squint at it.
+
+That is roughly it.
+
+H T M L can carry eight things in one file.
+
+Tables. C S S driven design. S V G illustrations. Code snippets inside script tags. Live interactions wired with JavaScript and C S S. Workflows drawn with S V G and H T M L side by side. Spatial data, anything you can place on a canvas with absolute positions. And actual images, with image tags.
+
+Thariq's claim, and I think it holds — there is almost nothing Claude can read that you cannot represent in H T M L.
+
+So what does the model do when the format fails it?
+
+It improvises. ASCII diagrams. Or, his favorite, estimating colors with unicode characters. Boxes that pretend to be charts. Hashes that pretend to be color swatches.
+
+That is the cost of forcing a powerful agent through a format built for a 1990s readme.
+
+When you give it H T M L, the agent stops faking the chart and just draws the chart.
+
+[SCENE: side-by-side]
+So compare. Same data, two formats.
+
+Markdown gives you this.
+
+A bar chart hand-drawn out of pipes and dashes. From a distance it looks like a chart. Up close, the columns drift. The bars do not line up with the axis. And the second you paste it into a doc with a different font, every alignment breaks.
+
+H T M L gives you this.
+
+Same five numbers. A real S V G bar chart, rendered crisply, picking its own colors from a palette. Sitting inside a single dot h t m l file you can open in any browser.
+
+That is why Thariq writes — H T M L documents are easier to read, easier to organize visually, easier to navigate with tabs and links and illustrations.
+
+He says the chance someone actually reads your spec, your report, your P R writeup — that chance gets much, much higher when it is H T M L.
+
+A markdown file is a thing your colleague will skim. An H T M L file is a thing your colleague will open.
+
+That is the difference.
+
+[SCENE: stat-pill-row]
+And yes. There is a price. The honest one.
+
+H T M L can take two to four times longer to generate than markdown.
+
+Two to four x. That is real.
+
+But here is the piece that changes the math.
+
+Opus 4.7 ships with a one million token context window. One million.
+
+Which means the extra tokens you spend rendering H T M L — they barely register against the budget you already have.
+
+The cost is real. The cost is also absorbable. And in exchange you get a document your team will actually read.
+
+Some of the replies under the post pushed back on this. They argued markdown's lower token spend is itself the value. The honest answer is — it depends what you are buying.
+
+[SCENE: source-cards]
+Here is the part that turns this from a thesis into a workflow.
+
+Five places where switching to H T M L changes everything.
+
+Use case one. Specs, planning, and exploration.
+
+You ask Claude Code to fan out six approaches to a problem in one H T M L file. Side by side. Each one labeled with the trade-off it is making. You pick. The pick becomes a plan with mockups and code snippets baked in.
+
+Use case two. Code review.
+
+The P R diff rendered with margin annotations. Severity colors. Jump links. Thariq attaches an H T M L code explainer to every P R he makes now — and he is on the team. He says it works better than the default GitHub diff view.
+
+Use case three. Design and prototypes.
+
+Claude Design is built on H T M L for a reason. H T M L is incredibly expressive for design — even when your end surface is React, or Swift, or anything else. Claude sketches in H T M L, then translates. You can ship the prototype with sliders and knobs, tune the animation, then copy the parameters back into a prompt.
+
+Use case four. Reports, research, and learning.
+
+You point Claude Code at your codebase, your git history, your Slack, the internet. You get back a single readable explainer page. A diagram of the flow. Three or four key code snippets, annotated. A gotchas section at the bottom.
+
+Use case five. Custom editing interfaces.
+
+This one is the sleeper.
+
+Sometimes typing in a text box cannot describe what you want. So Claude Code builds you a throwaway editor. A single H T M L file purpose-built for your one piece of data.
+
+Drag thirty Linear tickets into now, next, later, cut. Edit a feature flag config with dependency warnings. Tune a system prompt with live re-render of three sample inputs.
+
+And every one of them ends with one button — copy it back out. As markdown. As a diff. As a prompt for the next session.
+
+[SCENE: architecture-stack]
+So why Claude Code specifically? Why not Claude A I, or Claude Design?
+
+Because of what Claude Code can ingest.
+
+Your filesystem. Every dot h t m l file you have already generated, all visible at once.
+
+Your M C P servers. Slack, Linear, anything you have connected.
+
+Your browser, when you have Claude in Chrome.
+
+Your git history. The why behind every line of code.
+
+That stack of context is what makes the H T M L output actually informed. The agent is not synthesizing in the dark — it is synthesizing from your real work.
+
+Move the same prompt to a chat surface, and you lose half of it. The artifact comes back generic. Pretty, maybe. But generic.
+
+This is the part that does not transfer. Claude Code's reach into your environment is the input that makes the output worth having.
+
+[SCENE: cta]
+Here is the part the article actually ends on.
+
+Thariq says the real reason he switched is not density. It is not sharing. It is not even the joy of making things.
+
+It is that he stopped reading the markdown plans.
+
+He would offload work to Claude, get back a wall of text, and he just would not read it. Which meant he was leaving Claude to make every choice. Which is a slow way to lose the plot.
+
+The H T M L versions — he reads them. He clicks around. He suggests changes. He is back in the loop.
+
+So I will let Thariq close it himself.
+
+I am happy to say I feel more in the loop than ever before when using H T M L. I hope you do too.
+
+The replies under the post are full of people saying the same thing. I was already doing this, I just did not have the framing yet. This finally explains why Claude keeps printing H T M L as artifacts. I am moving my whole planning workflow today.
+
+You are going to see this format show up everywhere over the next few months. Specs. P R writeups. Status reports. Internal explainers. Even editorial magazines — and judging by the replies, plenty of other places too.
+
+Get ahead of it. Open one of the files in Thariq's gallery. Look at how it reads compared to the markdown you would normally get.
+
+And if you want to learn more about A I, check out the dynamous dot A I community.

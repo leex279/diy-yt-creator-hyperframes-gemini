@@ -12,11 +12,10 @@ End-to-end pipeline that turns a **Claude Code release tag** (e.g. `v2.1.118`) i
 - **Aesthetic**: GitHub-dark (`#0D1117`) + Claude Code accent triad (cyan-blue / purple / green) + orange (warn + Subscribe pulse). Anthropic shorts' warm off-white + Claude orange is replaced by the Claude Code palette in `tokens/claude-code-dark.css`.
 - **Persistent overlay**: VersionBranding (`#version-branding`) — Anthropic + Claude Code logos top-right at 0.7 opacity + `vb-version-string` line bottom-center. Renders for full duration.
 - **Brand zone**: anthropic shorts' centered top-banner is **disabled** (`#top-banner { display: none }`). VersionBranding owns the brand zone.
-- **Phase mix**:
-  1. **Phase 1 — Version slam**: overline ("Claude Code Update") + "Version" pre-line + 200px slam version (e.g. `v2.1.118`, cyan-blue) + caption pill ("What's new in 90 seconds")
-  2. **Phase 2 — Stats opener (3 pills)**: features / fixes / improved counts (cyan / purple / green)
-  3. **Phase 3 — Highlight cards (numbered, not dated)**: top 3 highlights with `01/02/03` badges (cyan / purple / green)
-  4. **Phase 4 — `$ claude update` CTA**: macOS terminal block + Subscribe pill (Claude Code orange pulse, `yoyo: true, repeat: 4`)
+- **Phase mix** (3 phases — composition opens cold on stats, no spoken slam intro):
+  1. **Phase 1 — Stats opener with version header**: overline ("Claude Code Update") + 130px static version (e.g. `v2.1.133`, cyan-blue, no animation slam, visible from frame 0 so viewers can read it) + headline + 3 stat pills (cyan / purple / green) for features / fixes / improved. **Narration starts on the first stat number**, NOT on the version. The version is a visual reference, not a spoken hook.
+  2. **Phase 2 — Highlight cards (numbered, not dated)**: top 3 highlights with `01/02/03` badges (cyan / purple / green)
+  3. **Phase 3 — `$ claude update` CTA**: macOS terminal block + Subscribe pill (Claude Code orange pulse, `yoyo: true, repeat: 4`)
 - **Hard rule**: same as anthropic shorts — every timed element needs `class="clip"` + `data-start` + `data-duration` + `data-track-index`. Audio elements never get `class="clip"`.
 - **Duration**: target **≤180s** (YouTube Shorts hard max). Sweet spot for a release update is **70-130s** so the highlights breathe but the watch-through stays intact. Don't blow past 130s unless the release has a once-in-a-quarter shape (≥7 highlights worth showing); even then, cap at 150s.
 - **No background music**: shorts hard rule. Narration + SFX only.
@@ -132,14 +131,19 @@ Same as anthropic shorts Branch A (see [new-anthropic-short.md](./new-anthropic-
 
 #### Branch B — direct draft (typical for shorts)
 
-Map narration to the four phase archetypes the template ships:
+Map narration to the three phase archetypes the template ships. **The version is shown as a static visual, not narrated** — the cold open speaks the first stat number directly.
 
 | Phase | Duration target | What to write |
 |---|---|---|
-| **1 — Version slam** | 5-7s | Mono overline (2-3 words, ALL CAPS): "CLAUDE CODE UPDATE". Pre-line (1 word, ALL CAPS): "Version". Slam version (e.g. "v2.1.118") — read aloud as "version two point one point one one eight" in the script (TTS rule). Caption pill (4-8 words, e.g. "What's new in 90 seconds"). |
-| **2 — Stats opener** | 6-8s | Mono overline. Headline (3-7 words, e.g. "The receipts."). Three stat numbers + labels: features / fixes / improved. Numbers MUST be real. |
-| **3 — Highlight cards** | 12-20s (the heart of the Short) | Mono overline ("TOP CHANGES"). 3 numbered cards (`01/02/03`): each card has a title (3-5 words) + sub (3-6 words). Real highlights only — never invent. |
-| **4 — CTA** | 4-6s | Mono overline ("PULL EVERY FIX"). Terminal already shows `$ claude update`. Subscribe pill stays as "Subscribe". Narration calls out the command + asks for a debate / comment line if Phase 3 budget allows. |
+| **1 — Stats opener (with static version header)** | 6-9s | The version + overline are visible from frame 0; do NOT narrate them. Narration starts on the first stat ("28 new features. 78 bug fixes. 4 improvements."). Optionally close with a one-line headline like "MCP got a stability pass." that echoes the on-screen `#p1-headline`. Three stat numbers MUST be real. |
+| **2 — Highlight cards** | 25-35s (the heart of the Short) | Mono overline ("TOP CHANGES" — visual only). Narration introduces each card with "First. ... Second. ... Third. ..." anchored to the spoken first words. 3 numbered cards (`01/02/03`): each card has a title (3-5 words) + sub (3-6 words). Real highlights only — never invent. |
+| **3 — CTA** | 8-12s | Mono overline ("PULL EVERY CHANGE" — visual only). Terminal shows `$ claude update`. Subscribe pill stays as "Subscribe". Narration calls out `claude update`, then a debate / comment line that ends on the spoken debate question. |
+
+**Phase 1 narration template** (cold-open pattern):
+```
+28 new features. 78 bug fixes. 4 improvements. <one-line release-character headline>.
+```
+Don't write a spoken intro that names the version (e.g. "Claude Code shipped six releases. Versions two point one point one two eight..."). It's boring and the viewer can already read the number on screen. Get to the receipts immediately.
 
 **Style rules for narration text** (apply during writing, NOT as a post-pass):
 
@@ -152,16 +156,14 @@ Map narration to the four phase archetypes the template ships:
 - Total target: **~140-260 words** for **70-130s** runtime at speed 1.05. Don't pad — release Shorts win on tightness.
 - If the release is thin (≤2 highlights worth showing), drop to 60-70s with **2** highlight cards instead of 3 — edit Phase 3 down (remove `#p3-card-3` and the `tl.from("#p3-card-3", …)` tween) and adjust phase timing.
 
-Save to `videos/<slug>/script.txt` using the standard 4-block format (one phase per blank-line block):
+Save to `videos/<slug>/script.txt` using the standard 3-block format (one phase per blank-line block):
 
 ```
-[phase 1 narration]
+[phase 1 narration — opens cold on the first stat]
 
-[phase 2 narration]
+[phase 2 narration — three highlight cards]
 
-[phase 3 narration]
-
-[phase 4 narration]
+[phase 3 narration — claude update + debate question]
 ```
 
 The blank lines are NOT spoken; they help map narration to phases later.
@@ -325,9 +327,9 @@ Capture the URL it prints (typically `http://localhost:5173`).
 Quick checklist (the rule has full detail):
 
 1. **vidIQ keyword research** — run `vidiq_keyword_research`, `vidiq_outliers`, `vidiq_trending_videos` against seeds like "Claude Code", "Claude Code update", "AI coding agent shorts". Save snapshot to `videos/<slug>/research/vidiq-keywords.md`.
-2. **Chapter timestamps**: Shorts under 90s typically don't need chapters (YouTube hides them); for 90-180s Shorts where chapters help retention, compute `data-start ÷ speed_factor` (default 1.0; if ffmpeg-sped per [`.claude/rules/video-speedup.md`](../../rules/video-speedup.md), divide by that factor). 4 phase boundaries → 4 chapters max.
-3. **Draft `videos/<slug>/youtube-description.md`** in the rule's prescribed order: hook (keyword-front-loaded) → Dynamous block in `----` separators (only if `dynamousPromotion: true` in meta.json — otherwise skip the block entirely) → Key Changes bullets → Resources with validated URLs → primary CTA (`$ claude update`) → debate question (must match script's final line) → 15-25 hashtags.
-4. **Validate every URL** with `WebFetch`.
+2. **Shorts skip Chapters entirely** — per the rule, vertical Shorts do not include a `Chapters` section.
+3. **Draft `videos/<slug>/youtube-description.md`** — LEAN structure per the rule: SEO hook (keyword-front-loaded; if useful, name the top 3-5 features inline in the hook as a comma-separated list — do NOT use a bulleted "Key Changes" block) → Dynamous block in `----` separators (**MANDATORY on every Short** — independent of the `dynamousPromotion` flag in `meta.json`, which only gates ON-SCREEN promotion) → Resources: with validated URLs → Hostinger affiliate block in `----` separators (MANDATORY: `🏠 Self-host your AI agents & projects on Hostinger (10% OFF): 👉 https://hostinger.com/DIYSMARTCODE`) → debate question (must match script's final line) → 15-25 hashtags. **NO Key Changes / Key Concepts / Key Stats bullet sections. NO standalone `$ claude update` CTA block** — fold the update command into the hook paragraph if needed.
+4. **Validate every URL** with `WebFetch`. Keep total description ~800-1500 chars.
 
 ### 16. Report to the user
 

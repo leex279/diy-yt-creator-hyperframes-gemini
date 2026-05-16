@@ -1,0 +1,482 @@
+﻿<!--
+  scene-strategy-map.html â€” Native 6-cell strategy overview.
+  Each cell is a native HTML/SVG/CSS card matching the Dynamous dark-navy
+  palette. Per-cell mini-diagrams reveal as the cell appears.
+
+  Cells (3Ã—2 grid):
+    01 Vertical Slice     â€” mini folder tree
+    02 Brownfield Day 1   â€” hub-and-spoke sub-agents
+    03 Context Management â€” 3-tier stack
+    04 Focused Priming    â€” prime cmd â†’ output flow
+    05 Parallel Worktrees â€” main â†’ branches â†’ PRs graph
+    06 Coupling > LOC     â€” isolated dot vs tangled web
+-->
+<template id="scene-strategy-map-template">
+  <div data-composition-id="scene-strategy-map"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #sm-content {
+        width:100%; height:100%;
+        padding: 40px 72px 32px;
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:flex-start;
+        gap: 6px;
+        box-sizing:border-box;
+        min-height: 0;
+      }
+      #sm-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+        flex-shrink: 0;
+      }
+      #sm-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #sm-content .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 42px;
+        line-height: 1.05;
+        letter-spacing: -0.022em;
+        color: var(--ink);
+        flex-shrink: 0;
+      }
+      #sm-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: 1fr 1fr;
+        gap: 16px;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        margin-top: 6px;
+      }
+      .sm-cell {
+        background: rgba(255,255,255,0.03);
+        border: 1.5px solid rgba(255,255,255,0.10);
+        border-radius: 16px;
+        padding: 14px 22px 16px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+        min-height: 0;
+      }
+      .sm-cell .cell-head {
+        display: flex; align-items: baseline; gap: 16px;
+      }
+      .sm-cell .num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 24px;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+      }
+      .sm-cell .ttl {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 1.0;
+        letter-spacing: -0.015em;
+        color: var(--ink);
+      }
+      .sm-cell .mini {
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
+        padding: 2px 2px;
+        min-height: 0;
+        max-height: 230px;
+        overflow: hidden;
+      }
+      /* SVG minis: cap height so they don't push the cell taller */
+      .sm-cell .mini-hub,
+      .sm-cell .mini-tree,
+      .sm-cell .mini-couple {
+        width: 100%;
+        max-height: 220px;
+      }
+      .sm-cell .desc {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1.25;
+        color: var(--muted);
+      }
+      .sm-cell .rule {
+        position: absolute;
+        left: 0; bottom: 0;
+        width: 100%; height: 3px;
+        background: var(--accent);
+        transform-origin: left center;
+        transform: scaleX(0);
+        box-shadow: 0 0 14px rgba(59, 130, 246, 0.65);
+      }
+
+      /* â”€â”€ Mini 1: VSA folder tree â”€â”€ */
+      .mini-vsa {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        line-height: 1.4;
+        text-align: left;
+        width: 100%;
+      }
+      .mini-vsa .row { display: flex; align-items: center; gap: 10px; }
+      .mini-vsa .row .ic {
+        color: var(--accent-2);
+        font-weight: 700;
+      }
+      .mini-vsa .row .name { color: var(--ink); }
+      .mini-vsa .row.feature .name { color: var(--accent); font-weight: 700; }
+      .mini-vsa .row .label { color: var(--muted-2); font-size: 15px; margin-left: 8px; }
+      .mini-vsa .indent { padding-left: 24px; }
+      .mini-vsa .indent2 { padding-left: 44px; }
+
+      /* â”€â”€ Mini 2: hub-and-spoke sub-agents â”€â”€ */
+      .mini-hub { width: 100%; height: 100%; }
+      .mini-hub svg { width: 100%; height: 100%; display: block; }
+      .mini-hub .spoke {
+        stroke: rgba(96, 165, 250, 0.55);
+        stroke-width: 2;
+        fill: none;
+        stroke-dasharray: 4 4;
+      }
+      .mini-hub .satellite { fill: var(--accent-2); }
+      .mini-hub .hub { fill: var(--accent); }
+      .mini-hub .hub-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+
+      /* â”€â”€ Mini 3: 3-tier stack â”€â”€ */
+      .mini-stack {
+        display: flex; flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      .mini-stack .bar {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.10);
+      }
+      .mini-stack .bar.b1 { border-color: rgba(59, 130, 246, 0.45); }
+      .mini-stack .bar.b2 { border-color: rgba(14, 165, 233, 0.42); }
+      .mini-stack .bar.b3 { border-color: rgba(96, 165, 250, 0.40); }
+      .mini-stack .bar .key {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .mini-stack .bar .val {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 17px;
+        color: var(--ink);
+      }
+
+      /* â”€â”€ Mini 4: prime command flow â”€â”€ */
+      .mini-prime {
+        display: grid;
+        grid-template-columns: 1fr 44px 1fr;
+        gap: 6px;
+        align-items: center;
+        width: 100%;
+      }
+      .mini-prime .col { display: flex; flex-direction: column; gap: 7px; }
+      .mini-prime .pill {
+        padding: 7px 10px;
+        border-radius: 7px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--accent);
+        background: rgba(59, 130, 246, 0.10);
+        border: 1px solid rgba(59, 130, 246, 0.45);
+        text-align: center;
+      }
+      .mini-prime .out {
+        padding: 7px 10px;
+        border-radius: 7px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--ink);
+        background: rgba(96, 165, 250, 0.08);
+        border: 1px solid rgba(96, 165, 250, 0.35);
+        text-align: center;
+      }
+      .mini-prime .arrow {
+        text-align: center;
+        color: var(--accent-2);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      /* â”€â”€ Mini 5: worktree branch graph â”€â”€ */
+      .mini-tree { width: 100%; height: 100%; }
+      .mini-tree svg { width: 100%; height: 100%; display: block; }
+      .mini-tree .main-line { stroke: var(--accent-2); stroke-width: 4; }
+      .mini-tree .branch { stroke: rgba(96, 165, 250, 0.6); stroke-width: 2.5; fill: none; }
+      .mini-tree .main-dot { fill: var(--accent-2); }
+      .mini-tree .br-dot { fill: var(--accent); }
+      .mini-tree .pr-box {
+        fill: rgba(14, 165, 233, 0.18);
+        stroke: var(--accent-3);
+        stroke-width: 1.5;
+        rx: 4;
+      }
+      .mini-tree .pr-text {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 14px;
+        fill: var(--ink);
+      }
+
+      /* â”€â”€ Mini 6: coupling â€” isolated vs tangled â”€â”€ */
+      .mini-couple { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 8px; align-items: center; width: 100%; height: 100%; }
+      .mini-couple .divider { background: rgba(255,255,255,0.10); height: 70%; align-self: center; }
+      .mini-couple .side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      .mini-couple .side svg { width: 100%; height: 100px; display: block; }
+      .mini-couple .side .lbl {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .mini-couple .side.good .lbl { color: var(--accent-2); }
+      .mini-couple .side.bad  .lbl { color: var(--accent-warn); }
+      .mini-couple .iso-dot { fill: var(--accent); }
+      .mini-couple .iso-ring { fill: none; stroke: rgba(96, 165, 250, 0.6); stroke-width: 1.5; stroke-dasharray: 3 3; }
+      .mini-couple .god-dot { fill: var(--accent-warn); }
+      .mini-couple .god-sat { fill: rgba(249, 115, 22, 0.85); }
+      .mini-couple .god-link { stroke: rgba(249, 115, 22, 0.55); stroke-width: 1.5; fill: none; }
+    </style>
+
+    <div id="sm-content">
+      <div class="eyebrow" id="sm-eyebrow" style="opacity:0;visibility:hidden;">SIX STRATEGIES &middot; ONE PLAYBOOK</div>
+      <h2 class="headline" id="sm-headline" style="opacity:0;visibility:hidden;">Each stands alone. Combined, they compound.</h2>
+
+      <div id="sm-grid">
+
+        <!-- Cell 1 â€” Vertical Slice -->
+        <div class="sm-cell" id="sm-c1" style="opacity:0;visibility:hidden;">
+          <div class="cell-head"><span class="num">01</span><span class="ttl">Vertical Slice</span></div>
+          <div class="mini">
+            <div class="mini-vsa">
+              <div class="row feature"><span class="ic">&#9646;</span><span class="name">products/</span><span class="label">feature</span></div>
+              <div class="row indent"><span class="ic">&#x2502;</span><span class="name">routes.ts</span></div>
+              <div class="row indent"><span class="ic">&#x2502;</span><span class="name">service.ts</span></div>
+              <div class="row indent"><span class="ic">&#x2502;</span><span class="name">schemas.ts</span></div>
+              <div class="row indent"><span class="ic">&#x2514;</span><span class="name">tests/</span></div>
+            </div>
+          </div>
+          <div class="desc">One folder per feature. Loadable end-to-end.</div>
+          <div class="rule"></div>
+        </div>
+
+        <!-- Cell 2 â€” Brownfield Day 1 (hub-and-spoke) -->
+        <div class="sm-cell" id="sm-c2" style="opacity:0;visibility:hidden;">
+          <div class="cell-head"><span class="num">02</span><span class="ttl">Brownfield Day 1</span></div>
+          <div class="mini">
+            <div class="mini-hub">
+              <svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+                <!-- Spokes from center (110,80) to satellites -->
+                <path class="spoke" d="M 110 80 L 30 30" />
+                <path class="spoke" d="M 110 80 L 30 130" />
+                <path class="spoke" d="M 110 80 L 190 30" />
+                <path class="spoke" d="M 110 80 L 190 130" />
+                <path class="spoke" d="M 110 80 L 110 18" />
+                <path class="spoke" d="M 110 80 L 110 142" />
+                <!-- Satellites -->
+                <circle class="satellite" cx="30" cy="30" r="7" />
+                <circle class="satellite" cx="30" cy="130" r="7" />
+                <circle class="satellite" cx="190" cy="30" r="7" />
+                <circle class="satellite" cx="190" cy="130" r="7" />
+                <circle class="satellite" cx="110" cy="18" r="7" />
+                <circle class="satellite" cx="110" cy="142" r="7" />
+                <!-- Hub -->
+                <circle class="hub-ring" cx="110" cy="80" r="18" />
+                <circle class="hub" cx="110" cy="80" r="11" />
+              </svg>
+            </div>
+          </div>
+          <div class="desc">Parallel sub-agents derive the AI layer.</div>
+          <div class="rule"></div>
+        </div>
+
+        <!-- Cell 3 â€” Context Management (3-tier stack) -->
+        <div class="sm-cell" id="sm-c3" style="opacity:0;visibility:hidden;">
+          <div class="cell-head"><span class="num">03</span><span class="ttl">Context Mgmt</span></div>
+          <div class="mini">
+            <div class="mini-stack">
+              <div class="bar b1"><span class="key">Global</span><span class="val">CLAUDE.md &middot; &le; 300 lines</span></div>
+              <div class="bar b2"><span class="key">On-demand</span><span class="val">Skills &middot; refs &middot; per-area</span></div>
+              <div class="bar b3"><span class="key">Layer-2</span><span class="val">The plan, one ticket</span></div>
+            </div>
+          </div>
+          <div class="desc">Right thing, right tier. Protect the budget.</div>
+          <div class="rule"></div>
+        </div>
+
+        <!-- Cell 4 â€” Focused Priming (flow) -->
+        <div class="sm-cell" id="sm-c4" style="opacity:0;visibility:hidden;">
+          <div class="cell-head"><span class="num">04</span><span class="ttl">Focused Priming</span></div>
+          <div class="mini">
+            <div class="mini-prime">
+              <div class="col">
+                <div class="pill">/prime-server</div>
+                <div class="pill">/prime-client</div>
+                <div class="pill">/prime-endpoint</div>
+              </div>
+              <div class="arrow">&rarr;<br/>&rarr;<br/>&rarr;</div>
+              <div class="col">
+                <div class="out">backend slice</div>
+                <div class="out">frontend slice</div>
+                <div class="out">endpoint slice</div>
+              </div>
+            </div>
+          </div>
+          <div class="desc">Load one slice. Not the whole repo.</div>
+          <div class="rule"></div>
+        </div>
+
+        <!-- Cell 5 â€” Parallel Worktrees (branch graph) -->
+        <div class="sm-cell" id="sm-c5" style="opacity:0;visibility:hidden;">
+          <div class="cell-head"><span class="num">05</span><span class="ttl">Parallel Worktrees</span></div>
+          <div class="mini">
+            <div class="mini-tree">
+              <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+                <!-- main vertical line -->
+                <line class="main-line" x1="40" y1="20" x2="40" y2="140" />
+                <circle class="main-dot" cx="40" cy="20" r="5" />
+                <circle class="main-dot" cx="40" cy="80" r="5" />
+                <circle class="main-dot" cx="40" cy="140" r="5" />
+                <!-- 3 branches splitting -->
+                <path class="branch" d="M 40 40 Q 110 40 140 35" />
+                <path class="branch" d="M 40 80 L 140 80" />
+                <path class="branch" d="M 40 120 Q 110 120 140 125" />
+                <!-- worktree dots -->
+                <circle class="br-dot" cx="140" cy="35" r="5" />
+                <circle class="br-dot" cx="140" cy="80" r="5" />
+                <circle class="br-dot" cx="140" cy="125" r="5" />
+                <!-- PR boxes -->
+                <rect class="pr-box" x="200" y="22" width="60" height="26" />
+                <text class="pr-text" x="230" y="40" text-anchor="middle">PR &rarr;</text>
+                <rect class="pr-box" x="200" y="67" width="60" height="26" />
+                <text class="pr-text" x="230" y="85" text-anchor="middle">PR &rarr;</text>
+                <rect class="pr-box" x="200" y="112" width="60" height="26" />
+                <text class="pr-text" x="230" y="130" text-anchor="middle">PR &rarr;</text>
+                <!-- branch-to-PR connectors -->
+                <line class="branch" x1="145" y1="35" x2="200" y2="35" />
+                <line class="branch" x1="145" y1="80" x2="200" y2="80" />
+                <line class="branch" x1="145" y1="125" x2="200" y2="125" />
+              </svg>
+            </div>
+          </div>
+          <div class="desc">Same wallet. Faster delivery.</div>
+          <div class="rule"></div>
+        </div>
+
+        <!-- Cell 6 â€” Coupling > LOC -->
+        <div class="sm-cell" id="sm-c6" style="opacity:0;visibility:hidden;">
+          <div class="cell-head"><span class="num">06</span><span class="ttl">Coupling &gt; LOC</span></div>
+          <div class="mini">
+            <div class="mini-couple">
+              <div class="side good">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <circle class="iso-ring" cx="50" cy="50" r="40" />
+                  <circle class="iso-ring" cx="50" cy="50" r="28" />
+                  <circle class="iso-dot" cx="50" cy="50" r="13" />
+                </svg>
+                <div class="lbl">Loose &amp; clear</div>
+              </div>
+              <div class="divider"></div>
+              <div class="side bad">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <line class="god-link" x1="50" y1="50" x2="10" y2="15" />
+                  <line class="god-link" x1="50" y1="50" x2="50" y2="10" />
+                  <line class="god-link" x1="50" y1="50" x2="90" y2="15" />
+                  <line class="god-link" x1="50" y1="50" x2="10" y2="50" />
+                  <line class="god-link" x1="50" y1="50" x2="90" y2="50" />
+                  <line class="god-link" x1="50" y1="50" x2="10" y2="85" />
+                  <line class="god-link" x1="50" y1="50" x2="50" y2="90" />
+                  <line class="god-link" x1="50" y1="50" x2="90" y2="85" />
+                  <circle class="god-sat" cx="10" cy="15" r="4" />
+                  <circle class="god-sat" cx="50" cy="10" r="4" />
+                  <circle class="god-sat" cx="90" cy="15" r="4" />
+                  <circle class="god-sat" cx="10" cy="50" r="4" />
+                  <circle class="god-sat" cx="90" cy="50" r="4" />
+                  <circle class="god-sat" cx="10" cy="85" r="4" />
+                  <circle class="god-sat" cx="50" cy="90" r="4" />
+                  <circle class="god-sat" cx="90" cy="85" r="4" />
+                  <circle class="god-dot" cx="50" cy="50" r="10" />
+                </svg>
+                <div class="lbl">God component</div>
+              </div>
+            </div>
+          </div>
+          <div class="desc">Coupling, not line count, kills agents.</div>
+          <div class="rule"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#sm-eyebrow",  { y: 20 }, 0);
+      tl.set("#sm-headline", { y: 24 }, 0);
+      ["#sm-c1","#sm-c2","#sm-c3","#sm-c4","#sm-c5","#sm-c6"].forEach(sel => {
+        tl.set(sel, { y: 30, scale: 0.97, transformOrigin: "50% 50%" }, 0);
+        tl.set(sel + " .rule", { scaleX: 0 }, 0);
+      });
+
+      // Header
+      tl.to("#sm-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#sm-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
+
+      // Six cells reveal one at a time, anchored to the actual narration
+      // word-starts in audio/narration.wav (scene starts at 57.3s absolute):
+      //   One   â†’ 65.04s â†’ scene_t 7.74
+      //   Two   â†’ 69.32s â†’ scene_t 12.02
+      //   Three â†’ 74.88s â†’ scene_t 17.58
+      //   Four  â†’ 77.76s â†’ scene_t 20.46
+      //   Five  â†’ 80.78s â†’ scene_t 23.48
+      //   Six   â†’ 86.42s â†’ scene_t 29.12
+      const cellTimes = [7.74, 12.02, 17.58, 20.46, 23.48, 29.12];
+      const cells = ["#sm-c1","#sm-c2","#sm-c3","#sm-c4","#sm-c5","#sm-c6"];
+      cells.forEach((sel, i) => {
+        tl.to(sel, { y: 0, scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.3)" }, cellTimes[i]);
+        tl.to(sel + " .rule", { scaleX: 1, duration: 0.45, ease: "power2.out" }, cellTimes[i] + 0.3);
+        // subtle glow on the cell border at reveal
+        tl.to(sel, { boxShadow: "0 0 50px rgba(59, 130, 246, 0.40)", duration: 0.5, ease: "sine.out" }, cellTimes[i] + 0.3);
+        tl.to(sel, { boxShadow: "0 0 0px rgba(59, 130, 246, 0.00)", duration: 0.8, ease: "sine.in"  }, cellTimes[i] + 0.9);
+      });
+
+      tl.set({}, {}, 32);
+      window.__timelines["scene-strategy-map"] = tl;
+    </script>
+  </div>
+</template>

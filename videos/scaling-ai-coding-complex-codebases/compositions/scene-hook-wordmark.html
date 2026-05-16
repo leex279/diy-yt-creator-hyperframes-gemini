@@ -1,0 +1,128 @@
+﻿<!--
+  scene-hook-wordmark.html â€” Hero hook archetype (Dynamous brand wordmark style).
+  Uses the REAL Dynamous icon (assets/dynamous-icon.png) instead of a hand-drawn SVG.
+  Wordmark sized to fit "BROWNFIELD" (10 chars) on a single line.
+-->
+<template id="scene-hook-wordmark-template">
+  <div data-composition-id="scene-hook-wordmark"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #scene-hook-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:center;
+        gap: 30px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #scene-hook-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 26px;
+        font-weight: 500;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 20px;
+      }
+      #scene-hook-content .eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 70px; height: 2px;
+        background: var(--accent-2);
+      }
+      #scene-hook-content .wordmark {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 200px;
+        line-height: 0.92;
+        letter-spacing: -0.04em;
+        color: var(--ink);
+        display: flex;
+        flex-wrap: nowrap;
+        max-width: 1640px;
+        white-space: nowrap;
+      }
+      #scene-hook-content .wordmark .char {
+        display: inline-block;
+        will-change: transform, opacity;
+        white-space: pre;
+      }
+      #scene-hook-content .subline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 38px;
+        line-height: 1.35;
+        color: var(--ink-2);
+        max-width: 1200px;
+      }
+      #scene-hook-flame {
+        position: absolute;
+        top: 92px; right: 130px;
+        width: 160px; height: 220px;
+        filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.55));
+      }
+      #scene-hook-flame img {
+        width: 100%; height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+    </style>
+
+    <div id="scene-hook-content">
+      <div id="scene-hook-flame" style="opacity:0;visibility:hidden;">
+        <img src="assets/dynamous-icon.png" alt="Dynamous" crossorigin="anonymous" />
+      </div>
+
+      <div class="eyebrow" id="hook-eyebrow" style="opacity:0;visibility:hidden;">WORKSHOP &middot; COLE MEDIN</div>
+
+      <div class="wordmark" id="hook-wordmark" style="visibility:hidden;">
+        <span class="char" style="opacity:0;">B</span><span class="char" style="opacity:0;">R</span><span class="char" style="opacity:0;">O</span><span class="char" style="opacity:0;">W</span><span class="char" style="opacity:0;">N</span><span class="char" style="opacity:0;">F</span><span class="char" style="opacity:0;">I</span><span class="char" style="opacity:0;">E</span><span class="char" style="opacity:0;">L</span><span class="char" style="opacity:0;">D</span>
+      </div>
+
+      <div class="subline" id="hook-subline" style="opacity:0;visibility:hidden;">
+        Six strategies to scale Claude Code into the messy parts of any codebase.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#hook-wordmark .char", { y: 110 }, 0);
+      tl.set("#scene-hook-flame", { scale: 0, rotation: -18 }, 0);
+      tl.set("#hook-wordmark", { autoAlpha: 1 }, 0);
+
+      tl.to("#hook-eyebrow",
+        { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.2);
+
+      tl.to("#hook-wordmark .char",
+        { y: 0, autoAlpha: 1, duration: 0.55, ease: "power3.out",
+          stagger: { each: 0.06, from: "start" } }, 0.5);
+
+      tl.to("#scene-hook-flame",
+        { scale: 1, autoAlpha: 1, rotation: 0, duration: 0.8, ease: "back.out(1.6)" }, 1.4);
+
+      tl.to("#hook-subline",
+        { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 2.0);
+
+      // Mid-hold beats
+      tl.to("#scene-hook-flame",
+        { y: -14, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.8);
+
+      tl.to("#hook-wordmark",
+        { scale: 1.02, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.5);
+
+      tl.set({}, {}, 12);
+      window.__timelines["scene-hook-wordmark"] = tl;
+    </script>
+  </div>
+</template>

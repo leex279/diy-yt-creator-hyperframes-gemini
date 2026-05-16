@@ -1,0 +1,161 @@
+<!--
+  shared/lib/components/confetti-burst/component.html
+  SVG-based physics-driven confetti burst from a configurable origin point.
+
+  Spawn ~60 small colored rectangles from a point, each with a seeded-random
+  initial velocity (radial + upward bias). Gravity drives ballistic arcs over
+  1.6s; particles fade out in the final 0.4s. The burst is identical every
+  render because all pseudo-random values derive from mulberry32 with fixed
+  seed 0xCAFEBABE (mixed with particle index for variety).
+
+  DETERMINISM: mulberry32 PRNG, seed 0xCAFEBABE. No Math.random, no Date.now.
+
+  COMPONENT IS PASTE-IN — three sections below. Merge each into the matching
+  part of your host composition.
+
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this <div> at the desired z-index layer:
+-->
+
+<div class="confetti-burst" data-confetti></div>
+
+<!--
+  2) CSS — merge into your <style> block:
+-->
+
+<style>
+  /* shared/lib/components/confetti-burst — keep this comment block */
+  .confetti-burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .confetti-burst svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .cb-particle {
+    transform-origin: center;
+  }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addConfettiBurst(tl, ".confetti-burst", 2.0);
+       addConfettiBurst(tl, ".confetti-burst", 2.0, { originX: 540, originY: 400, count: 60 });
+
+     The function injects an <svg> with <rect> particles into the container
+     element, then adds per-particle GSAP tweens to the timeline at `at`.
+
+     IMPORTANT: call addConfettiBurst before registering window.__timelines
+     so the DOM is ready when the timeline is seeked.
+-->
+
+<script>
+  function addConfettiBurst(tl, containerSel, at, opts) {
+    var options = opts || {};
+    var originX  = options.originX  !== undefined ? options.originX  : 540;
+    var originY  = options.originY  !== undefined ? options.originY  : 960;
+    var count    = options.count    !== undefined ? options.count    : 60;
+    var duration = options.duration !== undefined ? options.duration : 1.6;
+    var palette  = options.palette  || [
+      'var(--confetti-1, #FF6B6B)',
+      'var(--confetti-2, #FFE066)',
+      'var(--confetti-3, #6BFFC8)',
+      'var(--confetti-4, #8AB4FF)'
+    ];
+
+    // ── mulberry32 PRNG seeded at 0xCAFEBABE ──
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    var rand = mulberry32(0xCAFEBABE ^ (count * 31));
+
+    var container = document.querySelector(containerSel);
+    if (!container) return;
+
+    // Build the SVG once (idempotent on re-call with same selector)
+    var svgId = containerSel.replace(/[^a-zA-Z0-9]/g, '_') + '_cb_svg';
+    var existing = container.querySelector('#' + svgId);
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('id', svgId);
+    svg.setAttribute('viewBox', '0 0 1080 1920');
+    container.appendChild(svg);
+
+    // Particle data
+    var particles = [];
+    for (var i = 0; i < count; i++) {
+      // Seeded velocity — radial spread with slight upward bias
+      var angle = (rand() * 2 * Math.PI);
+      var speed = 280 + rand() * 520;          // px/s initial speed
+      var vx = Math.cos(angle) * speed;
+      var vy = Math.sin(angle) * speed - 340;  // upward bias: subtract 340 px/s
+
+      var pw = 8;
+      var ph = 14;
+      var rot0 = rand() * 360;
+      var rotSpeed = (rand() - 0.5) * 720;     // deg/s spin
+      var colorIdx = Math.floor(rand() * palette.length);
+
+      var rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', -pw / 2);
+      rect.setAttribute('y', -ph / 2);
+      rect.setAttribute('width', pw);
+      rect.setAttribute('height', ph);
+      rect.setAttribute('rx', 2);
+      rect.setAttribute('fill', palette[colorIdx]);
+      rect.setAttribute('class', 'cb-particle');
+      svg.appendChild(rect);
+
+      particles.push({ el: rect, vx: vx, vy: vy, rot0: rot0, rotSpeed: rotSpeed });
+    }
+
+    // Gravity constant in px/s²
+    var G = 1200;
+    var fadeStart = duration - 0.4;
+
+    // Animate each particle via GSAP using onUpdate-driven motion
+    particles.forEach(function(p, idx) {
+      var startX = originX;
+      var startY = originY;
+      var proxy = { t: 0 };
+
+      // Set initial state (hidden until burst fires)
+      gsap.set(p.el, { transformOrigin: 'center center', x: startX, y: startY, rotation: p.rot0, opacity: 0 });
+
+      tl.set(p.el, { opacity: 1 }, at);
+
+      tl.to(proxy, {
+        t: duration,
+        duration: duration,
+        ease: 'none',
+        onUpdate: function() {
+          var t = proxy.t;
+          var x = startX + p.vx * t;
+          var y = startY + p.vy * t + 0.5 * G * t * t;
+          var rot = p.rot0 + p.rotSpeed * t;
+          var opacity = t < fadeStart ? 1 : Math.max(0, 1 - (t - fadeStart) / 0.4);
+          gsap.set(p.el, { x: x, y: y, rotation: rot, opacity: opacity });
+        }
+      }, at);
+    });
+  }
+  // End addConfettiBurst
+</script>

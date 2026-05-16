@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>How Claude Code Works in Large Codebases &mdash; Anthropic's Playbook</title>
+<link rel="stylesheet" href="tokens/anthropic-dark.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* CANVAS — 1920x1080 Anthropic dark stage. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient — orange + purple radial wash */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 28% 22%, rgba(233, 116, 88, 0.10), transparent 55%),
+      radial-gradient(circle at 76% 78%, rgba(167, 139, 250, 0.07), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(107, 154, 239, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* Top chrome — Anthropic wordmark (top-right) */
+  #top-banner {
+    position: absolute;
+    top: 30px;
+    right: 60px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+  }
+
+  /* Slim progress bar — bottom edge, orange */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.60);
+  }
+
+  /* Sub-composition scene wrappers */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  /* First scene starts visible; all others hidden until crossfade */
+  #scene-hook-wrap                 { z-index: 1; opacity: 1; }
+  #scene-source-cards-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-stat-pill-row-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-side-by-side-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-harness-fig1-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-extension-points-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-subscribe-banner-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-pattern1-nav-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-card-wrap           { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-pattern3-fig2-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-checklist-fig3-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap                  { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Captions wrapper — above scenes, below noise overlay */
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+
+  /* Dynamous midroll block mount — overlays everything during midroll window */
+  #dynamous-midroll-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* Support banner overlay — bottom-center pill during scene 12 (checklist) */
+  #support-banner-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 30;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="558"
+     data-width="1920"
+     data-height="1080">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — Iteration C rework (with midroll inserted at 451.13s)
+       Pre-midroll scenes (unchanged data-start):
+        1. scene-hook              0.000s   25.785s
+        2. scene-source-cards      25.785s  33.552s
+        3. scene-stat-pill-row     59.337s  29.849s
+        4. scene-side-by-side      89.185s  44.941s
+        5. scene-harness-fig1     134.126s  38.126s   (image-3d-reveal — fig1)
+        6. scene-extension-points 172.252s  93.620s   (roadmap — 7 hex nodes)
+        7. scene-subscribe-banner 265.872s   6.188s
+        8. scene-pattern1-nav     272.060s  78.621s   (list-cards — 6 cards)
+        9. scene-quote-card       350.681s  34.260s
+       10. scene-pattern3-fig2    384.941s  66.189s   (image-3d-reveal — fig2, ends at 451.13)
+       Midroll block (31.5s, Dynamous):
+       11. dynamous-midroll       451.130s  31.5s     (sub-comp block)
+       Post-midroll scenes (shifted +31.617s from old scene 12/13):
+       12. scene-checklist-fig3   483.080s  42.166s   (image-3d-reveal — fig3)
+       13. scene-cta              525.246s  32.754s   (CTA + Archon callout + YouTube end-card hold; ends at 558)
+       TOTAL_DURATION: 558
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-source-cards-wrap" class="scene-wrapper"
+       data-composition-id="scene-source-cards"
+       data-composition-src="compositions/scene-source-cards.html"
+       data-start="25.785"
+       data-track-index="1"></div>
+
+  <div id="scene-stat-pill-row-wrap" class="scene-wrapper"
+       data-composition-id="scene-stat-pill-row"
+       data-composition-src="compositions/scene-stat-pill-row.html"
+       data-start="59.337"
+       data-track-index="1"></div>
+
+  <div id="scene-side-by-side-wrap" class="scene-wrapper"
+       data-composition-id="scene-side-by-side"
+       data-composition-src="compositions/scene-side-by-side.html"
+       data-start="89.185"
+       data-track-index="1"></div>
+
+  <div id="scene-harness-fig1-wrap" class="scene-wrapper"
+       data-composition-id="scene-harness-fig1"
+       data-composition-src="compositions/scene-harness-fig1.html"
+       data-start="134.126"
+       data-track-index="1"></div>
+
+  <div id="scene-extension-points-wrap" class="scene-wrapper"
+       data-composition-id="scene-extension-points"
+       data-composition-src="compositions/scene-extension-points-roadmap.html"
+       data-start="172.252"
+       data-track-index="1"></div>
+
+  <div id="scene-subscribe-banner-wrap" class="scene-wrapper"
+       data-composition-id="scene-subscribe-banner"
+       data-composition-src="compositions/scene-subscribe-banner.html"
+       data-start="265.872"
+       data-track-index="1"></div>
+
+  <div id="scene-pattern1-nav-wrap" class="scene-wrapper"
+       data-composition-id="scene-pattern1-nav"
+       data-composition-src="compositions/scene-pattern1-nav.html"
+       data-start="272.060"
+       data-track-index="1"></div>
+
+  <div id="scene-quote-card-wrap" class="scene-wrapper"
+       data-composition-id="scene-quote-card"
+       data-composition-src="compositions/scene-quote-card.html"
+       data-start="350.681"
+       data-track-index="1"></div>
+
+  <div id="scene-pattern3-fig2-wrap" class="scene-wrapper"
+       data-composition-id="scene-pattern3-fig2"
+       data-composition-src="compositions/scene-pattern3-fig2.html"
+       data-start="384.941"
+       data-track-index="1"></div>
+
+  <!-- Dynamous midroll shared block (31.5s) — replaces old scene-dynamous-midroll -->
+  <div id="dynamous-midroll-mount"
+       class="clip"
+       data-composition-id="dynamous-midroll"
+       data-composition-src="compositions/dynamous-midroll.html"
+       data-start="451.13"
+       data-duration="31.5"
+       data-track-index="20"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <!-- Support banner overlay — overlays Scene 12 (checklist) during the calm
+       "edge cases" portion of narration; visual-only, narration continues underneath. -->
+  <div id="support-banner-mount"
+       class="clip"
+       data-composition-id="support-banner"
+       data-composition-src="compositions/support-banner.html"
+       data-start="510.0"
+       data-duration="8.5"
+       data-track-index="21"
+       data-width="1920"
+       data-height="1080"
+       data-layout-allow-overflow="true"></div>
+
+  <!-- Post-midroll scenes — data-start shifted by +31.617s from original -->
+  <div id="scene-checklist-fig3-wrap" class="scene-wrapper"
+       data-composition-id="scene-checklist-fig3"
+       data-composition-src="compositions/scene-checklist-fig3.html"
+       data-start="483.080"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="525.246"
+       data-track-index="1"></div>
+
+  <!-- Captions sub-composition — populated by `npx hyperframes transcribe` -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUDIO BED — Iteration C (midroll at 451.13s)
+       Track 2: narration split into pre/midroll/post (sequential, no overlap)
+       Track 3: SFX whooshes at every scene boundary (12 total, data-start = sceneT)
+       Track 4: midroll transition SFX (in/out) + per-element accents
+       Track 5: per-element SFX overflow (concurrent with track 4)
+       BG music omitted — none available.
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Narration — split at 451.13s for midroll gap -->
+  <audio class="clip" id="narration-pre"
+         src="audio/narration-pre.wav"
+         data-start="0"
+         data-duration="451.13"
+         data-track-index="2"
+         data-volume="1.0"></audio>
+
+  <!-- Midroll narration — starts 0.3s after midroll block start -->
+  <audio class="clip" id="midroll-narration"
+         src="audio/dynamous-midroll-v2.mp3"
+         data-start="451.43"
+         data-duration="31.0"
+         data-track-index="2"
+         data-volume="1.0"></audio>
+
+  <!-- Host narration resumes after midroll (31.5s gap) — extended for Archon line in CTA -->
+  <audio class="clip" id="narration-post"
+         src="audio/narration-post.wav"
+         data-start="482.63"
+         data-duration="69.09"
+         data-track-index="2"
+         data-volume="1.0"></audio>
+
+  <!-- Midroll transition SFX on track 4 (concurrent with whoosh on track 3) -->
+  <audio class="clip" id="midroll-sfx-in"
+         src="audio/midroll-transition-in.mp3"
+         data-start="451.13"
+         data-duration="1.5"
+         data-track-index="4"
+         data-volume="0.20"></audio>
+  <audio class="clip" id="midroll-sfx-out"
+         src="audio/midroll-transition-out.mp3"
+         data-start="481.63"
+         data-duration="1.5"
+         data-track-index="4"
+         data-volume="0.15"></audio>
+
+  <!-- Transition whooshes — 12 total, data-start = sceneT (per audio-design.md: whoosh at visual transition moment) -->
+  <audio class="clip" id="sfx-whoosh-1"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="25.785"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-2"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="59.337"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-3"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="89.185"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-4"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="134.126" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-5"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="172.252" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-6"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="265.872" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-7"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="272.060" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-8"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="350.681" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio class="clip" id="sfx-whoosh-9"  src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="384.941" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Whoosh 10: midroll boundary — fires alongside midroll-sfx-in on track 4 -->
+  <audio class="clip" id="sfx-whoosh-10" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="451.130" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Whoosh 11: scene-checklist-fig3 boundary (post-midroll) -->
+  <audio class="clip" id="sfx-whoosh-11" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="483.080" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Whoosh 12: scene-cta boundary -->
+  <audio class="clip" id="sfx-whoosh-12" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="525.246" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Per-element SFX accents (unchanged pre-midroll, post-midroll times shifted) -->
+  <!-- Scene 1: impact-slam on "Three" stat slam lock (transcript[5] start 2.996, -0.05 lead) -->
+  <audio class="clip" id="sfx-impact-1" src="assets/sfx/impact-slam.mp3"
+         data-start="2.946" data-duration="0.63" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- Scene 4: strike-cross on "two weeks ago" (113.264) -->
+  <audio class="clip" id="sfx-strike-4" src="assets/sfx/strike-cross.mp3"
+         data-start="113.264" data-duration="0.63" data-track-index="4" data-volume="0.11"></audio>
+  <!-- Scene 4: glitch-zap on pivot "differently" (121.000) -->
+  <audio class="clip" id="sfx-glitch-4" src="assets/sfx/glitch-zap.mp3"
+         data-start="120.950" data-duration="0.52" data-track-index="5" data-volume="0.09"></audio>
+
+  <!-- Scene 5: scale-slam on figure lock (135.126) -->
+  <audio class="clip" id="sfx-scale-5" src="assets/sfx/scale-slam.mp3"
+         data-start="135.126" data-duration="0.73" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- Scene 6: spring-pop on "Don't" emphatic (~254.830) -->
+  <audio class="clip" id="sfx-spring-6" src="assets/sfx/spring-pop.mp3"
+         data-start="254.830" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Scene 7: pop on banner entrance ("Quick" at 265.872) -->
+  <audio class="clip" id="sfx-pop-7" src="assets/sfx/pop.mp3"
+         data-start="265.872" data-duration="0.52" data-track-index="4" data-volume="0.10"></audio>
+
+  <!-- Scene 9: spring-pop on quote-mark spring (352.521) -->
+  <audio class="clip" id="sfx-spring-9" src="assets/sfx/spring-pop.mp3"
+         data-start="352.521" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Scene 10: scale-slam on fig2 figure lock (385.941) -->
+  <audio class="clip" id="sfx-scale-10" src="assets/sfx/scale-slam.mp3"
+         data-start="385.941" data-duration="0.73" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- Scene 12 (post-midroll): scale-slam on fig3 figure lock (483.080 + 1.0 = 484.080) -->
+  <audio class="clip" id="sfx-scale-12" src="assets/sfx/scale-slam.mp3"
+         data-start="484.080" data-duration="0.73" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- Scene 13 (post-midroll, CTA): impact-slam on "So" at 525.246 - 0.05 = 525.196 -->
+  <audio class="clip" id="sfx-impact-13" src="assets/sfx/impact-slam.mp3"
+         data-start="525.196" data-duration="0.63" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // Deterministic shape scatter — Anthropic backdrop
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  // repositionShapesPerPhase — deterministic per-phase shape reposition.
+  // Ported from templates/shorts/anthropic/index.html to long-form.
+  // Adapted for 1920x1080 canvas (w=1920, h=1080, minDist=360).
+  // Each sceneT triggers a re-scatter of shapes starting 0.4s before the transition
+  // so the reposition reads as part of the crossfade. The whoosh data-start equals sceneT exactly.
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1920, h = 1080, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      // Tween starts 0.4s before sceneT so reposition coincides with crossfade
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  // Crossfade between scene wrappers
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  spawnShapes('anthropic-large-codebases', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  // TOTAL_DURATION: 482.63 + 69.09 (narration-post w/ Archon line) + 6.28 (held YouTube end-card frame) = 557.99 → 558
+  const TOTAL_DURATION = 558;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath — finite repeat across 544s
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 17 },
+    0);
+
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'anthropic-large-codebases', TOTAL_DURATION);
+
+  // Linear progress fill across the full composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ─── Scene labels — Iteration C (post-midroll times shifted) ──────────────
+  tl.addLabel("hook",                 0)
+    .addLabel("source-cards",         25.785)
+    .addLabel("stat-pill-row",        59.337)
+    .addLabel("side-by-side",         89.185)
+    .addLabel("harness-fig1",         134.126)
+    .addLabel("extension-points",     172.252)
+    .addLabel("subscribe-banner",     265.872)
+    .addLabel("pattern1-nav",         272.060)
+    .addLabel("quote-card",           350.681)
+    .addLabel("pattern3-fig2",        384.941)
+    .addLabel("dynamous-midroll",     451.130)
+    .addLabel("checklist-fig3",       483.080)
+    .addLabel("cta",                  525.246);
+
+  // ─── Crossfades between adjacent scenes (fire 0.4s before scene boundary) ─
+  // Scenes 1-10: pre-midroll (unchanged)
+  crossfadeScenes(tl, "#scene-hook-wrap",             "#scene-source-cards-wrap",      "source-cards-=0.4");
+  crossfadeScenes(tl, "#scene-source-cards-wrap",     "#scene-stat-pill-row-wrap",     "stat-pill-row-=0.4");
+  crossfadeScenes(tl, "#scene-stat-pill-row-wrap",    "#scene-side-by-side-wrap",      "side-by-side-=0.4");
+  crossfadeScenes(tl, "#scene-side-by-side-wrap",     "#scene-harness-fig1-wrap",      "harness-fig1-=0.4");
+  crossfadeScenes(tl, "#scene-harness-fig1-wrap",     "#scene-extension-points-wrap",  "extension-points-=0.4");
+  crossfadeScenes(tl, "#scene-extension-points-wrap", "#scene-subscribe-banner-wrap",  "subscribe-banner-=0.4");
+  crossfadeScenes(tl, "#scene-subscribe-banner-wrap", "#scene-pattern1-nav-wrap",      "pattern1-nav-=0.4");
+  crossfadeScenes(tl, "#scene-pattern1-nav-wrap",     "#scene-quote-card-wrap",        "quote-card-=0.4");
+  crossfadeScenes(tl, "#scene-quote-card-wrap",       "#scene-pattern3-fig2-wrap",     "pattern3-fig2-=0.4");
+  // Scene 10 → Dynamous midroll block: crossfade out pattern3-fig2 at midroll start
+  crossfadeScenes(tl, "#scene-pattern3-fig2-wrap",    "#scene-checklist-fig3-wrap",    "dynamous-midroll-=0.4");
+  // Scene 12 (checklist-fig3) → Scene 13 (CTA)
+  crossfadeScenes(tl, "#scene-checklist-fig3-wrap",   "#scene-cta-wrap",               "cta-=0.4");
+
+  // ─── Shape reposition at every scene boundary (12 sceneT values) ─────────
+  // Per audio-design.md: whoosh fires at sceneT; shape reposition tween starts sceneT-0.4
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'anthropic-large-codebases',
+    [25.785, 59.337, 89.185, 134.126, 172.252, 265.872, 272.060, 350.681, 384.941, 451.130, 483.080, 525.246]
+  );
+
+  // Pad timeline to full composition duration (hyperframes-pitfalls.md §1)
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

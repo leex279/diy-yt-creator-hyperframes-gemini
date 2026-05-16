@@ -1,0 +1,337 @@
+<!--
+  scene-side-by-side.html — Scene 07: Token Economics (136.96 - 169.42, 32.46s)
+  Side-by-side agent panels. Left: agent without ast-grep (22 file reads, 11k tokens,
+  $0.03 ticking up). Right: agent with ast-grep (1 query, 1k tokens, $0.003). Then
+  the multiplier: 50 refactors/day × 30 days = $15/month wasted.
+
+  Scene-local anchors (local = root - 136.96) — retimed to new narration:
+    0.00   "Let's translate"          → scene head ("Let's translate that into money.")
+    2.61   "audit those 22 files"     → both panels enter (root 139.57)
+    7.44   "eleven thousand tokens"   → left counter slams up (root 144.40)
+    9.44   (parallel right panel)     → right counter rolls (root 146.40)
+   10.19   "cent for a single"        → mult-base "$0.01 / refactor" (root 147.15)
+   15.17   "Fifty refactors"          → mult-day "× 50" (root 152.13)
+   16.87   "Thirty days"              → mult-month "× 30" (root 153.83)
+   18.50   (= sign)                    → mult-eq (root 155.46)
+   19.17   "fifteen dollars"          → "$15/month" hero stamp (root 156.13)
+   19.53   (sub label entrance)        → mult-result-sub (root 156.49)
+   20.95   "per developer"             → tagline (root 157.91)
+   21.36   (every-month pulse — non-anchored decorative beat) (root 158.32)
+   27.86   "Roughly half the tokens"  → right panel highlight (root 164.82)
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1556"
+       data-height="998"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, -apple-system, sans-serif; color:var(--fg-default);
+              background: var(--bg-editor);">
+
+    <style>
+      #s07 { position: absolute; inset: 0; padding: 36px 50px; box-sizing: border-box; }
+
+      #s07-head {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 52px;
+        line-height: 1;
+        letter-spacing: -1px;
+        color: var(--fg-bright);
+      }
+      #s07-head .em { color: var(--err); }
+
+      /* Two-panel row */
+      .agents-row {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        height: 360px;
+      }
+      .agent-pane {
+        position: relative;
+        background: var(--bg-panel);
+        border: 1.5px solid var(--border-strong);
+        border-radius: 12px;
+        padding: 18px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .agent-pane.bad { border-left: 6px solid var(--err); }
+      .agent-pane.good { border-left: 6px solid var(--ok); }
+      .agent-pane .head {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: 1.5px;
+      }
+      .agent-pane.bad .head { color: var(--err); }
+      .agent-pane.good .head { color: var(--ok); }
+      .agent-pane .desc {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 18px;
+        color: var(--fg-muted);
+      }
+
+      .pane-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 4px;
+      }
+      .pane-stat {
+        background: var(--bg-deep);
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        padding: 10px 14px;
+      }
+      .pane-stat .lbl {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        color: var(--fg-muted);
+        text-transform: uppercase;
+      }
+      .pane-stat .val {
+        margin-top: 4px;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 44px;
+        line-height: 1;
+        letter-spacing: -1.5px;
+      }
+      .agent-pane.bad .pane-stat .val { color: var(--err); }
+      .agent-pane.good .pane-stat .val { color: var(--ok); }
+      .pane-stat .unit {
+        font-size: 18px;
+        color: var(--fg-muted);
+        margin-left: 4px;
+      }
+
+      .pane-query {
+        margin-top: auto;
+        background: var(--bg-deep);
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 18px;
+        color: var(--fg-default);
+        border: 1px solid var(--border-soft);
+      }
+      .agent-pane.bad .pane-query { color: var(--err); }
+      .agent-pane.good .pane-query { color: var(--ok); }
+
+      /* Multiplier row */
+      #mult-row {
+        margin-top: 18px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      .mult-chip {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 24px;
+        padding: 12px 18px;
+        border-radius: 8px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-strong);
+        color: var(--fg-bright);
+        letter-spacing: 1px;
+      }
+      .mult-chip .x { color: var(--err); margin-right: 6px; }
+      .mult-eq {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 38px;
+        color: var(--fg-bright);
+      }
+      #mult-result {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 76px;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: var(--err);
+        text-shadow: 0 0 32px rgba(247, 129, 102, 0.55);
+        padding: 12px 22px;
+        background: rgba(247, 129, 102, 0.12);
+        border: 2px solid var(--err);
+        border-radius: 10px;
+      }
+      #mult-result-sub {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 22px;
+        color: var(--err);
+        letter-spacing: 2px;
+        margin-left: 14px;
+      }
+
+      /* Tagline */
+      #s07-tagline {
+        position: absolute;
+        left: 50px;
+        bottom: 36px;
+        right: 50px;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        color: var(--fg-bright);
+        line-height: 1.15;
+        text-align: center;
+      }
+      #s07-tagline .em { color: var(--brand-orange); }
+      #s07-tagline .sub {
+        display: block;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 22px;
+        color: var(--fg-muted);
+        margin-top: 8px;
+        letter-spacing: 2px;
+      }
+    </style>
+
+    <div id="s07">
+      <div id="s07-head">
+        Let's translate that into <span class="em">money.</span>
+      </div>
+
+      <div class="agents-row">
+        <div class="agent-pane bad" id="pane-bad">
+          <div class="head">▼ AGENT · grep · DUMB</div>
+          <div class="desc">opens 22 files to find 22 real calls + 142 false positives</div>
+          <div class="pane-stats">
+            <div class="pane-stat"><span class="lbl">tokens</span><div class="val" id="bad-tokens">0</div></div>
+            <div class="pane-stat"><span class="lbl">cost / refactor</span><div class="val" id="bad-cost">$0.00</div></div>
+          </div>
+          <div class="pane-query">grep "console.log" → 22 reads</div>
+        </div>
+
+        <div class="agent-pane good" id="pane-good">
+          <div class="head">▲ AGENT · ast-grep · STRUCTURED</div>
+          <div class="desc">one structured query, 12 files of real call sites</div>
+          <div class="pane-stats">
+            <div class="pane-stat"><span class="lbl">tokens</span><div class="val" id="good-tokens">0</div></div>
+            <div class="pane-stat"><span class="lbl">cost / refactor</span><div class="val" id="good-cost">$0.000</div></div>
+          </div>
+          <div class="pane-query">ast-grep -p 'console.log($A)' → 12 reads</div>
+        </div>
+      </div>
+
+      <div id="mult-row">
+        <div class="mult-chip" id="mult-base">$0.01 / refactor</div>
+        <div class="mult-chip" id="mult-day"><span class="x">×</span>50 / day</div>
+        <div class="mult-chip" id="mult-month"><span class="x">×</span>30 days</div>
+        <div class="mult-eq" id="mult-eq">=</div>
+        <div id="mult-result">$15</div>
+        <div id="mult-result-sub">/MONTH / DEV — WASTED</div>
+      </div>
+
+      <div id="s07-tagline">
+        Coffee money. <span class="em">Per developer. Every month.</span>
+        <span class="sub">// ast-grep does the same job at roughly half the tokens</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // HIDE
+      tl.set("#s07-head",   { opacity: 0, y: -16 }, 0);
+      tl.set("#pane-bad",   { opacity: 0, x: -36 }, 0);
+      tl.set("#pane-good",  { opacity: 0, x: 36 }, 0);
+      tl.set("#mult-base",  { opacity: 0, y: 12 }, 0);
+      tl.set("#mult-day",   { opacity: 0, y: 12 }, 0);
+      tl.set("#mult-month", { opacity: 0, y: 12 }, 0);
+      tl.set("#mult-eq",    { opacity: 0, scale: 0.5 }, 0);
+      tl.set("#mult-result",{ opacity: 0, scale: 0.5 }, 0);
+      tl.set("#mult-result-sub", { opacity: 0, x: -10 }, 0);
+      tl.set("#s07-tagline",{ opacity: 0, y: 18 }, 0);
+
+      // Head — local 0 (root 136.96, "Let's translate")
+      tl.to("#s07-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
+
+      // Both panes enter — "audit those 22 files" (local 2.61, root 139.57)
+      tl.to("#pane-bad",  { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 2.61);
+      tl.to("#pane-good", { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 2.61);
+
+      // Left pane counters — "eleven thousand tokens" (local 7.44, root 144.40)
+      const bt = { v: 0 };
+      tl.to(bt, {
+        v: 11000, duration: 0.7, ease: "power3.out",
+        onUpdate() {
+          const el = document.getElementById('bad-tokens');
+          if (el) el.textContent = Math.round(bt.v).toLocaleString();
+        }
+      }, 7.44);
+      const bc = { v: 0 };
+      tl.to(bc, {
+        v: 0.01, duration: 0.7, ease: "power2.out",
+        onUpdate() {
+          const el = document.getElementById('bad-cost');
+          if (el) el.textContent = "$" + bc.v.toFixed(2);
+        }
+      }, 7.44);
+      // Slam pulse on left
+      tl.to("#pane-bad", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.44);
+      // CAMERA-ABUSE: bad-tokens shake on slam
+      tl.to("#bad-tokens", { scale: 1.15, color: "#ff5f56", duration: 0.25, ease: "back.out(2.0)", yoyo: true, repeat: 1 }, 7.44);
+
+      // Right pane counters — local 9.44 (parallel reveal, root 146.40)
+      const gt = { v: 0 };
+      tl.to(gt, {
+        v: 1100, duration: 0.7, ease: "power3.out",
+        onUpdate() {
+          const el = document.getElementById('good-tokens');
+          if (el) el.textContent = Math.round(gt.v).toLocaleString();
+        }
+      }, 9.44);
+      const gc = { v: 0 };
+      tl.to(gc, {
+        v: 0.001, duration: 0.7, ease: "power2.out",
+        onUpdate() {
+          const el = document.getElementById('good-cost');
+          if (el) el.textContent = "$" + gc.v.toFixed(3);
+        }
+      }, 9.44);
+
+      // Multiplier base — local 10.19 "cent for a single" (root 147.15)
+      tl.to("#mult-base", { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.5)" }, 10.19);
+      // × 50 — local 15.17 "Fifty refactors" (root 152.13)
+      tl.to("#mult-day",  { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.5)" }, 15.17);
+      // × 30 — local 16.87 "Thirty days" (root 153.83)
+      tl.to("#mult-month",{ opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.5)" }, 16.87);
+      // = sign — local 18.50 (root 155.46)
+      tl.to("#mult-eq",   { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.0)" }, 18.50);
+
+      // CAMERA-ABUSE: $15 EXPLOSIVE roll + container scale-pulse — local 19.17 "fifteen dollars" (root 156.13)
+      tl.to("#mult-result", {
+        opacity: 1, scale: 1.0, duration: 0.55, ease: "back.out(2.5)"
+      }, 19.17);
+      tl.set("#mult-result", { textContent: "$15" }, 19.17);
+      tl.to("#mult-result-sub", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 19.53);
+
+      // Tagline — "per developer" (local 20.95, root 157.91)
+      tl.to("#s07-tagline", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 20.95);
+
+      // Pulse on $15 (decorative beat, local 21.36)
+      tl.to("#mult-result", { scale: 1.1, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.36);
+
+      // Right pane highlight — "Roughly half the tokens" (local 27.86, root 164.82)
+      tl.to("#pane-good", {
+        boxShadow: "0 0 28px rgba(78, 201, 176, 0.5)",
+        duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 2
+      }, 27.86);
+      tl.to("#pane-good", { scale: 1.03, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 27.86);
+
+      tl.set({}, {}, 32.46);
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,433 @@
+<!--
+  scene-cta.html — Close + debate question (~119s).
+  Narration anchors (t_rel):
+    0.0    "So what do you do about all this"  → overline
+    4.2    "If a binary on your path"            → formula bash line
+   11.3    "If you're calling a proprietary API" → formula imports line
+   18.2    "If you genuinely need"                → formula mcp line
+   32.0    "Two things nobody… has solved"        → unsolved heading
+   35.9    "Cross server composition"             → unsolved chip 1
+   50.0    "And discoverability"                   → unsolved chip 2
+   87.2    "Here's the takeaway"                   → TAKEAWAY HERO REVEAL
+   91.8    "M C P isn't dying"                     → demoted emphasis
+  100.8    "Bash for binaries"                     → three-rules mini chips
+  108.8    "the agent picks per task"              → final lockup
+  111.8    "Tell me in the comments"               → debate + CTA pills
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden; perspective:2200px;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-cta-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 18px;
+        box-sizing:border-box;
+        transform-style: preserve-3d;
+        position: relative;
+      }
+      #scene-cta-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        display: flex; align-items: center; gap: 14px;
+      }
+      #scene-cta-content .overline::before,
+      #scene-cta-content .overline::after {
+        content: ""; width: 60px; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-warn), transparent);
+      }
+
+      /* Formula code frame */
+      #scene-cta-content .formula-frame {
+        width: 1280px;
+        border-radius: 14px;
+        background: var(--bg-elev);
+        border: 1px solid var(--border-bright);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      .formula-bar {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 22px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255,255,255,0.025);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .formula-bar .dots { display: flex; gap: 5px; }
+      .formula-bar .dots span { width: 8px; height: 8px; border-radius: 50%; }
+      .formula-bar .dots .r { background: #ef4444; }
+      .formula-bar .dots .y { background: var(--accent-stat); }
+      .formula-bar .dots .g { background: var(--accent-4); }
+      .formula-bar .file { color: var(--accent-stat); }
+
+      .formula-body {
+        padding: 22px 28px;
+        display: grid;
+        grid-template-columns: 50px 1fr;
+        gap: 4px 18px;
+        font-family: var(--mono);
+        font-size: 19px;
+        line-height: 1.6;
+      }
+      .formula-body .ln {
+        color: var(--text-muted);
+        font-weight: 500;
+        text-align: right;
+        padding-right: 12px;
+        border-right: 1px solid var(--border);
+        font-variant-numeric: tabular-nums;
+      }
+      .formula-body .code {
+        color: var(--text);
+        white-space: nowrap;
+        padding-left: 4px;
+      }
+      .formula-body .code .kw { color: #c084fc; font-weight: 700; }
+      .formula-body .code .id { color: var(--text); font-weight: 600; }
+      .formula-body .code .str { color: var(--accent-4); }
+      .formula-body .code .com { color: var(--text-muted); font-style: italic; }
+      .formula-body .code .b-bash { color: var(--accent-4); font-weight: 700; }
+      .formula-body .code .b-imp { color: var(--accent-2); font-weight: 700; }
+      .formula-body .code .b-mcp { color: var(--accent-warn); font-weight: 700; }
+
+      /* Unsolved block */
+      #scene-cta-content .unsolved {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 10px;
+        margin-top: 4px;
+      }
+      #scene-cta-content .unsolved .heading {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        display: inline-flex; align-items: center; gap: 12px;
+      }
+      #scene-cta-content .unsolved .heading::before,
+      #scene-cta-content .unsolved .heading::after {
+        content: ""; width: 30px; height: 1px;
+        background: var(--border-bright);
+      }
+      #scene-cta-content .unsolved .chips {
+        display: flex; flex-direction: row; gap: 14px;
+      }
+      .uns-chip {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: 1px dashed var(--border-bright);
+        background: rgba(255, 255, 255, 0.02);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        display: inline-flex; align-items: center; gap: 10px;
+      }
+      .uns-chip .x {
+        color: var(--accent-warn);
+        font-weight: 800;
+      }
+      .uns-chip b { color: var(--text); font-weight: 700; }
+
+      /* Takeaway HERO */
+      #scene-cta-content .takeaway-wrap {
+        width: 1500px;
+        text-align: center;
+        margin-top: 6px;
+        transform-style: preserve-3d;
+      }
+      #scene-cta-content .takeaway {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 76px;
+        line-height: 1.0;
+        letter-spacing: -2.5px;
+        color: var(--text);
+        text-align: center;
+      }
+      #scene-cta-content .takeaway .glow {
+        color: var(--accent-stat);
+        text-shadow: 0 0 40px var(--glow-yellow);
+      }
+
+      /* Three-rules mini chips (under takeaway) */
+      #scene-cta-content .rules-row {
+        display: flex; flex-direction: row;
+        align-items: center; justify-content: center;
+        gap: 14px;
+        margin-top: 10px;
+      }
+      .rule-chip {
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: 1.5px solid var(--border-bright);
+        background: rgba(255,255,255,0.04);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        display: inline-flex; align-items: center; gap: 10px;
+      }
+      .rule-chip.bash { color: var(--accent-4); border-color: rgba(52, 211, 153, 0.5); }
+      .rule-chip.imp  { color: var(--accent-2); border-color: rgba(34, 211, 238, 0.5); }
+      .rule-chip.mcp  { color: var(--accent-warn); border-color: rgba(251, 146, 60, 0.5); }
+      .rule-chip .plus { color: var(--text-muted); font-size: 16px; }
+
+      /* Debate + CTA pills */
+      #scene-cta-content .debate-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap: 12px;
+        margin-top: 4px;
+      }
+      #scene-cta-content .debate {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 1.25;
+        letter-spacing: -0.3px;
+        color: var(--text);
+        text-align: center;
+      }
+      #scene-cta-content .debate .q { color: var(--accent-stat); margin-right: 8px; }
+
+      #scene-cta-content .ballot {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 14px;
+      }
+      .ballot-box {
+        padding: 10px 20px;
+        border: 1.5px solid var(--border-bright);
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 17px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text);
+        display: inline-flex; align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.025);
+      }
+      .ballot-box .cb { font-family: var(--mono); font-size: 17px; font-weight: 800; }
+      .ballot-box.bash { color: var(--accent-4); border-color: rgba(52, 211, 153, 0.5); }
+      .ballot-box.imp  { color: var(--accent-2); border-color: rgba(34, 211, 238, 0.5); }
+      .ballot-box.mcp  { color: var(--accent-warn); border-color: rgba(251, 146, 60, 0.5); }
+
+      #scene-cta-content .pills {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 18px;
+        margin-top: 4px;
+      }
+      .cta-pill {
+        padding: 14px 26px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 17px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--text);
+        display:inline-flex; align-items:center;
+        gap: 14px;
+      }
+      .cta-pill.comment .icon { color: var(--accent-2); }
+      .cta-pill.subscribe {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.20) 0%, rgba(251, 146, 60, 0.06) 100%);
+        border-color: rgba(251, 146, 60, 0.6);
+        color: var(--accent-warn);
+      }
+      .cta-pill.subscribe .arrow { color: var(--accent-warn); font-weight: 900; font-size: 22px; }
+    </style>
+
+    <div id="scene-cta-content">
+      <div class="overline" id="cta-overline">THE ANSWER · END FRAME</div>
+
+      <div class="formula-frame" id="cta-formula-frame">
+        <div class="formula-bar">
+          <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+          <div class="file">agent.runtime.ts</div>
+        </div>
+        <div class="formula-body" id="cta-formula-body">
+          <span class="ln" data-line="0">01</span><span class="code" data-line="0"><span class="com">// the new stack — agent picks per task</span></span>
+          <span class="ln" data-line="1">02</span><span class="code" data-line="1"><span class="kw">import</span> <span class="id">{ <span class="b-bash">bash</span> }</span>     <span class="kw">from</span> <span class="str">"@runtime/shell"</span>      <span class="com">// binaries · zero schema</span></span>
+          <span class="ln" data-line="2">03</span><span class="code" data-line="2"><span class="kw">import</span> <span class="id">{ <span class="b-imp">tools</span> }</span>    <span class="kw">from</span> <span class="str">"@tools/*"</span>            <span class="com">// proprietary APIs · typed</span></span>
+          <span class="ln" data-line="3">04</span><span class="code" data-line="3"><span class="kw">import</span> <span class="id">{ <span class="b-mcp">mcp</span> }</span>      <span class="kw">from</span> <span class="str">"@mcp/runtime"</span>         <span class="com">// contracts · oauth · audit</span></span>
+        </div>
+      </div>
+
+      <div class="unsolved" id="cta-unsolved">
+        <div class="heading" id="uns-heading">// still unsolved</div>
+        <div class="chips">
+          <div class="uns-chip" id="uns-chip-1"><span class="x">✕</span><b>cross-server</b> composition</div>
+          <div class="uns-chip" id="uns-chip-2"><span class="x">✕</span><b>discoverability</b> · no standard</div>
+        </div>
+      </div>
+
+      <div class="takeaway-wrap" id="cta-takeaway-wrap">
+        <div class="takeaway" id="cta-takeaway">
+          MCP isn't dying.<br>It's getting <span class="glow">demoted to a primitive</span>.
+        </div>
+      </div>
+
+      <div class="rules-row" id="cta-rules-row">
+        <div class="rule-chip bash" id="rule-bash">▍bash</div>
+        <span class="plus">+</span>
+        <div class="rule-chip imp" id="rule-imp">▍typed imports</div>
+        <span class="plus">+</span>
+        <div class="rule-chip mcp" id="rule-mcp">▍mcp</div>
+      </div>
+
+      <div class="debate-block" id="cta-debate-block">
+        <div class="debate" id="cta-debate">
+          <span class="q">?</span> Which primitive do you reach for <b>first</b>?
+        </div>
+        <div class="ballot">
+          <div class="ballot-box bash" id="ballot-bash"><span class="cb">[ ]</span> bash</div>
+          <div class="ballot-box imp"  id="ballot-imp"><span class="cb">[ ]</span> typed imports</div>
+          <div class="ballot-box mcp"  id="ballot-mcp"><span class="cb">[ ]</span> mcp</div>
+        </div>
+      </div>
+
+      <div class="pills">
+        <div class="cta-pill comment" id="cta-comment">
+          <span class="icon">▍</span>
+          <span>drop your take below</span>
+        </div>
+        <div class="cta-pill subscribe" id="cta-subscribe">
+          <span>subscribe</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ══════════ HIDE EVERYTHING AT t=0 ══════════
+      tl.set("#cta-overline",       { opacity: 0, y: -14 }, 0);
+      tl.set("#cta-formula-frame",  { opacity: 0, rotationX: -22, y: 60, scale: 0.95, transformOrigin: "center top" }, 0);
+      tl.set('[data-line="0"]',     { opacity: 0 }, 0);
+      tl.set('[data-line="1"]',     { opacity: 0, x: -18 }, 0);
+      tl.set('[data-line="2"]',     { opacity: 0, x: -18 }, 0);
+      tl.set('[data-line="3"]',     { opacity: 0, x: -18 }, 0);
+      tl.set("#cta-unsolved",       { opacity: 0, y: 18 }, 0);
+      tl.set("#uns-chip-1",         { opacity: 0, x: -14 }, 0);
+      tl.set("#uns-chip-2",         { opacity: 0, x: 14 }, 0);
+      tl.set("#cta-takeaway-wrap",  { opacity: 0, scale: 0.85, rotationX: 55, z: -200, transformOrigin: "center center" }, 0);
+      tl.set("#cta-rules-row",      { opacity: 0, y: 22 }, 0);
+      tl.set("#rule-bash, #rule-imp, #rule-mcp", { opacity: 0, y: 14 }, 0);
+      tl.set("#cta-debate-block",   { opacity: 0, y: 22 }, 0);
+      tl.set("#cta-debate",         { opacity: 0, y: 14 }, 0);
+      tl.set(".ballot-box",         { opacity: 0, y: 14 }, 0);
+      tl.set("#cta-comment, #cta-subscribe", { opacity: 0, y: 20 }, 0);
+
+      // ══════════ NARRATION-SYNCED REVEALS ══════════
+
+      // 0.0s — overline
+      tl.to("#cta-overline", { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 0.0);
+
+      // 2.0s — formula frame tilts up (3D rotateX entrance)
+      tl.to("#cta-formula-frame",
+        { opacity: 1, rotationX: 0, y: 0, scale: 1, duration: 1.1, ease: "expo.out" }, 2.0);
+      // Comment line reveals quickly inside the frame
+      tl.to('[data-line="0"]', { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.2);
+
+      // 4.2s — bash line
+      tl.to('[data-line="1"]', { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 4.2);
+      tl.to(".b-bash",
+        { textShadow: "0 0 16px rgba(52, 211, 153, 0.75)", scale: 1.08,
+          duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.0);
+
+      // 11.3s — imports line
+      tl.to('[data-line="2"]', { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 11.3);
+      tl.to(".b-imp",
+        { textShadow: "0 0 16px rgba(34, 211, 238, 0.75)", scale: 1.08,
+          duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.1);
+
+      // 18.2s — mcp line
+      tl.to('[data-line="3"]', { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 18.2);
+      tl.to(".b-mcp",
+        { textShadow: "0 0 16px rgba(251, 146, 60, 0.75)", scale: 1.08,
+          duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 19.0);
+
+      // 32.0s — unsolved heading
+      tl.to("#cta-unsolved", { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 32.0);
+
+      // 35.9s — cross-server chip
+      tl.to("#uns-chip-1", { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.4)" }, 35.9);
+
+      // 50.0s — discoverability chip
+      tl.to("#uns-chip-2", { opacity: 1, x: 0, duration: 0.55, ease: "back.out(1.4)" }, 50.0);
+
+      // 87.2s — TAKEAWAY HERO REVEAL (3D dimensional drop)
+      tl.to("#cta-takeaway-wrap",
+        { opacity: 1, scale: 1, rotationX: 0, z: 0, duration: 1.4, ease: "expo.out" }, 87.2);
+
+      // 91.8s — "demoted to a primitive" glow emphasis
+      tl.to("#cta-takeaway .glow",
+        { textShadow: "0 0 80px rgba(250, 204, 21, 0.95)", scale: 1.04,
+          duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 91.8);
+
+      // 100.8s — three-rules mini chips appear, staggered with narration
+      tl.to("#cta-rules-row", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 100.8);
+      tl.to("#rule-bash", { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.6)" }, 101.0);
+      tl.to("#rule-imp",  { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.6)" }, 102.8);
+      tl.to("#rule-mcp",  { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.6)" }, 104.8);
+
+      // 108.0s — debate + ballot
+      tl.to("#cta-debate-block", { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 108.0);
+      tl.to("#cta-debate", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 108.4);
+      tl.to(".ballot-box", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)", stagger: 0.15 }, 109.4);
+
+      // 111.8s — CTA pills (comment + subscribe)
+      tl.to("#cta-comment",   { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 111.8);
+      tl.to("#cta-subscribe", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 112.2);
+
+      // 114.0s — subscribe finite pulse (3 ticks)
+      tl.to("#cta-subscribe", {
+        boxShadow: "0 0 0 8px rgba(251, 146, 60, 0.40)",
+        duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 5
+      }, 114.0);
+
+      // 115.0s — ballot box "candidates light up" — finite sequential
+      tl.to("#ballot-bash .cb", { color: "#34D399", duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 115.0);
+      tl.to("#ballot-imp .cb",  { color: "#22D3EE", duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 116.0);
+      tl.to("#ballot-mcp .cb",  { color: "#FB923C", duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 117.0);
+
+      // 118.0s — formula frame final lockup glow
+      tl.to("#cta-formula-frame", {
+        boxShadow: "0 30px 100px rgba(251, 146, 60, 0.35), 0 0 0 1px rgba(251, 146, 60, 0.35)",
+        duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 118.0);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

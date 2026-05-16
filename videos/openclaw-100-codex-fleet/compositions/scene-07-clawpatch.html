@@ -1,0 +1,454 @@
+<!--
+  scene-07-clawpatch.html — Tool 3 deep-dive (60.3s, comp-time 266.55-326.82).
+
+  Semantic-split diagram (5 unit types) + findings grid (6 categories).
+
+  Scene-internal anchors (audio - 246.553 - 20 = audio - 266.553):
+     5.0   "claw-patch" title slam
+    19.4   "Claw-patch maps the repo" — diagram intro
+    23.2   Routes
+    24.97  Commands
+    28.98  Packages
+    29.70  CLI
+    30.81  Tests
+    40.68  "findings come back categorized"
+    42.9   Bug / 43.4 security / 44.1 perf / 45.0 docs gap / 45.9 test gap / 46.7 maintainability
+    55.7   markdown / JSON report
+-->
+<template id="scene-07-clawpatch-template">
+  <div data-composition-id="scene-07-clawpatch"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s07-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap: 16px;
+        box-sizing:border-box;
+      }
+      #s07-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s07-title {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 110px;
+        line-height: 1;
+        letter-spacing: -3px;
+        color: var(--text);
+      }
+      #s07-title .tool { color: var(--accent-1); }
+      #s07-meta {
+        display:flex; gap: 14px;
+      }
+      .s07-chip {
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-bright);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 17px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      .s07-chip.cyan { color: var(--accent-2); border-color: rgba(34, 211, 238, 0.5); }
+
+      #s07-problem-callout {
+        margin-top: 4px;
+        padding: 14px 26px;
+        border-radius: 14px;
+        background: rgba(201, 42, 42, 0.08);
+        border: 1.5px solid rgba(201, 42, 42, 0.45);
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 26px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1400px;
+      }
+      #s07-problem-callout .accent { color: var(--accent-1-hi); }
+      #s07-problem-callout .strike {
+        position: relative;
+        display: inline-block;
+      }
+      #s07-problem-callout .strike .bar {
+        position: absolute;
+        left: 0; right: 0;
+        top: 50%; height: 4px;
+        background: var(--accent-1);
+        transform-origin: left center;
+        transform: scaleX(0) translateY(-50%);
+      }
+      #s07-units-intro {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: var(--text);
+        text-transform: uppercase;
+      }
+      #s07-units-intro .hi { color: var(--accent-1-hi); }
+      #s07-units-context {
+        margin-top: 4px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1.5px solid rgba(34, 211, 238, 0.4);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--accent-2);
+      }
+      #s07-sample-finding {
+        margin-top: 6px;
+        padding: 14px 24px;
+        border-radius: 12px;
+        background: rgba(252, 211, 77, 0.08);
+        border: 1.5px solid rgba(252, 211, 77, 0.45);
+        display:inline-flex; align-items:center; gap: 14px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--text);
+      }
+      #s07-sample-finding .crit {
+        padding: 4px 10px; border-radius: 6px;
+        background: rgba(201, 42, 42, 0.18); color: #ff5c5c;
+      }
+      #s07-sample-finding .conf { color: var(--accent-stat); }
+      #s07-sample-finding .path { color: var(--accent-2); }
+
+      /* Unit cards — semantic split */
+      #s07-units-row {
+        display:flex; gap: 14px;
+        margin-top: 6px;
+      }
+      .s07-unit-idx {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+      }
+      .s07-unit {
+        flex: 1;
+        max-width: 280px;
+        padding: 18px 16px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--border-bright);
+        position: relative;
+        overflow: hidden;
+      }
+      .s07-unit::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; right: 0;
+        height: 5px;
+        background: var(--accent-2);
+      }
+      .s07-unit.u2::before { background: var(--accent-stat); }
+      .s07-unit.u3::before { background: var(--accent-1); }
+      .s07-unit.u4::before { background: var(--accent-warn); }
+      .s07-unit.u5::before { background: var(--accent-ok); }
+      .s07-unit .name {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+      .s07-unit .lang {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--text-secondary);
+      }
+
+      #s07-per-unit {
+        margin-top: 6px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 30px;
+        color: var(--text);
+      }
+      .s07-mark-wrap {
+        position: relative;
+        display: inline-block;
+      }
+      #s07-per-unit-bar {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -6px;
+        height: 6px;
+        background: var(--accent-1);
+        border-radius: 3px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Findings grid — 6 categories */
+      #s07-findings-header {
+        margin-top: 14px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 3px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      #s07-findings {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 14px;
+        width: 100%;
+        max-width: 1680px;
+      }
+      .s07-finding {
+        padding: 18px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1.5px solid var(--border-bright);
+        display:flex; flex-direction:column;
+        gap: 8px;
+        text-align: center;
+        position: relative;
+      }
+      .s07-finding .lbl {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        color: var(--text);
+      }
+      .s07-finding .sev-chips {
+        display:flex; justify-content:center; gap: 6px;
+      }
+      .s07-finding .sev-chip {
+        padding: 4px 9px;
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 1px;
+      }
+      .s07-finding .sev-chip.crit { background: rgba(201, 42, 42, 0.18); color: #ff5c5c; }
+      .s07-finding .sev-chip.hi   { background: rgba(249, 115, 22, 0.25); color: var(--accent-warn); }
+      .s07-finding .sev-chip.med  { background: rgba(252, 211, 77, 0.25); color: var(--accent-stat); }
+      .s07-finding .sev-chip.lo   { background: rgba(34, 211, 238, 0.25); color: var(--accent-2); }
+      .s07-finding.bug      { border-color: rgba(201, 42, 42, 0.55); }
+      .s07-finding.sec      { border-color: rgba(239, 68, 68, 0.55); }
+      .s07-finding.perf     { border-color: rgba(249, 115, 22, 0.55); }
+      .s07-finding.docs     { border-color: rgba(34, 211, 238, 0.45); }
+      .s07-finding.test     { border-color: rgba(252, 211, 77, 0.55); }
+      .s07-finding.maint    { border-color: rgba(16, 185, 129, 0.55); }
+
+      #s07-outputs {
+        display:flex; gap: 18px;
+        margin-top: 10px;
+      }
+      .s07-output {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 12px 22px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1.5px solid var(--border-bright);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--text);
+      }
+      .s07-output .ico { color: var(--accent-2); font-size: 20px; }
+    </style>
+
+    <div id="s07-content">
+      <div id="s07-overline">TOOL 3 &middot; SEMANTIC REVIEW</div>
+      <div id="s07-title"><span class="tool">clawpatch.ai</span></div>
+      <div id="s07-meta">
+        <div class="s07-chip">MIT</div>
+        <div class="s07-chip cyan">made by the OpenClaw team</div>
+      </div>
+
+      <div id="s07-problem-callout">
+        Most AI review tools see <span class="strike">one giant codebase<span class="bar"></span></span> and <span class="accent">choke</span>.
+      </div>
+
+      <div id="s07-units-intro">&rarr; Claw-patch maps repo into <span class="hi">SEMANTIC UNITS</span></div>
+
+      <div id="s07-units-row">
+        <div class="s07-unit u1" id="s07-unit-1">
+          <div class="name">Routes</div>
+          <div class="lang">Next.js</div>
+        </div>
+        <div class="s07-unit u2" id="s07-unit-2">
+          <div class="name">Commands</div>
+          <div class="lang">npm / Go / Rust / Swift</div>
+        </div>
+        <div class="s07-unit u3" id="s07-unit-3">
+          <div class="name">Packages</div>
+          <div class="lang">module deps</div>
+        </div>
+        <div class="s07-unit u4" id="s07-unit-4">
+          <div class="name">CLI</div>
+          <div class="lang">scripts &amp; bins</div>
+        </div>
+        <div class="s07-unit u5" id="s07-unit-5">
+          <div class="name">Tests</div>
+          <div class="lang">unit + integration</div>
+        </div>
+      </div>
+
+      <div id="s07-units-context">Each unit = entrypoints + owned files + context + tests</div>
+
+      <div id="s07-per-unit">
+        Review runs <span class="s07-mark-wrap">per unit, not per file<span id="s07-per-unit-bar"></span></span>.
+      </div>
+
+      <div id="s07-findings-header">FINDINGS &middot; CATEGORIZED + SCORED</div>
+      <div id="s07-findings">
+        <div class="s07-finding bug" id="s07-find-1">
+          <div class="lbl">Bug</div>
+          <div class="sev-chips"><span class="sev-chip crit">CRIT</span><span class="sev-chip hi">HI</span></div>
+        </div>
+        <div class="s07-finding sec" id="s07-find-2">
+          <div class="lbl">Security</div>
+          <div class="sev-chips"><span class="sev-chip crit">CRIT</span><span class="sev-chip hi">HI</span></div>
+        </div>
+        <div class="s07-finding perf" id="s07-find-3">
+          <div class="lbl">Performance</div>
+          <div class="sev-chips"><span class="sev-chip hi">HI</span><span class="sev-chip med">MED</span></div>
+        </div>
+        <div class="s07-finding docs" id="s07-find-4">
+          <div class="lbl">Docs gap</div>
+          <div class="sev-chips"><span class="sev-chip med">MED</span><span class="sev-chip lo">LO</span></div>
+        </div>
+        <div class="s07-finding test" id="s07-find-5">
+          <div class="lbl">Test gap</div>
+          <div class="sev-chips"><span class="sev-chip hi">HI</span><span class="sev-chip med">MED</span></div>
+        </div>
+        <div class="s07-finding maint" id="s07-find-6">
+          <div class="lbl">Maintainability</div>
+          <div class="sev-chips"><span class="sev-chip med">MED</span><span class="sev-chip lo">LO</span></div>
+        </div>
+      </div>
+
+      <div id="s07-sample-finding">
+        <span class="crit" id="s07-sf-1">CRIT</span>
+        <span class="conf" id="s07-sf-2">0.92 confidence</span>
+        <span id="s07-sf-sep">&middot;</span>
+        <span class="path" id="s07-sf-3">packages/auth/session.ts:142</span>
+      </div>
+
+      <div id="s07-outputs">
+        <div class="s07-output" id="s07-out-md"><span class="ico">&#9776;</span>markdown report</div>
+        <div class="s07-output" id="s07-out-json"><span class="ico">{ }</span>JSON report</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        // Hide all from t=0
+        tl.set("#s07-overline", { opacity: 0, y: 16 }, 0);
+        tl.set("#s07-title", { opacity: 0, y: 30, scale: 0.95 }, 0);
+        tl.set("#s07-meta", { opacity: 0, y: 16 }, 0);
+        ["#s07-unit-1","#s07-unit-2","#s07-unit-3","#s07-unit-4","#s07-unit-5"].forEach(s =>
+          tl.set(s, { opacity: 0, y: 24, scale: 0.95 }, 0));
+        tl.set("#s07-per-unit", { opacity: 0, y: 20 }, 0);
+        tl.set("#s07-per-unit-bar", { scaleX: 0 }, 0);
+        tl.set("#s07-findings-header", { opacity: 0, y: 14 }, 0);
+        ["#s07-find-1","#s07-find-2","#s07-find-3","#s07-find-4","#s07-find-5","#s07-find-6"].forEach(s =>
+          tl.set(s, { opacity: 0, y: 20, scale: 0.95 }, 0));
+        tl.set("#s07-problem-callout", { opacity: 0, y: 20 }, 0);
+        tl.set("#s07-problem-callout .bar", { scaleX: 0 }, 0);
+        tl.set("#s07-units-intro", { opacity: 0, y: 14 }, 0);
+        tl.set("#s07-units-context", { opacity: 0, y: 14 }, 0);
+        tl.set("#s07-sample-finding", { opacity: 0, y: 16 }, 0);
+        tl.set("#s07-sf-1", { opacity: 0 }, 0);
+        tl.set("#s07-sf-2", { opacity: 0 }, 0);
+        tl.set("#s07-sf-sep", { opacity: 0 }, 0);
+        tl.set("#s07-sf-3", { opacity: 0 }, 0);
+        tl.set("#s07-out-md", { opacity: 0, y: 16 }, 0);
+        tl.set("#s07-out-json", { opacity: 0, y: 16 }, 0);
+
+        tl.to("#s07-overline", { opacity: 1, y: 0, duration: 0.5 }, 0.5);
+        tl.to("#s07-title",    { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.5)" }, 4.7);
+        tl.to("#s07-meta",     { opacity: 1, y: 0, duration: 0.5 }, 8.0);
+
+        // REAL-CONTENT BEATS — fill the 8.0 → 23.0 gap
+        // Problem callout reveals at narration "The trick is how it slices a repo" @ 12.56s
+        tl.to("#s07-problem-callout", { opacity: 1, y: 0, duration: 0.5 }, 12.5);
+        // Strike-through sweep on "one giant codebase" at narration "one giant codebase" @ 17.82s
+        tl.to("#s07-problem-callout .bar", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 17.5);
+        // Problem callout glow pulse at narration "choke" @ 19.03s — emphasizes the punchline
+        tl.to("#s07-problem-callout", { boxShadow: "0 0 40px rgba(201, 42, 42, 0.45)", duration: 0.5, yoyo: true, repeat: 1 }, 18.9);
+        // REAL-CONTENT BEAT — units-intro line at narration "Claw-patch maps the repo into semantic units first" @ 20.36s
+        tl.to("#s07-units-intro", { opacity: 1, y: 0, duration: 0.5 }, 20.3);
+
+        // Unit cards reveal at each name
+        tl.to("#s07-unit-1", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 23.0);  // Routes
+        tl.to("#s07-unit-2", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 24.8);  // Commands
+        tl.to("#s07-unit-3", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 28.8);  // Packages
+        tl.to("#s07-unit-4", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 29.5);  // CLI
+        tl.to("#s07-unit-5", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 30.6);  // Tests
+
+        // REAL-CONTENT BEAT — units-context chip at narration "Each unit gets its own entrypoints" @ 32.63s
+        // (fills the 30.6 → 37.4 gap)
+        tl.to("#s07-units-context", { opacity: 1, y: 0, duration: 0.5 }, 32.6);
+
+        // Per-unit emphasis with marker at "per unit, not per file" (t=38.5)
+        tl.to("#s07-per-unit", { opacity: 1, y: 0, duration: 0.5 }, 37.4);
+        tl.to("#s07-per-unit-bar", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 38.5);
+
+        // Findings header at "findings come back categorized" (t=40.7)
+        tl.to("#s07-findings-header", { opacity: 1, y: 0, duration: 0.5 }, 40.5);
+
+        // Findings cards at each spoken category name
+        tl.to("#s07-find-1", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 42.8);  // Bug
+        tl.to("#s07-find-2", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 43.3);  // security
+        tl.to("#s07-find-3", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 44.0);  // performance
+        tl.to("#s07-find-4", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 44.9);  // docs gap
+        tl.to("#s07-find-5", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 45.8);  // test gap
+        tl.to("#s07-find-6", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 46.6);  // maintainability
+
+        // Severity chip subtle scale-pulse on critical cards when "severity / confidence" is spoken
+        tl.to("#s07-find-1 .sev-chip.crit, #s07-find-2 .sev-chip.crit", {
+          scale: 1.2, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1
+        }, 49.6);
+
+        // REAL-CONTENT BEATS — sample-finding card reveals stepwise to match narration
+        // Frame + CRIT chip @ "severity" @ 50.21s
+        // Confidence @ "confidence score" @ 51.50s
+        // Path @ "exact lines of evidence" @ 52.84s
+        // Sourced: content-brief Section 3.3 — categorized findings with severity + confidence + file path
+        tl.to("#s07-sample-finding", { opacity: 1, y: 0, duration: 0.5 }, 50.2);
+        tl.to("#s07-sf-1", { opacity: 1, duration: 0.4 }, 50.3);
+        tl.to("#s07-sf-2", { opacity: 1, duration: 0.4 }, 51.5);
+        tl.to("#s07-sf-sep", { opacity: 1, duration: 0.3 }, 52.7);
+        tl.to("#s07-sf-3", { opacity: 1, duration: 0.4 }, 52.8);
+
+        // Output chips at "markdown report and JSON report" (t=55.7)
+        tl.to("#s07-out-md",   { opacity: 1, y: 0, duration: 0.5 }, 55.5);
+        tl.to("#s07-out-json", { opacity: 1, y: 0, duration: 0.5 }, 56.7);
+
+        tl.set({}, {}, 60.3);
+        window.__timelines["scene-07-clawpatch"] = tl;
+      })();
+    </script>
+  </div>
+</template>

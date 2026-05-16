@@ -1,0 +1,39 @@
+npm warn exec The following package was not found and will be installed: hyperframes@0.6.14
+{
+  "ok": true,
+  "errorCount": 0,
+  "warningCount": 3,
+  "infoCount": 18,
+  "findings": [
+    {
+      "code": "duplicate_media_discovery_risk",
+      "severity": "warning",
+      "message": "Detected 2 matching img entries with the same source/start/duration.",
+      "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation.",
+      "snippet": "img src=assets/anthropic-logo-light.svg data-start= data-duration=",
+      "file": "C:\\Users\\Leex279\\Documents\\GitHub\\diy-yt-creator-hyperframes\\videos\\claude-founders-playbook\\index.html"
+    },
+    {
+      "code": "overlapping_gsap_tweens",
+      "severity": "warning",
+      "message": "GSAP tweens overlap on \"#phase-label\" for opacity between 0.35s and 0.45s.",
+      "selector": "#phase-label",
+      "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`.",
+      "snippet": "tl.from(\"#timecode\", { x: 20, opacity: 0, duration: 0.5, ease: \"power2.out\" }, 0.3) tl.to(\"#p8-subscribe\", { opacity: 1, y: 0, duration: 0.45, ease: \"power2.out\" }, 103.40)",
+      "file": "C:\\Users\\Leex279\\Documents\\GitHub\\diy-yt-creator-hyperframes\\videos\\claude-founders-playbook\\index.html"
+    },
+    {
+      "code": "composition_file_too_large",
+      "severity": "warning",
+      "message": "This HTML composition file has 922 lines. Smaller sub-compositions are easier to read, iterate on, and diff.",
+      "fixHint": "Split coherent scenes or layers into separate .html files under compositions/, then mount them from the parent with data-composition-src so each file stays small enough to inspect, revise, and validate independently.",
+      "file": "C:\\Users\\Leex279\\Documents\\GitHub\\diy-yt-creator-hyperframes\\videos\\claude-founders-playbook\\index.html"
+    }
+  ],
+  "filesScanned": 1,
+  "_meta": {
+    "version": "0.6.14",
+    "latestVersion": "0.6.7",
+    "updateAvailable": false
+  }
+}

@@ -1,0 +1,208 @@
+<!--
+  scene-pick-agent.html — Claude Code native installer + Codex CLI.
+  Native installer is the OFFICIAL recommendation per
+  https://code.claude.com/docs/en/setup#install-claude-code (2026).
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-pick-agent-template">
+  <div data-composition-id="scene-pick-agent"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #pick-agent-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:38px; box-sizing:border-box;
+      }
+      #pick-agent-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:12px; text-align:center;
+      }
+      #pick-agent-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-2);
+      }
+      #pick-agent-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 56px; line-height: 1.05;
+        letter-spacing: -1.5px; color: var(--text);
+      }
+      #pick-agent-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 36px;
+      }
+      .agent-card {
+        width: 720px;
+        padding: 32px 36px;
+        border-radius: 22px;
+        border: 1.5px solid var(--border-bright);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        display:flex; flex-direction:column;
+        gap: 16px;
+        position: relative;
+      }
+      .agent-card.claude {
+        background: linear-gradient(135deg,
+                      rgba(249, 115, 22, 0.18) 0%,
+                      rgba(249, 115, 22, 0.04) 100%);
+        border-color: rgba(249, 115, 22, 0.55);
+      }
+      .agent-card.codex {
+        background: linear-gradient(135deg,
+                      rgba(6, 182, 212, 0.20) 0%,
+                      rgba(6, 182, 212, 0.04) 100%);
+        border-color: rgba(6, 182, 212, 0.55);
+      }
+      .agent-card .label {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 20px; letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .agent-card.claude .label { color: var(--accent-warn); }
+      .agent-card.codex .label  { color: var(--accent-2); }
+      .agent-card .product {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 36px; letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .agent-card .by {
+        font-family: var(--mono); font-weight: 600;
+        font-size: 17px; color: var(--text-secondary);
+        letter-spacing: 1.5px;
+      }
+      .agent-card .install-block {
+        display:flex; flex-direction:column; gap: 8px;
+        margin-top: 4px;
+      }
+      .agent-card .install-block .platform {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 13px; letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .agent-card .cmd {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 17px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        color: var(--text);
+        word-break: break-all;
+        line-height: 1.45;
+      }
+      .agent-card .cmd .prompt { color: var(--text-secondary); margin-right: 6px; }
+      .agent-card .deprecated {
+        margin-top: 6px;
+        font-family: var(--mono); font-weight: 600;
+        font-size: 14px; color: #b8c0cc;
+        letter-spacing: 0.5px;
+      }
+      .agent-card .deprecated .strike {
+        color: #b8c0cc;
+        text-decoration: line-through;
+        text-decoration-color: rgba(249,115,22,.95);
+        text-decoration-thickness: 2px;
+      }
+      .agent-card .badge-row {
+        display:flex; align-items:center; gap:14px;
+      }
+      .agent-card .subscription-badge {
+        align-self: flex-start;
+        font-family: var(--mono); font-weight: 700;
+        font-size: 13px; letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: #fbd649;
+        background: rgba(251, 214, 73, 0.10);
+        border: 1px solid rgba(251, 214, 73, 0.45);
+        border-radius: 999px;
+        padding: 6px 14px;
+        margin-top: -4px;
+      }
+      .agent-card.claude .install-block .platform-native {
+        font-family: var(--mono); font-weight: 800;
+        font-size: 13px; letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #fbd649;
+      }
+      .agent-card.claude .install-block .platform-native::before {
+        content: "★ ";
+      }
+      #pick-agent-foot {
+        font-family: var(--mono); font-weight: 600;
+        font-size: 20px; letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+    </style>
+
+    <div id="pick-agent-content">
+      <div class="header-block">
+        <div class="overline" id="agent-overline">PICK YOUR CODE AGENT &middot; STEP 4</div>
+        <div class="headline" id="agent-headline">HyperFrames was built for AI agents to drive</div>
+      </div>
+
+      <div class="row">
+        <div class="agent-card claude" id="agent-card-claude">
+          <div class="label">Personal Preference</div>
+          <div class="product">Claude Code</div>
+          <div class="by">by Anthropic &middot; official integration target</div>
+          <div class="subscription-badge">Login + Subscription Required</div>
+          <div class="install-block">
+            <div class="platform-native" id="agent-badge">Native installer &middot; the new way</div>
+            <div class="platform">Windows PowerShell</div>
+            <div class="cmd"><span class="prompt">PS&gt;</span>irm https://claude.ai/install.ps1 | iex</div>
+            <div class="platform">macOS &middot; Linux &middot; WSL</div>
+            <div class="cmd"><span class="prompt">$</span>curl -fsSL https://claude.ai/install.sh | bash</div>
+          </div>
+          <div class="deprecated"><span class="strike">npm install -g @anthropic-ai/claude-code</span> &mdash; legacy</div>
+        </div>
+
+        <div class="agent-card codex" id="agent-card-codex">
+          <div class="label">Alternative</div>
+          <div class="product">Codex CLI</div>
+          <div class="by">by OpenAI &middot; same idea, different model</div>
+          <div class="subscription-badge">Login + Subscription Required</div>
+          <div class="install-block">
+            <div class="platform">All platforms (npm)</div>
+            <div class="cmd"><span class="prompt">$</span>npm install -g @openai/codex</div>
+            <div class="platform">macOS only</div>
+            <div class="cmd"><span class="prompt">$</span>brew install --cask codex</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pick-agent-foot">Either works. Cursor, Aider, or any agent that reads CLAUDE.md / AGENTS.md.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#agent-overline",     { y: 22, opacity: 0 }, 0);
+      tl.set("#agent-headline",     { y: 32, opacity: 0 }, 0);
+      tl.set("#agent-card-claude",  { x: -70, opacity: 0 }, 0);
+      tl.set("#agent-card-codex",   { x:  70, opacity: 0 }, 0);
+      tl.set("#agent-badge",        { y: -10, scale: 0.8 }, 0);
+      tl.set("#pick-agent-foot",    { y: 14, opacity: 0 }, 0);
+
+      tl.to("#agent-overline",     { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0);
+      tl.to("#agent-headline",     { y: 0, opacity: 1, duration: 0.55 }, 0.25);
+      tl.to("#agent-card-claude",  { x: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 0.7);
+      tl.to("#agent-card-codex",   { x: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 1.2);
+      tl.to("#agent-badge",        { y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, 1.4);
+      tl.to("#pick-agent-foot",    { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 2.0);
+
+      window.__timelines["scene-pick-agent"] = tl;
+    </script>
+  </div>
+</template>

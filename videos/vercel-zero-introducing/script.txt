@@ -1,0 +1,15 @@
+Vercel Labs just dropped a new programming language. It is called Zero. And it is built for agents, not humans.
+
+Chris Tate posted this on May sixteenth. By the next morning, the repo had over nine hundred stars. The tagline. The programming language for agents. A systems language for small native tools, explicit effects, predictable memory, and structured compiler output.
+
+Here is what a hello world looks like. Notice the file extension. Dot zero. Numeric zero. Inside main, you receive a World capability. If you want to write to standard output, you have to accept that World. The function declares raises, meaning it can fail. And every side effect is prefixed with check, so the compiler can see exactly where you touched the outside.
+
+Now look at this build line from the announcement. Sixteen kilobytes. One millisecond. That is the entire hello binary. Statically linked. No runtime.
+
+Almost every command can emit jay-son. Zero check. Zero run. Zero graph. Zero size. Zero routes. Zero doctor. All of them speak structured output. Because the audience is not a human reading a terminal. The audience is an agent reading a pipe.
+
+Now the honest part. Zero is experimental. The README says it directly. The language is not stable. There is no public module system documented yet. No published benchmarks. The example programs are all under fifty lines. And the compiler is a brand new C codebase with a self-hosted rewrite already in progress.
+
+So here is the real question. Is this a genuine new category? A systems language built from day zero for the way agents actually write code. Or is it just Go with better error JSON in a Vercel hoodie.
+
+Drop your verdict below. Real language, or hype with a dot-zero extension. I want to read your take.

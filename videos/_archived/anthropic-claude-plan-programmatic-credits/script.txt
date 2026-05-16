@@ -1,0 +1,15 @@
+Anthropic just opened the gates. Third-party Claude agents that were banned from your subscription — OpenClaw, and others like it — can now authenticate through your plan starting June 15. And Anthropic added a new credit pool to pay for them. Most builders haven't noticed yet.
+
+Here's what was true until June 15. Third-party autonomous agents like OpenClaw weren't allowed to authenticate through your Claude subscription. Separate API setup. Separately billed. Dev harnesses like Archon — which just wrap your Claude Code workflow — sat in a gray zone. And your own Agent SDK scripts? Those counted against the same usage limit as your editor work. Starting June 15, Anthropic clears the rules. A new monthly programmatic credit lands on every paid plan, separate from your editor budget. And third-party Agent SDK tools — including the previously-banned ones — can now officially authenticate through your Claude plan and draw from this credit pool.
+
+Here's the math. Pro: twenty bucks. Max five-x: a hundred. Max twenty-x: two hundred. Team and Enterprise included. Free plan? Zero. Not invited.
+
+Here's the rollout. Today: nothing changes. June 8: every paid user gets an email with the claim link. June 15: the new programmatic credit goes into effect. Across every Agent SDK surface.
+
+But there's a catch. The cap is small. Twenty bucks on Pro burns in a few hundred Agent SDK calls. Hit the ceiling — and one of two things happens. Extra usage on, you flow to standard API rates per token. Extra usage off, every SDK request hard-stops until next month. There's no middle ground.
+
+Builders are split. Some are stoked — third-party agents are finally allowed on the plan, no more juggling separate API keys. Some are skeptical — twenty bucks on Pro won't last builders running real Agent SDK loops. And some are confused — what counts as programmatic versus interactive? The line isn't clear.
+
+Net upside for most builders. Two budgets instead of one. Programmatic gets its own pool. Your editor work stays protected. The only real question — is that ceiling tall enough for what you actually run?
+
+Twenty bucks of programmatic credit on Pro — generous Anthropic move, or just enough rope to hang yourself? Drop your pick below.

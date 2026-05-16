@@ -1,0 +1,115 @@
+<!--
+  scene-compare.html — SKIM vs OPEN punchline (41.8–47.7s, scene-rel 0–5.9s).
+  Beats:
+    0.04 — "Markdown is what your colleague will SKIM"
+    1.70 — "skim." accent fade
+    2.97 — "H T M L is what your colleague will OPEN"
+    4.74 — "open." accent slam
+-->
+<template id="scene-compare-template">
+  <div data-composition-id="scene-compare"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sc-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 80px;
+      }
+      .sc-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .sc-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 36px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .sc-format {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 56px;
+        letter-spacing: 2px;
+        padding: 8px 18px;
+        border-radius: 12px;
+        align-self: flex-start;
+      }
+      .sc-format.is-md   { color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border); }
+      .sc-format.is-html { color: var(--accent-1); background: rgba(199, 90, 63, 0.08); border: 2px solid var(--accent-1); }
+      .sc-verb {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-style: italic;
+        font-size: 220px;
+        line-height: 0.88;
+        letter-spacing: -3px;
+      }
+      .sc-verb.is-skim { color: var(--text-muted); }
+      .sc-verb.is-open { color: var(--accent-1); }
+      .sc-vs {
+        align-self: center;
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 64px;
+        letter-spacing: 4px;
+        color: var(--accent-2);
+      }
+    </style>
+
+    <div id="sc-content">
+      <div class="sc-row" id="sc-row-md">
+        <div class="sc-format is-md" id="sc-md-fmt">.md</div>
+        <div class="sc-label" id="sc-md-label">Your colleague will&hellip;</div>
+        <div class="sc-verb is-skim" id="sc-md-verb">SKIM.</div>
+      </div>
+
+      <div class="sc-vs" id="sc-vs">VS.</div>
+
+      <div class="sc-row" id="sc-row-html">
+        <div class="sc-format is-html" id="sc-html-fmt">.html</div>
+        <div class="sc-label" id="sc-html-label">Your colleague will&hellip;</div>
+        <div class="sc-verb is-open" id="sc-html-verb">OPEN.</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sc-md-fmt",    { y: 12, opacity: 0 }, 0);
+      tl.set("#sc-md-label",  { y: 12, opacity: 0 }, 0);
+      tl.set("#sc-md-verb",   { scale: 0.7, opacity: 0, filter: "blur(15px)" }, 0);
+      tl.set("#sc-vs",        { opacity: 0, scale: 0.7 }, 0);
+      tl.set("#sc-html-fmt",  { y: 12, opacity: 0 }, 0);
+      tl.set("#sc-html-label",{ y: 12, opacity: 0 }, 0);
+      tl.set("#sc-html-verb", { scale: 0.7, opacity: 0, filter: "blur(15px)" }, 0);
+
+      tl.to("#sc-md-fmt",   { y: 0, opacity: 1, duration: 0.35 }, 0.04);
+      tl.to("#sc-md-label", { y: 0, opacity: 1, duration: 0.35 }, 0.20);
+      tl.to("#sc-md-verb",  { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "back.out(1.5)" }, 1.70);
+
+      tl.to("#sc-vs", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 2.50);
+
+      tl.to("#sc-html-fmt",   { y: 0, opacity: 1, duration: 0.35 }, 2.97);
+      tl.to("#sc-html-label", { y: 0, opacity: 1, duration: 0.35 }, 3.30);
+      tl.to("#sc-html-verb",  { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "back.out(1.6)" }, 4.74);
+      tl.to("#sc-html-verb",  { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 5.40);
+
+      window.__timelines["scene-compare"] = tl;
+    </script>
+  </div>
+</template>

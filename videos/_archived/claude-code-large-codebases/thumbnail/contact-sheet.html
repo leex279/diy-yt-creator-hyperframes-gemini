@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!-- contact-sheet.html — 2-column grid of all 10 thumbnail variants.
+     Render at body width 1280px for the PNG. Each cell is 580×326 (16:9 scaled). -->
+<html lang="en"><head><meta charset="utf-8">
+<title>Contact sheet — claude-code-large-codebases thumbnails</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@800&family=Inter:wght@400;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #0D1017;
+    --card:        #161B26;
+    --border:      rgba(255,255,255,0.08);
+    --accent:      #E97458;
+    --terracotta:  #C75A3F;
+    --text:        #F5F1EB;
+    --text-dim:    #9A958D;
+    --serif:       'Source Serif 4', Georgia, serif;
+    --sans:        'Inter', system-ui, sans-serif;
+    --mono:        'JetBrains Mono', monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    width: 1280px;
+    color: var(--text);
+    font-family: var(--sans);
+    padding: 44px 56px 56px;
+    box-sizing: border-box;
+  }
+  .header {
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 13px; letter-spacing: 5px; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .title {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 40px; line-height: 1.1; letter-spacing: -1px;
+    color: var(--text);
+    margin: 0 0 6px;
+  }
+  .subtitle {
+    font-family: var(--sans); font-weight: 400;
+    font-size: 16px; line-height: 1.5;
+    color: var(--text-dim);
+    margin: 0;
+    max-width: 960px;
+  }
+  .subtitle code {
+    font-family: var(--mono); font-size: 14px;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 7px; border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .cell {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.40);
+  }
+  .cell-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #060810;
+    display: block;
+  }
+  .cell-img img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .cell-meta {
+    padding: 12px 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cell-num {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 16px; letter-spacing: 2px;
+    color: #060810;
+    background: var(--accent);
+    padding: 5px 10px;
+    border-radius: 5px;
+    min-width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .cell-angle {
+    font-family: var(--sans); font-weight: 700;
+    font-size: 14px; line-height: 1.2;
+    color: var(--text);
+    flex: 1;
+  }
+  .cell-headline {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+  .theme-tag {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .theme-dark-tag  { background: rgba(233,116,88,0.12); border: 1px solid rgba(233,116,88,0.25); color: var(--accent); }
+  .theme-cream-tag { background: rgba(199,90,63,0.12);  border: 1px solid rgba(199,90,63,0.25);  color: var(--terracotta); }
+
+  .footer {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-weight: 700;
+    font-size: 12px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer span.accent { color: var(--accent); }
+</style></head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Thumbnail picker · 15 variants (10 originals + 5 hook-style)</div>
+    <h1 class="title">Pick a thumbnail for <em style="font-style:italic; color:var(--terracotta);">claude-code-large-codebases</em></h1>
+    <p class="subtitle">15 angles — 10 original contrarian-headline variants + 5 hook-faithful variants that mirror the video's opening (ANTHROPIC'S PLAYBOOK + 5/2/3 + thesis + article screenshot + constellation shapes). All source-grounded. Pick one — the corresponding <code>variant-NN.png</code> uploads to YouTube Studio.</p>
+  </div>
+
+  <div class="grid">
+    <div class="cell">
+      <div class="cell-img"><img src="variant-01.png" alt="v01 — Harness > Model."></div>
+      <div class="cell-meta">
+        <div class="cell-num">01</div>
+        <div><div class="cell-angle">Thesis-as-math</div><div class="cell-headline">"Harness &gt; Model."</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-02.png" alt="v02 — 5 / 2 / 3."></div>
+      <div class="cell-meta">
+        <div class="cell-num">02</div>
+        <div><div class="cell-angle">Pure number slam</div><div class="cell-headline">"5 / 2 / 3."</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-03.png" alt="v03 — Anthropic's own playbook."></div>
+      <div class="cell-meta">
+        <div class="cell-num">03</div>
+        <div><div class="cell-angle">Authority appeal</div><div class="cell-headline">"Anthropic's own playbook."</div></div>
+        <span class="theme-tag theme-cream-tag">cream</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-04.png" alt="v04 — RAG is dead."></div>
+      <div class="cell-meta">
+        <div class="cell-num">04</div>
+        <div><div class="cell-angle">Contrarian vs RAG</div><div class="cell-headline">"RAG is dead."</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-05.png" alt="v05 — Stop blaming the model."></div>
+      <div class="cell-meta">
+        <div class="cell-num">05</div>
+        <div><div class="cell-angle">Model-worship pivot</div><div class="cell-headline">"Stop blaming the model."</div></div>
+        <span class="theme-tag theme-cream-tag">cream</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-06.png" alt="v06 — Your CLAUDE.md is bloated."></div>
+      <div class="cell-meta">
+        <div class="cell-num">06</div>
+        <div><div class="cell-angle">Finger-point mistake</div><div class="cell-headline">"Your CLAUDE.md is bloated."</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-07.png" alt="v07 — Don't build MCP first."></div>
+      <div class="cell-meta">
+        <div class="cell-num">07</div>
+        <div><div class="cell-angle">Counter-intuitive order</div><div class="cell-headline">"Don't build MCP first."</div></div>
+        <span class="theme-tag theme-cream-tag">cream</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-08.png" alt="v08 — The agent manager era."></div>
+      <div class="cell-meta">
+        <div class="cell-num">08</div>
+        <div><div class="cell-angle">Emerging-role hook</div><div class="cell-headline">"The agent manager era."</div></div>
+        <span class="theme-tag theme-cream-tag">cream</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-09.png" alt="v09 — Build the harness."></div>
+      <div class="cell-meta">
+        <div class="cell-num">09</div>
+        <div><div class="cell-angle">Imperative command</div><div class="cell-headline">"Build the harness."</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-10.png" alt="v10 — Scale or stall."></div>
+      <div class="cell-meta">
+        <div class="cell-num">10</div>
+        <div><div class="cell-angle">Binary tension</div><div class="cell-headline">"Scale or stall."</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+
+    <!-- Hook-style variants (11-15) — mirror the video's opening scene -->
+    <div class="cell">
+      <div class="cell-img"><img src="variant-11.png" alt="v11 — Hook-faithful (landscape article + 5/2/3 + thesis)"></div>
+      <div class="cell-meta">
+        <div class="cell-num">11</div>
+        <div><div class="cell-angle">Hook-faithful (landscape)</div><div class="cell-headline">ANTHROPIC'S PLAYBOOK + 5/2/3 + thesis</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-12.png" alt="v12 — Hook + 9:16 phone-portrait article"></div>
+      <div class="cell-meta">
+        <div class="cell-num">12</div>
+        <div><div class="cell-angle">Hook + phone-portrait article</div><div class="cell-headline">ANTHROPIC'S PLAYBOOK + 9:16 phone frame</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-13.png" alt="v13 — Hook minimal (no numbers, no chip)"></div>
+      <div class="cell-meta">
+        <div class="cell-num">13</div>
+        <div><div class="cell-angle">Hook minimal (cleanest read)</div><div class="cell-headline">PLAYBOOK + thesis + article only</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-14.png" alt="v14 — Hook + marker-under emphasis on harness/model"></div>
+      <div class="cell-meta">
+        <div class="cell-num">14</div>
+        <div><div class="cell-angle">Hook + marker emphasis</div><div class="cell-headline">"harness" + "model" underlined</div></div>
+        <span class="theme-tag theme-dark-tag">dark</span>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-img"><img src="variant-15.png" alt="v15 — Hook on cream paper (Anthropic blog aesthetic)"></div>
+      <div class="cell-meta">
+        <div class="cell-num">15</div>
+        <div><div class="cell-angle">Hook on cream paper</div><div class="cell-headline">PLAYBOOK on Anthropic-paper cream</div></div>
+        <span class="theme-tag theme-cream-tag">cream</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>15 variants · pick one · re-run render.cjs for more</span>
+    <span class="accent">diy-smartcode</span>
+  </div>
+</body></html>

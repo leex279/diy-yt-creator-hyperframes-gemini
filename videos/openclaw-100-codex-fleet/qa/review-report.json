@@ -1,0 +1,212 @@
+{
+  "slug": "openclaw-100-codex-fleet",
+  "run_timestamp": "2026-05-16",
+  "mode": "pre-publish",
+  "fix_policy": "safe",
+  "visual": false,
+  "canvas": { "width": 1920, "height": 1080, "kind": "long-form" },
+  "verdict": "FAIL_HIGH",
+  "summary": {
+    "BLOCKER": 0,
+    "HIGH": 18,
+    "MEDIUM": 13,
+    "LOW": 20,
+    "auto_fixed": 3
+  },
+  "agent_verdicts": {
+    "video-timing-pacer": "FAIL_HIGH (14 HIGH + 4 MEDIUM, longest static gap 20.4s in s02)",
+    "video-render-validator": "PASS_LOW (0 errors, 18 LOW WCAG on shared block, render confirmed)",
+    "video-layout-typography": "PASS_WITH_HIGH (1 HIGH WCAG on shared block, 4 MEDIUM)",
+    "video-script-content": "PASS_WITH_ADVISORIES (3 MEDIUM TTS pronunciation, 1 LOW heteronym)",
+    "video-metadata-publish": "FAIL_HIGH (3 HIGH chapter timestamps, 2 MEDIUM) — 3 auto-fixed inline"
+  },
+  "auto_fixes_applied": [
+    {
+      "id": "M-001",
+      "file": "videos/openclaw-100-codex-fleet/youtube-description.md",
+      "before": "1:43 Hostinger Midroll / 2:03 Clawsweeper Deep Dive",
+      "after": "1:41 Clawsweeper Deep Dive / 2:45 Self-Hosting AI Agents: Hostinger Setup for Codex Fleets",
+      "reason": "Phase 4 redux moved midroll #1 from 1:43 to 2:45; chapter order in description was stale (midroll listed before clawsweeper)"
+    },
+    {
+      "id": "M-002",
+      "file": "videos/openclaw-100-codex-fleet/youtube-description.md",
+      "before": "8:50 Debate: Would You Let an AI Agent Log Into Your Telegram?",
+      "after": "9:00 Debate: Would You Let an AI Agent Log Into Your Telegram?",
+      "reason": "scene-13-cta data-start = 539.968s = 9:00 (was off by 10s in description)"
+    },
+    {
+      "id": "M-005",
+      "file": "videos/openclaw-100-codex-fleet/youtube-description.md",
+      "before": "1:43 Hostinger Midroll / 5:27 Hostinger Midroll",
+      "after": "2:45 Self-Hosting AI Agents: Hostinger Setup for Codex Fleets / 5:26 Hostinger 10% Off: Cheap Self-Hosted Sandbox for Crabbox Workflows",
+      "reason": "Generic 'Hostinger Midroll' chapter title violates youtube-metadata.md 'Never use generic labels' rule — zero SEO value"
+    }
+  ],
+  "remaining_findings": {
+    "BLOCKER": [],
+    "HIGH": [
+      {
+        "id": "T-001",
+        "rule": "visual-pacing-5s",
+        "location": "scene-02-thesis.html (20.4s tail gap)",
+        "summary": "Scene 02 has 20.4s of decoration-only beats (scale/box-shadow yoyo) after last new-info entrance"
+      },
+      {
+        "id": "T-002",
+        "rule": "visual-pacing-5s",
+        "location": "scene-03-avalanche.html (6.5s gap card-1→card-2)",
+        "summary": "Worst gap inside the avalanche is 6.5s between card-1 (t=4.3) and card-2 (t=7.7)"
+      },
+      {
+        "id": "T-003",
+        "rule": "visual-pacing-5s",
+        "location": "scene-05-clawsweeper.html (18.6s gap meta-chip→lane-1)",
+        "summary": "Worst single gap in the video: 18.6s from meta-chip at t=4.2 to first lane reveal at t=22.8"
+      },
+      {
+        "id": "T-004",
+        "rule": "visual-pacing-5s",
+        "location": "scene-05-clawsweeper.html (7.3s gap lane-4→stat-fraction)"
+      },
+      {
+        "id": "T-005",
+        "rule": "visual-pacing-5s",
+        "location": "scene-05-clawsweeper.html (11.4s tail gap from safety chip to scene exit)"
+      },
+      {
+        "id": "T-006",
+        "rule": "visual-pacing-5s",
+        "location": "scene-06-crabbox.html (4 gaps of 6.1-6.5s + dead final stretch)"
+      },
+      {
+        "id": "T-007",
+        "rule": "step-by-step-reveal",
+        "location": "scene-06-crabbox.html (#s06-viral 4-step storyboard all-at-once)",
+        "summary": "4-step Telegram-record-and-post viral storyboard reveals all 4 cards simultaneously at t=58.5; should stagger ≥3s apart per step-by-step-reveal.md"
+      },
+      {
+        "id": "T-008",
+        "rule": "visual-pacing-5s",
+        "location": "scene-07-clawpatch.html (15s gap meta-chip→unit-cards)"
+      },
+      {
+        "id": "T-009",
+        "rule": "visual-pacing-5s",
+        "location": "scene-07-clawpatch.html (8.9s tail from finding-6 to output chip)"
+      },
+      {
+        "id": "T-010",
+        "rule": "visual-pacing-5s",
+        "location": "scene-09-fleet-recap.html (10.2s gap last layer→bracket)"
+      },
+      {
+        "id": "T-011",
+        "rule": "visual-pacing-5s",
+        "location": "scene-10-community-split.html (17-20s gaps inside every camp window)",
+        "summary": "MOST AFFECTED: each of the 5 community camp windows has 17-20s of pure decoration (scale/box-shadow yoyo, no new info). Scene comments document the intent but implementation uses disqualified beats."
+      },
+      {
+        "id": "T-012",
+        "rule": "visual-pacing-5s",
+        "location": "scene-10-community-split.html (13.6s tail gap on #s10-note)"
+      },
+      {
+        "id": "T-013",
+        "rule": "visual-pacing-5s",
+        "location": "scene-11-cost-twist.html (13.9s gap circle-marker→pivot)"
+      },
+      {
+        "id": "T-014",
+        "rule": "visual-pacing-5s",
+        "location": "scene-13-cta.html (12.8s gap receipt→question-card)"
+      },
+      {
+        "id": "L-001",
+        "rule": "wcag-contrast-large-text",
+        "location": "hostinger-midroll.html outro #hm-outro-text 'Back to the video.' at 2.2:1 (need 3:1)",
+        "summary": "Shared lib block — flagged for follow-up sweep, not in scope for this video"
+      }
+    ],
+    "MEDIUM": [
+      {
+        "id": "T-015",
+        "rule": "step-by-step-reveal",
+        "location": "scene-01-hook.html (effective 20.4s static after t=10.4)"
+      },
+      {
+        "id": "T-016",
+        "rule": "visual-pacing-5s",
+        "location": "scene-12-support.html (7.2s tail gap, decoration-only)"
+      },
+      {
+        "id": "T-017",
+        "rule": "visual-pacing-5s",
+        "location": "scene-13-cta.html final-frame hold (5.7s — long-form has no hard cap, advisory)"
+      },
+      {
+        "id": "T-018",
+        "rule": "clip-attributes",
+        "location": "index.html scene wrappers lack class=\"clip\" (architectural deviation, render succeeded)"
+      },
+      {
+        "id": "L-002",
+        "rule": "wcag-contrast-aa-normal-text",
+        "location": "hostinger-midroll.html .hm-product-label chips at 4.19-4.45:1 (need 4.5:1)"
+      },
+      {
+        "id": "L-003",
+        "rule": "wcag-contrast-aa-normal-text",
+        "location": "scene-07-clawpatch.html .sev-chip.crit at 4.45:1 (need 4.5:1)"
+      },
+      {
+        "id": "L-004",
+        "rule": "long-form-small-text-density",
+        "location": "scene-06-crabbox.html (7 micro-labels at 11-14px)"
+      },
+      {
+        "id": "L-005",
+        "rule": "long-form-small-text-density",
+        "location": "scene-07-clawpatch.html (.meta 13px, .body 14px, .sev-chip 11px)"
+      },
+      {
+        "id": "S-001",
+        "rule": "tts-pronunciation-tech-term-unspelled",
+        "location": "scene-06-crabbox.txt:5, scene-07-clawpatch.txt:5 — 'CLI' not spelled 'C L I'"
+      },
+      {
+        "id": "S-002",
+        "rule": "tts-pronunciation-tech-term-unspelled",
+        "location": "scene-07-clawpatch.txt:5 — 'npm' not spelled 'N P M'"
+      },
+      {
+        "id": "S-003",
+        "rule": "factual-framing-precision",
+        "location": "scene-11-cost-twist.txt:3-5 — claims reply was 'four words long' but quote is 12 words"
+      },
+      {
+        "id": "M-004",
+        "rule": "dynamous-block-missing",
+        "location": "youtube-description.md — canonical rule mandates Dynamous block between hook and Chapters; was skipped because no Dynamous mention in narration. Requires user decision."
+      }
+    ],
+    "LOW": [
+      {
+        "id": "S-004",
+        "rule": "heteronym-borderline-close",
+        "location": "scene-05-clawsweeper.txt:5 — 'close/closes/closing' 5x; context-clear per fact-check but on watchlist"
+      },
+      {
+        "id": "L-006",
+        "rule": "scene-01-x-post-layout-check",
+        "summary": "Scene 01 layout verified safe: left content 0-1100px + X-post 1280-1860px, 180px gap, no overlap"
+      },
+      {
+        "id": "L-007",
+        "rule": "long-form-final-frame-hold",
+        "summary": "scene-13 has 5.2s held still — exceeds 2.5s Shorts cap but long-form has no rule; bonus thumbnail-grade frame"
+      },
+      "Plus 17 WCAG contrast advisories on shared hostinger-midroll block chips (per R-001 detail)"
+    ]
+  }
+}

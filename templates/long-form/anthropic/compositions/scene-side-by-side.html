@@ -1,0 +1,180 @@
+<!--
+  scene-side-by-side.html — Two-card comparison (Anthropic long-form).
+
+  Re-skin of standard template's side-by-side with Anthropic orange+purple pairing.
+  Cards slide in from opposite sides (left card from -80x, right from +80x).
+  Each card has: accent-tinted header strip, headline, body text, optional stat.
+
+  OPERATOR:
+    - Replace card-a and card-b placeholder content
+    - Tune SCENE_DURATION to narration length
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-sbs-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 40px;
+        box-sizing: border-box;
+      }
+      #sbs-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      #sbs-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1400px;
+      }
+      .sbs-cards {
+        display: flex;
+        flex-direction: row;
+        gap: 32px;
+        width: 100%;
+      }
+      .sbs-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+      .sbs-card.orange {
+        background: linear-gradient(135deg,
+          rgba(233, 116, 88, 0.12) 0%,
+          rgba(233, 116, 88, 0.04) 100%);
+        border: 2px solid rgba(233, 116, 88, 0.40);
+      }
+      .sbs-card.purple {
+        background: linear-gradient(135deg,
+          rgba(167, 139, 250, 0.12) 0%,
+          rgba(167, 139, 250, 0.04) 100%);
+        border: 2px solid rgba(167, 139, 250, 0.40);
+      }
+      .sbs-card-header {
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .sbs-card.orange .sbs-card-header { background: rgba(233, 116, 88, 0.18); }
+      .sbs-card.purple .sbs-card-header { background: rgba(167, 139, 250, 0.18); }
+      .sbs-card-label {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .sbs-card.orange .sbs-card-label { color: var(--accent-1); }
+      .sbs-card.purple .sbs-card-label { color: var(--accent-2); }
+      .sbs-card-body {
+        padding: 32px 32px 36px;
+        display: flex; flex-direction: column;
+        gap: 16px; flex: 1;
+      }
+      .sbs-card-title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      .sbs-card-desc {
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 28px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        max-width: 700px;
+      }
+      .sbs-card-stat {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 84px;
+        line-height: 0.9;
+        letter-spacing: -3px;
+        font-variant-numeric: tabular-nums lining-nums;
+        margin-top: 8px;
+      }
+      .sbs-card.orange .sbs-card-stat {
+        color: var(--accent-1);
+        text-shadow: 0 0 60px rgba(233, 116, 88, 0.40);
+      }
+      .sbs-card.purple .sbs-card-stat {
+        color: var(--accent-2);
+        text-shadow: 0 0 60px rgba(167, 139, 250, 0.40);
+      }
+    </style>
+
+    <div id="scene-sbs-content">
+      <div id="sbs-overline">BEFORE VS AFTER</div>
+      <div id="sbs-headline">Replace with comparison headline</div>
+      <div class="sbs-cards">
+        <div class="sbs-card orange" id="sbs-card-a">
+          <div class="sbs-card-header">
+            <div class="sbs-card-label">OPTION A</div>
+          </div>
+          <div class="sbs-card-body">
+            <div class="sbs-card-title">Card A Title</div>
+            <div class="sbs-card-desc">Description of option A — what it means and why it matters.</div>
+            <div class="sbs-card-stat">0x</div>
+          </div>
+        </div>
+        <div class="sbs-card purple" id="sbs-card-b">
+          <div class="sbs-card-header">
+            <div class="sbs-card-label">OPTION B</div>
+          </div>
+          <div class="sbs-card-body">
+            <div class="sbs-card-title">Card B Title</div>
+            <div class="sbs-card-desc">Description of option B — the contrast that makes the comparison land.</div>
+            <div class="sbs-card-stat">0x</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 16;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.from("#sbs-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#sbs-headline",  { y: 28, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+      // Cards slide in from opposite sides
+      tl.from("#sbs-card-a", { x: -80, scale: 0.95, opacity: 0, duration: 0.7, ease: "back.out(1.4)", immediateRender: false }, 1.0);
+      tl.from("#sbs-card-b", { x:  80, scale: 0.95, opacity: 0, duration: 0.7, ease: "back.out(1.4)", immediateRender: false }, 1.3);
+
+      // Pin timeline to scene duration
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

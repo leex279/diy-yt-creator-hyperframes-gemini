@@ -1,0 +1,167 @@
+<!--
+  scene-process-flow.html — 4-step process diagram with arrows (~13s).
+
+  Pattern: header → 4 vertically-stacked nodes (raised cards), each
+           connected to the next by a downward arrow that draws itself
+           after the predecessor node lands. Sequential reveal.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-process-flow"].
+-->
+<template id="scene-process-flow-template">
+  <div data-composition-id="scene-process-flow"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-process-flow-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:24px;
+        box-sizing:border-box;
+      }
+      #scene-process-flow-content .header {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 76px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        margin-bottom: 8px;
+      }
+      #scene-process-flow-content .header .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-process-flow-content .flow {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 0;
+      }
+      #scene-process-flow-content .node {
+        width: 720px;
+        padding: 22px 32px;
+        border-radius: 22px;
+        background: var(--bg-card);
+        border: 2px solid var(--border-bright);
+        box-shadow: var(--shadow-warm);
+        display: flex; align-items: center; gap: 22px;
+      }
+      #scene-process-flow-content .node.n1 { border-color: var(--accent-warm); }
+      #scene-process-flow-content .node.n2 { border-color: var(--accent-deep); }
+      #scene-process-flow-content .node.n3 { border-color: var(--accent-sage); }
+      #scene-process-flow-content .node.n4 { border-color: var(--accent-gold); }
+      #scene-process-flow-content .node .badge {
+        flex: 0 0 auto;
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 30px;
+        color: var(--text-on-warm);
+      }
+      #scene-process-flow-content .node.n1 .badge { background: var(--accent-warm); }
+      #scene-process-flow-content .node.n2 .badge { background: var(--accent-deep); }
+      #scene-process-flow-content .node.n3 .badge { background: var(--accent-sage); color: var(--accent-ink); }
+      #scene-process-flow-content .node.n4 .badge { background: var(--accent-gold); color: var(--accent-ink); }
+      #scene-process-flow-content .node .text {
+        text-align: left; flex: 1;
+      }
+      #scene-process-flow-content .node .title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 36px;
+        line-height: 1.05;
+        color: var(--accent-ink);
+      }
+      #scene-process-flow-content .node .sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 24px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+      #scene-process-flow-content .arrow {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 44px;
+        line-height: 1;
+        color: var(--accent-ink);
+        opacity: 0.6;
+        margin: 6px 0;
+      }
+    </style>
+
+    <div id="scene-process-flow-content">
+      <div class="header" id="pf-header">
+        How it <span class="em">flows.</span>
+      </div>
+      <div class="flow">
+        <div class="node n1" id="pf-n1">
+          <span class="badge">1</span>
+          <div class="text">
+            <div class="title">Write</div>
+            <div class="sub">A scene file in HTML</div>
+          </div>
+        </div>
+        <div class="arrow" id="pf-a1">&darr;</div>
+        <div class="node n2" id="pf-n2">
+          <span class="badge">2</span>
+          <div class="text">
+            <div class="title">Lint</div>
+            <div class="sub">Catch issues before render</div>
+          </div>
+        </div>
+        <div class="arrow" id="pf-a2">&darr;</div>
+        <div class="node n3" id="pf-n3">
+          <span class="badge">3</span>
+          <div class="text">
+            <div class="title">Preview</div>
+            <div class="sub">Live in the studio</div>
+          </div>
+        </div>
+        <div class="arrow" id="pf-a3">&darr;</div>
+        <div class="node n4" id="pf-n4">
+          <span class="badge">4</span>
+          <div class="text">
+            <div class="title">Render</div>
+            <div class="sub">MP4 out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#pf-header", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
+      // Sequential node + arrow reveals (~3.4s)
+      tl.from("#pf-n1", { y: 30, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)" }, 0.4);
+      tl.from("#pf-a1", { scaleY: 0, opacity: 0, duration: 0.3, ease: "power2.out", transformOrigin: "top center" }, 0.9);
+      tl.from("#pf-n2", { y: 30, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)" }, 1.2);
+      tl.from("#pf-a2", { scaleY: 0, opacity: 0, duration: 0.3, ease: "power2.out", transformOrigin: "top center" }, 1.7);
+      tl.from("#pf-n3", { y: 30, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)" }, 2.0);
+      tl.from("#pf-a3", { scaleY: 0, opacity: 0, duration: 0.3, ease: "power2.out", transformOrigin: "top center" }, 2.5);
+      tl.from("#pf-n4", { y: 30, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)" }, 2.8);
+
+      // Mid-beats — sequential per-node highlight pulse (re-emphasizes the flow)
+      tl.to("#pf-n1", { scale: 1.03, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 5.0);
+      tl.to("#pf-a1", { opacity: 1, scale: 1.2, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 5.6);
+      tl.to("#pf-n2", { scale: 1.03, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 6.5);
+      tl.to("#pf-a2", { opacity: 1, scale: 1.2, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 7.1);
+      tl.to("#pf-n3", { scale: 1.03, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 8.0);
+      tl.to("#pf-a3", { opacity: 1, scale: 1.2, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 8.6);
+      tl.to("#pf-n4", { scale: 1.06, duration: 0.5, ease: "back.out(1.5)", yoyo: true, repeat: 1 }, 9.5);
+      // Final all-pulse
+      tl.to("#pf-n1, #pf-n2, #pf-n3, #pf-n4", { scale: 1.02, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 11.5);
+
+      window.__timelines["scene-process-flow"] = tl;
+    </script>
+  </div>
+</template>

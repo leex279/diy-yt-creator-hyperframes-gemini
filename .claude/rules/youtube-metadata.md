@@ -19,10 +19,10 @@ paths:
 Every video MUST include a `videos/<slug>/youtube-description.md` file.
 This file contains the complete YouTube description ready for copy-paste upload.
 
-**Required Structure** (in this exact order):
+**Required Structure** (in this exact order — keep it LEAN; long descriptions hurt CTR and bury keywords below the fold):
 
 ```
-<Hook paragraph — keyword-rich opening, 1-3 sentences>
+<SEO hook paragraph — keyword-rich opening, 1-3 sentences, top 2-3 keywords in first 200 chars>
 
 ----
 🚀 Want to learn agentic coding with live daily events and workshops?
@@ -30,28 +30,45 @@ Check out Dynamous AI: https://dynamous.ai/?code=646a60
 Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount
 ----
 
-Key Changes in This Release:
-- <bullet 1 — keyword-dense, names specific features/APIs>
-- <bullet 2>
-- <…>
-
-Chapters
+Chapters                                  ← LONG-FORM ONLY — omit entirely on Shorts
 <Chapter timestamps — M:SS format, one per line>
 
 Resources:
-<Links section — release notes, docs, sources, validated URLs>
+<Links section — primary sources, docs, validated URLs>
 
-To pull every fix in this video:
-$ claude update    (or other primary CTA — context-dependent)
+----
+🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
+👉 https://hostinger.com/DIYSMARTCODE
+----
 
 <Engagement question — debate-sparking, polarizing, references a video claim>
 
 #Hashtag1 #Hashtag2 …    (15-25 hashtags)
 ```
 
-**CRITICAL: Dynamous CTA Format** — The Dynamous block MUST be wrapped in `----`
-separators (four dashes) above and below, placed ABOVE Chapters (between hook
-paragraph and Chapters). This exact format is mandatory:
+### What was REMOVED (do NOT re-add)
+
+These sections are explicitly cut from the template — they bloat the description, push keywords below the fold, and duplicate signal already carried by the hook + chapter titles:
+
+- ❌ `Key Changes in This Release:` bullet lists
+- ❌ `Key Concepts` paragraphs
+- ❌ `Key Stats` / `Key Facts` blocks
+- ❌ `About This Video` / "What's in this short" intros
+- ❌ Standalone CTA commands like `To pull every fix in this video: $ claude update` (move into the hook paragraph if needed)
+- ❌ Long expanded "The Debate" preambles (the engagement question is one line)
+
+If the video's SEO would genuinely benefit from a feature inventory (e.g. a major Claude Code release with 30+ features), pack the top 3-5 features into the hook paragraph as a comma-separated list — NOT as a bulleted section.
+
+**MANDATORY: Dynamous CTA Block** — Every video (Short AND long-form) MUST include
+the Dynamous CTA block in its YouTube description. This is a description-level
+requirement and is INDEPENDENT of the per-video `dynamousPromotion` flag in
+`meta.json` (which gates ON-SCREEN Dynamous promotion — badge, midroll, interstitial —
+NOT the description block).
+
+The Dynamous block MUST be wrapped in `----` separators (four dashes) above and
+below, placed BETWEEN the hook paragraph and the next section (Chapters on
+long-form, Resources on Shorts). This exact format — with BOTH URLs and the
+emoji-prefixed lines — is mandatory:
 
 ```
 ----
@@ -61,9 +78,46 @@ Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_disc
 ----
 ```
 
-**MANDATORY: "Chapters" Header Line** — The chapter list MUST be preceded by the
-word `Chapters` on its own line. YouTube uses this as a signal for chapter
-parsing. Without it, chapters may not render in the player.
+A description missing the Dynamous block, or with the block in the wrong format
+(missing one URL, missing the `----` separators, wrong emoji, wrong wording),
+is a publish-blocking defect. The block has been on every previously-shipped
+video and the channel's audience expects it.
+
+**MANDATORY: Hostinger Affiliate Block** — Every video (Short AND long-form) MUST
+include the Hostinger affiliate block AFTER `Resources:` and BEFORE the engagement
+question. Wrap it in `----` separators, same pattern as the Dynamous block:
+
+```
+----
+🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
+👉 https://hostinger.com/DIYSMARTCODE
+----
+```
+
+The discount is baked into the URL slug `/DIYSMARTCODE` — do not append a separate coupon code.
+
+**Chapters: LONG-FORM ONLY** — Shorts MUST NOT include a `Chapters` section. YouTube hides chapters on vertical Shorts and the section just adds visual length. The full Shorts structure is:
+
+```
+<SEO hook paragraph>
+
+----
+🚀 Dynamous block
+----
+
+Resources:
+<links>
+
+----
+🏠 Hostinger block
+----
+
+<Engagement question>
+
+#hashtags
+```
+
+For long-form, the chapter list MUST be preceded by the word `Chapters` on its own line. YouTube uses this as a signal for chapter parsing. Without it, chapters may not render in the player.
 
 ```
 Chapters
@@ -285,11 +339,13 @@ description must be comprehensively keyword-optimized, not just the first line.
    technology stack, and broad category terms. Mix specific (`#ClaudeCode`,
    `#MCP`) with broad (`#AICoding`, `#DevTools`).
 
-8. **Key Concepts section**: List and briefly explain 3-5 technical concepts
-   from the video. These are keyword-dense paragraphs that YouTube indexes.
-
-9. **Resource links with context**: Don't just drop URLs — add keyword-rich
+8. **Resource links with context**: Don't just drop URLs — add keyword-rich
    anchor text: `Release Notes (v2.1.123): https://...` not just `https://...`.
+
+> Note: a standalone "Key Concepts" paragraph block USED to be required here — it has been
+> intentionally removed. The hook paragraph + chapter titles already carry the
+> keyword density; a separate Concepts block bloats the description and pushes
+> Resources / affiliates below the fold.
 
 ## Brand Links (MANDATORY)
 
@@ -298,10 +354,13 @@ Always use these exact links — never use placeholders:
 | Brand | Link |
 |-------|------|
 | Dynamous AI | <pre>🚀 Want to learn agentic coding with live daily events and workshops?<br/>Check out Dynamous AI: https://dynamous.ai/?code=646a60<br/>Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount</pre> |
+| Hostinger (affiliate) | <pre>🏠 Self-host your AI agents & projects on Hostinger (10% OFF):<br/>👉 https://hostinger.com/DIYSMARTCODE</pre> |
 
 When generating YouTube descriptions, scripts mentioning Dynamous, or any CTA
-referencing the course, **always include the full link above**. Never use
+referencing the course, **always include the full Dynamous link above**. Never use
 `[link in description]` or similar placeholders.
+
+The Hostinger affiliate block is **mandatory in every video's description** (Shorts and long-form), placed AFTER `Resources:` and BEFORE the engagement question. The 10% discount is baked into the URL slug `/DIYSMARTCODE` — do not append a separate coupon code field.
 
 ## Thumbnail: Version Badge Must Be LARGE
 
@@ -326,6 +385,11 @@ bottom-left.
 
 ## Reference Implementation
 
-The canonical example for this repo is
-[`videos/claude-code-v2119-123/youtube-description.md`](../../videos/claude-code-v2119-123/youtube-description.md)
-— mirror its structure when generating descriptions for new videos.
+The structure shown in the "Required Structure" block at the top of this rule
+IS the reference. Do not mirror older archived examples — most pre-dating this
+rule update include `Key Changes` / `Key Concepts` blocks that have since been
+cut from the template, and none include the Hostinger affiliate block.
+
+When generating a description for a new video, follow the structure block
+verbatim. The first NEW video that ships under this rule becomes the canonical
+example; update this section with its path once it lands.

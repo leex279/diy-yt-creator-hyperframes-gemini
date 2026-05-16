@@ -1,0 +1,221 @@
+<!--
+  scene-stat-pill-row.html — Scene 3 / Scale receipts (29.849s).
+  3 huge stat pills: 1M+ lines, 30+ years legacy, 1000+ devs.
+  5-chip languages sub-row: C, C++, C#, Java, PHP.
+  Marker-sweep under "running in production".
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-stat-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center; gap: 32px;
+        box-sizing: border-box;
+      }
+      #stat-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+      }
+      #stat-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+        position: relative;
+        display: inline-block;
+      }
+      #stat-mark-prod {
+        display: block;
+        height: 5px;
+        width: 0;
+        background: var(--accent-3);
+        border-radius: 3px;
+        margin: 6px auto 0;
+        box-shadow: 0 0 16px rgba(107, 154, 239, 0.55);
+      }
+      .stat-pills-row {
+        display: flex;
+        flex-direction: row;
+        gap: 24px;
+        align-items: stretch;
+      }
+      .stat-pill-lf {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        min-width: 380px;
+        padding: 36px 28px 30px;
+        border-radius: 24px;
+      }
+      .stat-pill-lf.orange {
+        background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.06));
+        border: 2px solid rgba(233,116,88,0.45);
+        box-shadow: 0 14px 40px rgba(233,116,88,0.20);
+      }
+      .stat-pill-lf.purple {
+        background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.06));
+        border: 2px solid rgba(167,139,250,0.45);
+        box-shadow: 0 14px 40px rgba(167,139,250,0.20);
+      }
+      .stat-pill-lf.blue {
+        background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.06));
+        border: 2px solid rgba(107,154,239,0.45);
+        box-shadow: 0 14px 40px rgba(107,154,239,0.20);
+      }
+      .stat-num-lf {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 150px;
+        line-height: 0.9;
+        letter-spacing: -4px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .stat-pill-lf.orange .stat-num-lf { color: var(--accent-1); text-shadow: 0 0 60px rgba(233,116,88,0.45); }
+      .stat-pill-lf.purple .stat-num-lf { color: var(--accent-2); text-shadow: 0 0 60px rgba(167,139,250,0.45); }
+      .stat-pill-lf.blue   .stat-num-lf { color: var(--accent-3); text-shadow: 0 0 60px rgba(107,154,239,0.45); }
+      .stat-label-lf {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 2px;
+        color: var(--text);
+        text-align: center;
+        text-transform: uppercase;
+      }
+      .stat-sub-lf {
+        margin-top: 2px;
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 24px;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+      }
+      #stat-langs-row {
+        display: flex; flex-direction: row;
+        gap: 14px; align-items: center; justify-content: center;
+        margin-top: 6px;
+      }
+      .stat-lang-chip {
+        padding: 14px 26px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 1.5px;
+        color: var(--text);
+      }
+      #stat-langs-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 4px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+    </style>
+
+    <div id="scene-stat-content">
+      <div id="stat-overline">RUNNING IN PRODUCTION</div>
+      <div id="stat-headline">
+        Anthropic says Claude Code is running in production at this scale.
+        <span id="stat-mark-prod"></span>
+      </div>
+      <div class="stat-pills-row">
+        <div class="stat-pill-lf orange" id="stat-pill-1">
+          <div class="stat-num-lf">1M+</div>
+          <div class="stat-label-lf">Lines of code</div>
+          <div class="stat-sub-lf">Multi-million-line monorepos</div>
+        </div>
+        <div class="stat-pill-lf purple" id="stat-pill-2">
+          <div class="stat-num-lf">30+</div>
+          <div class="stat-label-lf">Years legacy</div>
+          <div class="stat-sub-lf">Decades-old systems</div>
+        </div>
+        <div class="stat-pill-lf blue" id="stat-pill-3">
+          <div class="stat-num-lf">1000+</div>
+          <div class="stat-label-lf">Developers</div>
+          <div class="stat-sub-lf">Org-wide rollouts</div>
+        </div>
+      </div>
+      <div id="stat-langs-label">EVEN ON</div>
+      <div id="stat-langs-row">
+        <div class="stat-lang-chip" id="stat-lang-c">C</div>
+        <div class="stat-lang-chip" id="stat-lang-cpp">C++</div>
+        <div class="stat-lang-chip" id="stat-lang-cs">C#</div>
+        <div class="stat-lang-chip" id="stat-lang-java">Java</div>
+        <div class="stat-lang-chip" id="stat-lang-php">PHP</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 29.849;
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.set("#stat-overline",   { y: 20, opacity: 0 }, 0);
+      tl.set("#stat-headline",   { y: 28, opacity: 0 }, 0);
+      tl.set("#stat-pill-1",     { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#stat-pill-2",     { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#stat-pill-3",     { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#stat-langs-label",{ y: 20, opacity: 0 }, 0);
+      tl.set("#stat-lang-c",     { y: 20, opacity: 0 }, 0);
+      tl.set("#stat-lang-cpp",   { y: 20, opacity: 0 }, 0);
+      tl.set("#stat-lang-cs",    { y: 20, opacity: 0 }, 0);
+      tl.set("#stat-lang-java",  { y: 20, opacity: 0 }, 0);
+      tl.set("#stat-lang-php",   { y: 20, opacity: 0 }, 0);
+
+      // scene_start = 59.337 — times below are scene-relative
+      tl.to("#stat-overline",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.0);
+      tl.to("#stat-headline",  { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.4);
+
+      // marker on "running in production" — narration ~60.5 → scene 1.163
+      tl.to("#stat-mark-prod", { width: "70%", duration: 0.8, ease: "power2.out" }, 1.163);
+
+      // Pill 1 — word "multi-million-line" at 62.576 → scene 3.239
+      tl.to("#stat-pill-1", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 3.239);
+      // Pill 2 — word "decades-old" at 65.180 → scene 5.843
+      tl.to("#stat-pill-2", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 5.843);
+      // Pill 3 — word "thousands" at 68.265 → scene 8.928
+      tl.to("#stat-pill-3", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 8.928);
+
+      // Languages "even on" label — narration ~75.0 → scene 15.663
+      tl.to("#stat-langs-label", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 15.663);
+
+      // 5-chip language stagger — word "C," at 75.799 → scene 16.462, ~0.4s apart
+      tl.to("#stat-lang-c",    { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 16.462);
+      tl.to("#stat-lang-cpp",  { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 16.862);
+      tl.to("#stat-lang-cs",   { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 17.262);
+      tl.to("#stat-lang-java", { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 17.662);
+      tl.to("#stat-lang-php",  { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 18.062);
+
+      // Glow pulse on full pill row before transition (closes 18 → ~29 gap with breath beats)
+      tl.to(".stat-pills-row", { scale: 1.02, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.5);
+      tl.to("#stat-langs-row", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 26.5);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-stat-pill-row"] = tl;
+    </script>
+  </div>
+</template>

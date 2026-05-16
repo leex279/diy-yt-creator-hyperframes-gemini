@@ -1,0 +1,214 @@
+<!--
+  scene-source-cards.html — Scene 2 / Source authority (33.552s).
+  Three cards: Applied AI team (8 people), Published 14 May 2026 / 5 min read,
+  Series banner "Claude Code at scale — Part 1".
+  Sub-line under cards: "harness > model" thesis restate.
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-src-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 28px;
+        box-sizing: border-box;
+      }
+      #src-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        position: relative;
+      }
+      #src-mark-applied {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -8px;
+        height: 4px;
+        width: 0;
+        background: var(--accent-2);
+        margin: 0 auto;
+        box-shadow: 0 0 16px rgba(167, 139, 250, 0.55);
+        border-radius: 2px;
+      }
+      #src-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 60px;
+        line-height: 1.05;
+        letter-spacing: -1.5px;
+        color: var(--text);
+        max-width: 1500px;
+        text-align: center;
+      }
+      .src-cards-row {
+        display: flex;
+        flex-direction: row;
+        gap: 28px;
+        width: 100%;
+      }
+      .src-card {
+        flex: 1;
+        border-radius: 20px;
+        padding: 28px 28px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        background: linear-gradient(135deg, rgba(167, 139, 250, 0.10), rgba(167, 139, 250, 0.03));
+        border: 1.5px solid rgba(167, 139, 250, 0.35);
+      }
+      .src-card.orange {
+        background: linear-gradient(135deg, rgba(233, 116, 88, 0.10), rgba(233, 116, 88, 0.03));
+        border-color: rgba(233, 116, 88, 0.40);
+      }
+      .src-card.blue {
+        background: linear-gradient(135deg, rgba(107, 154, 239, 0.10), rgba(107, 154, 239, 0.03));
+        border-color: rgba(107, 154, 239, 0.40);
+      }
+      .src-card-tag {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .src-card.orange .src-card-tag { color: rgba(233, 116, 88, 0.95); }
+      .src-card.purple .src-card-tag { color: rgba(167, 139, 250, 0.95); }
+      .src-card.blue   .src-card-tag { color: rgba(107, 154, 239, 0.95); }
+      .src-card-title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 34px;
+        line-height: 1.15;
+        color: var(--text);
+        letter-spacing: -0.5px;
+      }
+      .src-card-meta {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 28px;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        line-height: 1.45;
+      }
+      .src-pill-row {
+        display: flex; flex-wrap: wrap; gap: 8px;
+        margin-top: 4px;
+      }
+      .src-pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(245, 241, 235, 0.07);
+        border: 1px solid rgba(245, 241, 235, 0.12);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 24px;
+        letter-spacing: 1px;
+        color: var(--text);
+      }
+      #src-thesis-sub {
+        margin-top: 6px;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 38px;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        text-align: center;
+      }
+      #src-thesis-sub .accent { color: var(--accent-2); }
+    </style>
+
+    <div id="scene-src-content">
+      <div id="src-overline">
+        APPLIED AI TEAM
+        <span id="src-mark-applied"></span>
+      </div>
+      <div id="src-headline">A brand-new series from Anthropic's Applied AI team.</div>
+      <div class="src-cards-row">
+        <div class="src-card orange" id="src-card-1">
+          <div class="src-card-tag">BYLINE</div>
+          <div class="src-card-title">Applied AI team &middot; 8 contributors</div>
+          <div class="src-card-meta">Krifcher &middot; Lee &middot; Concannon</div>
+          <div class="src-pill-row">
+            <div class="src-pill">+ Patel</div>
+            <div class="src-pill">+ Savelli</div>
+            <div class="src-pill">+ Schwartz</div>
+            <div class="src-pill">+ Dueck</div>
+            <div class="src-pill">+ Kohlmorgen</div>
+          </div>
+        </div>
+        <div class="src-card purple" id="src-card-2">
+          <div class="src-card-tag">PUBLISHED</div>
+          <div class="src-card-title">14 May 2026</div>
+          <div class="src-card-meta">5-minute read on the Claude blog</div>
+          <div class="src-pill-row">
+            <div class="src-pill">Source: claude.com/blog</div>
+          </div>
+        </div>
+        <div class="src-card blue" id="src-card-3">
+          <div class="src-card-tag">SERIES</div>
+          <div class="src-card-title">Claude Code at scale</div>
+          <div class="src-card-meta">Part 1 of a multi-part deep-dive</div>
+          <div class="src-pill-row">
+            <div class="src-pill">Part 1 of N</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="src-thesis-sub">The thesis: the <span class="accent">harness</span> &gt; the <span class="accent">model</span>.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 33.552;
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.set("#src-overline",     { y: 20, opacity: 0 }, 0);
+      tl.set("#src-headline",     { y: 28, opacity: 0 }, 0);
+      tl.set("#src-card-1",       { y: 36, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#src-card-2",       { y: 36, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#src-card-3",       { y: 36, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#src-thesis-sub",   { y: 22, opacity: 0 }, 0);
+
+      // scene_start = 25.785s; times below are scene-relative
+      tl.to("#src-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.0);
+      tl.to("#src-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.4);
+
+      // marker-sweep on "Applied AI team" — narration word "Applied" at 27.097 (scene-rel 1.312)
+      tl.to("#src-mark-applied", { width: "100%", duration: 0.8, ease: "power2.out" }, 1.312);
+
+      // Card 1 — word "Applied" at 27.097 → scene 1.312
+      tl.to("#src-card-1", { y: 0, scale: 1, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 1.215);
+      // Card 2 — word "Published" at 34.899 → scene 9.114
+      tl.to("#src-card-2", { y: 0, scale: 1, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 9.015);
+      // Card 3 — word "Part" at 41.911 → scene 16.126
+      tl.to("#src-card-3", { y: 0, scale: 1, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 16.015);
+
+      // Sub-line thesis restate at word "harness," 50.072 → scene 24.287
+      tl.to("#src-thesis-sub", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 24.287);
+      // bounce
+      tl.to("#src-thesis-sub", { scale: 1.04, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.9);
+
+      // Hold-breathe glow-pulse on Card 3 before transition
+      tl.to("#src-card-3", { scale: 1.02, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 31.5);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

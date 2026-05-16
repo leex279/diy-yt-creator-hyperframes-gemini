@@ -410,6 +410,8 @@ These phrases are retired from all future scripts. For each, the audit count is 
 | "[X] changes everything" | 20 | "[X] refactors how we think about [Y]." / Drop the phrase entirely — the specific claim IS the impact. / "After [X], the old approach stops making sense." |
 | "If this [helped/changed], subscribe" | 19 | Use a video-specific CTA (see §9). / "Next week: [specific topic]." / "[Debate question]? Tell me below." |
 | "Nobody is talking about / the part nobody talks about / no one is talking about" | NEW | State the thing directly. If it's interesting, it doesn't need a wrapper. / "But the real story is..." / Just say the fact. |
+| "Experts agree / studies show / research suggests" (without inline source) | NEW | Name the source in the same sentence: "GitGuardian's 2025 report shows 73%..." / Cut the claim if no source exists. / See `brand-voice-news-explainer.md` "Authority-Without-Evidence" section — single source of truth. |
+| "Many / most developers find" / "It's widely known" / "As we all know" | NEW | If you can name "many developers", name them. If you can't, cut the appeal to consensus and state the fact directly. |
 
 ### High (Phase out — max 1 per 5 videos)
 

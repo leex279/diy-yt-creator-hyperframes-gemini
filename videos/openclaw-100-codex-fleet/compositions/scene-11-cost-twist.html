@@ -1,0 +1,307 @@
+<!--
+  scene-11-cost-twist.html — Cost twist quote (36.7s, comp-time 493.04-529.79).
+
+  steipete's quote card with 70% slam + "it's latency" reveal.
+  Receipt: Codex Speed docs URL chip.
+
+  Scene-internal anchors (audio - 453.042):
+     0.4   "Steipete dropped the line"
+    11.1   "Quote." — card enters
+    12.2   "I could just disable fast mode..."
+    14.7   "seventy percent" — 70% slam pop
+    16.5   "Fast mode is OpenAI Codex's 1.5x speed tier"
+    28.9   "It's not cost"
+    30.7   "It's latency" — pivot line + marker
+-->
+<template id="scene-11-cost-twist-template">
+  <div data-composition-id="scene-11-cost-twist"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Inter', system-ui, sans-serif; color:var(--text);">
+
+    <style>
+      #s11-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 28px;
+        box-sizing:border-box;
+      }
+      #s11-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #s11-quote-card {
+        max-width: 1500px;
+        padding: 50px 70px;
+        border-radius: 26px;
+        background: linear-gradient(135deg, rgba(201, 42, 42, 0.12) 0%, rgba(201, 42, 42, 0.02) 100%);
+        border: 1.5px solid var(--border-bright);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        display:flex; flex-direction:column; gap: 22px; align-items:flex-start;
+      }
+      #s11-quote-mark {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 110px;
+        line-height: 0.6;
+        color: var(--accent-1);
+        opacity: 0.6;
+      }
+      #s11-quote-text {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      .s11-num-pop {
+        display: inline-block;
+        position: relative;
+        color: var(--accent-stat);
+        text-shadow: 0 0 40px rgba(252, 211, 77, 0.55);
+      }
+      .s11-num-circle {
+        position: absolute;
+        left: -16px; right: -16px;
+        top: -10px; bottom: -10px;
+        border: 4px solid var(--accent-1);
+        border-radius: 50%;
+        transform: scale(0);
+        transform-origin: center;
+        pointer-events: none;
+      }
+      #s11-attribution {
+        display:flex; align-items:center; gap: 14px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-bright);
+      }
+      #s11-attribution .av {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-1-lo) 100%);
+        display:flex; align-items:center; justify-content:center;
+        font-family: 'Inter', system-ui, sans-serif; font-weight: 900; font-size: 13px;
+        color: var(--text);
+      }
+      #s11-attribution .handle {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 20px;
+        color: var(--accent-2);
+      }
+      #s11-pivot {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: var(--text);
+        text-align: center;
+      }
+      #s11-pivot .strike {
+        text-decoration: line-through;
+        text-decoration-color: var(--accent-1);
+        text-decoration-thickness: 4px;
+        color: var(--text-secondary);
+        margin-right: 14px;
+      }
+      .s11-mark-wrap {
+        position: relative;
+        display: inline-block;
+      }
+      #s11-mark-bar {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -6px;
+        height: 8px;
+        background: var(--accent-1);
+        border-radius: 4px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      #s11-receipt {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1px solid rgba(34, 211, 238, 0.4);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--accent-2);
+      }
+      #s11-fast-mode-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        background: rgba(252, 211, 77, 0.10);
+        border: 1.5px solid rgba(252, 211, 77, 0.5);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--accent-stat);
+      }
+      #s11-fast-mode-chip .label { color: var(--text-secondary); font-weight: 500; }
+      #s11-credits-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        background: rgba(201, 42, 42, 0.10);
+        border: 1.5px solid rgba(201, 42, 42, 0.45);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--accent-1-hi);
+      }
+      #s11-pre-quote {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 32px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1400px;
+        line-height: 1.3;
+      }
+      #s11-pre-quote em { font-style: italic; color: var(--accent-1-hi); }
+      #s11-push-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, 0.08);
+        border: 1.5px solid rgba(34, 211, 238, 0.4);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 20px;
+        color: var(--accent-2);
+      }
+      #s11-reply-chip {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 24px;
+        letter-spacing: 2px;
+        color: var(--text);
+        text-transform: uppercase;
+      }
+      #s11-deliberate-chip {
+        display:inline-flex; align-items:center; gap: 10px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.10);
+        border: 1.5px solid rgba(16, 185, 129, 0.45);
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--accent-ok);
+      }
+      #s11-deliberate-chip em { font-style: italic; color: var(--text); }
+    </style>
+
+    <div id="s11-content">
+      <div id="s11-overline">THE COST TWIST</div>
+
+      <div id="s11-pre-quote">Then Steipete dropped the line that <em>re-frames everything</em>.</div>
+
+      <div id="s11-push-chip">Cost-optimization camp pushed him on cheaper models &middot; deterministic hooks</div>
+
+      <div id="s11-reply-chip">&rarr; His reply was one sentence:</div>
+
+      <div id="s11-quote-card">
+        <div id="s11-quote-mark">&ldquo;</div>
+        <div id="s11-quote-text">
+          I could just disable fast mode and cut it down by
+          <span class="s11-num-pop">
+            70%<span class="s11-num-circle" id="s11-num-circle"></span>
+          </span>.
+        </div>
+        <div id="s11-attribution">
+          <div class="av">PS</div>
+          <div class="handle">&#64;steipete</div>
+        </div>
+      </div>
+
+      <div id="s11-fast-mode-chip"><span class="label">Fast mode =</span> Codex 1.5&times; speed tier</div>
+
+      <div id="s11-credits-chip">Burns credits faster &rarr; lower latency</div>
+
+      <div id="s11-deliberate-chip">Spend &ne; constraint &middot; spend = <em>deliberate choice</em></div>
+
+      <div id="s11-pivot">
+        <span class="strike">It&rsquo;s not cost.</span>
+        It&rsquo;s <span class="s11-mark-wrap">latency<span id="s11-mark-bar"></span></span>.
+      </div>
+
+      <div id="s11-receipt">developers.openai.com/codex/speed</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function(){
+        const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+        tl.set("#s11-overline", { opacity: 0, y: 16 }, 0);
+        tl.set("#s11-quote-card", { opacity: 0, y: 40, scale: 0.96 }, 0);
+        tl.set("#s11-num-circle", { scale: 0 }, 0);
+        tl.set("#s11-pivot", { opacity: 0, y: 20 }, 0);
+        tl.set("#s11-mark-bar", { scaleX: 0 }, 0);
+        tl.set("#s11-receipt", { opacity: 0, y: 16 }, 0);
+        tl.set("#s11-fast-mode-chip", { opacity: 0, y: 16, scale: 0.9 }, 0);
+        tl.set("#s11-credits-chip", { opacity: 0, y: 16, scale: 0.9 }, 0);
+        tl.set("#s11-pre-quote",    { opacity: 0, y: 16 }, 0);
+        tl.set("#s11-push-chip",    { opacity: 0, y: 12, scale: 0.9 }, 0);
+        tl.set("#s11-reply-chip",   { opacity: 0, y: 12 }, 0);
+        tl.set("#s11-deliberate-chip", { opacity: 0, y: 12, scale: 0.9 }, 0);
+
+        // Overline at scene start
+        tl.to("#s11-overline", { opacity: 1, y: 0, duration: 0.5 }, 0.2);
+
+        // REAL-CONTENT BEAT — "Then Steipete dropped the line..." pre-quote
+        // Anchored to narration "And then Steipete dropped the line that re-frames everything" @ 0.93s
+        tl.to("#s11-pre-quote", { opacity: 1, y: 0, duration: 0.5 }, 1.0);
+        // REAL-CONTENT BEAT — push-chip at narration "When the cost-optimization camp pushed him" @ 4.71s
+        // Sourced: brief Section 2 Bucket C (cost-optimization probing) — Cerebras/Grok/Qwen, deterministic hooks
+        tl.to("#s11-push-chip", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 4.7);
+
+        // REAL-CONTENT BEAT — reply-chip at narration "his reply was one sentence" @ 9.45s
+        tl.to("#s11-reply-chip", { opacity: 1, y: 0, duration: 0.4 }, 9.4);
+
+        // Quote card at "Quote." (t=11.1)
+        tl.to("#s11-quote-card", { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 10.8);
+
+        // Marker circle on 70% at "seventy percent" (t=14.7) + scale pulse
+        tl.to("#s11-num-circle", { scale: 1, duration: 0.5, ease: "back.out(2)" }, 14.6);
+        tl.to(".s11-num-pop", { scale: 1.12, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 14.8);
+        // REAL-CONTENT BEAT — fast-mode chip reveals at "Fast mode is OpenAI Codex's 1.5x speed tier" @ 16.35s
+        // Sourced: content-brief Section 1 (Codex Speed docs) + brief 4 ("Fast mode = 1.5× speed for higher credit consumption")
+        tl.to("#s11-fast-mode-chip", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 16.5);
+        // REAL-CONTENT BEAT — credits chip reveals at "burns credits faster in exchange for lower latency" @ 20.72s
+        tl.to("#s11-credits-chip", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 20.7);
+        // REAL-CONTENT BEAT — deliberate chip at narration "It's a deliberate choice" @ 27.55s
+        // Earlier anchor: "So the spend isn't a constraint he's stuck with" @ 24.40s
+        tl.to("#s11-deliberate-chip", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 24.4);
+
+        // Pivot line "It's not cost. It's latency" at t=28.9
+        tl.to("#s11-pivot", { opacity: 1, y: 0, duration: 0.6 }, 28.7);
+        // Marker sweep under "latency" at t=30.7
+        tl.to("#s11-mark-bar", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 30.7);
+
+        // Receipt URL chip enters last
+        tl.to("#s11-receipt", { opacity: 1, y: 0, duration: 0.5 }, 33.5);
+
+        tl.set({}, {}, 36.7);
+        window.__timelines["scene-11-cost-twist"] = tl;
+      })();
+    </script>
+  </div>
+</template>

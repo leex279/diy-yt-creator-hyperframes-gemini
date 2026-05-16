@@ -276,6 +276,15 @@ npx hyperframes preview videos/<slug>
 
 Sub-playbook: `/diy-yt-creator:qa-composition <slug>`. Recommended for long-form because the 1920x1080 canvas + 8-scene flow has more places for visual regressions than a 4-phase Short.
 
+### 11.7. Generate YouTube description (MANDATORY — never skip)
+
+**Canonical rule: [`.claude/rules/youtube-metadata.md`](../../rules/youtube-metadata.md). Long-form NEEDS chapters — viewers expect them.**
+
+1. **vidIQ keyword research first** — call `mcp__claude_ai_vidiq__vidiq_keyword_research`, `vidiq_outliers`, and `vidiq_trending_videos` for 3-5 topic seeds. Save the snapshot to `videos/<slug>/research/vidiq-keywords.md`.
+2. **Compute chapter timestamps** from each scene wrapper's `data-start` in `index.html`. If the rendered MP4 was ffmpeg-sped per [`.claude/rules/video-speedup.md`](../../rules/video-speedup.md), divide by the speed factor. Format `M:SS`. Long-form: 6-12 chapters typical, gap ≥ 10s.
+3. **Write `videos/<slug>/youtube-description.md`** — LEAN structure per the rule: keyword-front-loaded SEO hook (pack any feature inventory inline as comma-separated, NOT bullets) → Dynamous block in `----` separators (**MANDATORY on every video** — independent of the `dynamousPromotion` flag in `meta.json`, which only gates ON-SCREEN promotion) → `Chapters` header + chapter list (long-form has chapters) → Resources: (validated URLs, keyword-rich anchor text) → Hostinger affiliate block in `----` separators (MANDATORY: `🏠 Self-host your AI agents & projects on Hostinger (10% OFF): 👉 https://hostinger.com/DIYSMARTCODE`) → engagement debate question matching the script's final spoken line → 15-25 hashtags. **NO Key Changes / Key Concepts / Key Stats / Key Facts bullet sections — explicitly cut from the template.**
+4. **Validate every URL** with `WebFetch`. Keep total description under ~3000 chars.
+
 ### 12. Report to the user
 
 One concise message containing:
@@ -286,6 +295,7 @@ One concise message containing:
 - **Scene count**: e.g. `7 of 8 archetypes used (skipped scene-architecture-stack)`
 - **Preview URL**: `http://localhost:5173`
 - **Render command** (do NOT run): `npx hyperframes render videos/<slug> --quality high --workers 4 -o videos/<slug>/out/<slug>.mp4`
+- **YouTube description**: `videos/<slug>/youtube-description.md` (paste-ready)
 - **Any inspect findings** that needed manual content tradeoffs
 
 Stop. Wait for user iteration or manual render.

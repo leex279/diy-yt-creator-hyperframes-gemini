@@ -1,0 +1,202 @@
+<!--
+  scene-numbers.html — THE NUMBERS (80.18–97.10s, scene-rel 0–16.92)
+  Word anchors (scene-rel = abs - 80.18):
+    0.00  "Best case"
+    1.57  "K plus one tokens per round"      → BEST tile
+    2.99  "Worst case"
+    4.53  "Still one token. Same as without it" → WORST tile
+    6.33  "Average"
+    7.83  "Two to three times faster"        → AVG tile (hero)
+    9.29  "Same output. Identical distribution"
+   12.46  "No quality loss"
+   13.47  "The original paper proved it on T five X X L"  → arxiv stamp
+-->
+<template id="scene-numbers-template">
+  <div data-composition-id="scene-numbers"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sn-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .sn-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sn-h {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 96px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sn-h .em { color: var(--accent-1); }
+      .sn-tile {
+        background: var(--bg-card);
+        border: 2px solid var(--border-bright);
+        border-radius: 22px;
+        padding: 24px 28px;
+        display: flex;
+        align-items: baseline;
+        gap: 24px;
+      }
+      .sn-tile.hero {
+        border-color: var(--accent-1);
+        box-shadow: 0 14px 32px rgba(199, 90, 63, 0.18);
+      }
+      .sn-tile-tag {
+        flex: 0 0 auto;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        width: 200px;
+      }
+      .sn-tile-num {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 132px;
+        line-height: 1;
+        letter-spacing: -3px;
+        color: var(--text);
+      }
+      .sn-tile.hero .sn-tile-num {
+        font-size: 156px;
+        line-height: 1;
+        color: var(--accent-1);
+      }
+      .sn-tile.hero {
+        padding: 30px 28px;
+      }
+      .sn-tile-sub {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+      }
+      .sn-quality {
+        background: rgba(86, 111, 79, 0.16);
+        border: 2px solid var(--accent-3);
+        border-radius: 18px;
+        padding: 18px 26px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .sn-quality .check {
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 44px;
+        color: var(--accent-3);
+      }
+      .sn-quality .text {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-style: italic;
+        font-size: 48px;
+        color: var(--text);
+        line-height: 1.05;
+      }
+      .sn-paper {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        align-self: flex-start;
+      }
+      .sn-paper .em { color: var(--accent-1); font-weight: 800; }
+    </style>
+
+    <div id="sn-content">
+      <div class="sn-overline" id="sn-overline">THE NUMBERS</div>
+      <div class="sn-h" id="sn-h">How fast, exactly?</div>
+
+      <div class="sn-tile" id="sn-best">
+        <div class="sn-tile-tag">BEST</div>
+        <div class="sn-tile-num">k+1</div>
+        <div class="sn-tile-sub">tokens / round</div>
+      </div>
+
+      <div class="sn-tile" id="sn-worst">
+        <div class="sn-tile-tag">WORST</div>
+        <div class="sn-tile-num">1</div>
+        <div class="sn-tile-sub">token (same as without)</div>
+      </div>
+
+      <div class="sn-tile hero" id="sn-avg">
+        <div class="sn-tile-tag">AVG</div>
+        <div class="sn-tile-num" id="sn-avg-num">2&ndash;3&times;</div>
+        <div class="sn-tile-sub">faster</div>
+      </div>
+
+      <div class="sn-quality" id="sn-q">
+        <div class="check">&check;</div>
+        <div class="text">Same output. Identical distribution.</div>
+      </div>
+
+      <div class="sn-paper" id="sn-paper">arXiv 2211.17192 &middot; <span class="em">T5-XXL</span> &middot; Leviathan et al.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sn-overline", { y: -8, opacity: 0 }, 0);
+      tl.set("#sn-h",        { y: 24, opacity: 0 }, 0);
+      tl.set("#sn-best",     { x: -32, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#sn-worst",    { x: -32, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#sn-avg",      { y: 24, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sn-q",        { y: 16, opacity: 0 }, 0);
+      tl.set("#sn-paper",    { y: 16, opacity: 0 }, 0);
+
+      tl.to("#sn-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#sn-h",        { y: 0, opacity: 1, duration: 0.55 }, 0.20);
+
+      // BEST tile lands at "Best case / K plus one"
+      tl.to("#sn-best",  { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 1.57);
+
+      // WORST tile lands at "Worst case / Still one token"
+      tl.to("#sn-worst", { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 4.53);
+
+      // AVG hero tile at "Two to three times faster"
+      tl.to("#sn-avg",   { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.5)" }, 7.83);
+      tl.to("#sn-avg",   { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1 }, 8.55);
+
+      // Quality stamp at "No quality loss"
+      tl.to("#sn-q", { y: 0, opacity: 1, duration: 0.5 }, 9.29);
+
+      // Paper attribution at "T five X X L"
+      tl.to("#sn-paper", { y: 0, opacity: 1, duration: 0.5 }, 13.47);
+      // Pad timeline so HyperFrames keeps the scene mounted past last tween.
+      tl.to({}, { duration: 1 }, 200);
+
+
+      window.__timelines["scene-numbers"] = tl;
+    </script>
+  </div>
+</template>

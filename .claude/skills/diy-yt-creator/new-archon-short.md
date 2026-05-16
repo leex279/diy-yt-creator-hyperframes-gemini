@@ -372,6 +372,15 @@ Sub-playbook: `/diy-yt-creator qa-composition <slug>`. It will use `agent-browse
 
 Do NOT block on this step — it's advisory. Report findings in step 12.
 
+### 11.7. Generate YouTube description (MANDATORY — never skip)
+
+**Canonical rule: [`.claude/rules/youtube-metadata.md`](../../rules/youtube-metadata.md). Follow it end-to-end.** Every Short MUST ship a `videos/<slug>/youtube-description.md`.
+
+1. **vidIQ keyword research first** — call `mcp__claude_ai_vidiq__vidiq_keyword_research`, `vidiq_outliers`, and `vidiq_trending_videos` for 3-5 topic seeds. Save the snapshot to `videos/<slug>/research/vidiq-keywords.md`.
+2. **Shorts SKIP chapters entirely** — per the rule, vertical Shorts do not include a `Chapters` section.
+3. **Write `videos/<slug>/youtube-description.md`** — LEAN structure per the rule: SEO hook (keyword-front-loaded) → Dynamous block in `----` separators (**MANDATORY on every Short** — independent of the `dynamousPromotion` flag in `meta.json`, which only gates ON-SCREEN promotion) → Resources: (validated URLs) → Hostinger affiliate block in `----` separators (MANDATORY: `🏠 Self-host your AI agents & projects on Hostinger (10% OFF): 👉 https://hostinger.com/DIYSMARTCODE`) → engagement debate question matching the script's final spoken CTA → 15-25 hashtags. **NO Chapters, NO "What's in this short" / Key Changes / Key Concepts bullet sections** — explicitly cut.
+4. **Validate every URL** with `WebFetch`. Replace 404s; drop unfixable links. Keep total description ~800-1500 chars.
+
 ### 12. Report to the user
 
 One concise message containing:
@@ -381,6 +390,7 @@ One concise message containing:
 - **Voice**: `af_heart` (or whichever was used)
 - **Preview URL**: `http://localhost:<port>` (read from the CLI output)
 - **Render command** (do NOT run it): `npx hyperframes render videos/<slug> -o videos/<slug>/out/<slug>.mp4`
+- **YouTube description**: `videos/<slug>/youtube-description.md` (paste-ready)
 - **Any inspect findings** that needed manual content tradeoffs (e.g. "shortened slam word from WORKTREES to AGENTIC for fit at 200px")
 
 That's it. Stop. Wait for user to iterate or trigger render manually.

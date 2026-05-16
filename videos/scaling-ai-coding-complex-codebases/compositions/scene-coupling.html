@@ -1,0 +1,238 @@
+﻿<!--
+  scene-coupling.html â€” God component vs isolated component visualization.
+  Left: clean isolated node (loose & clear). Right: tangled web (god component).
+  Below: the 3 coupling quality questions.
+-->
+<template id="scene-coupling-template">
+  <div data-composition-id="scene-coupling"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #cp-content {
+        width:100%; height:100%;
+        padding: 80px var(--pad-x) 60px;
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:flex-start;
+        gap: 18px;
+        box-sizing:border-box;
+      }
+      #cp-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #cp-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #cp-content .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 62px;
+        line-height: 1.0;
+        letter-spacing: -0.022em;
+        color: var(--ink);
+        max-width: 1600px;
+      }
+
+      #cp-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        width: 100%;
+        margin-top: 8px;
+      }
+      .cp-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 18px;
+        padding: 28px 30px;
+        display: flex; flex-direction: column;
+        gap: 14px;
+        min-height: 360px;
+        position: relative;
+      }
+      .cp-card .label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 22px;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+      .cp-card .verdict {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 44px;
+        letter-spacing: -0.02em;
+      }
+      .cp-card.good { border-color: rgba(59, 130, 246, 0.45); box-shadow: 0 0 36px rgba(59, 130, 246, 0.18); }
+      .cp-card.good .verdict { color: var(--accent-2); }
+      .cp-card.bad { border-color: rgba(249, 115, 22, 0.45); box-shadow: 0 0 36px rgba(249, 115, 22, 0.16); }
+      .cp-card.bad .verdict { color: var(--accent-warn); }
+      .cp-card .viz {
+        flex: 1;
+        position: relative;
+        min-height: 180px;
+      }
+      /* Good â€” single isolated node */
+      .cp-card.good .viz svg {
+        width: 100%; height: 100%;
+      }
+      .iso-dot { fill: var(--accent); }
+      .iso-link { stroke: rgba(96, 165, 250, 0.55); stroke-width: 2.5; fill: none; }
+      .iso-edge { fill: rgba(96, 165, 250, 0.12); }
+
+      /* Bad â€” tangled web */
+      .god-dot { fill: var(--accent-warn); }
+      .god-link { stroke: rgba(249, 115, 22, 0.55); stroke-width: 2; fill: none; }
+      .god-sat { fill: rgba(249, 115, 22, 0.7); }
+
+      #cp-questions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        width: 100%;
+        margin-top: 6px;
+      }
+      .cp-q {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 14px;
+        padding: 22px 26px;
+        display: flex; flex-direction: column; gap: 10px;
+      }
+      .cp-q .qn {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 20px;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+      }
+      .cp-q .qt {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+    </style>
+
+    <div id="cp-content">
+      <div class="eyebrow" id="cp-eyebrow" style="opacity:0;visibility:hidden;">STRATEGY 06 &middot; COUPLING &gt; LOC</div>
+      <h2 class="headline" id="cp-headline" style="opacity:0;visibility:hidden;">Three questions. Not a line count.</h2>
+
+      <div id="cp-row">
+        <div class="cp-card good" id="cp-good" style="opacity:0;visibility:hidden;">
+          <div class="label">LOOSE &amp; CLEAR</div>
+          <div class="verdict">Loadable in isolation</div>
+          <div class="viz">
+            <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+              <circle class="iso-dot" cx="200" cy="100" r="36" />
+              <circle class="iso-edge" cx="200" cy="100" r="64" />
+              <circle class="iso-edge" cx="200" cy="100" r="92" opacity="0.5" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="cp-card bad" id="cp-bad" style="opacity:0;visibility:hidden;">
+          <div class="label">GOD COMPONENT</div>
+          <div class="verdict">Wide context every time</div>
+          <div class="viz">
+            <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- center -->
+              <line class="god-link" x1="200" y1="100" x2="40" y2="40" />
+              <line class="god-link" x1="200" y1="100" x2="100" y2="40" />
+              <line class="god-link" x1="200" y1="100" x2="300" y2="40" />
+              <line class="god-link" x1="200" y1="100" x2="360" y2="40" />
+              <line class="god-link" x1="200" y1="100" x2="40" y2="160" />
+              <line class="god-link" x1="200" y1="100" x2="100" y2="160" />
+              <line class="god-link" x1="200" y1="100" x2="300" y2="160" />
+              <line class="god-link" x1="200" y1="100" x2="360" y2="160" />
+              <line class="god-link" x1="200" y1="100" x2="200" y2="20" />
+              <line class="god-link" x1="200" y1="100" x2="200" y2="180" />
+              <line class="god-link" x1="200" y1="100" x2="20" y2="100" />
+              <line class="god-link" x1="200" y1="100" x2="380" y2="100" />
+              <!-- satellites -->
+              <circle class="god-sat" cx="40" cy="40" r="9" />
+              <circle class="god-sat" cx="100" cy="40" r="9" />
+              <circle class="god-sat" cx="300" cy="40" r="9" />
+              <circle class="god-sat" cx="360" cy="40" r="9" />
+              <circle class="god-sat" cx="40" cy="160" r="9" />
+              <circle class="god-sat" cx="100" cy="160" r="9" />
+              <circle class="god-sat" cx="300" cy="160" r="9" />
+              <circle class="god-sat" cx="360" cy="160" r="9" />
+              <circle class="god-sat" cx="200" cy="20" r="9" />
+              <circle class="god-sat" cx="200" cy="180" r="9" />
+              <circle class="god-sat" cx="20" cy="100" r="9" />
+              <circle class="god-sat" cx="380" cy="100" r="9" />
+              <!-- center god node -->
+              <circle class="god-dot" cx="200" cy="100" r="22" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div id="cp-questions">
+        <div class="cp-q" id="cp-q1" style="opacity:0;visibility:hidden;">
+          <div class="qn">01</div>
+          <div class="qt">Can you work on it in isolation?</div>
+        </div>
+        <div class="cp-q" id="cp-q2" style="opacity:0;visibility:hidden;">
+          <div class="qn">02</div>
+          <div class="qt">Does the agent have clear boundaries?</div>
+        </div>
+        <div class="cp-q" id="cp-q3" style="opacity:0;visibility:hidden;">
+          <div class="qn">03</div>
+          <div class="qt">Is the public API obvious?</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#cp-eyebrow",  { y: 20 }, 0);
+      tl.set("#cp-headline", { y: 30 }, 0);
+      tl.set("#cp-good", { y: 30 }, 0);
+      tl.set("#cp-bad",  { y: 30 }, 0);
+      ["#cp-q1","#cp-q2","#cp-q3"].forEach(sel => tl.set(sel, { y: 20 }, 0));
+
+      tl.to("#cp-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#cp-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
+
+      // Good vs bad cards appear
+      tl.to("#cp-good", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 1.5);
+      tl.to("#cp-bad",  { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 3.5);
+
+      // The three questions ~5s apart, paced for narration
+      tl.to("#cp-q1", { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 7.0);
+      tl.to("#cp-q2", { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 12.0);
+      tl.to("#cp-q3", { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 17.0);
+
+      // Mid-hold beats â€” pulse the bad card to highlight the danger
+      tl.to("#cp-bad", { boxShadow: "0 0 80px rgba(249, 115, 22, 0.35)", duration: 1.2,
+        ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
+      // Pulse each question card subtly to invite reading
+      tl.to(["#cp-q1","#cp-q2","#cp-q3"], { scale: 1.02, duration: 1.0, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.18 }, 26.0);
+      // Good card glow finale
+      tl.to("#cp-good", { boxShadow: "0 0 80px rgba(59, 130, 246, 0.35)", duration: 1.2,
+        ease: "sine.inOut", yoyo: true, repeat: 1 }, 32.0);
+
+      // Extend timeline to full slot duration
+      tl.set({}, {}, 50);
+      window.__timelines["scene-coupling"] = tl;
+    </script>
+  </div>
+</template>

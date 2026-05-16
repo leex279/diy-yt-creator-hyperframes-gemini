@@ -1,0 +1,234 @@
+<!--
+  scene-init.html — terminal mirroring the REAL interactive picker output
+  from `npx hyperframes init my-video` (CLI v0.4.45). Captured from user's
+  live run on 2026-05-05. The HYPERFRAMES ASCII banner, "T Create a new
+  HyperFrames project" title step, and "* Pick an example" select step
+  with the 9-template list are reproduced exactly.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-init-template">
+  <div data-composition-id="scene-init"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #init-content {
+        width:100%; height:100%;
+        padding: 70px var(--pad-x) 70px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 22px; box-sizing:border-box;
+      }
+      #init-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:8px; text-align:center;
+      }
+      #init-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 22px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-warn);
+      }
+      #init-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 40px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+      #init-content .headline code {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 32px;
+        color: var(--accent-stat);
+        background: rgba(251,188,4,.10);
+        padding: 2px 10px; border-radius: 6px;
+      }
+
+      .init-term {
+        width: 1500px;
+        background: rgba(0, 0, 0, 0.82);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 14px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        font-family: var(--mono);
+      }
+      .init-term .term-bar {
+        background: rgba(255,255,255,0.06);
+        padding: 9px 16px;
+        font-weight: 700; font-size: 12px;
+        letter-spacing: 2px; text-transform: uppercase;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+        display:flex; align-items:center; gap: 8px;
+      }
+      .init-term .dot {
+        display:inline-block; width:11px; height:11px; border-radius:50%;
+        background:#ff5f57; margin-right:5px;
+      }
+      .init-term .dot.y { background:#febc2e; }
+      .init-term .dot.g { background:#28c840; }
+      .init-term .term-body {
+        padding: 16px 22px;
+        font-size: 15px; line-height: 1.45;
+        color: #e9ecf3;
+      }
+      .init-term .prompt { color: var(--text-secondary); margin-right: 8px; }
+      .init-term .cmd-text { color: var(--accent-stat); font-weight: 700; }
+      .init-term .out { display:block; color: #e9ecf3; }
+      .init-term .out.dim { color: var(--text-secondary); }
+
+      /* HYPERFRAMES ASCII banner — real CLI uses green→cyan gradient */
+      .init-term .banner {
+        display:block;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.0;
+        background: linear-gradient(90deg, #5ee5a8 0%, #5ee5cf 35%, #5ee0e5 70%, #5ec8e5 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        white-space: pre;
+        margin: 8px 0 14px 0;
+      }
+
+      /* clack/prompts step icons */
+      .init-term .step-line {
+        display:flex; align-items:flex-start;
+      }
+      .init-term .step-line .icon {
+        flex: 0 0 22px;
+        font-weight: 800;
+        text-align: left;
+        color: #e9ecf3;
+      }
+      .init-term .step-line.select .icon { color: #5ee5cf; }
+      .init-term .step-line .text { flex: 1; color: #e9ecf3; }
+      .init-term .pipe-line {
+        display:block;
+        color: #828c9e;
+        padding-left: 0;
+      }
+      .init-term .pipe-line .pipe {
+        display:inline-block; width: 22px;
+        color: #828c9e;
+      }
+      .init-term .pipe-line .opt {
+        display:inline-block;
+        color: #e9ecf3;
+      }
+      .init-term .pipe-line.selected .opt {
+        color: #5ee5cf;
+        font-weight: 600;
+      }
+      .init-term .pipe-line .desc {
+        color: var(--text-secondary);
+      }
+      .init-term .pipe-line .arrow {
+        color: #5ee5cf;
+        font-weight: 800;
+      }
+    </style>
+
+    <div id="init-content">
+      <div class="header-block">
+        <div class="overline" id="init-overline">SPAWN A PROJECT &middot; STEP 6</div>
+        <div class="headline" id="init-headline"><code>npx hyperframes init my-video</code></div>
+      </div>
+
+      <div class="init-term" id="init-term">
+        <div class="term-bar">
+          <span class="dot"></span><span class="dot y"></span><span class="dot g"></span>
+          &nbsp; PowerShell &mdash; new-project
+        </div>
+        <div class="term-body">
+          <span id="init-cmd"><span class="prompt">PS&gt;</span><span class="cmd-text">npx hyperframes init my-video</span></span>
+
+          <span class="banner" id="init-banner">  ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗ ███████╗██████╗  █████╗ ███╗   ███╗███████╗███████╗
+  ██║  ██║╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔════╝
+  ███████║ ╚████╔╝ ██████╔╝█████╗  ██████╔╝█████╗  ██████╔╝███████║██╔████╔██║█████╗  ███████╗
+  ██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝  ╚════██║
+  ██║  ██║   ██║   ██║     ███████╗██║  ██║██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗███████║
+  ╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝</span>
+
+          <span id="init-step-title" class="step-line title">
+            <span class="icon">T</span><span class="text">Create a new HyperFrames project</span>
+          </span>
+          <span id="init-pipe-1" class="pipe-line"><span class="pipe">|</span></span>
+          <span id="init-step-select" class="step-line select">
+            <span class="icon">*</span><span class="text">Pick an example</span>
+          </span>
+
+          <span id="init-opt-1" class="pipe-line selected"><span class="pipe">|</span><span class="arrow">&gt;</span> <span class="opt">Blank</span> <span class="desc">(Empty composition &mdash; just the scaffolding)</span></span>
+          <span id="init-opt-2" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Warm Grain</span></span>
+          <span id="init-opt-3" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Play Mode</span></span>
+          <span id="init-opt-4" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Swiss Grid</span></span>
+          <span id="init-opt-5" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Vignelli</span></span>
+          <span id="init-opt-6" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Decision Tree</span></span>
+          <span id="init-opt-7" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Kinetic Type</span></span>
+          <span id="init-opt-8" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">Product Promo</span></span>
+          <span id="init-opt-9" class="pipe-line"><span class="pipe">|</span> &nbsp;&nbsp;<span class="opt">NYT Graph</span></span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#init-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#init-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#init-term",     { y: 30, scale: 0.97, opacity: 0 }, 0);
+      tl.set("#init-cmd",      { x: -10, opacity: 0 }, 0);
+      tl.set("#init-banner",   { opacity: 0, y: 8 }, 0);
+      tl.set("#init-step-title",  { x: -10, opacity: 0 }, 0);
+      tl.set("#init-pipe-1",      { x: -10, opacity: 0 }, 0);
+      tl.set("#init-step-select", { x: -10, opacity: 0 }, 0);
+
+      const optIds = ["#init-opt-1","#init-opt-2","#init-opt-3","#init-opt-4","#init-opt-5","#init-opt-6","#init-opt-7","#init-opt-8","#init-opt-9"];
+      optIds.forEach(sel => tl.set(sel, { x: -10, opacity: 0 }, 0));
+
+      // Narration anchors:
+      //   "Spawn a project."                              +0.30
+      //   "npx hyperframes init my-video."                 +1.38 (npx) → +2.60 (my-video)
+      //   "Pick a starter from the interactive picker."    +4.01 → +5.69
+      //   Templates by spoken word:
+      //     Blank      +7.03
+      //     Warm Grain +7.43
+      //     Swiss Grid +8.18
+      //     Vignelli   +8.94
+      //     NYT Graph  +9.61
+      //   "Hit enter, six files appear, then a Get-Started guide." +11.77
+      tl.to("#init-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.to("#init-headline", { y: 0, opacity: 1, duration: 0.5 }, 0.2);
+      tl.to("#init-term",     { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 0.5);
+
+      // Command typed — narration: "npx hyperframes init my-video." +1.38
+      tl.to("#init-cmd",         { x: 0, opacity: 1, duration: 0.3 }, 1.35);
+      // Banner appears after command, before next narration line
+      tl.to("#init-banner",      { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 2.65);
+      // Title step + pipe + select prompt — synced to "Pick a starter from the interactive picker." +4.01
+      tl.to("#init-step-title",  { x: 0, opacity: 1, duration: 0.3 }, 3.5);
+      tl.to("#init-pipe-1",      { x: 0, opacity: 1, duration: 0.2 }, 3.8);
+      tl.to("#init-step-select", { x: 0, opacity: 1, duration: 0.3 }, 4.0);
+
+      // Templates reveal exactly when each is named (or in narration gap before next named one)
+      tl.to("#init-opt-1", { x: 0, opacity: 1, duration: 0.25 }, 7.00);  // "Blank"
+      tl.to("#init-opt-2", { x: 0, opacity: 1, duration: 0.25 }, 7.40);  // "Warm Grain"
+      tl.to("#init-opt-3", { x: 0, opacity: 1, duration: 0.25 }, 7.85);  // Play Mode (filler before Swiss)
+      tl.to("#init-opt-4", { x: 0, opacity: 1, duration: 0.25 }, 8.15);  // "Swiss Grid"
+      tl.to("#init-opt-5", { x: 0, opacity: 1, duration: 0.25 }, 8.92);  // "Vignelli"
+      tl.to("#init-opt-6", { x: 0, opacity: 1, duration: 0.25 }, 9.18);  // Decision Tree
+      tl.to("#init-opt-7", { x: 0, opacity: 1, duration: 0.25 }, 9.36);  // Kinetic Type
+      tl.to("#init-opt-8", { x: 0, opacity: 1, duration: 0.25 }, 9.55);  // Product Promo
+      tl.to("#init-opt-9", { x: 0, opacity: 1, duration: 0.25 }, 9.78);  // "NYT Graph"
+
+      // Highlight pulse on Blank — narration: "Hit enter" +11.77
+      tl.to("#init-opt-1 .opt", { textShadow: "0 0 18px rgba(94,229,207,.7)", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 2 }, 11.50);
+
+      window.__timelines["scene-init"] = tl;
+    </script>
+  </div>
+</template>

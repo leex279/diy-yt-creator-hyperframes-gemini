@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code Has 185 Free Agents (You're Using Zero)</title>
+<link rel="stylesheet" href="tokens/claude-code-dark.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(88, 166, 255, 0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(163, 113, 247, 0.07), transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(63, 185, 80, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* Persistent brand chrome */
+  #version-branding {
+    position: absolute;
+    inset: 0;
+    opacity: 1.0;
+    pointer-events: none;
+    z-index: 9;
+  }
+  #version-branding .vb-logos {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-end;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.55));
+  }
+  #version-branding .vb-logos img {
+    width: 180px;
+    height: auto;
+  }
+  #version-branding .vb-version {
+    position: absolute;
+    bottom: 24px;
+    left: 30px;
+    right: 30px;
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.55);
+  }
+
+  /* PHASES (mutex via z-index escalation + opacity) */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1;  opacity: 1; }
+  #phase2 { z-index: 2;  opacity: 0; }
+  #phase3 { z-index: 3;  opacity: 0; }
+  #phase4 { z-index: 4;  opacity: 0; }
+  #phase5 { z-index: 5;  opacity: 0; }
+  #phase6 { z-index: 6;  opacity: 0; }
+  #phase7 { z-index: 7;  opacity: 0; }
+  #phase8 { z-index: 8;  opacity: 0; }
+  #phase9 { z-index: 9;  opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: 220px 60px 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    gap: 28px;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* PHASE 1 — THUMBNAIL-GRADE OPEN */
+  #phase1 .phase-content { text-align: center; gap: 36px; }
+  #p1-overline { color: var(--accent-warn); }
+  #p1-slam-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 380px;
+    line-height: 0.9;
+    letter-spacing: -10px;
+    color: var(--accent-1);
+    text-shadow: 0 0 80px rgba(88,166,255,0.55), 0 6px 24px rgba(0,0,0,0.6);
+    font-variant-numeric: tabular-nums lining-nums;
+    margin-top: 40px;
+  }
+  #p1-slam-label {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 92px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--text);
+    margin-top: -20px;
+  }
+  #p1-slam-sub {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--accent-warn);
+    letter-spacing: -1px;
+    margin-top: 40px;
+  }
+  #p1-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-top: 60px;
+  }
+
+  /* PHASE 2 — DISPARITY BAR */
+  #phase2 .phase-content { text-align: center; gap: 28px; }
+  #p2-overline { color: var(--accent-1); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 960px;
+    letter-spacing: -1px;
+  }
+  #p2-bar-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 70px;
+    height: 1000px;
+    margin-top: 30px;
+  }
+  .p2-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 380px;
+  }
+  .p2-bar {
+    width: 380px;
+    border-radius: 28px 28px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 60px;
+  }
+  #p2-bar-official {
+    height: 240px;
+    background: linear-gradient(180deg, rgba(255,193,7,0.55), rgba(255,193,7,0.15));
+    border: 2px solid rgba(255,193,7,0.65);
+    box-shadow: 0 14px 36px rgba(255,193,7,0.20);
+    padding-top: 28px;
+  }
+  #p2-bar-community {
+    height: 1000px;
+    background: linear-gradient(180deg, rgba(88,166,255,0.55), rgba(88,166,255,0.10));
+    border: 2px solid rgba(88,166,255,0.65);
+    box-shadow: 0 14px 36px rgba(88,166,255,0.30);
+  }
+  .p2-bar-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 130px;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p2-bar-official .p2-bar-num {
+    font-size: 110px;
+  }
+  #p2-bar-official .p2-bar-num { color: var(--accent-warn); }
+  #p2-bar-community .p2-bar-num { color: var(--accent-1); text-shadow: 0 0 40px rgba(88,166,255,0.55); }
+  .p2-col-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 18px;
+    color: var(--text);
+    text-align: center;
+    max-width: 380px;
+    line-height: 1.2;
+  }
+  #p2-multiplier {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 88px;
+    line-height: 0.95;
+    color: var(--accent-3);
+    text-shadow: 0 0 40px rgba(163,113,247,0.55);
+    letter-spacing: -1px;
+    margin-top: 24px;
+  }
+
+  /* PHASE 3 — INSTALL COMMAND */
+  #phase3 .phase-content { text-align: center; gap: 36px; }
+  #p3-overline { color: var(--accent-1); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 68px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  .term-pill {
+    width: 940px;
+    padding: 36px 44px;
+    border-radius: 24px;
+    background: rgba(13, 17, 23, 0.85);
+    border: 2px solid rgba(88,166,255,0.45);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+    text-align: left;
+    margin-top: 12px;
+  }
+  .term-prompt {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    color: var(--accent-4);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .term-cmd {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 44px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+  .term-cmd .slash { color: var(--accent-3); }
+  .term-cmd .arg   { color: var(--accent-1); }
+  #p3-done-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 48px;
+    letter-spacing: 3px;
+    color: var(--bg);
+    background: var(--accent-4);
+    padding: 18px 44px;
+    border-radius: 14px;
+    margin-top: 12px;
+    box-shadow: 0 10px 28px rgba(63,185,80,0.35);
+  }
+
+  /* PHASE 4 — FIVE SPECIALISTS CAST */
+  #phase4 .phase-content { text-align: center; gap: 22px; }
+  #p4-overline { color: var(--accent-3); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 58px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  #p4-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 940px;
+  }
+  .spec-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 28px;
+    padding: 24px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(88,166,255,0.16), rgba(88,166,255,0.05));
+    border: 2px solid rgba(88,166,255,0.45);
+    box-shadow: 0 10px 30px rgba(88,166,255,0.20);
+  }
+  .spec-pill.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.16), rgba(163,113,247,0.05));
+    border-color: rgba(163,113,247,0.45);
+    box-shadow: 0 10px 30px rgba(163,113,247,0.20);
+  }
+  .spec-pill.green {
+    background: linear-gradient(135deg, rgba(63,185,80,0.16), rgba(63,185,80,0.05));
+    border-color: rgba(63,185,80,0.45);
+    box-shadow: 0 10px 30px rgba(63,185,80,0.20);
+  }
+  .spec-pill.warn {
+    background: linear-gradient(135deg, rgba(255,193,7,0.16), rgba(255,193,7,0.05));
+    border-color: rgba(255,193,7,0.45);
+    box-shadow: 0 10px 30px rgba(255,193,7,0.20);
+  }
+  .spec-pill.pink {
+    background: linear-gradient(135deg, rgba(255,99,132,0.16), rgba(255,99,132,0.05));
+    border-color: rgba(255,99,132,0.45);
+    box-shadow: 0 10px 30px rgba(255,99,132,0.20);
+  }
+  .spec-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 88px;
+    height: 88px;
+    border-radius: 18px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 38px;
+    line-height: 1;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+  .spec-pill .spec-icon          { background: var(--accent-1); }
+  .spec-pill.purple .spec-icon   { background: var(--accent-3); }
+  .spec-pill.green  .spec-icon   { background: var(--accent-4); }
+  .spec-pill.warn   .spec-icon   { background: var(--accent-warn); }
+  .spec-pill.pink   .spec-icon   { background: #ff6384; }
+  .spec-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .spec-name {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  .spec-role {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.2;
+    color: var(--text-secondary);
+  }
+
+  /* PHASE 5 — TOKEN ECONOMICS */
+  #phase5 .phase-content { text-align: center; gap: 28px; }
+  #p5-overline { color: var(--accent-warn); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 960px;
+  }
+  #p5-myth {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 80px;
+    line-height: 1.05;
+    color: var(--text-secondary);
+    letter-spacing: -1px;
+    position: relative;
+    display: inline-block;
+    padding: 0 30px;
+    margin-top: 20px;
+  }
+  #p5-myth-strike {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 12px;
+    background: #ff6384;
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+    border-radius: 6px;
+    box-shadow: 0 0 24px rgba(255,99,132,0.55);
+  }
+  #p5-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 940px;
+    margin-top: 24px;
+  }
+  .p5-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .p5-row-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--text);
+  }
+  .p5-bar-row-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+  }
+  .p5-bar-track {
+    position: relative;
+    flex: 1;
+    height: 60px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .p5-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 12px;
+  }
+  .p5-bar-value {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: var(--text);
+    min-width: 360px;
+    text-align: left;
+  }
+  #p5-fill-browse {
+    background: var(--accent-4);
+    box-shadow: 0 0 24px rgba(63,185,80,0.45);
+  }
+  #p5-fill-installed {
+    background: var(--accent-1);
+    box-shadow: 0 0 24px rgba(88,166,255,0.55);
+  }
+  #p5-tagline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1px;
+    color: var(--accent-1);
+    margin-top: 16px;
+  }
+
+  /* PHASE 6 — ARCHITECTURE TRUST */
+  #phase6 .phase-content { text-align: center; gap: 32px; }
+  #p6-overline { color: var(--accent-3); }
+  #p6-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  #p6-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    width: 940px;
+    margin-top: 12px;
+  }
+  .trust-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 30px 40px;
+    border-radius: 24px;
+    background: rgba(13, 17, 23, 0.65);
+    border: 2px solid rgba(255,255,255,0.10);
+    text-align: left;
+  }
+  .trust-pill.cyan   { border-color: rgba(88,166,255,0.45); }
+  .trust-pill.purple { border-color: rgba(163,113,247,0.45); }
+  .trust-pill.green  { border-color: rgba(63,185,80,0.45); }
+  .trust-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    height: 84px;
+    border-radius: 18px;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+  .trust-pill.cyan   .trust-check { background: var(--accent-1); }
+  .trust-pill.purple .trust-check { background: var(--accent-3); }
+  .trust-pill.green  .trust-check { background: var(--accent-4); }
+  .trust-body { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .trust-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 50px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .trust-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    line-height: 1.2;
+  }
+
+  /* PHASE 7 — STARS / AUTHORITY */
+  #phase7 .phase-content { text-align: center; gap: 28px; }
+  #p7-overline { color: var(--accent-warn); }
+  #p7-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  #p7-stars-row {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 940px;
+    margin-top: 24px;
+  }
+  .star-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 30px;
+    padding: 36px 44px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, rgba(255,193,7,0.16), rgba(255,193,7,0.04));
+    border: 2px solid rgba(255,193,7,0.45);
+    box-shadow: 0 14px 36px rgba(255,193,7,0.20);
+  }
+  .star-pill.cyan {
+    background: linear-gradient(135deg, rgba(88,166,255,0.16), rgba(88,166,255,0.04));
+    border-color: rgba(88,166,255,0.45);
+    box-shadow: 0 14px 36px rgba(88,166,255,0.20);
+  }
+  .star-pill.purple {
+    background: linear-gradient(135deg, rgba(163,113,247,0.16), rgba(163,113,247,0.04));
+    border-color: rgba(163,113,247,0.45);
+    box-shadow: 0 14px 36px rgba(163,113,247,0.20);
+  }
+  .star-glyph {
+    font-size: 80px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .star-body { display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left; }
+  .star-count {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 100px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--accent-warn);
+  }
+  .star-pill.cyan   .star-count { color: var(--accent-1); }
+  .star-pill.purple .star-count { color: var(--accent-3); }
+  .star-pill .star-glyph         { color: var(--accent-warn); }
+  .star-pill.cyan .star-glyph    { color: var(--accent-1); }
+  .star-pill.purple .star-glyph  { color: var(--accent-3); }
+  .star-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  /* PHASE 8 — STOP USING ZERO PIVOT */
+  #phase8 .phase-content { text-align: center; gap: 40px; justify-content: center; padding-top: 320px; }
+  #p8-overline { color: var(--accent-warn); }
+  #p8-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.9;
+    letter-spacing: -8px;
+    color: var(--accent-warn);
+    text-shadow: 0 0 80px rgba(255,193,7,0.55), 0 6px 24px rgba(0,0,0,0.6);
+  }
+  #p8-sub {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 920px;
+  }
+
+  /* PHASE 9 — THUMBNAIL-GRADE CLOSE + CTA */
+  #phase9 .phase-content { text-align: center; gap: 24px; padding-top: 220px; padding-bottom: 220px; justify-content: flex-start; }
+  #p9-overline { color: var(--accent-warn); }
+  #p9-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 180px;
+    line-height: 0.9;
+    letter-spacing: -6px;
+    color: var(--accent-1);
+    text-shadow: 0 0 80px rgba(88,166,255,0.55), 0 6px 24px rgba(0,0,0,0.6);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p9-slam-label {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 78px;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--text);
+  }
+  #p9-receipt {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    margin-top: 12px;
+    max-width: 960px;
+  }
+  /* MANDATORY engagement CTA per .claude/rules/engagement-cta.md */
+  #cta-question {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 50px;
+    line-height: 1.1;
+    color: var(--bg);
+    background: var(--accent-warn);
+    border-radius: 28px;
+    padding: 26px 40px;
+    max-width: 960px;
+    letter-spacing: -0.5px;
+    box-shadow: 0 14px 36px rgba(255,193,7,0.35);
+    margin-top: 30px;
+  }
+  #p9-comments {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    color: var(--text);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 20px;
+  }
+
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="115"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="version-branding">
+    <div class="vb-logos">
+      <img src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      <img src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+    </div>
+    <div class="vb-version" id="vb-version-string">github.com/wshobson/agents  |  185 free agents</div>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- PHASE 1 — THUMBNAIL-GRADE OPEN (0-4.4s) -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Claude Code</div>
+      <div id="p1-slam-num">185</div>
+      <div id="p1-slam-label">FREE AGENTS</div>
+      <div id="p1-slam-sub">You're using zero.</div>
+      <div id="p1-receipt">github.com/wshobson/agents — 35.3k stars</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 — THE DISPARITY (4.4-27.5s) -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">December 31, 2025</div>
+      <div id="p2-headline">Anthropic shipped 36. The community shipped 185.</div>
+      <div id="p2-bar-row">
+        <div class="p2-col">
+          <div class="p2-bar" id="p2-bar-official"><div class="p2-bar-num">36</div></div>
+          <div class="p2-col-label">Anthropic<br>OFFICIAL</div>
+        </div>
+        <div class="p2-col">
+          <div class="p2-bar" id="p2-bar-community"><div class="p2-bar-num">185</div></div>
+          <div class="p2-col-label">wshobson<br>COMMUNITY</div>
+        </div>
+      </div>
+      <div id="p2-multiplier">5.1x more.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 — INSTALL COMMAND (27.5-37.5s) -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">Two commands</div>
+      <div id="p3-headline">Install it. Use it.</div>
+      <div class="term-pill" id="p3-pill-1">
+        <div class="term-prompt">$ claude</div>
+        <div class="term-cmd"><span class="slash">/plugin</span> marketplace add <span class="arg">wshobson/agents</span></div>
+      </div>
+      <div class="term-pill" id="p3-pill-2">
+        <div class="term-prompt">$ claude</div>
+        <div class="term-cmd"><span class="slash">/plugin</span> install <span class="arg">python-development</span></div>
+      </div>
+      <div id="p3-done-badge">DONE.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 — FIVE-SPECIALIST CAST (37.5-50s) -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Five specialists</div>
+      <div id="p4-headline">Inside the wshobson pack:</div>
+      <div id="p4-list">
+        <div class="spec-pill" id="p4-pill-1">
+          <div class="spec-icon">PY</div>
+          <div class="spec-body">
+            <div class="spec-name">python-pro</div>
+            <div class="spec-role">FastAPI · Django · async</div>
+          </div>
+        </div>
+        <div class="spec-pill purple" id="p4-pill-2">
+          <div class="spec-icon">K8</div>
+          <div class="spec-body">
+            <div class="spec-name">kubernetes-specialist</div>
+            <div class="spec-role">manifests · helm · debugging</div>
+          </div>
+        </div>
+        <div class="spec-pill green" id="p4-pill-3">
+          <div class="spec-icon">CR</div>
+          <div class="spec-body">
+            <div class="spec-name">code-reviewer</div>
+            <div class="spec-role">PR audit · security · style</div>
+          </div>
+        </div>
+        <div class="spec-pill warn" id="p4-pill-4">
+          <div class="spec-icon">RX</div>
+          <div class="spec-body">
+            <div class="spec-name">react-specialist</div>
+            <div class="spec-role">hooks · server components · perf</div>
+          </div>
+        </div>
+        <div class="spec-pill pink" id="p4-pill-5">
+          <div class="spec-icon">SA</div>
+          <div class="spec-body">
+            <div class="spec-name">security-auditor</div>
+            <div class="spec-role">CVE · secrets · OWASP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 — TOKEN ECONOMICS (50-65s) -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">The myth</div>
+      <div id="p5-headline">"Won't 185 agents bloat my context?"</div>
+      <div id="p5-myth"><span>load all 185 at once</span><div id="p5-myth-strike"></div></div>
+      <div id="p5-bars">
+        <div class="p5-row">
+          <div class="p5-row-label">Browse marketplace</div>
+          <div class="p5-bar-row-inner">
+            <div class="p5-bar-track"><div class="p5-bar-fill" id="p5-fill-browse"></div></div>
+            <div class="p5-bar-value" id="p5-val-browse">~0 tokens</div>
+          </div>
+        </div>
+        <div class="p5-row">
+          <div class="p5-row-label">Per installed plugin</div>
+          <div class="p5-bar-row-inner">
+            <div class="p5-bar-track"><div class="p5-bar-fill" id="p5-fill-installed"></div></div>
+            <div class="p5-bar-value" id="p5-val-installed">200-400</div>
+          </div>
+        </div>
+      </div>
+      <div id="p5-tagline">tokens per installed plugin · lazy load</div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 — ARCHITECTURE TRUST (65-75s) -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">Per-agent isolation</div>
+      <div id="p6-headline">Each agent ships its own:</div>
+      <div id="p6-pills">
+        <div class="trust-pill cyan" id="p6-pill-1">
+          <div class="trust-check">+</div>
+          <div class="trust-body">
+            <div class="trust-title">Context window</div>
+            <div class="trust-sub">main chat stays clean</div>
+          </div>
+        </div>
+        <div class="trust-pill purple" id="p6-pill-2">
+          <div class="trust-check">+</div>
+          <div class="trust-body">
+            <div class="trust-title">Tool allowlist</div>
+            <div class="trust-sub">reviewer can't rm -rf</div>
+          </div>
+        </div>
+        <div class="trust-pill green" id="p6-pill-3">
+          <div class="trust-check">+</div>
+          <div class="trust-body">
+            <div class="trust-title">Model routing</div>
+            <div class="trust-sub">haiku · sonnet · opus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 7 — STARS / AUTHORITY (75-88s) -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">Targeted adoption</div>
+      <div id="p7-headline">This isn't GitHub LARP.</div>
+      <div id="p7-stars-row">
+        <div class="star-pill" id="p7-star-1">
+          <div class="star-glyph">*</div>
+          <div class="star-body">
+            <div class="star-count">35,300</div>
+            <div class="star-label">wshobson/agents</div>
+          </div>
+        </div>
+        <div class="star-pill cyan" id="p7-star-2">
+          <div class="star-glyph">*</div>
+          <div class="star-body">
+            <div class="star-count">19,700</div>
+            <div class="star-label">VoltAgent subagents</div>
+          </div>
+        </div>
+        <div class="star-pill purple" id="p7-star-3">
+          <div class="star-glyph">*</div>
+          <div class="star-body">
+            <div class="star-count">19,300</div>
+            <div class="star-label">Anthropic official</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 8 — STOP USING ZERO (88-96s) -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">Choice time</div>
+      <div id="p8-slam">STOP<br>USING<br>ZERO.</div>
+      <div id="p8-sub">Free. Open source. Two commands.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 9 — THUMBNAIL-GRADE CLOSE + CTA (96-110s) -->
+  <div id="phase9" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p9-overline">Pick tonight</div>
+      <div id="p9-slam">185</div>
+      <div id="p9-slam-label">FREE AGENTS</div>
+      <div id="p9-receipt">/plugin marketplace add wshobson/agents</div>
+      <div id="cta-question">36 official or 185 community —<br>which marketplace tonight?</div>
+      <div id="p9-comments">Drop your pick &darr;</div>
+    </div>
+  </div>
+
+  <!-- DYNAMOUS ENDCARD (110-115s) -->
+  <div id="dynamous-endcard-mount"
+       class="clip"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="110"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="115"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — cinematic-whoosh on every phase transition -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="4.4" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="27.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="37.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="50.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="65.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="75.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="88.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="96.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- impact-slam on phase 2 community-bar reveal + phase 8 pivot -->
+  <audio id="sfx-impact-bar" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="11.0" data-duration="0.8" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-impact-stop" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="89.4" data-duration="0.8" data-track-index="4" data-volume="0.15"></audio>
+
+  <!-- scale-slam on each star counter (phase 7) -->
+  <audio id="sfx-star-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="75.8" data-duration="0.6" data-track-index="5" data-volume="0.13"></audio>
+  <audio id="sfx-star-2" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="78.4" data-duration="0.6" data-track-index="5" data-volume="0.13"></audio>
+  <audio id="sfx-star-3" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="80.7" data-duration="0.6" data-track-index="5" data-volume="0.13"></audio>
+
+  <!-- pop on each specialist pill (phase 4) -->
+  <audio id="sfx-pop-1" class="clip" src="assets/sfx/pop.mp3"
+         data-start="40.5" data-duration="0.5" data-track-index="6" data-volume="0.10"></audio>
+  <audio id="sfx-pop-2" class="clip" src="assets/sfx/pop.mp3"
+         data-start="41.7" data-duration="0.5" data-track-index="6" data-volume="0.10"></audio>
+  <audio id="sfx-pop-3" class="clip" src="assets/sfx/pop.mp3"
+         data-start="43.0" data-duration="0.5" data-track-index="6" data-volume="0.10"></audio>
+  <audio id="sfx-pop-4" class="clip" src="assets/sfx/pop.mp3"
+         data-start="44.5" data-duration="0.5" data-track-index="6" data-volume="0.10"></audio>
+  <audio id="sfx-pop-5" class="clip" src="assets/sfx/pop.mp3"
+         data-start="45.9" data-duration="0.5" data-track-index="6" data-volume="0.10"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // Deterministic shape backdrop scatter
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('claude-code-185-agents', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL_DURATION = 115;
+
+  // Ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 25, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Progress bar
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Phase transition anchors (narration-paced)
+  const T1 = 4.4;
+  const T2 = 27.5;
+  const T3 = 37.5;
+  const T4 = 50.0;
+  const T5 = 65.0;
+  const T6 = 75.0;
+  const T7 = 88.0;
+  const T8 = 96.0;
+  const T_END = 110.0;
+
+  function crossfade(outSel, inSel, t) {
+    tl.to(outSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, t);
+    tl.to(outSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, t + 0.3);
+    tl.set(outSel, { visibility: "hidden" }, t + 0.7);
+    tl.set(inSel, { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, t + 0.4);
+    tl.to(inSel, { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, t + 0.4);
+    tl.to(inSel, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, t + 0.6);
+  }
+
+  // PHASE 1 — opens cold, thumbnail-grade hold (visible from t=0)
+  tl.to("#p1-slam-num", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 2.5);
+
+  // T1 -> PHASE 2
+  crossfade("#phase1", "#phase2", T1);
+  tl.set("#p2-overline", { y: 20, opacity: 0 }, T1 + 0.4);
+  tl.set("#p2-headline", { y: 30, opacity: 0 }, T1 + 0.4);
+  tl.set("#p2-bar-row", { opacity: 0 }, T1 + 0.4);
+  tl.set("#p2-multiplier", { y: 30, opacity: 0, scale: 0.85 }, T1 + 0.4);
+  tl.set("#p2-bar-official", { height: 0 }, T1 + 0.4);
+  tl.set("#p2-bar-community", { height: 0 }, T1 + 0.4);
+  tl.to("#p2-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T1 + 0.6);
+  tl.to("#p2-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, T1 + 1.0);
+  tl.to("#p2-bar-row", { opacity: 1, duration: 0.3 }, T1 + 2.5);
+  tl.to("#p2-bar-official", { height: 240, duration: 0.9, ease: "back.out(1.4)" }, T1 + 3.0);
+  tl.to("#p2-bar-community", { height: 1000, duration: 1.4, ease: "back.out(1.4)" }, T1 + 6.0);
+  tl.to("#p2-multiplier", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.6)" }, T1 + 17.0);
+  tl.to("#p2-bar-community", { boxShadow: "0 14px 36px rgba(88,166,255,0.55), 0 0 80px rgba(88,166,255,0.35)", duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, T1 + 12.5);
+
+  // T2 -> PHASE 3
+  crossfade("#phase2", "#phase3", T2);
+  tl.set("#p3-overline", { y: 20, opacity: 0 }, T2 + 0.4);
+  tl.set("#p3-headline", { y: 30, opacity: 0 }, T2 + 0.4);
+  tl.set("#p3-pill-1", { y: 30, opacity: 0, scale: 0.95 }, T2 + 0.4);
+  tl.set("#p3-pill-2", { y: 30, opacity: 0, scale: 0.95 }, T2 + 0.4);
+  tl.set("#p3-done-badge", { scale: 0.5, opacity: 0 }, T2 + 0.4);
+  tl.to("#p3-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T2 + 0.6);
+  tl.to("#p3-headline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T2 + 1.0);
+  tl.to("#p3-pill-1", { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, T2 + 2.5);
+  tl.to("#p3-pill-2", { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, T2 + 5.5);
+  tl.to("#p3-done-badge", { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2.0)" }, T2 + 8.5);
+
+  // T3 -> PHASE 4
+  crossfade("#phase3", "#phase4", T3);
+  tl.set("#p4-overline", { y: 20, opacity: 0 }, T3 + 0.4);
+  tl.set("#p4-headline", { y: 30, opacity: 0 }, T3 + 0.4);
+  tl.set("#p4-pill-1", { x: -40, scale: 0.92, opacity: 0 }, T3 + 0.4);
+  tl.set("#p4-pill-2", { x: -40, scale: 0.92, opacity: 0 }, T3 + 0.4);
+  tl.set("#p4-pill-3", { x: -40, scale: 0.92, opacity: 0 }, T3 + 0.4);
+  tl.set("#p4-pill-4", { x: -40, scale: 0.92, opacity: 0 }, T3 + 0.4);
+  tl.set("#p4-pill-5", { x: -40, scale: 0.92, opacity: 0 }, T3 + 0.4);
+  tl.to("#p4-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T3 + 0.6);
+  tl.to("#p4-headline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T3 + 1.0);
+  tl.to("#p4-pill-1", { x: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 40.5);
+  tl.to("#p4-pill-2", { x: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 41.7);
+  tl.to("#p4-pill-3", { x: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 43.0);
+  tl.to("#p4-pill-4", { x: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 44.5);
+  tl.to("#p4-pill-5", { x: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 45.9);
+  tl.to("#p4-list", { filter: "drop-shadow(0 0 32px rgba(88,166,255,0.35))", duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 48.5);
+
+  // T4 -> PHASE 5
+  crossfade("#phase4", "#phase5", T4);
+  tl.set("#p5-overline", { y: 20, opacity: 0 }, T4 + 0.4);
+  tl.set("#p5-headline", { y: 30, opacity: 0 }, T4 + 0.4);
+  tl.set("#p5-myth", { y: 30, opacity: 0 }, T4 + 0.4);
+  tl.set("#p5-bars", { opacity: 0 }, T4 + 0.4);
+  tl.set("#p5-fill-browse", { width: "0%" }, T4 + 0.4);
+  tl.set("#p5-fill-installed", { width: "0%" }, T4 + 0.4);
+  tl.set("#p5-val-browse", { opacity: 0 }, T4 + 0.4);
+  tl.set("#p5-val-installed", { opacity: 0 }, T4 + 0.4);
+  tl.set("#p5-tagline", { y: 20, opacity: 0 }, T4 + 0.4);
+  tl.to("#p5-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T4 + 0.6);
+  tl.to("#p5-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, T4 + 1.0);
+  tl.to("#p5-myth", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, T4 + 2.4);
+  tl.to("#p5-myth-strike", { scaleX: 1, duration: 0.6, ease: "power2.out" }, T4 + 5.0);
+  tl.to("#p5-bars", { opacity: 1, duration: 0.3 }, T4 + 6.0);
+  tl.to("#p5-fill-browse", { width: "5%", duration: 0.8, ease: "power2.out" }, T4 + 6.5);
+  tl.to("#p5-val-browse", { opacity: 1, duration: 0.3 }, T4 + 7.0);
+  tl.to("#p5-fill-installed", { width: "62%", duration: 1.0, ease: "power2.out" }, T4 + 7.8);
+  tl.to("#p5-val-installed", { opacity: 1, duration: 0.3 }, T4 + 8.5);
+  tl.to("#p5-tagline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T4 + 9.5);
+  tl.to("#p5-fill-installed", { boxShadow: "0 0 60px rgba(88,166,255,0.85)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, T4 + 12.0);
+
+  // T5 -> PHASE 6
+  crossfade("#phase5", "#phase6", T5);
+  tl.set("#p6-overline", { y: 20, opacity: 0 }, T5 + 0.4);
+  tl.set("#p6-headline", { y: 30, opacity: 0 }, T5 + 0.4);
+  tl.set("#p6-pill-1", { x: -40, scale: 0.95, opacity: 0 }, T5 + 0.4);
+  tl.set("#p6-pill-2", { x: -40, scale: 0.95, opacity: 0 }, T5 + 0.4);
+  tl.set("#p6-pill-3", { x: -40, scale: 0.95, opacity: 0 }, T5 + 0.4);
+  tl.to("#p6-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T5 + 0.6);
+  tl.to("#p6-headline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T5 + 1.0);
+  tl.to("#p6-pill-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, T5 + 1.8);
+  tl.to("#p6-pill-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, T5 + 4.5);
+  tl.to("#p6-pill-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, T5 + 7.0);
+
+  // T6 -> PHASE 7
+  crossfade("#phase6", "#phase7", T6);
+  tl.set("#p7-overline", { y: 20, opacity: 0 }, T6 + 0.4);
+  tl.set("#p7-headline", { y: 30, opacity: 0 }, T6 + 0.4);
+  tl.set("#p7-star-1", { y: 40, scale: 0.85, opacity: 0 }, T6 + 0.4);
+  tl.set("#p7-star-2", { y: 40, scale: 0.85, opacity: 0 }, T6 + 0.4);
+  tl.set("#p7-star-3", { y: 40, scale: 0.85, opacity: 0 }, T6 + 0.4);
+  tl.to("#p7-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T6 + 0.6);
+  tl.to("#p7-headline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T6 + 1.0);
+  tl.to("#p7-star-1", { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 75.8);
+  tl.to("#p7-star-2", { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 78.4);
+  tl.to("#p7-star-3", { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 80.7);
+  tl.to("#p7-stars-row", { filter: "drop-shadow(0 0 40px rgba(255,193,7,0.45))", duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, T6 + 10.0);
+
+  // T7 -> PHASE 8
+  crossfade("#phase7", "#phase8", T7);
+  tl.set("#p8-overline", { y: 20, opacity: 0 }, T7 + 0.4);
+  tl.set("#p8-slam", { scale: 0.7, opacity: 0 }, T7 + 0.4);
+  tl.set("#p8-sub", { y: 30, opacity: 0 }, T7 + 0.4);
+  tl.to("#p8-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T7 + 0.6);
+  tl.to("#p8-slam", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.8)" }, 89.4);
+  tl.to("#p8-sub", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T7 + 4.0);
+  tl.to("#p8-slam", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, T7 + 5.5);
+
+  // T8 -> PHASE 9 (thumbnail-grade close + CTA)
+  crossfade("#phase8", "#phase9", T8);
+  tl.set("#p9-overline", { y: 20, opacity: 0 }, T8 + 0.4);
+  tl.set("#p9-slam", { scale: 0.7, opacity: 0 }, T8 + 0.4);
+  tl.set("#p9-slam-label", { y: 20, opacity: 0 }, T8 + 0.4);
+  tl.set("#p9-receipt", { y: 20, opacity: 0 }, T8 + 0.4);
+  tl.set("#cta-question", { y: 30, scale: 0.92, opacity: 0 }, T8 + 0.4);
+  tl.set("#p9-comments", { y: 20, opacity: 0 }, T8 + 0.4);
+  tl.to("#p9-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T8 + 0.6);
+  tl.to("#p9-slam", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, T8 + 0.8);
+  tl.to("#p9-slam-label", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T8 + 1.4);
+  tl.to("#p9-receipt", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, T8 + 2.0);
+  tl.to("#cta-question", { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 100.0);
+  tl.to("#p9-comments", { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 103.0);
+  tl.to("#cta-question", { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 107.0);
+
+  // T_END -> fade out phase 9 + chrome
+  tl.to("#phase9", { filter: "blur(20px)", scale: 1.02, duration: 0.5, ease: "power1.in" }, T_END);
+  tl.to("#phase9", { opacity: 0, duration: 0.4, ease: "power1.in" }, T_END + 0.3);
+  tl.set("#phase9", { visibility: "hidden" }, T_END + 0.7);
+  tl.to("#version-branding", { opacity: 0, duration: 0.4, ease: "power1.in" }, T_END + 0.3);
+  tl.to("#progress-track",   { opacity: 0, duration: 0.4, ease: "power1.in" }, T_END + 0.3);
+
+  // Shape backdrop repositions on every phase transition
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'claude-code-185-agents',
+    [T1, T2, T3, T4, T5, T6, T7, T8, T_END]
+  );
+
+  // Pin timeline to full composition length
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!--
+  scene-stat.html — Receipts (4.4–12.7s, scene-rel 0–8.3s).
+  Beats (transcript word offsets, abs minus 4.4 = scene-rel):
+    0.10  — "Last week" overline lands
+    0.58  — Thariq attribution chip + role
+    2.42  — "broke the dev internet" stamp
+    4.65  — "750K views" big stat counter
+    6.50  — "The replies SPLIT" — split bar visual
+-->
+<template id="scene-stat-template">
+  <div data-composition-id="scene-stat"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #ss-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .ss-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .ss-attr-row {
+        display: flex;
+        gap: 18px;
+        align-items: stretch;
+      }
+      .ss-x-post {
+        flex: 0 0 360px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 14px 32px rgba(28, 26, 24, 0.16);
+        position: relative;
+      }
+      .ss-x-post img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+      }
+      .ss-x-post .ss-x-tag {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        background: rgba(251, 248, 241, 0.92);
+        border: 1px solid var(--accent-1);
+        border-radius: 6px;
+        padding: 4px 10px;
+      }
+      .ss-attr-card {
+        flex: 1 1 auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: center;
+      }
+      .ss-attr-name {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 64px;
+        letter-spacing: -1px;
+        color: var(--text);
+        line-height: 1;
+      }
+      .ss-attr-role {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .ss-stamp {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 36px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        background: rgba(199, 90, 63, 0.10);
+        border: 2px solid var(--accent-1);
+        border-radius: 14px;
+        padding: 18px 28px;
+        align-self: flex-start;
+        transform-origin: left center;
+      }
+      .ss-stat-pill {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 24px;
+        padding: 36px 40px;
+        margin-top: 8px;
+      }
+      .ss-stat-num {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 200px;
+        line-height: 0.92;
+        letter-spacing: -3px;
+        color: var(--accent-1);
+      }
+      .ss-stat-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-top: 8px;
+      }
+      .ss-split {
+        display: flex;
+        gap: 16px;
+        align-items: stretch;
+      }
+      .ss-split-bar {
+        flex: 1;
+        height: 64px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+      .ss-split-pro { background: rgba(86, 111, 79, 0.18); border: 2px solid var(--accent-3); color: var(--accent-3); transform-origin: left center; }
+      .ss-split-con { background: rgba(199, 90, 63, 0.16); border: 2px solid var(--accent-1); color: var(--accent-1); transform-origin: right center; }
+      .ss-split-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--text);
+        text-align: center;
+        margin-top: 8px;
+      }
+    </style>
+
+    <div id="ss-content">
+      <div class="ss-overline" id="ss-overline">LAST WEEK</div>
+
+      <div class="ss-attr-row">
+        <div class="ss-x-post" id="ss-xpost">
+          <img src="../assets/article-cover.png" alt="Thariq's article on X / GitHub Pages — The Unreasonable Effectiveness of HTML" />
+          <div class="ss-x-tag">@trq212</div>
+        </div>
+        <div class="ss-attr-card" id="ss-attr">
+          <div class="ss-attr-name" id="ss-attr-name">Thariq</div>
+          <div class="ss-attr-role" id="ss-attr-role">Anthropic &middot; Claude Code Team</div>
+        </div>
+      </div>
+
+      <div class="ss-stamp" id="ss-stamp">Broke the Dev Internet</div>
+
+      <div class="ss-stat-pill" id="ss-pill">
+        <div class="ss-stat-num" id="ss-num">750K</div>
+        <div class="ss-stat-label">views in one week</div>
+      </div>
+
+      <div>
+        <div class="ss-split">
+          <div class="ss-split-bar ss-split-pro" id="ss-pro">For</div>
+          <div class="ss-split-bar ss-split-con" id="ss-con">Against</div>
+        </div>
+        <div class="ss-split-label" id="ss-split-label">The replies <span style="color:var(--accent-1);font-weight:900">split</span></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#ss-overline",   { y: -8, opacity: 0 }, 0);
+      tl.set("#ss-xpost",      { x: -32, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#ss-attr",       { y: 24, opacity: 0 }, 0);
+      tl.set("#ss-stamp",      { scale: 0.7, opacity: 0, filter: "blur(15px)" }, 0);
+      tl.set("#ss-pill",       { y: 24, opacity: 0 }, 0);
+      // #ss-num inherits opacity from the parent #ss-pill; do NOT set its own
+      // opacity to 0 here — the counter onUpdate populates textContent but
+      // never restores opacity, so the number stayed invisible. Setting the
+      // initial textContent to "0K" so the element has size before the roll.
+      tl.set("#ss-pro",        { scaleX: 0, opacity: 0 }, 0);
+      tl.set("#ss-con",        { scaleX: 0, opacity: 0 }, 0);
+      tl.set("#ss-split-label",{ opacity: 0, y: 8 }, 0);
+
+      tl.to("#ss-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.10);
+      tl.to("#ss-xpost",    { x: 0, opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, 0.30);
+      tl.to("#ss-attr",     { y: 0, opacity: 1, duration: 0.55 }, 0.58);
+      tl.to("#ss-xpost",    { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 1.30);
+
+      tl.to("#ss-stamp",    { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "back.out(1.5)" }, 2.42);
+      tl.to("#ss-stamp",    { x: -6, duration: 0.04, yoyo: true, repeat: 5 }, 2.72);
+
+      // Counter roll: 0 → 750
+      tl.to("#ss-pill", { y: 0, opacity: 1, duration: 0.5 }, 4.50);
+      const counter = { v: 0 };
+      tl.to(counter, {
+        v: 750,
+        duration: 0.85,
+        ease: "power2.out",
+        onUpdate: function() {
+          const el = document.getElementById('ss-num');
+          if (el) el.textContent = Math.round(counter.v) + 'K';
+        }
+      }, 4.65);
+      tl.to("#ss-pill", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 5.55);
+
+      // Split bars enter
+      tl.to("#ss-pro", { scaleX: 1, opacity: 1, duration: 0.55, ease: "power2.out" }, 6.50);
+      tl.to("#ss-con", { scaleX: 1, opacity: 1, duration: 0.55, ease: "power2.out" }, 6.65);
+      tl.to("#ss-split-label", { y: 0, opacity: 1, duration: 0.4 }, 7.10);
+
+      window.__timelines["scene-stat"] = tl;
+    </script>
+  </div>
+</template>

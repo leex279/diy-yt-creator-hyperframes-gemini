@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic Shorts — Components Showreel</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     COMPONENTS SHOWREEL — 9 additional phase archetypes for the
+     Anthropic Shorts template.
+
+     Phases (each ~5s):
+       7  comparison split        (VS layout)
+       8  big metric badge        (hero KPI + sparkline + delta)
+       9  pull quote card         (editorial blockquote)
+       10 feature grid 2×3        (icon + title + sub tiles)
+       11 numbered steps          (procedural "how it works")
+       12 annotated UI mockup     (callout circles + labels)
+       13 logo wall               ("trusted by" 2×3 grid)
+       14 code snippet block      (API/config, line numbers, syntax)
+       15 KPI dashboard row       (4 tiles with deltas)
+
+     Total: 45s. Operator copies one phase at a time into a real video.
+     ══════════════════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    margin: 0; padding: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1080px; height: 1920px;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    overflow: hidden;
+    background: #0B0F18;
+    --bg: #0B0F18;
+    --card: #0E121A;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --red-soft: #FF7C7C;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* ── Atmosphere (lifted from main template) ── */
+  #ambient { position: absolute; inset: -200px; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.12), transparent 58%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.08), transparent 55%);
+  }
+  #vignette { position: absolute; inset: 0; pointer-events: none; z-index: 9;
+    background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%); }
+  #grain { position: absolute; inset: 0; pointer-events: none; z-index: 11;
+    opacity: 0.22; mix-blend-mode: overlay;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1.2px),
+      radial-gradient(rgba(0,0,0,0.18) 1px, transparent 1.2px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+  }
+  #scanlines { position: absolute; inset: 0; pointer-events: none; z-index: 11;
+    opacity: 0.14; mix-blend-mode: soft-light;
+    background-image: repeating-linear-gradient(to bottom,
+      rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px,
+      transparent 1px, transparent 3px);
+  }
+
+  /* ── Chrome ── */
+  .letterbox { position: absolute; left: 0; width: 1080px; background: #000; z-index: 12; pointer-events: none; }
+  #letterbox-top    { top: 0;    height: 24px; }
+  #letterbox-bottom { bottom: 0; height: 24px; }
+  .vf-corner { position: absolute; width: 38px; height: 38px; z-index: 12; pointer-events: none; opacity: 0.55; border: 2px solid var(--text); }
+  #vf-tl { top: 38px;    left: 38px;    border-right: none; border-bottom: none; }
+  #vf-tr { top: 38px;    right: 38px;   border-left: none;  border-bottom: none; }
+  #vf-bl { bottom: 38px; left: 38px;    border-right: none; border-top: none; }
+  #vf-br { bottom: 38px; right: 38px;   border-left: none;  border-top: none; }
+  #rec-indicator { position: absolute; top: 88px; left: 56px; z-index: 13; display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-weight: 700; font-size: 22px; letter-spacing: 3px; color: var(--text); opacity: 0.85; }
+  #rec-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); }
+  #timecode { position: absolute; top: 88px; right: 56px; z-index: 13; font-family: var(--mono); font-weight: 700; font-size: 22px; letter-spacing: 2px; color: var(--text); opacity: 0.85; font-variant-numeric: tabular-nums; }
+  #phase-label { position: absolute; bottom: 60px; left: 56px; z-index: 13; font-family: var(--mono); font-weight: 700; font-size: 20px; letter-spacing: 3px; color: var(--text); opacity: 0.75; }
+  #phase-label .num { color: var(--orange); }
+
+  #top-banner { position: absolute; top: 156px; left: 0; width: 1080px; z-index: 10; pointer-events: none; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); text-align: center; }
+  #top-banner-logo { width: 720px; height: auto; display: block; margin: 0 auto; opacity: 0.92; }
+
+  #progress-track { position: absolute; bottom: 28px; left: 0; width: 1080px; height: 4px; background: rgba(245, 241, 235, 0.06); z-index: 10; }
+  #progress-fill { width: 0; height: 100%; background: var(--orange); box-shadow: 0 0 16px rgba(233, 116, 88, 0.8); }
+
+  /* ── Light leak transition layer ── */
+  #light-leak {
+    position: absolute; top: -200px; left: -300px;
+    width: 1800px; height: 2400px;
+    z-index: 14; pointer-events: none; opacity: 0;
+    transform: rotate(28deg) translateY(2400px);
+    background: linear-gradient(90deg,
+      transparent 0%, rgba(255,210,170,0.18) 45%,
+      rgba(255,240,210,0.42) 50%,
+      rgba(255,210,170,0.18) 55%, transparent 100%);
+    mix-blend-mode: screen; filter: blur(20px);
+  }
+
+  /* ── Phase frame ── */
+  .phase { position: absolute; top: 0; left: 0; width: 1080px; height: 1920px; overflow: hidden; opacity: 0; }
+  .phase.first { opacity: 1; }
+  .phase-content {
+    width: 100%; height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; gap: 32px;
+    box-sizing: border-box;
+  }
+  .overline {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 32px; letter-spacing: 6px; text-transform: uppercase;
+  }
+  .phase-title {
+    font-family: var(--sans); font-weight: 800;
+    font-size: 56px; line-height: 1.05; letter-spacing: -1px;
+    color: var(--text); max-width: 920px;
+  }
+
+  /* ════════════ COMPONENT 7 — Comparison split (VS) ════════════ */
+  .cmp-wrap { width: 940px; position: relative; }
+  .cmp-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; }
+  .cmp-side {
+    background: var(--card);
+    border: 2px solid rgba(245,241,235,0.10);
+    border-radius: 22px;
+    padding: 36px 28px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+  }
+  .cmp-side.left  { border-color: rgba(255,124,124,0.35); background: linear-gradient(135deg, rgba(255,124,124,0.12), rgba(255,124,124,0.03)); }
+  .cmp-side.right { border-color: rgba(125,211,166,0.35); background: linear-gradient(135deg, rgba(125,211,166,0.12), rgba(125,211,166,0.03)); }
+  .cmp-tag {
+    font-family: var(--mono); font-weight: 800;
+    font-size: 22px; letter-spacing: 3px;
+    padding: 6px 14px; border-radius: 8px;
+  }
+  .cmp-side.left  .cmp-tag { color: var(--red-soft); background: rgba(255,124,124,0.12); border: 1px solid rgba(255,124,124,0.45); }
+  .cmp-side.right .cmp-tag { color: var(--green);    background: rgba(125,211,166,0.12); border: 1px solid rgba(125,211,166,0.45); }
+  .cmp-headline {
+    font-family: var(--sans); font-weight: 800;
+    font-size: 34px; line-height: 1.1; color: var(--text);
+  }
+  .cmp-stat {
+    font-family: var(--sans); font-weight: 900;
+    font-size: 120px; line-height: 0.9; letter-spacing: -3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cmp-side.left  .cmp-stat { color: var(--red-soft); }
+  .cmp-side.right .cmp-stat { color: var(--green); }
+  .cmp-sub {
+    font-family: var(--mono); font-weight: 600;
+    font-size: 22px; color: var(--text-dim); letter-spacing: 1.5px;
+  }
+  .cmp-vs {
+    width: 110px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .cmp-vs-text {
+    font-family: var(--sans); font-weight: 900;
+    font-size: 64px; letter-spacing: -2px;
+    color: var(--text);
+    background: var(--bg);
+    border: 3px solid var(--orange);
+    border-radius: 50%;
+    width: 96px; height: 96px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 32px rgba(233,116,88,0.4);
+  }
+  .cmp-arrow {
+    font-family: var(--sans); font-weight: 900;
+    font-size: 48px; color: var(--orange);
+    line-height: 1;
+  }
+
+  /* ════════════ COMPONENT 8 — Big metric badge ════════════ */
+  .metric-wrap {
+    width: 880px;
+    background: var(--card);
+    border: 2px solid rgba(233,116,88,0.40);
+    border-radius: 28px;
+    padding: 50px 48px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 100px rgba(233,116,88,0.15);
+  }
+  .metric-label {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 28px; color: var(--text-dim);
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+  .metric-row { display: flex; align-items: baseline; gap: 18px; }
+  .metric-num {
+    font-family: var(--sans); font-weight: 900;
+    font-size: 260px; line-height: 0.85; letter-spacing: -8px;
+    color: var(--orange);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 80px rgba(233,116,88,0.5);
+  }
+  .metric-unit {
+    font-family: var(--sans); font-weight: 800;
+    font-size: 80px; color: var(--text-dim);
+  }
+  .metric-delta {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-weight: 800;
+    font-size: 32px; color: var(--green);
+    padding: 8px 18px; border-radius: 999px;
+    background: rgba(125,211,166,0.10);
+    border: 1.5px solid rgba(125,211,166,0.45);
+  }
+  .metric-delta .arrow { font-size: 28px; }
+  .metric-spark { width: 100%; height: 60px; }
+  .metric-spark path { stroke: var(--orange); stroke-width: 3; fill: none; stroke-dasharray: 700; stroke-dashoffset: 700; filter: drop-shadow(0 0 8px rgba(233,116,88,0.6)); }
+  .metric-spark .spark-area { fill: url(#metric-spark-grad); opacity: 0; }
+  .metric-foot {
+    font-family: var(--mono); font-weight: 600;
+    font-size: 22px; color: var(--text-dim); letter-spacing: 1px;
+  }
+
+  /* ════════════ COMPONENT 9 — Pull quote ════════════ */
+  .quote-wrap {
+    width: 940px;
+    background: linear-gradient(135deg, rgba(167,139,250,0.10), rgba(167,139,250,0.02));
+    border-left: 6px solid var(--purple);
+    border-radius: 22px;
+    padding: 56px 60px;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.40);
+  }
+  .quote-mark {
+    position: absolute;
+    top: -10px; left: 24px;
+    font-family: 'Inter', serif;
+    font-size: 220px; line-height: 1;
+    color: var(--purple);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .quote-body {
+    font-family: var(--sans); font-weight: 600;
+    font-size: 48px; line-height: 1.30; letter-spacing: -0.5px;
+    color: var(--text); text-align: left;
+    text-wrap: pretty;
+  }
+  .quote-body .em { color: var(--purple); font-weight: 800; }
+  .quote-attr {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(245,241,235,0.10);
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: flex-start; text-align: left;
+  }
+  .quote-attr-name {
+    font-family: var(--sans); font-weight: 700;
+    font-size: 30px; color: var(--text);
+  }
+  .quote-attr-role {
+    font-family: var(--mono); font-weight: 600;
+    font-size: 22px; color: var(--text-dim); letter-spacing: 1px;
+  }
+
+  /* ════════════ COMPONENT 10 — Feature grid (2×3) ════════════ */
+  .grid-wrap { width: 940px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-tile {
+    background: var(--card);
+    border: 1.5px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    padding: 28px 24px;
+    display: flex; flex-direction: column; gap: 12px;
+    text-align: left; min-height: 180px;
+    transform-style: preserve-3d;
+  }
+  .grid-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--sans); font-weight: 900;
+    font-size: 28px; color: var(--bg);
+    flex-shrink: 0;
+  }
+  .grid-icon.o { background: var(--orange); }
+  .grid-icon.p { background: var(--purple); }
+  .grid-icon.b { background: var(--blue); }
+  .grid-icon.g { background: var(--green); }
+  .grid-title { font-family: var(--sans); font-weight: 800; font-size: 30px; line-height: 1.1; color: var(--text); }
+  .grid-sub   { font-family: var(--mono); font-weight: 500; font-size: 20px; line-height: 1.4; color: var(--text-dim); letter-spacing: 0.5px; }
+
+  /* ════════════ COMPONENT 11 — Numbered steps ════════════ */
+  .steps-wrap { width: 880px; display: flex; flex-direction: column; gap: 24px; }
+  .step {
+    display: flex; align-items: flex-start; gap: 24px;
+    padding: 22px 26px;
+    background: var(--card);
+    border: 1.5px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    text-align: left;
+  }
+  .step-num {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--sans); font-weight: 900;
+    font-size: 32px; color: var(--bg);
+    flex-shrink: 0;
+  }
+  .step-num.o { background: var(--orange); box-shadow: 0 0 24px rgba(233,116,88,0.4); }
+  .step-num.p { background: var(--purple); box-shadow: 0 0 24px rgba(167,139,250,0.4); }
+  .step-num.b { background: var(--blue);   box-shadow: 0 0 24px rgba(107,154,239,0.4); }
+  .step-body { display: flex; flex-direction: column; gap: 6px; flex: 1; padding-top: 4px; }
+  .step-title { font-family: var(--sans); font-weight: 800; font-size: 34px; color: var(--text); line-height: 1.1; }
+  .step-sub   { font-family: var(--mono); font-weight: 500; font-size: 22px; color: var(--text-dim); letter-spacing: 0.5px; line-height: 1.4; }
+
+  /* ════════════ COMPONENT 12 — Annotated UI mockup ════════════ */
+  .ui-wrap {
+    width: 880px;
+    background: var(--card);
+    border: 1.5px solid rgba(245,241,235,0.10);
+    border-radius: 22px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+  }
+  .ui-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 22px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(245,241,235,0.06);
+  }
+  .ui-lights { display: flex; gap: 8px; }
+  .ui-light { width: 12px; height: 12px; border-radius: 50%; }
+  .ui-light.r { background: #FF5F57; } .ui-light.y { background: #FEBC2E; } .ui-light.g { background: #28C840; }
+  .ui-url {
+    flex: 1; text-align: center;
+    font-family: var(--mono); font-size: 18px;
+    color: var(--text-dim); letter-spacing: 1px;
+    padding: 6px 12px; background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+  }
+  .ui-body {
+    padding: 36px 32px;
+    display: flex; flex-direction: column; gap: 20px;
+    min-height: 560px;
+  }
+  .ui-block {
+    background: rgba(245,241,235,0.04);
+    border: 1px solid rgba(245,241,235,0.08);
+    border-radius: 12px;
+    padding: 22px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ui-block-title { font-family: var(--sans); font-weight: 700; font-size: 26px; color: var(--text); }
+  .ui-block-line {
+    height: 14px;
+    background: rgba(245,241,235,0.10);
+    border-radius: 4px;
+  }
+  .ui-block-line.w70 { width: 70%; } .ui-block-line.w50 { width: 50%; } .ui-block-line.w85 { width: 85%; }
+  .ui-callout {
+    position: absolute;
+    width: 64px; height: 64px;
+    border: 3px solid var(--orange);
+    border-radius: 50%;
+    box-shadow: 0 0 24px rgba(233,116,88,0.5);
+    pointer-events: none;
+  }
+  .ui-callout::after {
+    content: attr(data-num);
+    position: absolute;
+    top: -16px; right: -16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--orange); color: var(--bg);
+    font-family: var(--sans); font-weight: 900; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ui-anno {
+    position: absolute;
+    font-family: var(--mono); font-weight: 700;
+    font-size: 22px; color: var(--text);
+    padding: 8px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--orange);
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .ui-anno::before {
+    content: ""; position: absolute;
+    width: 2px; background: var(--orange);
+  }
+  #ui-c1 { top: 180px; left: 80px; }
+  #ui-c2 { top: 380px; right: 80px; }
+  #ui-a1 { top: 200px; left: 200px; }
+  #ui-a2 { top: 400px; right: 200px; }
+
+  /* ════════════ COMPONENT 13 — Logo wall ════════════ */
+  .logo-wall { width: 940px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .logo-tile {
+    height: 140px;
+    background: var(--card);
+    border: 1px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--sans); font-weight: 800;
+    font-size: 32px; color: var(--text-dim);
+    letter-spacing: 1px;
+    transition: all 0.3s;
+  }
+  .logo-tile .badge {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 18px; padding: 4px 10px;
+    border-radius: 6px; letter-spacing: 1.5px;
+    margin-right: 12px;
+  }
+  .logo-tile .badge.o { color: var(--orange); border: 1px solid rgba(233,116,88,0.40); background: rgba(233,116,88,0.10); }
+  .logo-tile .badge.p { color: var(--purple); border: 1px solid rgba(167,139,250,0.40); background: rgba(167,139,250,0.10); }
+  .logo-tile .badge.b { color: var(--blue);   border: 1px solid rgba(107,154,239,0.40); background: rgba(107,154,239,0.10); }
+  .logo-tile .badge.g { color: var(--green);  border: 1px solid rgba(125,211,166,0.40); background: rgba(125,211,166,0.10); }
+
+  /* ════════════ COMPONENT 14 — Code snippet ════════════ */
+  .code-wrap {
+    width: 940px;
+    background: var(--card);
+    border: 1.5px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .code-head {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(245,241,235,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .code-lang {
+    font-family: var(--mono); font-weight: 800;
+    font-size: 20px; padding: 4px 12px;
+    color: var(--blue); background: rgba(107,154,239,0.10);
+    border: 1px solid rgba(107,154,239,0.40);
+    border-radius: 6px; letter-spacing: 2px;
+  }
+  .code-filename {
+    flex: 1; font-family: var(--mono); font-weight: 600;
+    font-size: 22px; color: var(--text-dim); letter-spacing: 1px;
+  }
+  .code-copy {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 18px; color: var(--text-dim); letter-spacing: 2px;
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid rgba(245,241,235,0.18);
+  }
+  .code-body {
+    padding: 28px 22px;
+    font-family: var(--mono); font-weight: 500;
+    font-size: 26px; line-height: 1.6;
+    text-align: left;
+  }
+  .code-line { display: flex; gap: 18px; opacity: 0; }
+  .code-num { color: rgba(245,241,235,0.30); width: 38px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .code-text { color: var(--text); flex: 1; white-space: pre; }
+  .code-text .kw  { color: var(--purple); }
+  .code-text .str { color: var(--green); }
+  .code-text .nm  { color: var(--orange); }
+  .code-text .fn  { color: var(--blue); }
+  .code-text .com { color: var(--text-dim); font-style: italic; }
+
+  /* ════════════ COMPONENT 15 — KPI dashboard row ════════════ */
+  .kpi-wrap { width: 940px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .kpi-tile {
+    background: var(--card);
+    border: 1.5px solid rgba(245,241,235,0.10);
+    border-radius: 18px;
+    padding: 24px 22px;
+    display: flex; flex-direction: column; gap: 8px;
+    align-items: flex-start; text-align: left;
+    position: relative; overflow: hidden;
+  }
+  .kpi-tile::before {
+    content: ""; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+  }
+  .kpi-tile.o::before { background: var(--orange); }
+  .kpi-tile.p::before { background: var(--purple); }
+  .kpi-tile.b::before { background: var(--blue); }
+  .kpi-tile.g::before { background: var(--green); }
+  .kpi-label {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 18px; color: var(--text-dim);
+    letter-spacing: 3px; text-transform: uppercase;
+  }
+  .kpi-row { display: flex; align-items: baseline; gap: 12px; width: 100%; }
+  .kpi-num {
+    font-family: var(--sans); font-weight: 900;
+    font-size: 80px; line-height: 0.9; letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi-tile.o .kpi-num { color: var(--orange); }
+  .kpi-tile.p .kpi-num { color: var(--purple); }
+  .kpi-tile.b .kpi-num { color: var(--blue); }
+  .kpi-tile.g .kpi-num { color: var(--green); }
+  .kpi-unit { font-family: var(--sans); font-weight: 700; font-size: 36px; color: var(--text-dim); }
+  .kpi-delta {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-weight: 800;
+    font-size: 20px; padding: 4px 10px; border-radius: 6px;
+    margin-top: 2px;
+  }
+  .kpi-delta.up   { color: var(--green);    background: rgba(125,211,166,0.10); border: 1px solid rgba(125,211,166,0.40); }
+  .kpi-delta.down { color: var(--red-soft); background: rgba(255,124,124,0.10); border: 1px solid rgba(255,124,124,0.40); }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="45"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+
+  <!-- Chrome -->
+  <div id="letterbox-top" class="letterbox"></div>
+  <div id="letterbox-bottom" class="letterbox"></div>
+  <div id="vf-tl" class="vf-corner"></div>
+  <div id="vf-tr" class="vf-corner"></div>
+  <div id="vf-bl" class="vf-corner"></div>
+  <div id="vf-br" class="vf-corner"></div>
+  <div id="rec-indicator"><div id="rec-dot"></div><span>SHOWREEL</span></div>
+  <div id="timecode">00:00:00</div>
+  <div id="phase-label"><span class="num">07</span> COMPONENT GALLERY</div>
+
+  <div id="top-banner"><img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" /></div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═════════ COMPONENT 7 — Comparison split ═════════ -->
+  <div id="phase7" class="phase first">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--orange);">Component 07 · Comparison split</div>
+      <div class="phase-title">Old Claude <span style="color: var(--orange);">vs</span> Claude 4.7</div>
+      <div class="cmp-wrap">
+        <div class="cmp-row">
+          <div class="cmp-side left">
+            <div class="cmp-tag">BEFORE</div>
+            <div class="cmp-headline">Claude 3.7</div>
+            <div class="cmp-stat" data-target="58">0</div>
+            <div class="cmp-sub">% SWE-BENCH</div>
+          </div>
+          <div class="cmp-vs">
+            <div class="cmp-vs-text">VS</div>
+          </div>
+          <div class="cmp-side right">
+            <div class="cmp-tag">AFTER</div>
+            <div class="cmp-headline">Claude 4.7</div>
+            <div class="cmp-stat" data-target="73">0</div>
+            <div class="cmp-sub">% SWE-BENCH</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 8 — Big metric badge ═════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--orange);">Component 08 · Big metric</div>
+      <div class="metric-wrap">
+        <div class="metric-label">Average task completion</div>
+        <div class="metric-row">
+          <div class="metric-num" data-target="97">0</div>
+          <div class="metric-unit">%</div>
+        </div>
+        <div class="metric-delta">
+          <span class="arrow">▲</span>
+          <span id="metric-delta-num" data-target="14">0</span>
+          <span>%</span>
+          <span style="color: var(--text-dim); font-weight: 500; margin-left: 4px;">VS Q1</span>
+        </div>
+        <svg class="metric-spark" viewBox="0 0 880 60" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="metric-spark-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(233,116,88,0.45)" />
+              <stop offset="100%" stop-color="rgba(233,116,88,0)" />
+            </linearGradient>
+          </defs>
+          <path id="metric-spark-path" d="M0 48 L80 44 L160 46 L240 38 L320 42 L400 32 L480 36 L560 24 L640 28 L720 16 L800 20 L880 8" />
+          <path class="spark-area" id="metric-spark-area" d="M0 48 L80 44 L160 46 L240 38 L320 42 L400 32 L480 36 L560 24 L640 28 L720 16 L800 20 L880 8 L880 60 L0 60 Z" />
+        </svg>
+        <div class="metric-foot">SAMPLE N=10,482 · ROLLING 30D</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 9 — Pull quote ═════════ -->
+  <div id="phase9" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--purple);">Component 09 · Pull quote</div>
+      <div class="quote-wrap">
+        <div class="quote-mark">"</div>
+        <div class="quote-body" id="p9-body">
+          The biggest jump we've seen in <span class="em">agentic coding</span> since GPT-4 dropped. Claude 4.7 doesn't just write code &mdash; it <span class="em">understands the system</span> it's editing.
+        </div>
+        <div class="quote-attr">
+          <div class="quote-attr-name">— Dr. Maya Chen</div>
+          <div class="quote-attr-role">RESEARCH LEAD · ML INFRA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 10 — Feature grid 2×3 ═════════ -->
+  <div id="phase10" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--blue);">Component 10 · Feature grid</div>
+      <div class="phase-title">What's actually new.</div>
+      <div class="grid-wrap" id="p10-grid">
+        <div class="grid-tile"><div class="grid-icon o">⌬</div><div class="grid-title">Adaptive depth</div><div class="grid-sub">Reasoning scales to problem complexity, no flag toggle</div></div>
+        <div class="grid-tile"><div class="grid-icon p">◬</div><div class="grid-title">Multi-file edits</div><div class="grid-sub">Coherent changes across 50+ files in a single turn</div></div>
+        <div class="grid-tile"><div class="grid-icon b">◍</div><div class="grid-title">Test-aware</div><div class="grid-sub">Runs your test suite before claiming "done"</div></div>
+        <div class="grid-tile"><div class="grid-icon g">◭</div><div class="grid-title">Long context</div><div class="grid-sub">200K tokens with no quality drop past 100K</div></div>
+        <div class="grid-tile"><div class="grid-icon p">◯</div><div class="grid-title">Cheaper</div><div class="grid-sub">30% lower input price than Sonnet 3.7</div></div>
+        <div class="grid-tile"><div class="grid-icon o">◔</div><div class="grid-title">Faster</div><div class="grid-sub">1.4× tokens/sec on the same hardware</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 11 — Numbered steps ═════════ -->
+  <div id="phase11" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--orange);">Component 11 · Numbered steps</div>
+      <div class="phase-title">How it works.</div>
+      <div class="steps-wrap" id="p11-steps">
+        <div class="step"><div class="step-num o">1</div><div class="step-body"><div class="step-title">Index your repo</div><div class="step-sub">Claude reads &amp; embeds your codebase in seconds</div></div></div>
+        <div class="step"><div class="step-num p">2</div><div class="step-body"><div class="step-title">Describe the change</div><div class="step-sub">Plain English. Reference files, functions, tickets</div></div></div>
+        <div class="step"><div class="step-num b">3</div><div class="step-body"><div class="step-title">Review &amp; merge</div><div class="step-sub">Inline diff, tests pre-run, ready for your PR</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 12 — Annotated UI ═════════ -->
+  <div id="phase12" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--orange);">Component 12 · Annotated UI</div>
+      <div class="ui-wrap">
+        <div class="ui-head">
+          <div class="ui-lights"><div class="ui-light r"></div><div class="ui-light y"></div><div class="ui-light g"></div></div>
+          <div class="ui-url">app.claude.ai/code/main</div>
+        </div>
+        <div class="ui-body">
+          <div class="ui-block">
+            <div class="ui-block-title">📁 src/composer/index.ts</div>
+            <div class="ui-block-line w85"></div>
+            <div class="ui-block-line w70"></div>
+            <div class="ui-block-line w50"></div>
+          </div>
+          <div class="ui-block">
+            <div class="ui-block-title">⚡ Suggested edit</div>
+            <div class="ui-block-line w70"></div>
+            <div class="ui-block-line w85"></div>
+            <div class="ui-block-line w50"></div>
+          </div>
+        </div>
+        <div class="ui-callout" id="ui-c1" data-num="1"></div>
+        <div class="ui-callout" id="ui-c2" data-num="2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 13 — Logo wall ═════════ -->
+  <div id="phase13" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--green);">Component 13 · Logo wall</div>
+      <div class="phase-title">Trusted by</div>
+      <div class="logo-wall" id="p13-wall">
+        <div class="logo-tile"><span class="badge o">A</span>ACME</div>
+        <div class="logo-tile"><span class="badge p">N</span>NEBULA</div>
+        <div class="logo-tile"><span class="badge b">O</span>ORBIT</div>
+        <div class="logo-tile"><span class="badge g">Q</span>QUANTA</div>
+        <div class="logo-tile"><span class="badge o">H</span>HELIX</div>
+        <div class="logo-tile"><span class="badge p">F</span>FERMI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 14 — Code snippet ═════════ -->
+  <div id="phase14" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--blue);">Component 14 · Code snippet</div>
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="code-lang">PY</div>
+          <div class="code-filename">claude_call.py</div>
+          <div class="code-copy">COPY</div>
+        </div>
+        <div class="code-body">
+          <div class="code-line" id="cl1"><div class="code-num">1</div><div class="code-text"><span class="kw">from</span> <span class="fn">anthropic</span> <span class="kw">import</span> Anthropic</div></div>
+          <div class="code-line" id="cl2"><div class="code-num">2</div><div class="code-text"></div></div>
+          <div class="code-line" id="cl3"><div class="code-num">3</div><div class="code-text">client = <span class="fn">Anthropic</span>()</div></div>
+          <div class="code-line" id="cl4"><div class="code-num">4</div><div class="code-text">resp = client.messages.<span class="fn">create</span>(</div></div>
+          <div class="code-line" id="cl5"><div class="code-num">5</div><div class="code-text">    model=<span class="str">"claude-opus-4-7"</span>,</div></div>
+          <div class="code-line" id="cl6"><div class="code-num">6</div><div class="code-text">    max_tokens=<span class="nm">1024</span>,</div></div>
+          <div class="code-line" id="cl7"><div class="code-num">7</div><div class="code-text">    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>,</div></div>
+          <div class="code-line" id="cl8"><div class="code-num">8</div><div class="code-text">               <span class="str">"content"</span>: <span class="str">"Build me a CLI"</span>}],</div></div>
+          <div class="code-line" id="cl9"><div class="code-num">9</div><div class="code-text">)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COMPONENT 15 — KPI dashboard row ═════════ -->
+  <div id="phase15" class="phase">
+    <div class="phase-content">
+      <div class="overline" style="color: var(--orange);">Component 15 · KPI dashboard</div>
+      <div class="phase-title">Q2 results, in one frame.</div>
+      <div class="kpi-wrap" id="p15-kpis">
+        <div class="kpi-tile o">
+          <div class="kpi-label">REVENUE</div>
+          <div class="kpi-row"><div class="kpi-num" data-target="284">0</div><div class="kpi-unit">M$</div></div>
+          <div class="kpi-delta up">▲ <span data-target="38">0</span>% YoY</div>
+        </div>
+        <div class="kpi-tile p">
+          <div class="kpi-label">ACTIVE DEVS</div>
+          <div class="kpi-row"><div class="kpi-num" data-target="1.2">0</div><div class="kpi-unit">M</div></div>
+          <div class="kpi-delta up">▲ <span data-target="61">0</span>% QoQ</div>
+        </div>
+        <div class="kpi-tile b">
+          <div class="kpi-label">LATENCY P95</div>
+          <div class="kpi-row"><div class="kpi-num" data-target="380">0</div><div class="kpi-unit">ms</div></div>
+          <div class="kpi-delta down">▼ <span data-target="22">0</span>% QoQ</div>
+        </div>
+        <div class="kpi-tile g">
+          <div class="kpi-label">UPTIME</div>
+          <div class="kpi-row"><div class="kpi-num" data-target="99.97">0</div><div class="kpi-unit">%</div></div>
+          <div class="kpi-delta up">▲ 0.12 PPT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlays -->
+  <div id="vignette"></div>
+  <div id="scanlines"></div>
+  <div id="grain"></div>
+  <div id="light-leak"></div>
+</div>
+
+<script>
+  /* ──────────────────────────────────────────────────────────
+     Fit-to-viewport scaler + dev autoplay
+     ────────────────────────────────────────────────────────── */
+  (function fitStage() {
+    if (window.__hyperframes || window.HyperFramesRuntime) return;
+    const root = document.getElementById('root');
+    function apply() {
+      const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+      root.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+    }
+    apply();
+    window.addEventListener('resize', apply);
+  })();
+
+  /* ──────────────────────────────────────────────────────────
+     Helpers
+     ────────────────────────────────────────────────────────── */
+  function countUp(tl, sel, target, start, dur, formatter) {
+    const obj = { v: 0 };
+    const el = (typeof sel === 'string') ? document.querySelector(sel) : sel;
+    if (!el) return;
+    tl.to(obj, {
+      v: target, duration: dur, ease: "expo.out",
+      onUpdate: function () {
+        el.textContent = formatter
+          ? formatter(obj.v)
+          : (target % 1 === 0 ? Math.round(obj.v) : obj.v.toFixed(2));
+      }
+    }, start);
+  }
+  function fireLightLeak(tl, t, dur) {
+    dur = dur || 0.7;
+    tl.fromTo("#light-leak",
+      { opacity: 0, y: 2400 },
+      { opacity: 1, y: 0, duration: dur * 0.5, ease: "power2.out" }, t);
+    tl.to("#light-leak",
+      { opacity: 0, y: -2400, duration: dur * 0.5, ease: "power2.in" }, t + dur * 0.5);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Timeline
+     ────────────────────────────────────────────────────────── */
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const DUR = 45;
+
+  /* Initial state reset */
+  const phaseIds = ["#phase7","#phase8","#phase9","#phase10","#phase11","#phase12","#phase13","#phase14","#phase15"];
+  tl.set("#phase7", { opacity: 1, visibility: "visible" }, 0);
+  tl.set(phaseIds.slice(1), { opacity: 0, visibility: "hidden" }, 0);
+
+  /* Chrome */
+  tl.from("#letterbox-top",    { y: -24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from("#letterbox-bottom", { y:  24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from(".vf-corner", { scale: 0.6, opacity: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.05 }, 0.2);
+  tl.from("#rec-indicator", { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#timecode",      { x:  20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#phase-label",   { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.35);
+  tl.to("#rec-dot", { opacity: 0.35, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 67 }, 0.5);
+  tl.from("#top-banner",  { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.4);
+  tl.fromTo("#progress-fill", { width: 0 }, { width: 1080, duration: DUR, ease: "none" }, 0);
+  tl.fromTo("#ambient", { opacity: 0.85, scale: 1.0 }, { opacity: 1.0, scale: 1.04, duration: DUR / 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0);
+
+  (function () {
+    const el = document.getElementById("timecode");
+    const obj = { t: 0 };
+    tl.to(obj, {
+      t: DUR, duration: DUR, ease: "none",
+      onUpdate: function () {
+        const sec = obj.t;
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec) % 60;
+        const f = Math.floor((sec % 1) * 30);
+        el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ':' + String(f).padStart(2,'0');
+      }
+    }, 0);
+  })();
+
+  /* Phase rhythm: 5s each, transition 0.6s */
+  const phaseStart = [0, 5, 10, 15, 20, 25, 30, 35, 40];
+  function phaseTransition(idxFrom, idxTo, t) {
+    const fromSel = "#phase" + (7 + idxFrom);
+    const toSel   = "#phase" + (7 + idxTo);
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, t);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, t + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, t + 0.7);
+    tl.set(toSel, { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, t + 0.4);
+    tl.to(toSel, { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, t + 0.4);
+    tl.to(toSel, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, t + 0.6);
+    fireLightLeak(tl, t + 0.2, 0.7);
+    /* Update phase label */
+    const labels = [
+      'COMPARISON', 'BIG METRIC', 'PULL QUOTE', 'FEATURE GRID',
+      'NUMBERED STEPS', 'ANNOTATED UI', 'LOGO WALL', 'CODE SNIPPET', 'KPI ROW'
+    ];
+    const num = String(7 + idxTo).padStart(2, '0');
+    tl.set("#phase-label", { innerHTML: '<span class="num">' + num + '</span> ' + labels[idxTo] }, t + 0.5);
+  }
+  for (let i = 0; i < 8; i++) phaseTransition(i, i + 1, phaseStart[i + 1] - 0.4);
+
+  /* ── COMPONENT 7 — Comparison split (0-5s) ── */
+  {
+    const t = phaseStart[0] + 0.2;
+    tl.from("#phase7 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from("#phase7 .phase-title", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, t + 0.2);
+    tl.from("#phase7 .cmp-side.left",  { x: -60, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, t + 0.5);
+    tl.from("#phase7 .cmp-side.right", { x:  60, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, t + 0.5);
+    tl.from("#phase7 .cmp-vs", { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)" }, t + 1.0);
+    /* Counters on both sides */
+    document.querySelectorAll("#phase7 .cmp-stat").forEach((el, i) => {
+      const target = parseFloat(el.getAttribute("data-target"));
+      countUp(tl, el, target, t + 1.1, 1.0);
+    });
+  }
+
+  /* ── COMPONENT 8 — Big metric badge (5-10s) ── */
+  {
+    const t = phaseStart[1] + 0.2;
+    tl.from("#phase8 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from(".metric-wrap", { y: 30, scale: 0.94, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, t + 0.2);
+    tl.from(".metric-label", { opacity: 0, duration: 0.4 }, t + 0.6);
+    countUp(tl, ".metric-num", 97, t + 0.8, 1.2);
+    countUp(tl, "#metric-delta-num", 14, t + 1.5, 0.9);
+    tl.from(".metric-delta", { scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(1.6)" }, t + 1.6);
+    /* Sparkline reveal */
+    tl.fromTo("#metric-spark-path",
+      { strokeDashoffset: 700 },
+      { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut" }, t + 1.0);
+    tl.to("#metric-spark-area", { opacity: 1, duration: 0.7 }, t + 2.0);
+  }
+
+  /* ── COMPONENT 9 — Pull quote (10-15s) ── */
+  {
+    const t = phaseStart[2] + 0.2;
+    tl.from("#phase9 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from(".quote-wrap", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, t + 0.2);
+    tl.from(".quote-mark", { scale: 0, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, t + 0.5);
+    tl.from("#p9-body", { y: 20, opacity: 0, duration: 0.7, ease: "power3.out" }, t + 0.7);
+    tl.from(".quote-attr", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, t + 1.4);
+  }
+
+  /* ── COMPONENT 10 — Feature grid (15-20s) ── */
+  {
+    const t = phaseStart[3] + 0.2;
+    tl.from("#phase10 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from("#phase10 .phase-title", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, t + 0.2);
+    tl.from("#p10-grid .grid-tile",
+      { y: 30, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)", stagger: 0.08 }, t + 0.6);
+    tl.from("#p10-grid .grid-icon",
+      { rotate: -90, scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)", stagger: 0.08 }, t + 0.7);
+  }
+
+  /* ── COMPONENT 11 — Numbered steps (20-25s) ── */
+  {
+    const t = phaseStart[4] + 0.2;
+    tl.from("#phase11 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from("#phase11 .phase-title", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, t + 0.2);
+    tl.from("#p11-steps .step",
+      { x: -40, opacity: 0, duration: 0.5, ease: "power3.out", stagger: 0.2 }, t + 0.6);
+    tl.from("#p11-steps .step-num",
+      { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(1.8)", stagger: 0.2 }, t + 0.7);
+  }
+
+  /* ── COMPONENT 12 — Annotated UI (25-30s) ── */
+  {
+    const t = phaseStart[5] + 0.2;
+    tl.from("#phase12 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from(".ui-wrap", { y: 30, scale: 0.94, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, t + 0.2);
+    tl.from(".ui-block", { y: 16, opacity: 0, duration: 0.4, ease: "power2.out", stagger: 0.15 }, t + 0.7);
+    tl.from(".ui-block-line", { width: 0, duration: 0.6, ease: "power2.out", stagger: 0.04 }, t + 0.9);
+    tl.fromTo("#ui-c1", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, t + 1.8);
+    tl.fromTo("#ui-c2", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, t + 2.2);
+    /* Pulse callouts to draw eye */
+    tl.to("#ui-c1", { boxShadow: "0 0 48px rgba(233,116,88,0.9)", duration: 0.5, yoyo: true, repeat: 3, ease: "sine.inOut" }, t + 2.4);
+    tl.to("#ui-c2", { boxShadow: "0 0 48px rgba(233,116,88,0.9)", duration: 0.5, yoyo: true, repeat: 3, ease: "sine.inOut" }, t + 2.6);
+  }
+
+  /* ── COMPONENT 13 — Logo wall (30-35s) ── */
+  {
+    const t = phaseStart[6] + 0.2;
+    tl.from("#phase13 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from("#phase13 .phase-title", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, t + 0.2);
+    tl.from("#p13-wall .logo-tile",
+      { y: 24, scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.5)", stagger: { each: 0.08, from: "start" } }, t + 0.6);
+  }
+
+  /* ── COMPONENT 14 — Code snippet (35-40s) ── */
+  {
+    const t = phaseStart[7] + 0.2;
+    tl.from("#phase14 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from(".code-wrap", { y: 30, scale: 0.96, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, t + 0.2);
+    tl.from(".code-head", { y: 16, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.5);
+    for (let i = 1; i <= 9; i++) {
+      tl.fromTo("#cl" + i,
+        { opacity: 0, x: -16 },
+        { opacity: 1, x: 0, duration: 0.30, ease: "power2.out" },
+        t + 0.7 + (i - 1) * 0.18);
+    }
+  }
+
+  /* ── COMPONENT 15 — KPI dashboard (40-45s) ── */
+  {
+    const t = phaseStart[8] + 0.2;
+    tl.from("#phase15 .overline", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, t);
+    tl.from("#phase15 .phase-title", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, t + 0.2);
+    tl.from("#p15-kpis .kpi-tile",
+      { y: 24, scale: 0.92, opacity: 0, duration: 0.5, ease: "back.out(1.5)", stagger: 0.1 }, t + 0.6);
+    /* Counters */
+    document.querySelectorAll("#p15-kpis [data-target]").forEach((el, i) => {
+      const target = parseFloat(el.getAttribute("data-target"));
+      const isFloat = target % 1 !== 0;
+      countUp(tl, el, target, t + 0.8 + i * 0.08, 0.9,
+        isFloat ? (v) => v.toFixed(2) : (v) => Math.round(v).toString());
+    });
+  }
+
+  window.__timelines["main"] = tl;
+
+  (function devAutoplay() {
+    if (window.__hyperframes || window.HyperFramesRuntime) return;
+    tl.eventCallback("onComplete", function () { tl.restart(true); });
+    tl.play(0);
+    setTimeout(function () { if (tl.time() < 0.05) tl.play(0); }, 300);
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden && tl.time() < 0.05) tl.play(0);
+    });
+  })();
+</script>
+</body>
+</html>

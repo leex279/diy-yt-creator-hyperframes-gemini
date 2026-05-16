@@ -1,0 +1,29 @@
+{
+  "slug": "ast-grep-missing-layer",
+  "review_run_at": "2026-05-16",
+  "mode": "pre-publish",
+  "fix_policy": "safe",
+  "visual": false,
+  "canvas": { "width": 1920, "height": 1080, "kind": "long-form" },
+  "verdict": "FAIL_BLOCKER",
+  "verdict_after_fixes": "FAIL_BLOCKER",
+  "summary": {
+    "total_findings": 39,
+    "findings_by_severity": { "BLOCKER": 2, "HIGH": 28, "MEDIUM": 5, "LOW": 4 },
+    "auto_fixed": 27,
+    "remaining": 12
+  },
+  "auto_fixed": [
+    { "id": "R-001", "severity": "BLOCKER", "rule": "font-family-var-render-blocker", "action": "Replaced 124 occurrences of var(--font-sans|--font-mono|--font-display|--sans|--mono) with literal Inter/JetBrains Mono fallback stacks across 12 .html files" },
+    { "id": "T-001..T-023", "severity": "HIGH", "rule": "audio-design.sfx-alignment", "action": "Re-anchored 23 SFX data-start values to visual word anchors (worst drift was sfx-s07-impact-15 at +4.82s late, now 0.05s lead)" },
+    { "id": "M-001", "severity": "HIGH", "rule": "chapter-timestamps-stale-vs-data-start", "action": "Recomputed all 10 chapter timestamps from current data-start values (0:17, 0:38, 1:02, 1:36, 2:03, 2:15, 2:48, 3:18, 3:36)" },
+    { "id": "M-002", "severity": "HIGH", "rule": "engagement-cta-mismatch-across-surfaces", "action": "Rewrote description's closing question to match the spoken/visual 'FIX TODAY / ACCEPT THE WASTE' binary; kept 122% receipt anchor" },
+    { "id": "M-003+M-004", "severity": "MEDIUM", "rule": "chapter-title-generic-label", "action": "Rewrote 'Quick Break' → 'Quick Break — Self-Host Your AI Agents (Hostinger)'; 'The Debate + Outro' → 'The 122% Verdict: Fix Today or Accept the Waste'; plus front-loaded other chapter titles with searchable keywords" }
+  ],
+  "remaining_blockers_and_high": [
+    { "id": "S-001", "severity": "BLOCKER", "rule": "fabricated-claim-no-source", "location": "script.txt:13 (Scene 07)", "summary": "Script claims 'Ten times cheaper' — unsourced. Sources only support ~2x (~half the files). Per memory feedback_no_fabrication_source_only this is a hard rule violation.", "fix_needed": "Rewrite Scene 07 narration. Requires TTS regeneration. CANNOT auto-fix per skill policy.", "suggested_replacement": "Replace 'Ten times cheaper.' with 'Roughly half the tokens.' (matches Query 1 22→12 and Query 2 138→62)" },
+    { "id": "S-003", "severity": "MEDIUM", "rule": "extrapolated-stat-not-labeled", "location": "script.txt:13 (Scene 07)", "summary": "'50 refactors a day × 30 days = $15/month' math is internally correct but '50/day' is an extrapolation, not in source. Currently presented as fact.", "fix_needed": "Soften to conditional ('if your team does fifty refactors a day') OR document in notes.md. Requires TTS regeneration if rewording." },
+    { "id": "R-002 + L-001", "severity": "HIGH", "rule": "wcag-contrast-aa", "summary": "130 contrast warnings on persistent agent chrome (sidebar muted labels at 5.92:1 vs AAA 7:1 target; status-bar text at 4.42:1 vs AA 4.5:1). Mostly AA-bound, not failures.", "fix_needed": "Optional — bump --fg-muted from #858585 to #a0a3a8 in tokens/code-editor.css (auto-fixable if user wants). Long-form viewing distance forgives these." },
+    { "id": "T-024..T-027", "severity": "MEDIUM", "rule": "visual-pacing-5s", "summary": "4 visual-pacing gaps >5s in scene-side-by-side (2), scene-source-cards (1), scene-cta (1, intentional end-screen hold).", "fix_needed": "Insert micro-beats (sub-line, marker-sweep) at midpoint of each gap. NOT auto-fixed per skill policy (GSAP timing edits)." }
+  ]
+}

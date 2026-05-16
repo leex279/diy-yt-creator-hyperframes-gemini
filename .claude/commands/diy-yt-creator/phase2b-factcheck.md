@@ -17,7 +17,7 @@ Execute Phase 2b of the HyperFrames pipeline.
 
 **Output**: `videos/<slug>/scripts/fact-check-report.md`
 
-**Gate condition**: All CRITICAL claims must be VERIFIED or CORRECTED. Zero FAILED verdicts in Tier 1. Zero broken Tier 1 source URLs.
+**Gate condition**: All CRITICAL claims must be VERIFIED or CORRECTED. Zero FAILED verdicts in Tier 1. Zero broken Tier 1 source URLs. Zero RECEIPT_AUDIT_FAIL (per-scene Receipt URLs must trace to brief's `## Receipts` section).
 </objective>
 
 <autonomous-mode>
@@ -168,6 +168,34 @@ For each URL:
 3. **Recency**: Is there a newer version of this resource?
 4. **Primary vs Secondary**: Is this the original source or a secondary blog post? Flag secondary sources and suggest the primary.
 
+### Step 4b — Receipt Cross-Check (anti-slop)
+
+Phase 2 may have annotated factual scenes in `full-script.md` with `<!-- Receipt: <url> -->` HTML comments. These bind a per-scene claim to a specific source from the brief's `## Receipts` section. Phase 2b verifies that binding.
+
+**Process:**
+
+1. Extract every `<!-- Receipt: <url> -->` from `videos/<slug>/scripts/full-script.md`. Record `(scene_id, url)` for each.
+2. Read the brief's `## Receipts` section. Build the set of valid receipt URLs.
+3. For each `(scene_id, url)` from the script:
+   - **MATCH** if the URL appears in the brief's Receipts list (exact match, OR substring match if the script truncated query strings)
+   - **MISMATCH** if the URL is NOT in the brief's Receipts list
+
+**Verdict logic:**
+
+| Condition | Verdict | Action |
+|---|---|---|
+| All script Receipts match brief Receipts | RECEIPT_AUDIT_PASS | None |
+| Any script Receipt is missing from brief | RECEIPT_AUDIT_FAIL | BLOCKS gate (Tier 1) — script is referencing a source not in the verified Receipts list |
+| Brief was waived under `topic_type: CONCEPT` AND script has no Receipt comments | RECEIPT_AUDIT_PASS | None — concept topics don't need per-scene receipts |
+| Brief was waived under `topic_type: CONCEPT` BUT script has Receipt comments | RECEIPT_AUDIT_WARN | Advisory — receipts on a CONCEPT topic suggest the gate could have been satisfied. Suggest re-running Phase 0 with `topic_type` corrected. |
+
+**On RECEIPT_AUDIT_FAIL**: List each `(scene_id, url)` mismatch with one of these recommended actions:
+- Add the URL to the brief's Receipts list (if it's a legitimate source the writer found during script work)
+- Remove the `<!-- Receipt: ... -->` comment from the scene (if the URL is wrong / stale / orphaned)
+- Replace the URL in the script with a valid Receipt from the brief
+
+This is a Tier 1 BLOCKING gate. The script cannot proceed to TTS while receipts and brief are out of sync — the resulting video would claim sources that were never verified during research.
+
 ---
 
 ## Step 5 — Auto-correction (full-auto mode only)
@@ -227,8 +255,9 @@ Verification methods: WebSearch [+ Perplexity API if available]
 - Tier 1 FAILED count: N (must be 0 to pass)
 - Tier 1 UNVERIFIED count: N (must be 0 to pass)
 - Broken critical sources: N
+- RECEIPT_AUDIT_FAIL count: N (must be 0 to pass — see Step 4b)
 
-**PASS condition**: Zero Tier 1 FAILED + Zero Tier 1 UNVERIFIED + Zero broken Tier 1 sources
+**PASS condition**: Zero Tier 1 FAILED + Zero Tier 1 UNVERIFIED + Zero broken Tier 1 sources + Zero RECEIPT_AUDIT_FAIL
 
 ## Tier 1 Claims (Critical)
 

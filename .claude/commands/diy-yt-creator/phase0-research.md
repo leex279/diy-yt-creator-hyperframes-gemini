@@ -564,9 +564,90 @@ Based on research findings, generate 3-5 video title options:
 | QG-0E | SEO keywords found          | >= 3                       | **WARN** — suggest manual keyword research                      |
 | QG-0F | All proof points sourced    | URLs present for each      | **FAIL** — mark unsourced claims with ⚠️ in proof points table  |
 | QG-0G | Cult-hop references found   | >= 3                       | **WARN** — suggest expanding references                         |
+| QG-0H | Receipts (anti-slop gate)   | >= 3 named, linkable items OR `topic_type == CONCEPT` | **FAIL — BLOCKS PIPELINE** — see Step 2H below |
+| QG-0I | Thesis present              | One falsifiable sentence in brief | **FAIL** — derive one in Step 2H if missing                |
 
 **FAIL** = report specific gap in "Gaps / Needs User Input" section. In autonomous mode, proceed but flag prominently.
+**FAIL — BLOCKS PIPELINE** = QG-0H specifically blocks Phase 1 from running until the receipt gate is satisfied. This is the anti-slop gate — it prevents the model from inventing "studies show 73%..." stats during script generation.
 **WARN** = advisory note in the brief, does not block.
+
+### Step 2H: Receipt Gate + Thesis (anti-slop pre-script gate)
+
+This is the gate that prevents AI slop downstream. The model cannot invent "studies show 73%..." or "experts agree..." in Phase 2 if Phase 0 has already collected ≥3 verifiable, linkable receipts AND committed to a falsifiable thesis.
+
+#### Step 2H.1 — Collect Receipts
+
+Build a `## Receipts` block for the content brief. A receipt is:
+
+- A URL (resolvable, not behind auth)
+- A version or date (so future drift is detectable)
+- A one-line summary of what the receipt verifies
+
+Sources for receipts (in priority order):
+1. URLs already in `Links:` from the structured brief
+2. URLs Agent A pulled from official docs / changelogs / release notes
+3. URLs Agent B found for competitive landscape and adoption signals
+4. URLs from the Proof Points table (must already have source URLs per QG-0F)
+5. Specific GitHub commits, PRs, issues, or discussion threads (named developer reactions)
+6. Quoted statements with named author + venue + date
+
+What does NOT count as a receipt:
+- A general claim ("AI tools are improving") with no URL
+- A blog post that itself relies on uncited sources
+- A WebSearch result snippet without a real underlying URL
+- "Many developers find..." or "Experts agree..." style summaries
+
+Target: ≥ 3 receipts. If the brief had `Links:` items, those count. If Agent A pulled changelog/release URLs, those count. If you ran out of receipts after walking the priority list, the topic likely lacks public verifiable evidence — flag it in Step 2H.3 and the user decides.
+
+#### Step 2H.2 — Derive Thesis (if not in brief)
+
+If the structured brief had `**Thesis**:`, use it verbatim — do not rewrite.
+
+If the brief had no Thesis OR the input was a free-form topic string, derive one from research now. The thesis MUST be:
+
+- ONE sentence
+- Falsifiable — could be wrong if the facts were different
+- Argumentative — not descriptive
+
+| Bad (descriptive) | Good (falsifiable thesis) |
+|---|---|
+| "Claude Code is changing how developers work." | "Claude Code's plan-first agent mode prevents the codebase damage that direct-edit agents cause — but only if the developer reads the plan before approving." |
+| "Skills are markdown files that bundle prompts." | "Skills are not 'another extension system' — they're the first install mechanism that lets ChatGPT-grade prompt engineering ship as version-controlled artifacts in the repo." |
+| "The Anthropic-AWS deal is huge." | "The Anthropic-AWS $100B deal is a hedge against Nvidia, not against capacity — Anthropic locked in non-Nvidia silicon before Nvidia's next-gen launch made the price spike permanent." |
+
+In autonomous mode, derive without asking. In interactive mode, present the derived thesis to the user for confirmation before writing the brief.
+
+Store the thesis in the content brief metadata (alongside `voice_profile`).
+
+#### Step 2H.3 — Apply the Gate
+
+```
+PASS condition (Phase 1 may proceed):
+  receipts_count >= 3
+  OR
+  topic_type == "CONCEPT" AND user has acknowledged the override
+
+FAIL condition (Phase 1 BLOCKED):
+  receipts_count < 3 AND topic_type != "CONCEPT"
+```
+
+CONCEPT override behavior:
+- For abstract topics (e.g., "What is RAG?", "What is a vector database?") that genuinely have no specific linkable artifacts to point at, the gate accepts `topic_type: CONCEPT`
+- BUT the brief MUST still include a Thesis (per QG-0I), even for CONCEPT topics — concepts can still have falsifiable angles
+- The brief's Receipts section gets the line: `_Receipt gate waived — topic_type: CONCEPT. Script may not invent stats; Phase 2.5 Pass 5 enforces the authority-without-evidence ban regardless._`
+
+On FAIL (interactive mode):
+1. STOP synthesis — do not write the brief yet
+2. Tell the user: "Phase 0 found N receipts. Need ≥3 to ship. Either (a) provide additional URLs, (b) confirm `topic_type: CONCEPT` if this is a genuine abstract topic, or (c) abandon the topic — Phase 1 is blocked otherwise."
+3. Wait for user input before proceeding to Step 2G
+
+On FAIL (autonomous mode):
+1. Write the brief with whatever receipts were found
+2. Append a top-level `## ⚠️ RECEIPT GATE FAILED` section listing the count + missing-receipts gap
+3. Set `0 - Research` row in `phase-status.md` to `blocked (receipt gate: N/3) <YYYY-MM-DD>`
+4. Phase 1 will refuse to start with this status
+
+The downstream effect is non-negotiable. The script-generation pipeline is built around the assumption that the brief contains real, linkable evidence. Skipping the gate guarantees slop at Phase 2.
 
 ### Step 2G: Write Content Brief
 
@@ -592,6 +673,20 @@ The content brief uses this enriched template (ALL sections are mandatory unless
 - **Key Angle**: <the ONE thing viewers should remember>
 - **Topic Type**: <PRODUCT_TOOL | CONCEPT | ARTICLE_RESPONSE | COMPARISON | YOUTUBE_SOURCE>
 - **Research Depth**: <LIGHT | STANDARD | DEEP>
+
+---
+
+## Thesis
+<ONE falsifiable sentence — a claim that could be wrong. Forces the script to argue, not describe. See Step 2H.2 for examples. Required for both regular and CONCEPT topics.>
+
+---
+
+## Receipts
+<≥ 3 named, linkable items — OR a single line `_Receipt gate waived — topic_type: CONCEPT._` if the override was applied. See Step 2H for the gate logic.>
+
+1. <URL> — <version or date> — <what this verifies>
+2. <URL> — <version or date> — <what this verifies>
+3. <URL> — <version or date> — <what this verifies>
 
 ---
 
@@ -808,6 +903,8 @@ The content brief uses this enriched template (ALL sections are mandatory unless
 | QG-0E | SEO keywords >= 3 | PASS/WARN | ... |
 | QG-0F | All stats sourced | PASS/FAIL | ... |
 | QG-0G | Cult-hop refs >= 3 | PASS/WARN | ... |
+| QG-0H | Receipts >= 3 OR CONCEPT | PASS/FAIL | <BLOCKING — receipt gate. Override: topic_type=CONCEPT> |
+| QG-0I | Thesis present | PASS/FAIL | <one falsifiable sentence required> |
 
 ---
 

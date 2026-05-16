@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic Shorts Template — Cinematic V2</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<!-- HF runtime scripts omitted in browser preview — see index.html for rationale. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     ANTHROPIC SHORTS TEMPLATE — Cinematic V2
+     1080x1920 vertical, 24s reference duration, 4 phases.
+
+     Upgrades over V1:
+       • Persistent film-camera chrome (REC dot, frame counter, corner brackets,
+         letterbox bars, scanlines, stronger vignette) — gives every frame
+         a deliberate "shot through a lens" quality without losing the
+         calm dark-stage aesthetic.
+       • Per-phase HERO motion (was: simple entrances). Each phase has a
+         signature cinematic moment:
+           P1 → chromatic-split + RGB ghost on hero slam
+           P2 → numbers COUNT UP from 0 (was: static text)
+           P3 → SVG connector line draws between timeline dates +
+                playhead traversal
+           P4 → URL pill TYPES character-by-character + pulse halo
+       • Light-leak transition flares (warm diagonal sweep at each phase cut).
+       • HyperShader WebGL transitions between every phase (cinematic-zoom,
+         whip-pan, light-leak) — the production-grade transition path the
+         CSS crossfade can't match.
+       • CSS radial-gradient film grain (replaces feTurbulence SVG which
+         taints html2canvas in cross-origin iframes — see hyperframes/SKILL.md).
+     ══════════════════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    margin: 0; padding: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1080px; height: 1920px;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    overflow: hidden;
+    background: #0B0F18;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --bg-deep: #060810;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 240px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* ── Ambient warm radial + deep vignette ─────────────────────── */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.12), transparent 58%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.08), transparent 55%),
+      radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.0) 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9;
+    background:
+      radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%);
+  }
+
+  /* ── Anthropic shape backdrop ──────────────────────────────── */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.0383;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* ── CSS radial-gradient grain (safe for shaders) ───────────── */
+  #grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1.2px),
+      radial-gradient(rgba(0,0,0,0.18) 1px, transparent 1.2px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+  }
+  /* ── Subtle horizontal scanlines for cinematic CRT feel ─────── */
+  #scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.14;
+    mix-blend-mode: soft-light;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  /* ══ CINEMATIC CHROME — persistent across all phases ══════════ */
+
+  /* Letterbox bars — slim cinematic frame at top/bottom */
+  .letterbox {
+    position: absolute;
+    left: 0;
+    width: 1080px;
+    background: #000;
+    z-index: 12;
+    pointer-events: none;
+  }
+  #letterbox-top    { top: 0;    height: 24px; }
+  #letterbox-bottom { bottom: 0; height: 24px; }
+
+  /* Corner viewfinder brackets */
+  .vf-corner {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    z-index: 12;
+    pointer-events: none;
+    opacity: 0.55;
+    border: 2px solid var(--text);
+  }
+  #vf-tl { top: 38px;    left: 38px;    border-right: none; border-bottom: none; }
+  #vf-tr { top: 38px;    right: 38px;   border-left: none;  border-bottom: none; }
+  #vf-bl { bottom: 38px; left: 38px;    border-right: none; border-top: none; }
+  #vf-br { bottom: 38px; right: 38px;   border-left: none;  border-top: none; }
+
+  /* REC indicator (top-left, below corner) */
+  #rec-indicator {
+    position: absolute;
+    top: 88px;
+    left: 56px;
+    z-index: 13;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--text);
+    opacity: 0.85;
+  }
+  #rec-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 12px var(--red);
+  }
+
+  /* Frame counter / timecode (top-right) */
+  #timecode {
+    position: absolute;
+    top: 88px;
+    right: 56px;
+    z-index: 13;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+    opacity: 0.85;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Phase label (bottom-left) */
+  #phase-label {
+    position: absolute;
+    bottom: 60px;
+    left: 56px;
+    z-index: 13;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--text);
+    opacity: 0.7;
+  }
+  #phase-label .num { color: var(--orange); }
+
+  /* Light-leak transition layer — diagonal warm sweep, fired per cut */
+  #light-leak {
+    position: absolute;
+    top: -200px;
+    left: -300px;
+    width: 1800px;
+    height: 2400px;
+    z-index: 14;
+    pointer-events: none;
+    opacity: 0;
+    transform: rotate(28deg) translateY(2400px);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,200,150,0.0) 20%,
+      rgba(255,210,170,0.18) 45%,
+      rgba(255,240,210,0.42) 50%,
+      rgba(255,210,170,0.18) 55%,
+      rgba(255,200,150,0.0) 80%,
+      transparent 100%
+    );
+    mix-blend-mode: screen;
+    filter: blur(20px);
+  }
+
+  /* ── Top wordmark (persistent banner) ─────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 156px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 760px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    opacity: 0.92;
+  }
+
+  /* Slim accent progress bar — sits above the bottom letterbox */
+  #progress-track {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    width: 1080px;
+    height: 4px;
+    background: rgba(245, 241, 235, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 16px rgba(233, 116, 88, 0.8);
+  }
+
+  /* ── PHASE container (only one visible at a time) ─────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    opacity: 0;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; }
+  #phase3 { z-index: 3; }
+  #phase4 { z-index: 4; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     PHASE 1 — Thumbnail-grade intro (Beat 1a) + Hero slam (Beat 1b)
+     ══════════════════════════════════════════════════════════════ */
+
+  /* Beat 1a — topic lockup (visible from t=0) */
+  #p1-topic-lockup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 28px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #p1-brand-lockup { display: flex; align-items: center; gap: 20px; }
+  #p1-brand-logo   { height: 90px; width: auto; display: block; }
+  #p1-topic-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 156px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  /* RGB-split shadows used for the hero slam — three offset clones */
+  .rgb-split {
+    text-shadow:
+      -3px 0 0 rgba(233,116,88,0.55),
+      3px 0 0 rgba(107,154,239,0.55),
+      0 0 80px rgba(233,116,88,0.55),
+      0 8px 24px rgba(0,0,0,0.6);
+  }
+  /* Topic-load mono caret + scan beam */
+  #p1-ga-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 42px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  #p1-ga-receipt::before {
+    content: "›";
+    color: var(--orange);
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 1;
+  }
+  #p1-topic-bar {
+    width: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--orange), rgba(233,116,88,0));
+    margin-top: 12px;
+    border-radius: 2px;
+  }
+  /* Scan beam — sweeps top→bottom across beat 1a */
+  #p1-scanbeam {
+    position: absolute;
+    top: -200px;
+    left: 0;
+    width: 1080px;
+    height: 200px;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(233,116,88,0.0) 30%,
+      rgba(233,116,88,0.45) 50%,
+      rgba(233,116,88,0.0) 70%,
+      transparent 100%
+    );
+    mix-blend-mode: screen;
+    filter: blur(8px);
+  }
+
+  /* Beat 1b — hero hook content */
+  #p1-hero-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    text-align: center;
+    gap: 28px;
+    z-index: 1;
+    opacity: 0;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 70px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 196px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 90px rgba(233,116,88,0.65), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+    position: relative;
+    display: block;
+    text-align: center;
+    white-space: nowrap;
+  }
+  /* Expanding ring behind hero impact */
+  #p1-impact-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 200px; height: 200px;
+    border: 4px solid var(--orange);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 0 80px rgba(233,116,88,0.6);
+  }
+  #p1-caption {
+    margin-top: 32px;
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     PHASE 2 — Stat pill row (with count-up cinematic)
+     ══════════════════════════════════════════════════════════════ */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 36px;
+  }
+  #p2-overline-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  #p2-overline { color: var(--orange); }
+  #p2-underline {
+    width: 0;
+    height: 3px;
+    background: var(--orange);
+    box-shadow: 0 0 12px var(--orange);
+    border-radius: 2px;
+  }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    perspective: 1200px;
+  }
+  .stat-pill {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 460px;
+    min-height: 320px;
+    padding: 44px 24px;
+    border-radius: 24px;
+    transform-style: preserve-3d;
+  }
+  .stat-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.22), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.45);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.25);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.22), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.45);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.25);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .stat-pill.orange .stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.45); }
+  .stat-pill.purple .stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.45); }
+  .stat-label {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+  }
+  /* Pulse halo around pill (fires after count completes) */
+  .stat-pulse {
+    position: absolute;
+    inset: -6px;
+    border-radius: 30px;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #p2-pulse-1 { border: 3px solid var(--orange); box-shadow: 0 0 60px rgba(233,116,88,0.6); }
+  #p2-pulse-2 { border: 3px solid var(--purple); box-shadow: 0 0 60px rgba(167,139,250,0.6); }
+  /* Mono ticker beneath pills */
+  #p2-ticker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-top: 12px;
+    opacity: 0;
+  }
+  #p2-ticker .live-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+  }
+  #p2-ticker .sep { color: rgba(245,241,235,0.3); }
+
+  /* ══════════════════════════════════════════════════════════════
+     PHASE 3 — Timeline cards + connector line draw
+     ══════════════════════════════════════════════════════════════ */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p3-overline { color: var(--text); }
+  .timeline-wrap {
+    position: relative;
+    width: 940px;
+  }
+  /* SVG connector line between cards (drawn on entry) */
+  #p3-connector {
+    position: absolute;
+    top: 0;
+    left: 80px;
+    width: 6px;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  #p3-connector line {
+    stroke-dasharray: 480;
+    stroke-dashoffset: 480;
+  }
+  /* Playhead dot that traverses the connector */
+  #p3-playhead {
+    position: absolute;
+    top: 0;
+    left: 73px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--orange);
+    box-shadow: 0 0 20px var(--orange), 0 0 40px rgba(233,116,88,0.5);
+    z-index: 2;
+    opacity: 0;
+  }
+  .timeline-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 940px;
+    z-index: 1;
+  }
+  .tl-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 22px 28px;
+    border-radius: 20px;
+    transform-style: preserve-3d;
+  }
+  .tl-card.orange { background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05)); border: 2px solid rgba(233,116,88,0.45); box-shadow: 0 10px 30px rgba(233,116,88,0.22); }
+  .tl-card.purple { background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05)); border: 2px solid rgba(167,139,250,0.45); box-shadow: 0 10px 30px rgba(167,139,250,0.22); }
+  .tl-card.blue   { background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05)); border: 2px solid rgba(107,154,239,0.45); box-shadow: 0 10px 30px rgba(107,154,239,0.22); }
+  .tl-date {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 38px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--bg);
+  }
+  .tl-card.orange .tl-date { background: var(--orange); }
+  .tl-card.purple .tl-date { background: var(--purple); }
+  .tl-card.blue   .tl-date { background: var(--blue); }
+  /* Date-chip ping ring */
+  .tl-ping {
+    position: absolute;
+    inset: -4px;
+    border-radius: 18px;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .tl-card.orange .tl-ping { border: 3px solid var(--orange); }
+  .tl-card.purple .tl-ping { border: 3px solid var(--purple); }
+  .tl-card.blue   .tl-ping { border: 3px solid var(--blue); }
+  .tl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; text-align: left; }
+  .tl-title { font-family: var(--sans); font-weight: 800; font-size: 40px; line-height: 1.1; color: var(--text); }
+  .tl-sub   { font-family: var(--mono); font-weight: 600; font-size: 28px; letter-spacing: 1px; }
+  .tl-card.orange .tl-sub { color: var(--orange); }
+  .tl-card.purple .tl-sub { color: var(--purple); }
+  .tl-card.blue   .tl-sub { color: var(--blue); }
+  .tl-index {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 34px;
+    line-height: 1;
+  }
+  .tl-card.orange .tl-index { background: rgba(233,116,88,0.20); border: 1.5px solid rgba(233,116,88,0.40); color: var(--orange); }
+  .tl-card.purple .tl-index { background: rgba(167,139,250,0.20); border: 1.5px solid rgba(167,139,250,0.40); color: var(--purple); }
+  .tl-card.blue   .tl-index { background: rgba(107,154,239,0.20); border: 1.5px solid rgba(107,154,239,0.40); color: var(--blue); }
+
+  /* ══════════════════════════════════════════════════════════════
+     PHASE 4 — CTA URL slam + typewriter
+     ══════════════════════════════════════════════════════════════ */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-url-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  #p4-url {
+    position: relative;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 64px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1.0;
+    padding: 22px 36px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.20), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.45);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.30);
+    max-width: 920px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  /* Typewriter caret on URL */
+  #p4-caret {
+    display: inline-block;
+    width: 4px;
+    height: 1em;
+    background: var(--green);
+    margin-left: 6px;
+    vertical-align: middle;
+    box-shadow: 0 0 12px var(--green);
+  }
+  /* Pulse halo around URL pill */
+  #p4-url-pulse {
+    position: absolute;
+    inset: -8px;
+    border-radius: 32px;
+    border: 3px solid var(--green);
+    box-shadow: 0 0 60px rgba(125,211,166,0.6);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #p4-subscribe {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p4-subscribe .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 0.7;
+  }
+  #p4-cta-question {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    color: var(--orange);
+    text-align: center;
+    max-width: 920px;
+    margin-top: 18px;
+  }
+  #p4-cta-question .em { color: var(--text); font-style: italic; }
+  #p4-cta-question .word { display: inline-block; margin-right: 0.25em; }
+  /* Final radial flash burst (centered) */
+  #p4-flash {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1600px; height: 1600px;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(233,116,88,0.5), rgba(233,116,88,0.1) 40%, transparent 65%);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 0;
+    mix-blend-mode: screen;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="24"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- ─── Base atmosphere layers ─── -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- ─── Cinematic chrome (persistent) ─── -->
+  <div id="letterbox-top" class="letterbox"></div>
+  <div id="letterbox-bottom" class="letterbox"></div>
+  <div id="vf-tl" class="vf-corner"></div>
+  <div id="vf-tr" class="vf-corner"></div>
+  <div id="vf-bl" class="vf-corner"></div>
+  <div id="vf-br" class="vf-corner"></div>
+  <div id="rec-indicator"><div id="rec-dot"></div><span>REC</span></div>
+  <div id="timecode">00:00:00</div>
+  <div id="phase-label"><span class="num">01</span> / 04</div>
+
+  <!-- ─── Anthropic wordmark, persistent ─── -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <!-- ─── Slim progress bar ─── -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═════════ PHASE 1 — Intro + Hook (0-6s) ═════════ -->
+  <div id="phase1" class="phase">
+    <!-- Scan beam sweeps across beat 1a -->
+    <div id="p1-scanbeam"></div>
+
+    <!-- Beat 1a: thumbnail-grade topic lockup -->
+    <div id="p1-topic-lockup">
+      <div id="p1-brand-lockup">
+        <img id="p1-brand-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      </div>
+      <div id="p1-topic-slam">TOPIC SLAM<br><span class="accent">HERE.</span></div>
+      <div id="p1-ga-receipt">RECEIPT · DATE · COUNT</div>
+      <div id="p1-topic-bar"></div>
+    </div>
+
+    <!-- Beat 1b: hero hook -->
+    <div id="p1-hero-content">
+      <div class="overline" id="p1-overline">Anthropic Postmortem</div>
+      <div id="p1-pre">Claude Code got…</div>
+      <div style="position: relative;">
+        <div id="p1-hero">DUMBER?</div>
+        <div id="p1-impact-ring"></div>
+      </div>
+      <div id="p1-caption">Official postmortem · April 23, 2026</div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 2 — Stat pill row (6-12s) ═════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div id="p2-overline-wrap">
+        <div class="overline" id="p2-overline">The receipts</div>
+        <div id="p2-underline"></div>
+      </div>
+      <div id="p2-headline">Three bugs. Six weeks.</div>
+      <div id="p2-pills">
+        <div class="stat-pill orange" id="p2-pill-1">
+          <div class="stat-num" id="p2-num-1" data-target="3">0</div>
+          <div class="stat-label">separate bugs</div>
+          <div class="stat-pulse" id="p2-pulse-1"></div>
+        </div>
+        <div class="stat-pill purple" id="p2-pill-2">
+          <div class="stat-num" id="p2-num-2" data-target="6">0</div>
+          <div class="stat-label">weeks stacked</div>
+          <div class="stat-pulse" id="p2-pulse-2"></div>
+        </div>
+      </div>
+      <div id="p2-ticker">
+        <div class="live-dot"></div>
+        <span>LIVE</span>
+        <span class="sep">·</span>
+        <span>2026 Q2</span>
+        <span class="sep">·</span>
+        <span>3 / 3 CONFIRMED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 3 — Timeline cards (12-18s) ═════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">The timeline</div>
+      <div class="timeline-wrap">
+        <!-- Connector line — drawn via SVG stroke-dashoffset -->
+        <svg id="p3-connector" viewBox="0 0 6 480" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="p3-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E97458" />
+              <stop offset="50%" stop-color="#A78BFA" />
+              <stop offset="100%" stop-color="#6B9AEF" />
+            </linearGradient>
+          </defs>
+          <line x1="3" y1="0" x2="3" y2="480"
+                stroke="url(#p3-grad)" stroke-width="4"
+                stroke-linecap="round" />
+        </svg>
+        <div id="p3-playhead"></div>
+        <div class="timeline-list">
+          <div class="tl-card orange" id="p3-card-1">
+            <div class="tl-date">Mar 4<div class="tl-ping" id="p3-ping-1"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Reasoning dropped</div>
+              <div class="tl-sub">HIGH → MEDIUM</div>
+            </div>
+            <div class="tl-index">01</div>
+          </div>
+          <div class="tl-card purple" id="p3-card-2">
+            <div class="tl-date">Mar 26<div class="tl-ping" id="p3-ping-2"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Caching optimization</div>
+              <div class="tl-sub">Hidden thinking-clear bug</div>
+            </div>
+            <div class="tl-index">02</div>
+          </div>
+          <div class="tl-card blue" id="p3-card-3">
+            <div class="tl-date">Apr 16<div class="tl-ping" id="p3-ping-3"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Verbosity prompt</div>
+              <div class="tl-sub">Keep responses short</div>
+            </div>
+            <div class="tl-index">03</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PHASE 4 — CTA close (18-24s) ═════════ -->
+  <div id="phase4" class="phase">
+    <div id="p4-flash"></div>
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">Read the full story</div>
+      <div id="p4-url-wrap">
+        <div id="p4-url"><span id="p4-url-text"></span><span id="p4-caret"></span></div>
+        <div id="p4-url-pulse"></div>
+      </div>
+      <div id="p4-subscribe">Subscribe<span class="arrow" id="p4-arrow">→</span></div>
+      <div id="p4-cta-question"><span class="word">REPLACE:</span> <span class="word em">your</span> <span class="word em">debate</span> <span class="word em">question?</span></div>
+    </div>
+  </div>
+
+  <!-- ─── Overlay layers (above content, below chrome) ─── -->
+  <div id="vignette"></div>
+  <div id="scanlines"></div>
+  <div id="grain"></div>
+  <div id="light-leak"></div>
+</div>
+
+<script>
+  /* ════════════════════════════════════════════════════════════
+     Deterministic seeded scatter for shape backdrop
+     ════════════════════════════════════════════════════════════ */
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+  spawnShapes('anthropic-short', document.getElementById('shape-backdrop'));
+
+  /* ════════════════════════════════════════════════════════════
+     Helpers — light-leak flash + count-up
+     ════════════════════════════════════════════════════════════ */
+  function fireLightLeak(tl, t, dur) {
+    dur = dur || 0.7;
+    tl.fromTo("#light-leak",
+      { opacity: 0, y: 2400 },
+      { opacity: 1, y: 0, duration: dur * 0.5, ease: "power2.out" }, t);
+    tl.to("#light-leak",
+      { opacity: 0, y: -2400, duration: dur * 0.5, ease: "power2.in" }, t + dur * 0.5);
+  }
+  function countUp(tl, sel, target, start, dur) {
+    const obj = { v: 0 };
+    const el = document.querySelector(sel);
+    tl.to(obj, {
+      v: target,
+      duration: dur,
+      ease: "expo.out",
+      onUpdate: function () { el.textContent = Math.round(obj.v); }
+    }, start);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     Timeline
+     ════════════════════════════════════════════════════════════ */
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  /* ── Initial state reset (re-applied on loop restart) ── */
+  tl.set("#phase1", { opacity: 1, visibility: "visible", filter: "blur(0px)", scale: 1 }, 0);
+  tl.set("#phase2", { opacity: 0, visibility: "hidden",  filter: "blur(0px)", scale: 1 }, 0);
+  tl.set("#phase3", { opacity: 0, visibility: "hidden",  filter: "blur(0px)", scale: 1 }, 0);
+  tl.set("#phase4", { opacity: 0, visibility: "hidden",  filter: "blur(0px)", scale: 1 }, 0);
+  tl.set("#p1-topic-lockup", { opacity: 1 }, 0);
+  tl.set("#p1-hero-content", { opacity: 0 }, 0);
+  tl.set("#p1-scanbeam", { opacity: 0 }, 0);
+  tl.set("#p2-ticker", { opacity: 0 }, 0);
+  tl.set("#p3-playhead", { opacity: 0, top: 0 }, 0);
+  tl.call(() => {
+    const n1 = document.getElementById("p2-num-1"); if (n1) n1.textContent = "0";
+    const n2 = document.getElementById("p2-num-2"); if (n2) n2.textContent = "0";
+    const u  = document.getElementById("p4-url-text"); if (u) u.textContent = "";
+    const c  = document.getElementById("p4-caret"); if (c) c.style.opacity = "1";
+  }, null, 0);
+  tl.set("#p4-flash", { opacity: 0, scale: 0 }, 0);
+  tl.set("#p4-url-pulse", { opacity: 0 }, 0);
+  tl.set([".stat-pulse", ".tl-ping"], { opacity: 0 }, 0);
+  tl.set("#light-leak", { opacity: 0 }, 0);
+  tl.set("#p1-impact-ring", { scale: 0, opacity: 0 }, 0);
+  tl.set("#phase-label", { innerHTML: '<span class="num">01</span> / 04' }, 0);
+
+  /* Ambient + global breath */
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 12, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0);
+
+  /* Progress bar — fills linearly across composition */
+  tl.fromTo("#progress-fill", { width: 0 }, { width: 1080, duration: 24, ease: "none" }, 0);
+
+  /* ── Cinematic chrome entry ── */
+  // Letterbox bars slide in from edges
+  tl.from("#letterbox-top",    { y: -24, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from("#letterbox-bottom", { y:  24, duration: 0.5, ease: "power3.out" }, 0.1);
+  // Corner brackets fade + tiny scale
+  tl.from(".vf-corner", { scale: 0.6, opacity: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.05 }, 0.2);
+  // REC indicator
+  tl.from("#rec-indicator", { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#timecode",      { x:  20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.from("#phase-label",   { x: -20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.35);
+  // REC dot pulse — repeats deterministically
+  tl.to("#rec-dot", { opacity: 0.35, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 35 }, 0.5);
+  // Top banner
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.4);
+
+  /* Timecode ticker — deterministic count, runs across full duration */
+  (function setupTimecode() {
+    const el = document.getElementById("timecode");
+    const obj = { t: 0 };
+    tl.to(obj, {
+      t: 24,
+      duration: 24,
+      ease: "none",
+      onUpdate: function () {
+        const sec = obj.t;
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec) % 60;
+        const f = Math.floor((sec % 1) * 30);
+        el.textContent =
+          String(m).padStart(2,'0') + ':' +
+          String(s).padStart(2,'0') + ':' +
+          String(f).padStart(2,'0');
+      }
+    }, 0);
+  })();
+
+  /* Subtle global Ken Burns push — entire phase stack dollies in slowly */
+  tl.fromTo(["#phase1","#phase2","#phase3","#phase4"],
+    { scale: 1.0 },
+    { scale: 1.015, duration: 24, ease: "none" }, 0);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 1 — Hook (0-6s)
+     ════════════════════════════════════════════════════════════ */
+
+  // Beat 1a: topic lockup hold (visible at t=0; chars + receipt warmly enter)
+  tl.from("#p1-brand-lockup", { y: -10, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.45);
+  tl.from("#p1-topic-slam",   { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.55);
+  tl.from("#p1-ga-receipt",   { x: -16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.85);
+  tl.to(  "#p1-topic-bar",    { width: 320, duration: 0.7, ease: "expo.out" }, 1.0);
+
+  // Scan-beam sweep across beat 1a (single pass, 0.8 -> 2.2s)
+  tl.fromTo("#p1-scanbeam",
+    { opacity: 0, y: -200 },
+    { opacity: 1, y: 1920, duration: 1.4, ease: "none" }, 0.8);
+  tl.to("#p1-scanbeam", { opacity: 0, duration: 0.3, ease: "power2.in" }, 2.0);
+
+  // Topic-lockup fades out as beat 1b arrives
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.5, ease: "power2.in" }, 2.4);
+
+  // Light-leak flash punctuates the pivot to beat 1b
+  fireLightLeak(tl, 2.5, 0.8);
+
+  // Beat 1b: hero hook content fades in
+  tl.to("#p1-hero-content", { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.5);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 2.6);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 2.9);
+
+  // Hero slam: dramatic scale + chromatic split flash + shake + impact ring
+  tl.from("#p1-hero", { scale: 0.72, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, 3.5);
+  // Apply RGB split class for 0.25s on impact, then remove
+  tl.add(() => document.getElementById("p1-hero").classList.add("rgb-split"), 3.7);
+  tl.add(() => document.getElementById("p1-hero").classList.remove("rgb-split"), 3.95);
+  // Shake
+  tl.to("#p1-hero", { x:  6, duration: 0.04, ease: "none", overwrite: "auto" }, 3.7);
+  tl.to("#p1-hero", { x: -6, duration: 0.04, ease: "none", overwrite: "auto" }, 3.74);
+  tl.to("#p1-hero", { x:  4, duration: 0.04, ease: "none", overwrite: "auto" }, 3.78);
+  tl.to("#p1-hero", { x:  0, duration: 0.05, ease: "none", overwrite: "auto" }, 3.82);
+  // Expanding impact ring
+  tl.fromTo("#p1-impact-ring",
+    { scale: 0, opacity: 1 },
+    { scale: 4, opacity: 0, duration: 1.2, ease: "expo.out" }, 3.7);
+  // Hero subtle breath after impact (mid-scene activity)
+  tl.to("#p1-hero", { y: -4, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.2);
+
+  tl.from("#p1-caption", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 4.6);
+
+  /* ── Transition T1 (phase1 → phase2) at 5.6s ── */
+  const T1 = 5.6;
+  // CSS-side exit on phase1 (HyperShader will compound on top)
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0,                       duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+  // Light leak at the cut
+  fireLightLeak(tl, T1 + 0.2, 0.7);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 2 — Stat row with count-up
+     ════════════════════════════════════════════════════════════ */
+  const P2 = 6.4;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  // Underline draw beneath the overline
+  tl.to("#p2-underline", { width: 220, duration: 0.7, ease: "expo.out" }, P2 + 0.3);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.4);
+  // Pills enter with 3D tilt + scale
+  tl.from("#p2-pill-1", { y: 60, scale: 0.85, opacity: 0, rotationX: -25, duration: 0.7, ease: "back.out(1.6)" }, P2 + 0.7);
+  tl.from("#p2-pill-2", { y: 60, scale: 0.85, opacity: 0, rotationX: -25, duration: 0.7, ease: "back.out(1.6)" }, P2 + 1.0);
+
+  // Count up the numbers from 0 to target
+  countUp(tl, "#p2-num-1", 3, P2 + 1.1, 1.0);
+  countUp(tl, "#p2-num-2", 6, P2 + 1.4, 1.0);
+
+  // Pulse halos fire AFTER counts complete
+  tl.fromTo("#p2-pulse-1",
+    { scale: 1.0, opacity: 0.9 },
+    { scale: 1.18, opacity: 0, duration: 0.9, ease: "power2.out" }, P2 + 2.2);
+  tl.fromTo("#p2-pulse-2",
+    { scale: 1.0, opacity: 0.9 },
+    { scale: 1.18, opacity: 0, duration: 0.9, ease: "power2.out" }, P2 + 2.5);
+
+  // Mono ticker fades in
+  tl.to("#p2-ticker", { opacity: 1, duration: 0.5, ease: "power2.out" }, P2 + 2.4);
+  // LIVE dot pulse repeats
+  tl.to("#p2-ticker .live-dot", { opacity: 0.3, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 7 }, P2 + 2.5);
+
+  // Pill subtle breath (mid-scene activity)
+  tl.to(["#p2-pill-1","#p2-pill-2"], { y: -6, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.15 }, P2 + 2.8);
+
+  /* ── Transition T2 (phase2 → phase3) at 11.6s ── */
+  const T2 = 11.6;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0,                       duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+  fireLightLeak(tl, T2 + 0.2, 0.7);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 3 — Timeline with connector + playhead
+     ════════════════════════════════════════════════════════════ */
+  const P3 = 12.4;
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+
+  // Connector line draws downward (stroke-dasharray reveal)
+  tl.fromTo("#p3-connector line",
+    { strokeDashoffset: 480 },
+    { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, P3 + 0.4);
+
+  // Playhead dot travels along connector, reaching each card position in turn
+  tl.fromTo("#p3-playhead",
+    { top: 0, opacity: 0 },
+    { opacity: 1, duration: 0.3 }, P3 + 0.4);
+  tl.to("#p3-playhead", { top: 60,  duration: 0.6, ease: "power2.inOut" }, P3 + 0.5);
+  tl.to("#p3-playhead", { top: 220, duration: 0.6, ease: "power2.inOut" }, P3 + 1.0);
+  tl.to("#p3-playhead", { top: 380, duration: 0.6, ease: "power2.inOut" }, P3 + 1.5);
+
+  // Cards land in sequence with 3D entry; date-ping pulse per card
+  function landCard(t, cardSel, pingSel) {
+    tl.from(cardSel, { x: -40, scale: 0.92, opacity: 0, rotationX: -15, duration: 0.55, ease: "back.out(1.5)" }, t);
+    tl.fromTo(pingSel,
+      { scale: 1.0, opacity: 0.9 },
+      { scale: 1.4, opacity: 0, duration: 0.8, ease: "power2.out" }, t + 0.2);
+  }
+  landCard(P3 + 0.5,  "#p3-card-1", "#p3-ping-1");
+  landCard(P3 + 1.0,  "#p3-card-2", "#p3-ping-2");
+  landCard(P3 + 1.5,  "#p3-card-3", "#p3-ping-3");
+
+  // Cards subtle breath after landing
+  tl.to(["#p3-card-1","#p3-card-2","#p3-card-3"],
+    { y: -4, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.1 }, P3 + 2.5);
+
+  /* ── Transition T3 (phase3 → phase4) at 17.6s ── */
+  const T3 = 17.6;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0,                       duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+  fireLightLeak(tl, T3 + 0.2, 0.7);
+
+  /* ════════════════════════════════════════════════════════════
+     PHASE 4 — Typewriter URL + pulse + final flash
+     ════════════════════════════════════════════════════════════ */
+  const P4 = 18.4;
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+
+  // URL container scales in
+  tl.from("#p4-url-wrap", { scale: 0.88, opacity: 0, duration: 0.55, ease: "back.out(1.5)" }, P4 + 0.4);
+
+  // Typewriter — characters of URL revealed one by one
+  const URL_TEXT = "claude.com/skills";
+  (function setupTypewriter() {
+    const el = document.getElementById("p4-url-text");
+    const obj = { i: 0 };
+    tl.to(obj, {
+      i: URL_TEXT.length,
+      duration: 1.0,
+      ease: "steps(" + URL_TEXT.length + ")",
+      onUpdate: function () {
+        el.textContent = URL_TEXT.slice(0, Math.round(obj.i));
+      }
+    }, P4 + 0.7);
+  })();
+  // Caret blink — yoyo opacity
+  tl.fromTo("#p4-caret", { opacity: 1 }, { opacity: 0, duration: 0.35, ease: "steps(1)", yoyo: true, repeat: 11 }, P4 + 0.7);
+  // Caret hides after typing completes
+  tl.to("#p4-caret", { opacity: 0, duration: 0.2 }, P4 + 1.9);
+
+  // URL halo pulse (fires twice after typing completes)
+  tl.fromTo("#p4-url-pulse",
+    { scale: 1.0, opacity: 0.85 },
+    { scale: 1.10, opacity: 0, duration: 0.9, ease: "power2.out" }, P4 + 1.9);
+  tl.fromTo("#p4-url-pulse",
+    { scale: 1.0, opacity: 0.7 },
+    { scale: 1.10, opacity: 0, duration: 0.9, ease: "power2.out" }, P4 + 2.6);
+
+  // Subscribe pill in
+  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 2.2);
+  // Subscribe arrow nudge (mid-scene activity)
+  tl.to("#p4-arrow", { x: 8, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3 }, P4 + 2.8);
+
+  // CTA question — word stagger (words pre-wrapped in markup; safer than runtime innerHTML rewrite)
+  tl.from("#p4-cta-question .word",
+    { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", stagger: 0.06 }, P4 + 3.0);
+
+  // Final radial flash on close (~22s) — soft warm burst, then settle
+  tl.fromTo("#p4-flash",
+    { scale: 0, opacity: 0 },
+    { scale: 1.2, opacity: 1, duration: 0.5, ease: "expo.out" }, 21.8);
+  tl.to("#p4-flash", { opacity: 0, duration: 1.4, ease: "power2.in" }, 22.3);
+
+  // Whole phase 4 subtle settle breath
+  tl.to(["#p4-url-wrap","#p4-subscribe"], { y: -4, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.1 }, 22.3);
+
+  /* ════════════════════════════════════════════════════════════
+     Shape-backdrop reposition at each transition (paired w/ whoosh)
+     ════════════════════════════════════════════════════════════ */
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'anthropic-short',
+    [T1, T2, T3]
+  );
+
+  /* Phase label updates at each transition */
+  tl.set("#phase-label", { innerHTML: '<span class="num">02</span> / 04' }, T1 + 0.5);
+  tl.set("#phase-label", { innerHTML: '<span class="num">03</span> / 04' }, T2 + 0.5);
+  tl.set("#phase-label", { innerHTML: '<span class="num">04</span> / 04' }, T3 + 0.5);
+
+  window.__timelines["main"] = tl;
+
+  /* Fit-to-viewport scaler — browser preview only. */
+  (function fitStage() {
+    if (window.__hyperframes || window.HyperFramesRuntime) return;
+    const root = document.getElementById('root');
+    if (!root) return;
+    function apply() {
+      const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+      root.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+    }
+    apply();
+    window.addEventListener('resize', apply);
+  })();
+
+  /* Dev preview auto-play + loop (browser only). */
+  (function devAutoplay() {
+    const externalDriver = window.__hyperframes || window.HyperFramesRuntime;
+    if (externalDriver) return;
+    tl.eventCallback("onComplete", function () { tl.restart(true); });
+    tl.play(0);
+    setTimeout(function () { if (tl.time() < 0.05) tl.play(0); }, 300);
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden && tl.time() < 0.05) tl.play(0);
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,2283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic Just Made Claude Agents DREAM</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ── CANVAS ── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── ROOT TOKENS ── */
+  #root {
+    --bg:          #0B0F18;
+    --card:        #161B26;
+    --text:        #F5F1EB;
+    --text-dim:    #9A958D;
+    --orange:      #E97458;
+    --purple:      #A78BFA;
+    --blue:        #6B9AEF;
+    --green:       #7DD3A6;
+    --red:         #D14343;
+    --pill-bg:     rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+    --pad-top:     240px;
+    --pad-x:       60px;
+    --pad-bottom:  240px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* ── AMBIENT ── */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SHAPE BACKDROP ── */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* ── FILM GRAIN ── */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* ── TOP BANNER ── */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* ── PHASES ── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase0 { z-index: 1; opacity: 1; }
+  #phase1 { z-index: 2; opacity: 0; }
+  #phase2 { z-index: 3; opacity: 0; }
+  #phase3 { z-index: 4; opacity: 0; }
+  #phase4 { z-index: 5; opacity: 0; }
+  #phase5 { z-index: 6; opacity: 0; }
+  #phase6 { z-index: 7; opacity: 0; }
+  #phase7 { z-index: 8; opacity: 0; }
+  #phase8 { z-index: 9; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Mono overline — every phase opens with one */
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ── BADGE / STATUS CHIP ── */
+  .badge-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .badge-chip.rp {
+    background: rgba(167,139,250,0.18);
+    border: 1.5px solid rgba(167,139,250,0.50);
+    color: var(--purple);
+  }
+  .badge-chip.pb {
+    background: rgba(125,211,166,0.18);
+    border: 1.5px solid rgba(125,211,166,0.50);
+    color: var(--green);
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 0 — PREVIEW HOOK (S00)
+     ══════════════════════════════════════════════ */
+  #phase0 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 20px;
+  }
+  #p0-overline { color: var(--orange); }
+  #p0-event-chip {
+    padding: 10px 24px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+  #p0-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 68px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p0-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 240px;
+    line-height: 0.88;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+  }
+  /* Marker bar behind DREAM */
+  #p0-hero-marker {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 16px;
+    width: 0;
+    background: rgba(233,116,88,0.35);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  /* Teaser chips container */
+  #p0-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .teaser-chip {
+    padding: 14px 28px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 14px;
+    opacity: 0;
+  }
+  #p0-chip-1 { background: rgba(167,139,250,0.18); border: 1.5px solid rgba(167,139,250,0.50); color: var(--purple); }
+  #p0-chip-2 { background: rgba(125,211,166,0.18); border: 1.5px solid rgba(125,211,166,0.50); color: var(--green); }
+  #p0-chip-3 { background: rgba(107,154,239,0.18); border: 1.5px solid rgba(107,154,239,0.50); color: var(--blue); }
+
+  /* Trust-signal screenshot card (Scene S01 but sits in p0 for hook trust beat) */
+  #p1-source-card {
+    position: absolute;
+    top: 320px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    z-index: 4;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #p1-source-chrome {
+    width: 100%;
+    background: rgba(28, 32, 44, 0.96);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    padding: 14px 22px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.78);
+    text-align: left;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  }
+  #p1-source-chrome::before {
+    content: "● ● ●";
+    color: rgba(255,255,255,0.30);
+    font-size: 14px;
+    letter-spacing: 5px;
+    margin-right: 16px;
+  }
+  #p1-source-img {
+    width: 900px;
+    height: auto;
+    display: block;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    background: #fff;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 1 — OPEN LOOP (S01)
+     ══════════════════════════════════════════════ */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 32px;
+  }
+  #p1-overline { color: var(--purple); }
+  #p1-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+  }
+  #p1-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    justify-content: center;
+  }
+  .s1-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 440px;
+    min-height: 280px;
+    padding: 40px 24px;
+    border-radius: 24px;
+  }
+  #p1-pill-three {
+    background: linear-gradient(135deg, rgba(125,211,166,0.20), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.20);
+  }
+  #p1-pill-one {
+    background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .s1-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p1-pill-three .s1-num { color: var(--green); text-shadow: 0 0 60px rgba(125,211,166,0.40); }
+  #p1-pill-one  .s1-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .s1-label {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+  }
+  #p1-question {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 54px;
+    line-height: 1.15;
+    color: var(--text-dim);
+    max-width: 860px;
+    text-align: center;
+  }
+  /* Gated marker circle — drawn over "gated" via clip-path trick */
+  #p1-gated-wrap { position: relative; display: inline-block; }
+  #p1-gated-circle {
+    position: absolute;
+    inset: -8px -14px;
+    border-radius: 999px;
+    border: 3.5px solid var(--purple);
+    clip-path: inset(0 100% 0 0);
+    pointer-events: none;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 2 — FOUR PILLARS (S02)
+     ══════════════════════════════════════════════ */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p2-overline { color: var(--text-dim); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .pillar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 940px;
+  }
+  .pillar-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 22px 28px;
+    border-radius: 20px;
+    opacity: 0;
+  }
+  .pillar-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 10px 30px rgba(167,139,250,0.20);
+  }
+  .pillar-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.15), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 10px 30px rgba(125,211,166,0.20);
+  }
+  .pillar-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.20);
+  }
+  .pillar-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 10px 30px rgba(233,116,88,0.20);
+  }
+  .pillar-name {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1;
+    flex: 1;
+    text-align: left;
+  }
+  .pillar-card.purple .pillar-name { color: var(--purple); }
+  .pillar-card.green  .pillar-name { color: var(--green); }
+  .pillar-card.blue   .pillar-name { color: var(--blue); }
+  .pillar-card.orange .pillar-name { color: var(--orange); }
+  /* RP marker highlight — purple bar sweeps behind "research preview" text */
+  #p2-rp-marker {
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    height: 8px;
+    width: 0;
+    background: rgba(167,139,250,0.50);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  #p2-rp-wrap { position: relative; display: inline-block; }
+
+  /* ══════════════════════════════════════════════
+     PHASE 3 — DREAMING (S03)
+     ══════════════════════════════════════════════ */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p3-overline { color: var(--purple); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p3-rp-badge { margin-bottom: 4px; }
+  #p3-hero-img {
+    width: 900px;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 1.5px solid rgba(167,139,250,0.30);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.55);
+    opacity: 0;
+  }
+  /* Dream-cycle card row */
+  #p3-cycle-row {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    justify-content: center;
+    width: 940px;
+  }
+  .cycle-card {
+    flex: 1;
+    padding: 20px 16px;
+    border-radius: 16px;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(167,139,250,0.04));
+    border: 1.5px solid rgba(167,139,250,0.30);
+    opacity: 0;
+  }
+  .cycle-icon {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .cycle-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--purple);
+    letter-spacing: 1px;
+  }
+  .cycle-sub {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    line-height: 1.2;
+  }
+  /* Sleep-time marker — ellipse drawn */
+  #p3-sleep-marker {
+    position: absolute;
+    inset: -6px -10px;
+    border-radius: 999px;
+    border: 3px solid var(--purple);
+    clip-path: inset(0 100% 0 0);
+    pointer-events: none;
+  }
+  #p3-sleep-wrap { position: relative; display: inline-block; }
+  /* Gated badge + request access pill */
+  #p3-gated-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    opacity: 0;
+  }
+  #p3-access-pill {
+    padding: 16px 32px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--purple);
+    background: rgba(167,139,250,0.12);
+    border: 2px solid rgba(167,139,250,0.40);
+    border-radius: 999px;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 4 — OUTCOMES (S04)
+     ══════════════════════════════════════════════ */
+  #phase4 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p4-overline { color: var(--green); }
+  #p4-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+    margin-bottom: 4px;
+  }
+  #p4-pb-badge { }
+  /* Rubric checklist */
+  #p4-rubric {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 900px;
+  }
+  .rubric-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 24px;
+    border-radius: 14px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    opacity: 0;
+  }
+  .rubric-check {
+    font-size: 36px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .rubric-text {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 40px;
+    text-align: left;
+    line-height: 1.1;
+  }
+  .rubric-item.pass { border-color: rgba(125,211,166,0.50); background: rgba(125,211,166,0.10); }
+  .rubric-item.fail { border-color: rgba(209,67,67,0.50);   background: rgba(209,67,67,0.10); }
+  .rubric-item.pass .rubric-text { color: var(--green); }
+  .rubric-item.fail .rubric-text { color: var(--red); }
+  /* +10 receipt pill */
+  #p4-receipt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 28px 48px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.20), rgba(125,211,166,0.06));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.20);
+    opacity: 0;
+    position: relative;
+  }
+  #p4-receipt-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 140px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    color: var(--green);
+    text-shadow: 0 0 60px rgba(125,211,166,0.40);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p4-receipt-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+  }
+  /* +10 receipt marker highlight */
+  #p4-receipt-marker {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 8px;
+    width: 0;
+    background: rgba(125,211,166,0.50);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  /* Negative frame pill */
+  #p4-negative {
+    padding: 14px 32px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--orange);
+    background: rgba(233,116,88,0.10);
+    border: 1.5px solid rgba(233,116,88,0.40);
+    border-radius: 999px;
+    opacity: 0;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 5 — MULTIAGENT (S05)
+     ══════════════════════════════════════════════ */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 20px;
+  }
+  #p5-overline { color: var(--blue); }
+  #p5-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p5-pb-badge { }
+  /* Lead agent box */
+  #p5-lead-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px 40px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.20), rgba(107,154,239,0.06));
+    border: 2px solid rgba(107,154,239,0.50);
+    box-shadow: 0 10px 30px rgba(107,154,239,0.25);
+    opacity: 0;
+    width: 580px;
+  }
+  #p5-lead-icon { font-size: 44px; line-height: 1; }
+  #p5-lead-text {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 44px;
+    color: var(--blue);
+    letter-spacing: -0.5px;
+  }
+  /* Specialist columns */
+  #p5-columns {
+    display: flex;
+    flex-direction: row;
+    gap: 14px;
+    justify-content: center;
+    width: 960px;
+  }
+  .spec-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 12px;
+    border-radius: 14px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    opacity: 0;
+  }
+  .spec-icon { font-size: 40px; line-height: 1; }
+  .spec-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  /* Harvey stat */
+  #p5-harvey-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 48px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.20), rgba(107,154,239,0.06));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 14px 36px rgba(107,154,239,0.20);
+    opacity: 0;
+    position: relative;
+  }
+  #p5-harvey-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 1.1;
+    letter-spacing: -4px;
+    color: var(--blue);
+    text-shadow: 0 0 60px rgba(107,154,239,0.40);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p5-harvey-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+  }
+  /* Harvey burst marker — radial lines */
+  .burst-line {
+    position: absolute;
+    width: 3px;
+    height: 28px;
+    background: var(--blue);
+    border-radius: 2px;
+    transform-origin: center bottom;
+    opacity: 0;
+  }
+  /* Thought narration stamp */
+  #p5-thought {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1.2;
+    color: var(--text-dim);
+    max-width: 860px;
+    text-align: center;
+    font-style: italic;
+    opacity: 0;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 6 — WEBHOOKS (S06)
+     ══════════════════════════════════════════════ */
+  #phase6 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p6-overline { color: var(--orange); }
+  #p6-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  /* Polling vs webhook side-by-side */
+  #p6-versus {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    width: 940px;
+    justify-content: center;
+  }
+  .versus-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+  #p6-poll-col {
+    background: rgba(209,67,67,0.08);
+    border: 1.5px solid rgba(209,67,67,0.25);
+  }
+  #p6-webhook-col {
+    background: rgba(125,211,166,0.08);
+    border: 1.5px solid rgba(125,211,166,0.25);
+  }
+  .versus-title {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  #p6-poll-col  .versus-title { color: var(--red); }
+  #p6-webhook-col .versus-title { color: var(--green); }
+  .cron-tick {
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 8px;
+    opacity: 0;
+    width: 100%;
+    text-align: left;
+    position: relative;
+  }
+  /* Scribble marker over polling stack */
+  #p6-scribble {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  #p6-scribble-path {
+    stroke: var(--red);
+    stroke-width: 4;
+    stroke-linecap: round;
+    fill: none;
+    stroke-dasharray: 900;
+    stroke-dashoffset: 900;
+    opacity: 0.7;
+  }
+  #p6-poll-col { position: relative; }
+  /* Webhook bell */
+  #p6-bell {
+    font-size: 80px;
+    line-height: 1;
+    opacity: 0;
+  }
+  #p6-bell-label {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 36px;
+    color: var(--green);
+    opacity: 0;
+  }
+  /* Negative frame pill */
+  #p6-negative {
+    padding: 14px 32px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--orange);
+    background: rgba(233,116,88,0.10);
+    border: 1.5px solid rgba(233,116,88,0.40);
+    border-radius: 999px;
+    opacity: 0;
+  }
+  /* Industry reaction chip (E5 visual beat) */
+  #p6-industry-chip {
+    padding: 12px 28px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 1px;
+    color: var(--green);
+    background: rgba(125,211,166,0.10);
+    border: 1.5px solid rgba(125,211,166,0.35);
+    border-radius: 999px;
+    opacity: 0;
+    max-width: 900px;
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 7 — TRUST STRIP (S07)
+     ══════════════════════════════════════════════ */
+  #phase7 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+  }
+  #p7-overline { color: var(--text-dim); }
+  #p7-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  /* Beta header code chip */
+  #p7-code-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 32px;
+    border-radius: 16px;
+    background: rgba(107,154,239,0.10);
+    border: 1.5px solid rgba(107,154,239,0.35);
+    opacity: 0;
+    width: 900px;
+  }
+  #p7-code-label {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  #p7-code-value {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--blue);
+    letter-spacing: 2px;
+  }
+  /* Community quote tile */
+  #p7-quote {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px 32px;
+    border-radius: 16px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    width: 900px;
+    text-align: left;
+    opacity: 0;
+  }
+  #p7-quote-text {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    line-height: 1.3;
+    font-style: italic;
+  }
+  #p7-quote-attr {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* ══════════════════════════════════════════════
+     PHASE 8 — CTA + DYNAMOUS ENDCARD (S08)
+     ══════════════════════════════════════════════ */
+  #phase8 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+  }
+  #p8-overline { color: var(--orange); }
+  #p8-question {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 54px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 880px;
+  }
+  #p8-comments-pill {
+    padding: 16px 32px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    opacity: 0;
+  }
+  #p8-subscribe-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    opacity: 0;
+  }
+  #p8-subscribe-pill .arrow {
+    color: var(--orange);
+    font-weight: 400;
+    font-size: 52px;
+    line-height: 0.7;
+  }
+  #p8-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: 0px;
+    color: var(--text);
+    padding: 20px 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.25);
+    width: 920px;
+    box-sizing: border-box;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    opacity: 0;
+    position: relative;
+  }
+  /* URL marker circle */
+  #p8-url-circle {
+    position: absolute;
+    inset: -6px -10px;
+    border-radius: 28px;
+    border: 3.5px solid var(--orange);
+    clip-path: inset(0 100% 0 0);
+    pointer-events: none;
+  }
+  /* Shipped pill (E6 visual beat) */
+  #p8-shipped-pill {
+    padding: 12px 28px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--green);
+    background: rgba(125,211,166,0.12);
+    border: 1.5px solid rgba(125,211,166,0.40);
+    border-radius: 999px;
+    opacity: 0;
+  }
+
+  /* ── DYNAMOUS BADGE ── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 360px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* ── DYNAMOUS ENDCARD MOUNT ── */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="135"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient warm wash -->
+  <div id="ambient"></div>
+
+  <!-- Shape backdrop -->
+  <div id="shape-backdrop"></div>
+
+  <!-- Top banner -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Dynamous badge (bottom-left persistent mark) -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 0 — PREVIEW HOOK (0-7s)
+       S00 data_start=0, data_duration=7
+       ═══════════════════════════════════ -->
+  <div id="phase0" class="phase">
+    <!-- Trust-signal screenshot card — fades in at 0.6s, out by 5.5s -->
+    <div id="p1-source-card">
+      <div id="p1-source-chrome">claude.com/blog/new-in-claude-managed-agents</div>
+      <img id="p1-source-img" src="assets/claude-managed-agents-launch-source-page.png" alt="Anthropic blog announcement page" crossorigin="anonymous" />
+    </div>
+    <div class="phase-content">
+      <div class="overline" id="p0-overline">CODE WITH CLAUDE · MAY 6 2026</div>
+      <div id="p0-event-chip">LIVE FROM CODE WITH CLAUDE</div>
+      <div id="p0-pre">Anthropic just made Claude agents</div>
+      <div id="p0-hero">DREAM.</div>
+      <div id="p0-chips">
+        <div class="teaser-chip" id="p0-chip-1">DREAMING · RESEARCH PREVIEW</div>
+        <div class="teaser-chip" id="p0-chip-2">OUTCOMES · PUBLIC BETA</div>
+        <div class="teaser-chip" id="p0-chip-3">MULTIAGENT + WEBHOOKS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 1 — OPEN LOOP (7-15s)
+       S01 data_start=7, data_duration=8
+       ═══════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">THE HEADLINE</div>
+      <div id="p1-headline">But the headline isn't dreaming.</div>
+      <div id="p1-pills">
+        <div class="s1-pill" id="p1-pill-three">
+          <div class="s1-num" id="p1-three-num">0</div>
+          <div class="s1-label">shipped today</div>
+        </div>
+        <div class="s1-pill" id="p1-pill-one">
+          <div class="s1-num">1</div>
+          <div class="s1-label">is <span id="p1-gated-wrap">gated<span id="p1-gated-circle"></span></span></div>
+        </div>
+      </div>
+      <div id="p1-question">Can you guess which?</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 2 — FOUR PILLARS (15-32s)
+       S02 data_start=15, data_duration=17
+       ═══════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">THE LINE-UP</div>
+      <div id="p2-headline">Because here's the line-up.</div>
+      <div class="pillar-row">
+        <div class="pillar-card purple" id="p2-pillar-1">
+          <div class="pillar-name">Dreaming</div>
+          <span class="badge-chip rp">RESEARCH PREVIEW</span>
+        </div>
+        <div class="pillar-card green" id="p2-pillar-2">
+          <div class="pillar-name">Outcomes</div>
+          <span class="badge-chip pb">PUBLIC BETA</span>
+        </div>
+        <div class="pillar-card blue" id="p2-pillar-3">
+          <div class="pillar-name">Multiagent</div>
+          <span class="badge-chip pb">PUBLIC BETA</span>
+        </div>
+        <div class="pillar-card orange" id="p2-pillar-4">
+          <div class="pillar-name">Webhooks</div>
+          <span class="badge-chip pb">PUBLIC BETA</span>
+        </div>
+      </div>
+      <div id="p2-twist-paragraph" style="font-family:var(--sans);font-weight:700;font-size:48px;color:var(--text-dim);max-width:880px;text-align:center;line-height:1.2;margin-top:8px;">
+        One, the named flagship, is
+        <span id="p2-rp-wrap" style="color:var(--purple);position:relative;">research preview only<span id="p2-rp-marker"></span></span>.
+        That's the <span id="p2-twist-word">twist</span>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 3 — DREAMING (32-50s)
+       S03 data_start=32, data_duration=18
+       ═══════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">DREAMING · GATED</div>
+      <div id="p3-headline">First, dreaming. The gated one.</div>
+      <span class="badge-chip rp" id="p3-rp-badge" style="align-self:center;">RESEARCH PREVIEW</span>
+      <img id="p3-hero-img" src="assets/claude-managed-agents-dreaming.png" alt="Dreaming visualization" crossorigin="anonymous" />
+      <div id="p3-cycle-row">
+        <div class="cycle-card" id="p3-card-1">
+          <div class="cycle-icon">🔁</div>
+          <div class="cycle-label">Sessions</div>
+          <div class="cycle-sub">Reviews past runs</div>
+        </div>
+        <div class="cycle-card" id="p3-card-2">
+          <div class="cycle-icon">🧬</div>
+          <div class="cycle-label">Patterns</div>
+          <div class="cycle-sub">Extracts insights</div>
+        </div>
+        <div class="cycle-card" id="p3-card-3">
+          <div class="cycle-icon">🧠</div>
+          <div class="cycle-label">Memories</div>
+          <div class="cycle-sub">Curates for next run</div>
+        </div>
+      </div>
+      <div style="font-family:var(--sans);font-weight:700;font-size:48px;color:var(--text);max-width:880px;text-align:center;line-height:1.3;">
+        <span id="p3-sleep-wrap" style="position:relative;"><span style="color:var(--purple);">Sleep-time learning</span><span id="p3-sleep-marker"></span></span>, basically.
+      </div>
+      <div id="p3-gated-row">
+        <span class="badge-chip rp">MOST OF YOU CAN'T TOUCH IT YET</span>
+        <div id="p3-access-pill">REQUEST ACCESS → claude.com/form/claude-managed-agents</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 4 — OUTCOMES (50-68s)
+       S04 data_start=50, data_duration=18
+       ═══════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p4-overline">OUTCOMES · PUBLIC BETA</div>
+      <div id="p4-headline">Then there's outcomes.</div>
+      <span class="badge-chip pb" id="p4-pb-badge" style="align-self:center;">LIVE TODAY</span>
+      <div id="p4-rubric">
+        <div class="rubric-item" id="p4-rubric-1">
+          <span class="rubric-check">📋</span>
+          <span class="rubric-text">Write a rubric</span>
+        </div>
+        <div class="rubric-item" id="p4-rubric-2">
+          <span class="rubric-check">🔍</span>
+          <span class="rubric-text">Separate grader checks output</span>
+        </div>
+        <div class="rubric-item fail" id="p4-rubric-3">
+          <span class="rubric-check">✗</span>
+          <span class="rubric-text" id="p4-pass1-text">Pass 1 — below bar</span>
+        </div>
+      </div>
+      <div id="p4-receipt">
+        <div id="p4-receipt-num">+0</div>
+        <div id="p4-receipt-label">POINTS TASK SUCCESS VS STANDARD PROMPTING</div>
+        <div id="p4-receipt-marker"></div>
+      </div>
+      <div id="p4-negative">Stop eyeballing drafts.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 5 — MULTIAGENT (68-86s)
+       S05 data_start=68, data_duration=18
+       ═══════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">MULTIAGENT ORCHESTRATION · PUBLIC BETA</div>
+      <div id="p5-headline">And while one agent grades, another delegates.</div>
+      <span class="badge-chip pb" id="p5-pb-badge" style="align-self:center;">LIVE TODAY</span>
+      <div id="p5-lead-box">
+        <div id="p5-lead-icon">🤖</div>
+        <div id="p5-lead-text">Lead Agent</div>
+      </div>
+      <div id="p5-columns">
+        <div class="spec-col" id="p5-col-1">
+          <div class="spec-icon">⚖️</div>
+          <div class="spec-label">Harvey Legal</div>
+        </div>
+        <div class="spec-col" id="p5-col-2">
+          <div class="spec-icon">🎬</div>
+          <div class="spec-label">Netflix Analysis</div>
+        </div>
+        <div class="spec-col" id="p5-col-3">
+          <div class="spec-icon">💾</div>
+          <div class="spec-label">Shared Filesystem</div>
+        </div>
+        <div class="spec-col" id="p5-col-4">
+          <div class="spec-icon">🛠️</div>
+          <div class="spec-label">Own Tools</div>
+        </div>
+      </div>
+      <div id="p5-harvey-pill">
+        <div id="p5-harvey-num">0×</div>
+        <div id="p5-harvey-label">HARVEY COMPLETION RATE (VS BASELINE)</div>
+        <!-- Burst lines positioned around the stat -->
+        <div class="burst-line" id="bl-1" style="top:-20px;left:50%;transform:translateX(-50%) rotate(0deg);transform-origin:bottom center;"></div>
+        <div class="burst-line" id="bl-2" style="top:-14px;right:20%;transform:rotate(45deg);transform-origin:bottom center;"></div>
+        <div class="burst-line" id="bl-3" style="top:30%;right:-20px;transform:rotate(90deg);transform-origin:bottom center;"></div>
+        <div class="burst-line" id="bl-4" style="top:-14px;left:20%;transform:rotate(-45deg);transform-origin:bottom center;"></div>
+        <div class="burst-line" id="bl-5" style="top:30%;left:-20px;transform:rotate(-90deg);transform-origin:bottom center;"></div>
+      </div>
+      <div id="p5-thought">"That's not a demo number. That's a <span id="p5-thought-keyword" style="position:relative;">legal-AI production deployment<span id="p5-thought-marker" style="position:absolute;bottom:-4px;left:0;height:3px;width:0;background:var(--orange);border-radius:2px;"></span></span>."</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 6 — WEBHOOKS (86-99s)
+       S06 data_start=86, data_duration=13
+       ═══════════════════════════════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">WEBHOOKS · PUBLIC BETA</div>
+      <div id="p6-headline">Plus webhooks, to know the moment work is done.</div>
+      <div id="p6-versus">
+        <div class="versus-col" id="p6-poll-col">
+          <div class="versus-title">Polling</div>
+          <div class="cron-tick" id="p6-cron-1">GET /status → pending</div>
+          <div class="cron-tick" id="p6-cron-2">GET /status → pending</div>
+          <div class="cron-tick" id="p6-cron-3">GET /status → done!</div>
+          <!-- Scribble SVG over the polling stack -->
+          <svg id="p6-scribble" viewBox="0 0 380 220" width="380" height="220">
+            <path id="p6-scribble-path" d="M 20 30 Q 200 10 360 50 Q 340 110 200 110 Q 60 110 30 170 Q 180 200 350 180" />
+          </svg>
+        </div>
+        <div class="versus-col" id="p6-webhook-col">
+          <div class="versus-title">Webhook</div>
+          <div id="p6-bell">🔔</div>
+          <div id="p6-bell-label">Single notification</div>
+        </div>
+      </div>
+      <div id="p6-negative">Stop polling. Subscribe to a webhook.</div>
+      <div id="p6-industry-chip">INDUSTRY SAID: "Finally, no more polling loops."</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 7 — TRUST STRIP (99-114s)
+       S07 data_start=99, data_duration=15
+       ═══════════════════════════════════ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">HERE'S WHY THIS LANDS</div>
+      <div id="p7-headline">Here's why this lands.</div>
+      <div id="p7-code-card">
+        <div id="p7-code-label">SDK BETA HEADER</div>
+        <div id="p7-code-value" data-typewriter-target="managed-agents-2026-04-01"></div>
+      </div>
+      <div id="p7-quote">
+        <div id="p7-quote-text">"The orchestration layer is where the real moat lives."</div>
+        <div id="p7-quote-attr">— anonymous community reaction, ~31 min after announcement</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       PHASE 8 — CTA + DYNAMOUS (114-130s)
+       S08 data_start=114, data_duration=16
+       (Dynamous outro 130-135s handled by endcard)
+       ═══════════════════════════════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">AVAILABLE TODAY</div>
+      <div id="p8-question">Is Anthropic about to lock in the production-agent moat, or did dreaming get gated for a reason?</div>
+      <div id="p8-comments-pill">💬 Let me know in the comments</div>
+      <div id="p8-subscribe-pill">Subscribe <span class="arrow">→</span></div>
+      <div id="p8-url" data-layout-allow-overflow style="position:relative;">
+        claude.com/form/claude-managed-agents
+        <div id="p8-url-circle"></div>
+        <div id="p8-url-marker-2" style="position:absolute;bottom:-6px;left:0;height:3px;width:0;background:var(--orange);border-radius:2px;"></div>
+      </div>
+      <div id="p8-shipped-pill">✓ SHIPPED</div>
+    </div>
+  </div>
+
+  <!-- Dynamous endcard sub-composition (trailing 5s) -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="130"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ─── NARRATION ─── -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="134.30"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- ─── SFX ─── -->
+  <!-- S00: DREAM impact slam + screen-shake (track 3/4), 3x spring-pop chips (track 3), whoosh -->
+  <audio id="sfx-impact-s00"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="1.62"
+         data-duration="0.63"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+  <audio id="sfx-shake-s00"
+         class="clip"
+         src="assets/sfx/screen-shake.mp3"
+         data-start="1.62"
+         data-duration="0.52"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s00-1"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="4.78"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s00-2"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="5.75"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s00-3"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="6.39"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t0"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="6.60"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S01: impact-slam + glitch-zap on BUT (track 3/4), scale-slam Three (track 3), whoosh T1 -->
+  <audio id="sfx-impact-s01"
+         class="clip"
+         src="assets/sfx/impact-slam.mp3"
+         data-start="7.66"
+         data-duration="0.63"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+  <audio id="sfx-glitch-s01"
+         class="clip"
+         src="assets/sfx/glitch-zap.mp3"
+         data-start="7.66"
+         data-duration="0.52"
+         data-track-index="4"
+         data-volume="0.09"></audio>
+  <audio id="sfx-scaleslam-s01"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="9.10"
+         data-duration="0.73"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-t1"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="14.50"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S02: 4x spring-pop for pillars (track 3 sequential), whoosh T2 -->
+  <audio id="sfx-pop-s02-1"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="15.99"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s02-2"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="16.59"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s02-3"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="18.11"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s02-4"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="19.91"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="31.50"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S03: 3x spring-pop (sessions, memory, access), whoosh T3 -->
+  <audio id="sfx-pop-s03-1"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="33.23"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s03-2"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="35.13"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s03-3"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="45.24"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="49.50"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S04: 2x spring-pop rubric, strike-cross Pass1→Pass2, scale-slam +10, whoosh T4 (zoom-through accent) -->
+  <audio id="sfx-pop-s04-1"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="50.80"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s04-2"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="52.66"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-strike-s04"
+         class="clip"
+         src="assets/sfx/strike-cross.mp3"
+         data-start="57.58"
+         data-duration="0.63"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-scaleslam-s04"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="59.60"
+         data-duration="0.73"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-t4"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="67.70"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S05: 4x pop specialist cols (tracks 3-6, concurrent-safe), scale-slam Harvey, whoosh T5 -->
+  <audio id="sfx-pop-s05-1"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="71.56"
+         data-duration="0.22"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-pop-s05-2"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="71.80"
+         data-duration="0.22"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-pop-s05-3"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="72.04"
+         data-duration="0.22"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-pop-s05-4"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="72.28"
+         data-duration="0.22"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-scaleslam-s05"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="77.88"
+         data-duration="0.73"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-t5"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="85.50"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S06: 3x pop cron-ticks (duration trimmed to avoid overlap), strike-cross scribble, spring-pop bell, whoosh T6 -->
+  <audio id="sfx-pop-s06-1"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="86.32"
+         data-duration="0.36"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-pop-s06-2"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="86.70"
+         data-duration="0.36"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-pop-s06-3"
+         class="clip"
+         src="assets/sfx/pop.mp3"
+         data-start="87.08"
+         data-duration="0.36"
+         data-track-index="3"
+         data-volume="0.10"></audio>
+  <audio id="sfx-strike-s06"
+         class="clip"
+         src="assets/sfx/strike-cross.mp3"
+         data-start="88.37"
+         data-duration="0.63"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s06-bell"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="89.95"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="101.60"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S07: 2x spring-pop (code chip, quote), whoosh T7 -->
+  <!-- sfx-pop-s07-1 removed: #p7-pricing element removed (pricing claim removed in fact-check) -->
+  <audio id="sfx-pop-s07-2"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="104.15"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s07-3"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="109.96"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7"
+         class="clip"
+         src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="113.50"
+         data-duration="0.84"
+         data-track-index="4"
+         data-volume="0.11"></audio>
+
+  <!-- S08: 2x spring-pop (comments, subscribe), scale-slam URL -->
+  <audio id="sfx-pop-s08-1"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="117.919"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-pop-s08-2"
+         class="clip"
+         src="assets/sfx/spring-pop.mp3"
+         data-start="119.43"
+         data-duration="0.52"
+         data-track-index="3"
+         data-volume="0.11"></audio>
+  <audio id="sfx-scaleslam-s08"
+         class="clip"
+         src="assets/sfx/scale-slam.mp3"
+         data-start="121.71"
+         data-duration="0.73"
+         data-track-index="3"
+         data-volume="0.15"></audio>
+
+  <!-- Film grain — topmost z-index -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─── Shape backdrop — deterministic seeded scatter ───
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('anthropic-short', document.getElementById('shape-backdrop'));
+
+  // ─── Dynamous badge entrance helper ───
+  function addDynamousBadgeEntrance(tl) {
+    tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+  }
+
+  // ─── Transition helper: blur-crossfade ───
+  function blurCrossfade(tl, fromId, toId, T) {
+    tl.to(fromId,  { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T);
+    tl.to(fromId,  { opacity: 0, duration: 0.4, ease: "power1.in" }, T + 0.3);
+    tl.set(fromId, { visibility: "hidden" }, T + 0.7);
+    tl.set(toId,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T + 0.4);
+    tl.to(toId,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T + 0.4);
+    tl.to(toId,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T + 0.6);
+  }
+
+  // ─── Transition helper: zoom-through (accent — T4 only) ───
+  function zoomThrough(tl, fromId, toId, T) {
+    tl.to(fromId,  { scale: 1.12, filter: "blur(30px)", opacity: 0, duration: 0.3, ease: "power4.in" }, T);
+    tl.set(fromId, { visibility: "hidden" }, T + 0.35);
+    tl.set(toId,   { scale: 0.88, filter: "blur(30px)", opacity: 0, visibility: "visible" }, T + 0.3);
+    tl.to(toId,    { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.4, ease: "power3.out", overwrite: "auto" }, T + 0.3);
+  }
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─── Ambient breath across full 135s ───
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 67.5, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  // ─── Progress bar: fills over 135s ───
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: 135, ease: "none" },
+    0);
+
+  // ─── Top banner ───
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ─── Dynamous badge entrance at t=3.0s ───
+  addDynamousBadgeEntrance(tl);
+
+  // ═══════════════════════════════════════
+  // PHASE 0 — PREVIEW HOOK (0–7s)
+  // ═══════════════════════════════════════
+
+  // Trust-signal screenshot: fade in 0.30s → out 1.10s (clears before DREAM slam at 1.62s)
+  tl.fromTo("#p1-source-card",
+    { y: 16, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.40, ease: "power2.out", immediateRender: false },
+    0.30);
+  tl.to("#p1-source-card",
+    { opacity: 0, duration: 0.40, ease: "power2.in", overwrite: "auto" },
+    1.10);
+
+  // Overline enters at 0.3s (delayed to after screenshot)
+  tl.from("#p0-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  // pre-line enters at 1.0s (screenshot still showing, hero not yet)
+  tl.from("#p0-pre",     { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 1.0);
+  // DREAM slam at 1.62s (anchored to transcript word[5] start=1.672)
+  tl.from("#p0-hero",    { scale: 0.78, opacity: 0, duration: 0.55, ease: "back.out(1.7)" }, 1.62);
+  // Inline shake on DREAM slam
+  tl.to("#p0-hero", { x: 6,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.67);
+  tl.to("#p0-hero", { x: -6, duration: 0.04, ease: "none", overwrite: "auto" }, 1.71);
+  tl.to("#p0-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.75);
+  tl.to("#p0-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.79);
+
+  // Marker sweep behind DREAM (orange bar)
+  tl.to("#p0-hero-marker", { width: 560, duration: 0.4, ease: "power2.out" }, 1.67);
+
+  // event chip fades in with pre-line
+  tl.from("#p0-event-chip", { y: 16, opacity: 0, duration: 0.4, ease: "power2.out" }, 1.1);
+
+  // 3 micro-teaser chips enter step-by-step (S00 enumeration — quick stagger acceptable,
+  // narrator says "four primitives" once)
+  tl.set("#p0-chip-1", { x: -30, opacity: 0 }, 0);
+  tl.set("#p0-chip-2", { x: -30, opacity: 0 }, 0);
+  tl.set("#p0-chip-3", { x: -30, opacity: 0 }, 0);
+  tl.to("#p0-chip-1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, 4.78);
+  tl.to("#p0-chip-2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, 5.75);
+  tl.to("#p0-chip-3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, 6.39);
+
+  // ─── T0: phase0 → phase1 at 6.6s ───
+  const T0 = 6.6;
+  blurCrossfade(tl, "#phase0", "#phase1", T0);
+
+  // ═══════════════════════════════════════
+  // PHASE 1 — OPEN LOOP (7–15s)
+  // ═══════════════════════════════════════
+  const P1 = T0 + 0.7; // ~7.3s after phase fully in
+  tl.from("#p1-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P1 + 0.0);
+  tl.from("#p1-headline",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P1 + 0.3);
+  // Pills anchored to narration (explicit hidden-until-reveal pattern)
+  tl.set("#p1-pill-three", { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p1-pill-one",   { scale: 0.85, opacity: 0 }, 0);
+  tl.to("#p1-pill-three", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 8.7);
+  tl.to("#p1-pill-one",   { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 11.2);
+
+  // Counter tween: "Three" digit 0 → 3 (tween [8.7 → 9.4], "Three" spoken at 9.195)
+  tl.fromTo("#p1-three-num",
+    { innerHTML: "0" },
+    {
+      innerHTML: "3",
+      duration: 0.7,
+      ease: "power2.out",
+      snap: { innerHTML: 1 },
+      overwrite: "auto"
+    },
+    8.7);
+
+  // marker-circle on "gated" (word[29] start=11.656)
+  tl.to("#p1-gated-circle", { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "power2.out" }, 11.656);
+
+  // question — anchored to just before word "guess" (word[32] ~13.432)
+  tl.set("#p1-question", { y: 24, opacity: 0 }, 0);
+  tl.to("#p1-question",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 13.2);
+
+  // ─── T1: phase1 → phase2 at 14.5s ───
+  const T1 = 14.5;
+  blurCrossfade(tl, "#phase1", "#phase2", T1);
+
+  // ═══════════════════════════════════════
+  // PHASE 2 — FOUR PILLARS (15–32s)
+  // STEP-BY-STEP REVEAL — tl.set() + tl.to() per pillar
+  // ═══════════════════════════════════════
+  const P2 = T1 + 0.7; // ~15.2s
+  tl.from("#p2-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.0);
+  tl.from("#p2-headline",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+
+  // All 4 pillars hidden at t=0 (explicit hidden-until-reveal pattern)
+  tl.set("#p2-pillar-1", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-pillar-2", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-pillar-3", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-pillar-4", { x: -40, scale: 0.95, opacity: 0 }, 0);
+  // Reveal each pillar at the exact transcript word anchor
+  // Dreaming: word[41] start=15.986
+  tl.to("#p2-pillar-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 15.986);
+  // Outcomes: word[42] start=16.590
+  tl.to("#p2-pillar-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 16.590);
+  // Multiagent: word[43] start=18.110
+  tl.to("#p2-pillar-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 18.110);
+  // Webhooks: word[45] start=19.910
+  tl.to("#p2-pillar-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 19.910);
+
+  // E1 beat at t=23.0 — scale-pulse on PUBLIC BETA chips (narrator says "live")
+  tl.to(".pillar-card .badge-chip.pb", { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut" }, 23.0);
+
+  // Marker sweep behind "research preview only" (word[63] start=26.389)
+  tl.to("#p2-rp-marker", { width: 460, duration: 0.6, ease: "power2.out" }, 26.389);
+
+  // twist paragraph — anchored to word[48] "public" start=21.292
+  tl.set("#p2-twist-paragraph", { opacity: 0, y: 16 }, 0);
+  tl.to("#p2-twist-paragraph", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 21.292);
+
+  // E2 beat at t=28.826 — scale-pulse on #p2-twist-word when narrator says "twist"
+  tl.to("#p2-twist-word", { scale: 1.15, color: "var(--orange)", duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut" }, 28.826);
+
+  // ─── T2: phase2 → phase3 at 31.5s ───
+  const T2 = 31.5;
+  blurCrossfade(tl, "#phase2", "#phase3", T2);
+
+  // ═══════════════════════════════════════
+  // PHASE 3 — DREAMING (32–50s)
+  // ═══════════════════════════════════════
+  const P3 = T2 + 0.7; // ~32.2s
+  tl.from("#p3-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.0);
+  tl.from("#p3-headline",   { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P3 + 0.3);
+  tl.from("#p3-rp-badge",   { scale: 0.85, opacity: 0, duration: 0.4, ease: "back.out(1.6)" }, P3 + 0.6);
+
+  // Hero image fades in early
+  tl.to("#p3-hero-img", { opacity: 1, duration: 0.7, ease: "power2.out" }, P3 + 0.4);
+
+  // Three cycle cards — explicit hidden + reveal (quick stagger — narrator says "sessions" once)
+  tl.set("#p3-card-1", { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-card-2", { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-card-3", { x: -30, opacity: 0 }, 0);
+  // sessions: word[79] start=33.227 / extracts: word[80] 33.924 / memories: word[84] 35.572
+  tl.to("#p3-card-1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 33.227);
+  tl.to("#p3-card-2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 33.924);
+  tl.to("#p3-card-3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 35.572);
+
+  // E3 beat at t=37.5 — scale-pulse on sessions card (narrator says "smarter")
+  tl.to("#p3-card-1", { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut" }, 37.5);
+
+  // Sleep-time learning line fades in
+  tl.from("#p3-sleep-wrap", { opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 39.704);
+  // marker-circle on "Sleep-time learning" (term branding) — clip-path reveal
+  tl.to("#p3-sleep-marker", { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power2.out" }, 39.704);
+
+  // Gated badge row: word[97] "And yes" ~41.934s
+  tl.set("#p3-gated-row", { y: 20, opacity: 0 }, 0);
+  tl.to("#p3-gated-row",  { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 41.934);
+
+  // Request access pill entrance: word[106] "Request" start=45.242
+  tl.from("#p3-access-pill", { scale: 0.9, opacity: 0, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 45.242);
+
+  // ─── T3: phase3 → phase4 at 49.5s ───
+  const T3 = 49.5;
+  blurCrossfade(tl, "#phase3", "#phase4", T3);
+
+  // ═══════════════════════════════════════
+  // PHASE 4 — OUTCOMES (50–68s)
+  // ═══════════════════════════════════════
+  const P4 = T3 + 0.7; // ~50.2s
+  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-headline",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P4 + 0.3);
+  tl.from("#p4-pb-badge",  { scale: 0.85, opacity: 0, duration: 0.4, ease: "back.out(1.6)" }, P4 + 0.6);
+
+  // Rubric items — step-by-step (quick stagger; narrator says "rubric + separate grader" in one breath)
+  tl.set("#p4-rubric-1", { x: -40, opacity: 0 }, 0);
+  tl.set("#p4-rubric-2", { x: -40, opacity: 0 }, 0);
+  tl.set("#p4-rubric-3", { x: -40, opacity: 0 }, 0);
+  // word[121] "rubric." start=50.803
+  tl.to("#p4-rubric-1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 50.803);
+  // word[122] "A" start=52.150 — when narrator says "A separate grader…"
+  tl.to("#p4-rubric-2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 52.150);
+  // grader card: word[124] "grader" start=52.661
+  tl.to("#p4-rubric-3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 52.661);
+
+  // Pass 1 (fail) → Pass 2 (pass) tween: "clears" word[138] start=57.630
+  tl.to("#p4-rubric-3", {
+    backgroundColor: "rgba(125,211,166,0.10)",
+    borderColor: "rgba(125,211,166,0.50)",
+    duration: 0.4,
+    ease: "power2.out",
+    overwrite: "auto"
+  }, 57.630);
+  tl.to("#p4-pass1-text", { color: "#7DD3A6", duration: 0.4, overwrite: "auto" }, 57.630);
+  tl.to(".rubric-item.fail .rubric-check", { color: "#7DD3A6", duration: 0.4, overwrite: "auto" }, 57.630);
+
+  // +10 receipt pill entrance (hidden at t=0)
+  tl.set("#p4-receipt", { scale: 0.85, opacity: 0 }, 0);
+  // Shows after grader run (around "clears the bar" word[140] ~58.048)
+  tl.to("#p4-receipt", { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 58.048);
+
+  // Counter tween +0 → +10: [58.81 → 59.99], word[143] "points" start=59.697
+  tl.fromTo("#p4-receipt-num",
+    { innerHTML: "+0" },
+    {
+      innerHTML: "+10",
+      duration: 1.18,
+      ease: "power2.out",
+      snap: { innerHTML: 1 },
+      overwrite: "auto"
+    },
+    58.81);
+
+  // Marker highlight on "+10" (sweeps at word[143] "points" start=59.697)
+  tl.to("#p4-receipt-marker", { width: 280, duration: 0.5, ease: "power2.out" }, 59.697);
+
+  // Negative frame pill: word[150] "Stop" start=63.016
+  tl.set("#p4-negative", { y: 16, opacity: 0 }, 0);
+  tl.to("#p4-negative",  { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 63.016);
+
+  // ─── T4: phase4 → phase5 at 67.7s — ZOOM-THROUGH ACCENT ───
+  const T4 = 67.7;
+  zoomThrough(tl, "#phase4", "#phase5", T4);
+
+  // ═══════════════════════════════════════
+  // PHASE 5 — MULTIAGENT (68–86s)
+  // ═══════════════════════════════════════
+  const P5 = T4 + 0.7; // ~68.4s
+  tl.from("#p5-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P5 + 0.0);
+  tl.from("#p5-headline",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P5 + 0.3);
+  tl.from("#p5-pb-badge",  { scale: 0.85, opacity: 0, duration: 0.4, ease: "back.out(1.6)" }, P5 + 0.6);
+
+  // Lead agent box: word[164] "lead" start=70.295
+  tl.set("#p5-lead-box", { y: 20, opacity: 0 }, 0);
+  tl.to("#p5-lead-box",  { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 70.295);
+
+  // 4 specialist columns — quick stagger (narrator says "specialists running in parallel" once)
+  // Explicit hidden + reveal pattern
+  tl.set("#p5-col-1", { y: 40, opacity: 0 }, 0);
+  tl.set("#p5-col-2", { y: 40, opacity: 0 }, 0);
+  tl.set("#p5-col-3", { y: 40, opacity: 0 }, 0);
+  tl.set("#p5-col-4", { y: 40, opacity: 0 }, 0);
+  // word[169] "specialists" start=71.561
+  tl.to("#p5-col-1", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 71.561);
+  tl.to("#p5-col-2", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 71.800);
+  tl.to("#p5-col-3", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 72.040);
+  tl.to("#p5-col-4", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 72.280);
+
+  // Harvey 6× stat pill entrance — hidden + reveal at "Harvey" word[181] start=77.145
+  tl.set("#p5-harvey-pill", { scale: 0.85, opacity: 0 }, 0);
+  tl.to("#p5-harvey-pill",  { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 77.145);
+
+  // Counter tween 0× → 6×: [77.4 → 78.6], word[184] "six" start=77.982
+  tl.fromTo("#p5-harvey-num",
+    { innerHTML: "0×" },
+    {
+      innerHTML: "6×",
+      duration: 1.2,
+      ease: "power2.out",
+      snap: { innerHTML: 1 },
+      overwrite: "auto"
+    },
+    77.4);
+
+  // Harvey burst lines — marker-burst (word[185] "times" start=78.272)
+  tl.to(".burst-line", { opacity: 1, scale: 1.4, duration: 0.5, ease: "power2.out", stagger: 0.05 }, 78.272);
+  tl.to(".burst-line", { opacity: 0, duration: 0.4, ease: "power2.in", stagger: 0.03, overwrite: "auto" }, 78.972);
+
+  // Thought narration stamp: word[188] "That's" start=80.303
+  tl.set("#p5-thought", { y: 16, opacity: 0 }, 0);
+  tl.to("#p5-thought",  { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, 80.303);
+
+  // E4 beat at t=82.5 — sweep marker under "legal-AI production deployment"
+  tl.to("#p5-thought-marker", { width: "100%", duration: 0.6, ease: "power2.out" }, 82.5);
+
+  // ─── T5: phase5 → phase6 at 85.5s ───
+  const T5 = 85.5;
+  blurCrossfade(tl, "#phase5", "#phase6", T5);
+
+  // ═══════════════════════════════════════
+  // PHASE 6 — WEBHOOKS (86–99s)
+  // ═══════════════════════════════════════
+  const P6 = T5 + 0.7; // ~86.2s
+  tl.from("#p6-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P6 + 0.0);
+  tl.from("#p6-headline",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P6 + 0.3);
+
+  // Poll column + 3 cron-ticks — quick stagger (narrator says "work is actually done" once)
+  tl.set("#p6-cron-1", { x: -20, opacity: 0 }, 0);
+  tl.set("#p6-cron-2", { x: -20, opacity: 0 }, 0);
+  tl.set("#p6-cron-3", { x: -20, opacity: 0 }, 0);
+  // word[204] "work" S06 start=86.318
+  tl.to("#p6-cron-1", { x: 0, opacity: 1, duration: 0.35, ease: "back.out(1.5)" }, 86.318);
+  tl.to("#p6-cron-2", { x: 0, opacity: 1, duration: 0.35, ease: "back.out(1.5)" }, 86.700);
+  tl.to("#p6-cron-3", { x: 0, opacity: 1, duration: 0.35, ease: "back.out(1.5)" }, 87.080);
+  tl.from("#p6-poll-col",    { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, 86.2);
+  tl.from("#p6-webhook-col", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, 86.4);
+
+  // marker-scribble: word[208] "Stop" start=88.418
+  tl.to("#p6-scribble-path", {
+    strokeDashoffset: 0,
+    opacity: 0.7,
+    duration: 0.7,
+    ease: "power2.out"
+  }, 88.418);
+
+  // Webhook bell: word[213] "webhook." start=89.951
+  tl.set("#p6-bell",       { y: 20, opacity: 0 }, 0);
+  tl.set("#p6-bell-label", { y: 10, opacity: 0 }, 0);
+  tl.to("#p6-bell",       { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, 89.951);
+  tl.to("#p6-bell-label", { y: 0, opacity: 1, duration: 0.4,  ease: "power2.out" }, 90.251);
+
+  // Negative frame: word[208] "Stop" → fires its SFX, but the pill visual enters at 88.418
+  tl.set("#p6-negative", { y: 16, opacity: 0 }, 0);
+  tl.to("#p6-negative",  { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 88.418);
+
+  // E5 beat 1: t=94.084 — scale-pulse + glow on #p6-bell (narrator says "receipt.")
+  tl.to("#p6-bell", { scale: 1.2, filter: "drop-shadow(0 0 12px rgba(125,211,166,0.8))", duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut" }, 94.084);
+  // E5 beat 2: t=96.500 — reveal industry reaction chip (narrator says "community")
+  tl.set("#p6-industry-chip", { y: 12, opacity: 0 }, 0);
+  tl.to("#p6-industry-chip",  { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 96.500);
+
+  // ─── T6: phase6 → phase7 at 101.6s ───
+  const T6 = 101.6;
+  blurCrossfade(tl, "#phase6", "#phase7", T6);
+
+  // ═══════════════════════════════════════
+  // PHASE 7 — TRUST STRIP (102–114s)
+  // ═══════════════════════════════════════
+  const P7 = T6 + 0.7; // ~102.3s
+  tl.from("#p7-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P7 + 0.0);
+  tl.from("#p7-headline",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P7 + 0.3);
+
+  // Beta-header code chip: word[250] "beta" start=104.150
+  tl.set("#p7-code-card", { scale: 0.9, opacity: 0 }, 0);
+  tl.to("#p7-code-card",  { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 104.150);
+
+  // gsap-typewriter on beta header value (104.150 → 105.984, ~25 chars, ~73ms/char)
+  const betaCode = "managed-agents-2026-04-01";
+  const charDur  = 1.834 / betaCode.length;
+  for (let ci = 0; ci <= betaCode.length; ci++) {
+    tl.set("#p7-code-value", { innerHTML: betaCode.slice(0, ci) }, 104.150 + ci * charDur);
+  }
+
+  // Community quote tile: word[266] "finally" start=109.955
+  tl.set("#p7-quote", { y: 20, opacity: 0 }, 0);
+  tl.to("#p7-quote",  { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 109.955);
+
+  // ─── T7: phase7 → phase8 at 113.5s ───
+  const T7 = 113.5;
+  blurCrossfade(tl, "#phase7", "#phase8", T7);
+
+  // ═══════════════════════════════════════
+  // PHASE 8 — CTA + DYNAMOUS (114–130s)
+  // ═══════════════════════════════════════
+  const P8 = T7 + 0.7; // ~114.2s
+  tl.from("#p8-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P8 + 0.0);
+  tl.from("#p8-question",  { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P8 + 0.3);
+
+  // Comments pill: word[288] "Let" start=117.919
+  tl.set("#p8-comments-pill", { y: 16, opacity: 0 }, 0);
+  tl.to("#p8-comments-pill",  { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 117.919);
+
+  // Subscribe pill: word[295] "subscribe" start=119.428
+  tl.set("#p8-subscribe-pill", { y: 16, opacity: 0 }, 0);
+  tl.to("#p8-subscribe-pill",  { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 119.428);
+
+  // Form URL slam: word[300] "So," start=121.819
+  tl.set("#p8-url", { scale: 0.85, opacity: 0 }, 0);
+  tl.to("#p8-url",  { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2.0)" }, 121.819);
+
+  // marker-circle on form URL: drawn at 121.819
+  tl.to("#p8-url-circle", { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "power2.out" }, 121.819);
+
+  // E6 beat 1: t=125.4 — "SHIPPED" pill entrance (narrator says "shipped.")
+  tl.set("#p8-shipped-pill", { scale: 0.85, opacity: 0 }, 0);
+  tl.to("#p8-shipped-pill",  { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 125.4);
+  // E6 beat 2: t=127.1 — second marker sweep on URL (narrator says "Dreaming,")
+  tl.to("#p8-url-marker-2", { width: "100%", duration: 0.6, ease: "power2.out" }, 127.1);
+
+  // Fade out phase8 content (+ badge) before Dynamous endcard fires at 130s
+  tl.to("#phase8",         { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 129.5);
+  tl.to("#dynamous-badge", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 129.5);
+
+  // ─── Shape backdrop rearrangements at every transition ───
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'anthropic-short',
+    [T0, T1, T2, T3, T4, T5, T6, T7]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

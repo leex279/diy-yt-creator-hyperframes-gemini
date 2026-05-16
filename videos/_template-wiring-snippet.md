@@ -204,33 +204,32 @@ See `shared/lib/components/dynamous-discount-bubble/README.md` for the full slot
 
 ## Step 5 — `script.txt` outro line (every opted-in Short)
 
-Append an outro line to the end of `videos/<slug>/script.txt` after your existing outro. The wording depends on **the channel author's relationship to Dynamous**.
+Append a SHORT outro line to the end of `videos/<slug>/script.txt` after your existing closing line. **Keep the spoken outro brief — the Dynamous endcard sub-comp is what carries the full pitch (Mastery wordmark, "Join the Community", 4-offerings list, "Link in Description ↓", 10% OFF badge, dynamous.ai URL). The narration just hands off to it.**
 
-### Default (channel author is OUTSIDE the Dynamous team)
+### Locked outro line (every opted-in Short — insider OR outsider)
 
-Append this line VERBATIM:
+Append this line VERBATIM (or close minor variants — keep ≤ 5 seconds spoken):
 
-> "A lot of you asked how I'm learning all this AI stuff — I use Dynamous. It's an awesome community. I actually reached out to them and got a 10% off code for you guys, it's in the pinned comment."
+> "If you want to learn more about AI, check out the dynamous dot ai community."
 
-**Why verbatim?** This wording passes the strategy doc's Friend Test — a friend telling you about a discount they got, not a sales pitch. Improvising loses the frame.
+Then the endcard takes over for the trailing 5 seconds and shows the full CTA stack visually. Don't try to compress the entire pitch into the spoken line — let the endcard do its job.
 
-**Note on "code"**: The line uses the word "code" even though the discount is automatic via the link, not a typed code. This is fine — a discounted link IS a "code" in the colloquial sense, and the friend-frame language is what carries the conversion. Don't rewrite it.
+**Why this short form?** Tested 2026-05-05 across the `videos/anthropic-finance-agents/` short. Older outros (insider variant naming Cole + Archon + projects, or outsider variant claiming "I reached out and got a 10% code") added 12-18 seconds of narration that:
 
-### Insider exception (channel author is ON the Dynamous team / works with the founder)
+- Crowded out video content for stories that didn't need it.
+- Repeated information the endcard already shows visually (URL, discount, CTA).
+- Felt salesy at length — the friend-frame works better as a pointer than a pitch.
 
-When the channel author is an insider — works on the team, builds projects with the founder, helps run workshops or content — the outsider line is **factually wrong**. Saying "I reached out to them" misrepresents the relationship and burns trust the moment a viewer recognises the author.
+The short form passes all five checks of the strategy doc § 4 (Value Test, Friend Test, Hook Test, CTA softness, frictionless purchase) on its own. The **endcard is brand-locked and carries the conversion** — the spoken line just points the viewer at it.
 
-Use insider framing instead. The Friend Test still passes — an insider saying "join us" is *more* friend-framed than an outsider saying "I got a code", not less. Required ingredients:
+### Don't use these (deprecated)
 
-- Acknowledge the team affiliation ("I'm on the Dynamous team" / "I build at Dynamous").
-- Optionally name the founder by first name and 1–2 concrete projects you ship together (Archon is the highest-recognition; bolt.diy and local-ai-packaged are also valid).
-- End with the same conversion CTA: "10% off code in the pinned comment if you want to join us."
+- ~~"A lot of you asked how I'm learning all this AI stuff — I use Dynamous. It's an awesome community. I actually reached out to them and got a 10% off code for you guys, it's in the pinned comment."~~ — too long; "reached out to them" is also factually wrong for insider authors.
+- ~~"A lot of you asked how I learn this AI stuff. I'm on the Dynamous team. I work with Cole on workshops, his videos, and our open source projects. There's a 10% off code in the pinned comment if you want to join us."~~ — accurate but repeats what the endcard already shows; eats 18s of narration that should be content.
 
-Reference outro that shipped in `videos/claude-code-source-leak/script.txt`:
+If a future video has a specific reason to use the long form (e.g., a Dynamous-themed video where naming the founder + projects IS the content), justify it in the video's `meta.json` under a `notes` field. Default is the short line above.
 
-> "A lot of you asked how I learn this AI stuff. I'm on the Dynamous team. I work with Cole on workshops, his videos, and our open source projects. There's a 10% off code in the pinned comment if you want to join us."
-
-What stays locked across BOTH variants:
+### What stays locked
 
 - The pinned-comment first line (Step 6) — verbatim factual statement about the link.
 - The description first line (Step 7) — same.

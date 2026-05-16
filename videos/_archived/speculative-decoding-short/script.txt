@@ -1,0 +1,15 @@
+Two language models running side by side. Faster than one running alone. That is not a trick. That is how the fastest L L Ms ship today.
+
+Here is what is actually slow about a normal language model. You feed it a prompt. It runs one full forward pass. It produces one token. You append that token. You run the whole model again. For the next token. And the next. A seventy billion parameter model. Spinning up. For one word.
+
+But here is the thing. Most tokens do not need a giant model to predict. The next word after, why did the chicken, is going to be cross. A tiny model gets that right. The next word after, the quadratic formula is, every model gets that right. So why are we paying for the giant model on the easy parts.
+
+This is speculative decoding. Published by Google in November 2022. Two models. A small fast draft model. A big slow target model. The draft model speculates four tokens ahead. Cheap and fast. The target model verifies all four. In a single parallel pass. Match the draft. Accept the tokens. Disagree somewhere. Reject from that point. The target corrects it. Either way. Multiple tokens. For the price of one forward pass.
+
+Best case. K plus one tokens per round. Worst case. Still one token. Same as without it. Average. Two to three times faster. Same output. Identical distribution. No quality loss. The original paper proved it on T five X X L.
+
+But the speedup is not constant. Math. Code. Boilerplate. The draft is right almost every time. Massive speedup. Creative writing. Open prose. Every word branches a hundred ways. The draft guesses wrong. The speedup collapses. Same model. Same prompt. Different speed depending on what you ask.
+
+And it is not just a trick anymore. It is becoming architecture. Google's Gemma 4 ships its own drafter built in. Multi token prediction head. Seventy six million parameters. Sharing the target model's K V cache. That is speculative decoding evolving. From an inference hack. Into the model itself.
+
+So next time someone tells you that you cannot make an L L M faster without losing quality, they are wrong. The math has been here since 2022. If you want to learn more about A I, check out the dynamous A I community.

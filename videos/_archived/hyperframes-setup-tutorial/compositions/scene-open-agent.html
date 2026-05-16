@@ -1,0 +1,146 @@
+<!--
+  scene-open-agent.html — terminal showing `cd my-video && claude` and the
+  agent loading HyperFrames skills.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-open-agent-template">
+  <div data-composition-id="scene-open-agent"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #open-agent-content {
+        width:100%; height:100%;
+        padding: 80px var(--pad-x) 80px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 32px; box-sizing:border-box;
+      }
+      #open-agent-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:10px; text-align:center;
+      }
+      #open-agent-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 24px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-warn);
+      }
+      #open-agent-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 52px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+      .open-agent-term {
+        width: 1500px;
+        background: rgba(0, 0, 0, 0.82);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 14px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        font-family: var(--mono);
+      }
+      .open-agent-term .term-bar {
+        background: rgba(255,255,255,0.06);
+        padding: 9px 16px;
+        font-weight: 700; font-size: 12px;
+        letter-spacing: 2px; text-transform: uppercase;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+        display:flex; align-items:center; gap: 8px;
+      }
+      .open-agent-term .dot {
+        display:inline-block; width:11px; height:11px; border-radius:50%;
+        background:#ff5f57; margin-right:5px;
+      }
+      .open-agent-term .dot.y { background:#febc2e; }
+      .open-agent-term .dot.g { background:#28c840; }
+      .open-agent-term .term-body {
+        padding: 22px 26px;
+        font-size: 18px; line-height: 1.6;
+        color: #e9ecf3;
+      }
+      /* every command/output line on its own row */
+      .open-agent-term .term-body > span[id^="oa-l"] { display: block; }
+      .open-agent-term .prompt { color: var(--text-secondary); margin-right: 8px; }
+      .open-agent-term .cmd-text { color: var(--accent-stat); font-weight: 700; }
+      .open-agent-term .out { display:block; color: #e9ecf3; }
+      .open-agent-term .out.ok { color: var(--accent-4); font-weight: 700; }
+      .open-agent-term .out.dim { color: var(--text-secondary); }
+      .open-agent-term .out.indent { padding-left: 22px; }
+      .open-agent-term .skill {
+        display:inline-block;
+        background: rgba(94,229,207,.14);
+        border: 1px solid rgba(94,229,207,.45);
+        color: #5ee5cf;
+        padding: 3px 11px; border-radius: 5px;
+        font-size: 16px; font-weight: 700;
+        margin: 2px 4px 2px 0;
+      }
+      .open-agent-term .blank { display:block; height: 8px; }
+    </style>
+
+    <div id="open-agent-content">
+      <div class="header-block">
+        <div class="overline" id="oa-overline">OPEN WITH YOUR AGENT &middot; STEP 7</div>
+        <div class="headline" id="oa-headline">Skills auto-load on launch</div>
+      </div>
+
+      <div class="open-agent-term" id="oa-term">
+        <div class="term-bar">
+          <span class="dot"></span><span class="dot y"></span><span class="dot g"></span>
+          &nbsp; PowerShell &mdash; my-video
+        </div>
+        <div class="term-body">
+          <span id="oa-l1"><span class="prompt">PS&gt;</span><span class="cmd-text">cd my-video</span></span>
+          <span class="blank"></span>
+          <span id="oa-l2"><span class="prompt">PS my-video&gt;</span><span class="cmd-text">claude</span></span>
+          <span class="blank"></span>
+          <span id="oa-l3" class="out ok">✓ Welcome to Claude Code</span>
+          <span id="oa-l4" class="out dim">  Loaded 5 HyperFrames skills:</span>
+          <span id="oa-l5" class="out indent">
+            <span class="skill">/hyperframes</span><span class="skill">/hyperframes-cli</span><span class="skill">/hyperframes-registry</span><span class="skill">/gsap</span><span class="skill">/website-to-hyperframes</span>
+          </span>
+          <span class="blank"></span>
+          <span id="oa-l6" class="out dim">› Try: "Using /hyperframes, create a 5-second intro about [your topic]"</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#oa-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#oa-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#oa-term",     { y: 28, scale: 0.97, opacity: 0 }, 0);
+      tl.set("#oa-l1",       { x: -10, opacity: 0 }, 0);
+      tl.set("#oa-l2",       { x: -10, opacity: 0 }, 0);
+      tl.set("#oa-l3",       { x: -10, opacity: 0 }, 0);
+      tl.set("#oa-l4",       { x: -10, opacity: 0 }, 0);
+      tl.set("#oa-l5 .skill", { y: 8, opacity: 0 }, 0);
+      tl.set("#oa-l6",       { x: -10, opacity: 0 }, 0);
+
+      // Narration anchors:
+      //   "Open the project with your agent." +0.30
+      //   "cd my-video,"                       +2.17
+      //   "then run claude."                   +3.02-3.46
+      //   "It auto-loads the HyperFrames skills," +4.76
+      //   "so it knows the framework's patterns" +7.29
+      tl.to("#oa-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      tl.to("#oa-headline", { y: 0, opacity: 1, duration: 0.5 }, 0.25);
+      tl.to("#oa-term",     { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 0.5);
+      tl.to("#oa-l1",       { x: 0, opacity: 1, duration: 0.25 }, 2.10);    // "cd my-video"
+      tl.to("#oa-l2",       { x: 0, opacity: 1, duration: 0.25 }, 3.40);    // "claude"
+      tl.to("#oa-l3",       { x: 0, opacity: 1, duration: 0.30 }, 4.70);    // "It auto-loads"
+      tl.to("#oa-l4",       { x: 0, opacity: 1, duration: 0.30 }, 5.55);    // "the HyperFrames skills"
+      tl.to("#oa-l5 .skill",{ y: 0, opacity: 1, duration: 0.25, stagger: 0.18, ease: "back.out(1.4)" }, 6.20); // "skills,"
+      tl.to("#oa-l6",       { x: 0, opacity: 1, duration: 0.30 }, 9.0);     // "before you type a thing"
+
+      window.__timelines["scene-open-agent"] = tl;
+    </script>
+  </div>
+</template>

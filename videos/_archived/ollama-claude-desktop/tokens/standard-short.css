@@ -1,0 +1,89 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/standard/tokens/standard-short.css
+   Warm paper standard short (1080x1920) — palette + spacing + typography.
+
+   Brand-neutral baseline for any topic, intentionally warm and light to
+   contrast with the brand-specific dark-stage variants (anthropic / archon).
+   The aesthetic is "premium publication" — cream paper background, warm
+   near-black type, a 5-tier accent rotation tuned for serif-adjacent
+   sophistication: terracotta, indigo, sage, sunset gold, warm rose.
+
+   Per-video overrides go on a more specific selector (e.g. inside #root,
+   or a per-scene scope) — never edit this file in a video copy.
+
+   Scoped to :root (NOT #root) so every sub-composition wired via
+   data-composition-src inherits these vars without needing a wrapper.
+
+   USAGE:
+     - Linked once from index.html <head>:
+         <link rel="stylesheet" href="tokens/standard-short.css">
+     - Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface — pure white, Ollama-clean ───────────────────────────
+     Per-video override: matches Ollama's brand surface (white bg with
+     black text). Was cream #FBF7EF — terracotta accent + black silhouettes
+     still pop against pure white. */
+  --bg:             #FFFFFF;
+  --bg-card:        #FAFAFA;
+  --bg-surface:     #F2F2F2;
+  --bg-tint:        #E8E8E8;
+
+  --border:         rgba(43, 42, 40, 0.10);
+  --border-bright:  rgba(43, 42, 40, 0.20);
+  --shadow-warm:    0 12px 32px rgba(176, 124, 90, 0.18),
+                    0 2px 6px  rgba(43, 42, 40, 0.06);
+
+  /* ── Accents (Ollama-aligned monochrome + warm) ────────────────────
+     Ollama's brand is black + white + a single warm accent. We keep
+     the 5-tier var names so scene archetypes still get rotation, but
+     the colors collapse toward a near-monochrome warm grayscale with
+     terracotta as the only saturated lead. */
+  --accent-warm:    #E07A5F;   /* terracotta — single saturated lead */
+  --accent-deep:    #1A1A1A;   /* near-black — was indigo */
+  --accent-sage:    #6B7A6F;   /* warm gray-green — was bright sage */
+  --accent-gold:    #D9B88C;   /* muted warm tan — was sunset gold */
+  --accent-rose:    #C8917F;   /* dusty warm — was warm rose */
+  --accent-ink:     #0A0A0A;   /* near-pure black for the strongest contrast */
+
+  /* Convenience aliases — keep names that mirror anthropic-dark so lib
+     entries authored against either system stay portable. Override per
+     video by changing --accent-* above; aliases follow automatically. */
+  --primary:        var(--accent-warm);
+  --secondary:      var(--accent-deep);
+  --tertiary:       var(--accent-sage);
+  --highlight:      var(--accent-gold);
+  --pivot:          var(--accent-rose);
+
+  /* ── Text — Ollama monochrome ──────────────────────────────────────
+     Near-black on cream gives ~16:1 contrast (AAA) and mirrors the
+     Ollama llama logo's high-contrast silhouette. */
+  --text:           #0A0A0A;
+  --text-secondary: #4A4540;
+  --text-muted:     #807870;
+  --text-on-warm:   #FFFFFF;   /* on terracotta fills */
+  --text-on-deep:   #FBF7EF;   /* on near-black fills */
+
+  /* ── Pill chrome ─────────────────────────────────────────────────── */
+  --pill-bg:        rgba(43, 42, 40, 0.05);
+  --pill-border:    rgba(43, 42, 40, 0.15);
+
+  /* ── Spacing (1080x1920 safe-zone for vertical Shorts) ───────────── */
+  /* Per-video override: content envelope is shifted noticeably UP so the
+     image-card frames + bullets land in the upper-middle band. pad-top
+     140 still clears the top banner. pad-bottom 480 leaves the lower
+     ~25% of the canvas (y > 1440) free for the Dynamous badge
+     (y≈1480-1560) — content bottom never reaches the badge. */
+  --pad-top:        140px;
+  --pad-x:          80px;
+  --pad-bottom:     480px;
+
+  /* ── Type ──────────────────────────────────────────────────────────
+     Inter for sans (workhorse + display weights), Source Serif for
+     editorial pull-quotes (warmth + premium publication feel),
+     JetBrains Mono for technical/code/overline voice. */
+  --sans:           'Inter', system-ui, sans-serif;
+  --serif:          'Playfair Display', 'EB Garamond', Georgia, serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

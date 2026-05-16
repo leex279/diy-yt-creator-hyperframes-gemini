@@ -1,0 +1,1490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anthropic Agents for Financial Services</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark-stage Anthropic short.
+     Tokens copied from templates/shorts/anthropic.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    /* Bottom safe-zone reserves the area below y=1460 for the persistent
+       Dynamous badge (y=1480–1560 at left:60). 460px clears it with breath. */
+    --pad-bottom: 460px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Ambient orange wash */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* TOP CHROME */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* PHASE LAYERS */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2, #phase3, #phase4, #phase5, #phase6, #phase7, #phase8 {
+    z-index: 2; opacity: 0;
+  }
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — Hero + article screenshot card
+     ────────────────────────────────────────────────── */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 16px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 168px;
+    line-height: 0.92;
+    letter-spacing: -3px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+  }
+  #p1-source-card {
+    width: 880px;
+    z-index: 4;
+  }
+  #p1-source-chrome {
+    width: 100%;
+    background: rgba(28, 32, 44, 0.96);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    padding: 12px 22px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.78);
+    text-align: left;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  }
+  #p1-source-chrome::before {
+    content: "● ● ●";
+    color: rgba(255,255,255,0.30);
+    font-size: 14px;
+    letter-spacing: 5px;
+    margin-right: 16px;
+  }
+  #p1-source-img {
+    width: 880px;
+    height: 800px;
+    display: block;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    background: #fff;
+    object-fit: cover;
+    object-position: top center;
+  }
+  /* Stacked caption frames — opacity-swap so renderer's seek-based capture
+     picks up each variant without relying on tl.call() (which doesn't fire on seek). */
+  #p1-captions {
+    position: relative;
+    height: 56px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .cap-frame {
+    position: absolute;
+    top: 0;
+    padding: 12px 26px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — 10 templates list
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 14px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  .group-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+  .tpl-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 920px;
+  }
+  .tpl-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    border-radius: 16px;
+    text-align: left;
+  }
+  .tpl-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.16), rgba(233,116,88,0.04));
+    border: 1.5px solid rgba(233,116,88,0.40);
+  }
+  .tpl-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.16), rgba(167,139,250,0.04));
+    border: 1.5px solid rgba(167,139,250,0.40);
+  }
+  .tpl-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.16), rgba(107,154,239,0.04));
+    border: 1.5px solid rgba(107,154,239,0.40);
+  }
+  .tpl-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.16), rgba(125,211,166,0.04));
+    border: 1.5px solid rgba(125,211,166,0.40);
+  }
+  .tpl-num {
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 36px;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 56px;
+    text-align: center;
+  }
+  .tpl-card.orange .tpl-num { color: var(--orange); }
+  .tpl-card.purple .tpl-num { color: var(--purple); }
+  .tpl-card.blue .tpl-num { color: var(--blue); }
+  .tpl-card.green .tpl-num { color: var(--green); }
+  .tpl-name {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — Microsoft 365 + connector pills
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 26px;
+  }
+  #p3-overline { color: var(--blue); }
+  #p3-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 920px;
+  }
+  #p3-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 920px;
+  }
+  .m365-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 28px 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(245,241,235,0.06), rgba(245,241,235,0.02));
+    border: 1.5px solid rgba(245,241,235,0.16);
+    min-height: 200px;
+  }
+  .m365-icon {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 60px;
+    line-height: 1;
+  }
+  .m365-card.green .m365-icon { color: #7DD3A6; }
+  .m365-card.orange .m365-icon { color: #E97458; }
+  .m365-card.blue .m365-icon { color: #6B9AEF; }
+  .m365-card.purple .m365-icon { color: #A78BFA; }
+  .m365-app {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 36px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .m365-use {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  #p3-flow-stack {
+    position: relative;
+    height: 60px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .p3-flow-frame {
+    position: absolute;
+    top: 0;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    line-height: 1.2;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    padding: 12px 24px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(107,154,239,0.16), rgba(107,154,239,0.04));
+    border: 1.5px solid rgba(107,154,239,0.40);
+    white-space: nowrap;
+  }
+  #p3-connectors-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  #p3-connectors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    width: 940px;
+  }
+  .conn-pill {
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    color: var(--text);
+    background: rgba(167,139,250,0.16);
+    border: 1.5px solid rgba(167,139,250,0.40);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 / 6 — Quote cards (shared style)
+     ────────────────────────────────────────────────── */
+  .quote-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+  }
+  .q-overline { color: var(--orange); font-size: 40px; }
+  .quote-card {
+    width: 940px;
+    padding: 60px 56px 48px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, rgba(233,116,88,0.14), rgba(167,139,250,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 20px 56px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+    text-align: left;
+  }
+  .quote-mark {
+    position: absolute;
+    top: 8px;
+    left: 26px;
+    font-family: 'Georgia', serif;
+    font-weight: 900;
+    font-size: 180px;
+    line-height: 1;
+    color: var(--orange);
+    opacity: 0.35;
+  }
+  .quote-text {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.32;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    position: relative;
+    z-index: 2;
+  }
+  .quote-author {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1.5px solid rgba(245,241,235,0.18);
+    text-align: left;
+  }
+  .quote-author-name {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .quote-author-role {
+    margin-top: 6px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: var(--orange);
+  }
+  .quote-key-stack {
+    position: relative;
+    height: 70px;
+    margin-top: 6px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .quote-key {
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: -0.2px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(167,139,250,0.10));
+    border: 1.5px solid rgba(233,116,88,0.45);
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .p4-key-frame, .p6-key-frame {
+    position: absolute;
+    top: 0;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 5 — Embedded video clip (browser-frame chrome)
+     ────────────────────────────────────────────────── */
+  #phase5 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 26px;
+  }
+  #p5-overline { color: var(--purple); }
+  #p5-caption {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 48px;
+    line-height: 1.08;
+    color: var(--text);
+    max-width: 940px;
+  }
+  #p5-frame {
+    width: 980px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    box-shadow: 0 28px 80px rgba(0,0,0,0.70);
+  }
+  #p5-frame-chrome {
+    background: rgba(28, 32, 44, 0.96);
+    padding: 12px 22px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.78);
+    text-align: left;
+    border-bottom: 1.5px solid rgba(255,255,255,0.14);
+  }
+  #p5-frame-chrome::before {
+    content: "● ● ●";
+    color: rgba(255,255,255,0.30);
+    font-size: 14px;
+    letter-spacing: 5px;
+    margin-right: 16px;
+  }
+  #p5-video-wrap {
+    width: 980px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+  #p5-video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  #p5-source-line {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 7 — Receipts: 64% / 100% + named adopters
+     ────────────────────────────────────────────────── */
+  #phase7 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 26px;
+  }
+  #p7-overline { color: var(--orange); }
+  #p7-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  #p7-pills {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+  }
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 460px;
+    min-height: 280px;
+    padding: 36px 22px;
+    border-radius: 22px;
+  }
+  .stat-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.20), rgba(233,116,88,0.06));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  .stat-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.06));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 168px;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .stat-pill.orange .stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.40); }
+  .stat-pill.purple .stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .stat-label {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+  }
+  #p7-firms-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  #p7-tail {
+    margin-top: 8px;
+    padding: 12px 28px;
+    border-radius: 14px;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 38px;
+    letter-spacing: -0.2px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(167,139,250,0.06));
+    border: 1.5px solid rgba(233,116,88,0.40);
+  }
+  #p7-firms {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 920px;
+  }
+  .firm-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-radius: 14px;
+    background: rgba(245,241,235,0.06);
+    border: 1.5px solid rgba(245,241,235,0.14);
+  }
+  .firm-name {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .firm-tag {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 8 — CTA
+     ────────────────────────────────────────────────── */
+  #phase8 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 36px;
+  }
+  #p8-overline { color: var(--green); }
+  #p8-url {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 50px;
+    letter-spacing: 1px;
+    color: var(--text);
+    line-height: 1.1;
+    padding: 22px 32px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.25);
+    max-width: 940px;
+    word-break: break-word;
+  }
+  #p8-subscribe {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #p8-subscribe .arrow {
+    color: var(--orange);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 0.7;
+  }
+  #p8-bonus {
+    padding: 12px 26px;
+    border-radius: 14px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: -0.2px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(125,211,166,0.16), rgba(125,211,166,0.04));
+    border: 1.5px solid rgba(125,211,166,0.40);
+  }
+
+  /* ──────────────────────────────────────────────────
+     DYNAMOUS BADGE — shared/lib/components/dynamous-badge
+     ────────────────────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 360px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  /* DYNAMOUS endcard mount — overlays everything during the trailing 5s */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="167.45"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Dynamous badge (persistent, opt-in) -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Ambient warm wash -->
+  <div id="ambient"></div>
+
+  <!-- Shape backdrop (re-randomised per phase transition) -->
+  <div id="shape-backdrop"></div>
+
+  <!-- Top banner — Anthropic wordmark -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — Hero + article screenshot card  (0 → 19.87s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">ANTHROPIC NEWS · MAY 5, 2026</div>
+      <div id="p1-pre">Anthropic just shipped agents for</div>
+      <div id="p1-hero">FINANCE.</div>
+      <div id="p1-source-card">
+        <div id="p1-source-chrome">anthropic.com/news/finance-agents</div>
+        <img id="p1-source-img" src="assets/anthropic-finance-agents-source-page.png" alt="Anthropic finance-agents announcement" crossorigin="anonymous" />
+      </div>
+      <div id="p1-captions">
+        <div class="cap-frame" id="p1-cap-1">10 ready-to-run agent templates</div>
+        <div class="cap-frame" id="p1-cap-2">Pitchbooks &middot; Credit memos &middot; Month-end</div>
+        <div class="cap-frame" id="p1-cap-3">Live in Claude Cowork</div>
+        <div class="cap-frame" id="p1-cap-4">Cowork &middot; Code</div>
+        <div class="cap-frame" id="p1-cap-5">Cowork &middot; Code &middot; Managed Agents</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — 10 templates list  (20.27 → 44.38s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">TEN TEMPLATES</div>
+      <div id="p2-headline">Three categories. Ten agents.</div>
+
+      <div class="group-label" id="p2-group-1">Research &amp; Client Coverage</div>
+      <div class="tpl-row">
+        <div class="tpl-card orange" id="p2-tpl-1"><div class="tpl-num">01</div><div class="tpl-name">Pitch Builder</div></div>
+        <div class="tpl-card purple" id="p2-tpl-2"><div class="tpl-num">02</div><div class="tpl-name">Meeting Preparer</div></div>
+        <div class="tpl-card blue"   id="p2-tpl-3"><div class="tpl-num">03</div><div class="tpl-name">Earnings Reviewer</div></div>
+        <div class="tpl-card green"  id="p2-tpl-4"><div class="tpl-num">04</div><div class="tpl-name">Model Builder</div></div>
+      </div>
+
+      <div class="group-label" id="p2-group-2">Credit &amp; Compliance</div>
+      <div class="tpl-row">
+        <div class="tpl-card orange" id="p2-tpl-5"><div class="tpl-num">05</div><div class="tpl-name">Market Researcher</div></div>
+        <div class="tpl-card purple" id="p2-tpl-6"><div class="tpl-num">06</div><div class="tpl-name">KYC Screener</div></div>
+      </div>
+
+      <div class="group-label" id="p2-group-3">Finance Operations</div>
+      <div class="tpl-row">
+        <div class="tpl-card blue"   id="p2-tpl-7"><div class="tpl-num">07</div><div class="tpl-name">Valuation Reviewer</div></div>
+        <div class="tpl-card green"  id="p2-tpl-8"><div class="tpl-num">08</div><div class="tpl-name">General Ledger</div></div>
+        <div class="tpl-card orange" id="p2-tpl-9"><div class="tpl-num">09</div><div class="tpl-name">Month-End Closer</div></div>
+        <div class="tpl-card purple" id="p2-tpl-10"><div class="tpl-num">10</div><div class="tpl-name">Statement Auditor</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — Microsoft 365 + connectors  (44.78 → 76.78s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p3-overline">RUNS INSIDE 365</div>
+      <div id="p3-headline">Claude lives where finance work already happens.</div>
+      <div id="p3-grid">
+        <div class="m365-card green"  id="p3-app-1"><div class="m365-icon">X</div><div class="m365-app">Excel</div><div class="m365-use">Modeling · auditing</div></div>
+        <div class="m365-card orange" id="p3-app-2"><div class="m365-icon">P</div><div class="m365-app">PowerPoint</div><div class="m365-use">Auto-updating decks</div></div>
+        <div class="m365-card blue"   id="p3-app-3"><div class="m365-icon">W</div><div class="m365-app">Word</div><div class="m365-use">Credit memos</div></div>
+        <div class="m365-card purple" id="p3-app-4"><div class="m365-icon">O</div><div class="m365-app">Outlook</div><div class="m365-use">Inbox · drafting</div></div>
+      </div>
+      <div id="p3-flow-stack">
+        <div class="p3-flow-frame" id="p3-flow-1">Context carries automatically.</div>
+        <div class="p3-flow-frame" id="p3-flow-2">Plus a partner ecosystem.</div>
+      </div>
+      <div id="p3-connectors-label">Partner ecosystem</div>
+      <div id="p3-connectors">
+        <div class="conn-pill" id="p3-conn-1">S&amp;P</div>
+        <div class="conn-pill" id="p3-conn-2">MSCI</div>
+        <div class="conn-pill" id="p3-conn-3">PitchBook</div>
+        <div class="conn-pill" id="p3-conn-4">Morningstar</div>
+        <div class="conn-pill" id="p3-conn-5">LSEG</div>
+        <div class="conn-pill" id="p3-conn-6">Moody's MCP · 600M companies</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — Citadel quote card  (77.18 → 94.16s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content quote-content">
+      <div class="overline q-overline" id="p4-overline">CITADEL</div>
+      <div class="quote-card" id="p4-quote-card">
+        <div class="quote-mark">&#8220;</div>
+        <div class="quote-text" id="p4-quote-text">Our investment professionals live in data and analytical models, and Claude for Excel meets them there. Analysts use it to build coverage models, separate signal from noise, and pressure-test their work — all with a step-change in efficiency.</div>
+        <div class="quote-author">
+          <div class="quote-author-name">Atte Lahtiranta</div>
+          <div class="quote-author-role">Head of Core Engineering · Citadel</div>
+        </div>
+      </div>
+      <div class="quote-key-stack" id="p4-key-stack">
+        <div class="quote-key p4-key-frame" id="p4-key-1">Where analysts already live.</div>
+        <div class="quote-key p4-key-frame" id="p4-key-2">Coverage models. Pressure-tested.</div>
+        <div class="quote-key p4-key-frame" id="p4-key-3">Step-change in efficiency.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — YouTube clip embed  (94.56 → 106.09s)
+       Video plays seconds 30→40 of foxeK2AXfHQ (silent overlay).
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p5-overline">FROM THE LAUNCH VIDEO</div>
+      <div id="p5-caption">Watch the real workflow.</div>
+      <div id="p5-frame">
+        <div id="p5-frame-chrome">youtube.com/watch?v=foxeK2AXfHQ &nbsp;·&nbsp; 0:30 → 0:40</div>
+        <div id="p5-video-wrap">
+          <video id="p5-video"
+                 class="clip"
+                 src="assets/clips/announcement-30s-40s.mp4"
+                 muted
+                 data-start="95.20"
+                 data-duration="10"
+                 data-track-index="5"></video>
+        </div>
+      </div>
+      <div id="p5-source-line">Anthropic · "Agents for Financial Services"</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 6 — FIS quote card  (106.49 → 122.91s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content quote-content">
+      <div class="overline q-overline" id="p6-overline">FIS</div>
+      <div class="quote-card" id="p6-quote-card">
+        <div class="quote-mark">&#8220;</div>
+        <div class="quote-text" id="p6-quote-text">When we began to build AI agents, we knew we needed a provider we could trust. Anthropic was the clear choice. Together we're building an agent that compresses AML investigations from days to minutes.</div>
+        <div class="quote-author">
+          <div class="quote-author-name">Stephanie Ferris</div>
+          <div class="quote-author-role">CEO and President · FIS</div>
+        </div>
+      </div>
+      <div class="quote-key-stack" id="p6-key-stack">
+        <div class="quote-key p6-key-frame" id="p6-key-1">A provider they could trust.</div>
+        <div class="quote-key p6-key-frame" id="p6-key-2">Anthropic was the clear choice.</div>
+        <div class="quote-key p6-key-frame" id="p6-key-3">AML: days &rarr; minutes.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 7 — Receipts: 64% Vals AI · 100% Walleye  (123.31 → 151.23s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">THE RECEIPTS</div>
+      <div id="p7-headline">The numbers back it up.</div>
+      <div id="p7-pills">
+        <div class="stat-pill orange" id="p7-pill-1">
+          <div class="stat-num">64%</div>
+          <div class="stat-label">VALS AI FINANCE<br>BENCHMARK · OPUS 4.7</div>
+        </div>
+        <div class="stat-pill purple" id="p7-pill-2">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">WALLEYE CAPITAL<br>USES CLAUDE CODE</div>
+        </div>
+      </div>
+      <div id="p7-firms-label">More wins</div>
+      <div id="p7-firms">
+        <div class="firm-row" id="p7-firm-1">
+          <div class="firm-name">Carlyle</div>
+          <div class="firm-tag">Core part of AI tech stack</div>
+        </div>
+        <div class="firm-row" id="p7-firm-2">
+          <div class="firm-name">BNY</div>
+          <div class="firm-tag">Digital employees · case end-to-end</div>
+        </div>
+        <div class="firm-row" id="p7-firm-3">
+          <div class="firm-name">Travelers</div>
+          <div class="firm-tag">Elevated engineering excellence</div>
+        </div>
+      </div>
+      <div id="p7-tail">Every employee. AI-first.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 8 — CTA  (151.63 → 170.15s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">READ THE FULL POST</div>
+      <div id="p8-url">anthropic.com/news/finance-agents</div>
+      <div id="p8-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+      <div id="p8-bonus">10% off auto-applies via the link.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       DYNAMOUS ENDCARD MOUNT  (162.45 → 167.45s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="162.45"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX
+       ═══════════════════════════════════════════════════════ -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="160.95"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Phase 1 SFX -->
+  <audio id="sfx-impact-p1" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="1.69" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-p1to2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="19.77" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 2 SFX (template card pops on first / last reveals + transition whoosh) -->
+  <audio id="sfx-pop-p2-1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="25.36" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-pop-p2-10" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="41.64" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p2to3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="44.28" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 3 SFX -->
+  <audio id="sfx-pop-p3-excel" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="47.42" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-pop-p3-outlook" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="54.75" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p3to4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="76.68" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 4 SFX (Citadel quote reveal — track 4 to avoid overlap with whoosh on 3) -->
+  <audio id="sfx-pop-p4" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="77.13" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p4to5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="94.06" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 5 SFX (video frame entrance) -->
+  <audio id="sfx-pop-p5" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="94.96" data-duration="0.52" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p5to6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="105.99" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 6 SFX (FIS quote reveal — track 4 to avoid overlap with whoosh on 3) -->
+  <audio id="sfx-pop-p6" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="106.44" data-duration="0.52" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-p6to7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="122.81" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 7 SFX (stat pills + firm rows) -->
+  <audio id="sfx-scale-p7-1" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="128.30" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-scale-p7-2" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="144.04" data-duration="0.73" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-whoosh-p7to8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="151.13" data-duration="0.84" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Phase 8 SFX (URL slam) -->
+  <audio id="sfx-impact-p8" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="152.85" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─── Deterministic shape backdrop (xmur3-style hash) ───
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  // Dynamous badge entrance — t=3.0s, after the 3s hook
+  function addDynamousBadgeEntrance(tl) {
+    tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+  }
+
+  spawnShapes('anthropic-finance', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const totalDuration = 167.45;
+
+  // Ambient + progress + banner
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: totalDuration / 2, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: totalDuration, ease: "none" },
+    0);
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+  addDynamousBadgeEntrance(tl);
+
+  // Phase initial states — only phase1 visible at t=0
+  tl.set("#phase2", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase3", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase4", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase5", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase6", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase7", { visibility: "hidden", opacity: 0 }, 0);
+  tl.set("#phase8", { visibility: "hidden", opacity: 0 }, 0);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 — Hero + screenshot (0 → 19.87s)
+  // Source-card lands BEFORE the slam so the screenshot is the anchor;
+  // the FINANCE slam then punches in above it. No re-show — single entrance.
+  // Beats per .claude/rules/visual-pacing-5s.md keep gap ≤5s through 14s hold.
+  // ═══════════════════════════════════════════════════════
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.4);
+  tl.fromTo("#p1-source-card",
+    { y: 30, opacity: 0, scale: 0.95 },
+    { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power3.out", immediateRender: false },
+    0.6);
+  tl.from("#p1-pre",      { y: 26, opacity: 0, duration: 0.6, ease: "power3.out" }, 1.0);
+  tl.from("#p1-hero",     { scale: 0.78, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, 1.69);
+  tl.to("#p1-hero", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.85);
+  tl.to("#p1-hero", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.90);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.95);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 2.00);
+  // Stacked caption frames — initial state: only frame 1 visible, others opacity 0.
+  // Opacity swaps work under HF render's seek-based frame capture (where tl.call would not).
+  tl.set(["#p1-cap-2", "#p1-cap-3", "#p1-cap-4", "#p1-cap-5"], { opacity: 0 }, 0);
+  tl.from("#p1-cap-1", { y: 18, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.5);
+  // Morph 1 — workflow examples (anchor "pitchbook" at 10.72)
+  tl.to("#p1-cap-1", { opacity: 0, duration: 0.22, ease: "power2.in" }, 10.0);
+  tl.to("#p1-cap-2", { opacity: 1, duration: 0.22, ease: "power2.out" }, 10.30);
+  // Morph 2 — Cowork (anchor "Cowork" at 14.86)
+  tl.to("#p1-cap-2", { opacity: 0, duration: 0.20, ease: "power2.in" }, 14.66);
+  tl.to("#p1-cap-3", { opacity: 1, duration: 0.20, ease: "power2.out" }, 14.90);
+  // Morph 3 — Cowork · Code (anchor "Code" at 16.09)
+  tl.to("#p1-cap-3", { opacity: 0, duration: 0.18, ease: "power2.in" }, 15.95);
+  tl.to("#p1-cap-4", { opacity: 1, duration: 0.18, ease: "power2.out" }, 16.16);
+  // Morph 4 — full platform set (anchor "cookbooks" at 17.69)
+  tl.to("#p1-cap-4", { opacity: 0, duration: 0.18, ease: "power2.in" }, 17.55);
+  tl.to("#p1-cap-5", { opacity: 1, duration: 0.18, ease: "power2.out" }, 17.76);
+
+  // ─── Transition phase1 → phase2 at T1=19.47 ───
+  const T1 = 19.47;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — 10 templates (20.27 → 44.38s)
+  // Each card reveals on its narration anchor (step-by-step)
+  // ═══════════════════════════════════════════════════════
+  const P2 = 20.07;
+  tl.set([
+    "#p2-tpl-1","#p2-tpl-2","#p2-tpl-3","#p2-tpl-4",
+    "#p2-tpl-5","#p2-tpl-6",
+    "#p2-tpl-7","#p2-tpl-8","#p2-tpl-9","#p2-tpl-10"
+  ], { x: -40, scale: 0.94, opacity: 0 }, 0);
+  tl.set(["#p2-group-1","#p2-group-2","#p2-group-3"], { opacity: 0, y: 12 }, 0);
+
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.1);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.5);
+  tl.to("#p2-group-1", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P2 + 4.0);
+  // Cards reveal at narration anchors (transcript word starts)
+  tl.to("#p2-tpl-1",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 25.36);
+  tl.to("#p2-tpl-2",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 26.16);
+  tl.to("#p2-tpl-3",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 27.25);
+  tl.to("#p2-tpl-4",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 29.02);
+  tl.to("#p2-group-2", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 30.7);
+  tl.to("#p2-tpl-5",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 32.04);
+  tl.to("#p2-tpl-6",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 33.00);
+  tl.to("#p2-group-3", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 35.4);
+  tl.to("#p2-tpl-7",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 37.01);
+  tl.to("#p2-tpl-8",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 38.14);
+  tl.to("#p2-tpl-9",  { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 40.40);
+  tl.to("#p2-tpl-10", { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 41.64);
+
+  // ─── Transition phase2 → phase3 at T2=43.98 ───
+  const T2 = 43.98;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 — Microsoft 365 + connectors (44.78 → 76.78s)
+  // M365 cards anchor to spoken app names; connector pills to spoken brand names
+  // ═══════════════════════════════════════════════════════
+  const P3 = 44.58;
+  tl.set(["#p3-app-1","#p3-app-2","#p3-app-3","#p3-app-4"], { y: 28, scale: 0.9, opacity: 0 }, 0);
+  tl.set([
+    "#p3-conn-1","#p3-conn-2","#p3-conn-3","#p3-conn-4","#p3-conn-5","#p3-conn-6"
+  ], { y: 18, opacity: 0 }, 0);
+  tl.set(["#p3-connectors-label"], { opacity: 0 }, 0);
+
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3 + 0.1);
+  tl.from("#p3-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P3 + 0.5);
+
+  // Excel @ 47.47 / PowerPoint @ 50.79 / Word @ 52.68 / Outlook @ 54.80
+  tl.to("#p3-app-1", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 47.42);
+  tl.to("#p3-app-2", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 50.74);
+  tl.to("#p3-app-3", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 52.63);
+  tl.to("#p3-app-4", { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 54.75);
+  // Stacked flow frames — opacity-swap (seek-safe).
+  tl.set(["#p3-flow-1", "#p3-flow-2"], { opacity: 0 }, 0);
+  tl.to("#p3-flow-1", { opacity: 1, duration: 0.45, ease: "power2.out" }, 58.50);
+  // Morph to partner-tease at 61.5
+  tl.to("#p3-flow-1", { opacity: 0, duration: 0.20, ease: "power2.in" }, 61.50);
+  tl.to("#p3-flow-2", { opacity: 1, duration: 0.20, ease: "power2.out" }, 61.72);
+
+  // Connectors label appears with "partner ecosystem" line ~63.4s
+  tl.to("#p3-connectors-label", { opacity: 1, duration: 0.4, ease: "power2.out" }, 63.40);
+  // Pills reveal as each name is spoken (S&P @ 65.20 / MSCI @ 65.94 / PitchBook @ 66.93 / Morningstar @ 67.63 / LSEG @ 68.35 / Moody's @ 72.84)
+  tl.to("#p3-conn-1", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 65.15);
+  tl.to("#p3-conn-2", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 65.89);
+  tl.to("#p3-conn-3", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 66.88);
+  tl.to("#p3-conn-4", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 67.58);
+  tl.to("#p3-conn-5", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 68.30);
+  tl.to("#p3-conn-6", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 72.79);
+
+  // ─── Transition phase3 → phase4 at T3=76.38 ───
+  const T3 = 76.38;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0, duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 — Citadel quote (77.18 → 94.16s)
+  // 5s-rule beats fill the 16s static hold after quote-card lands.
+  // ═══════════════════════════════════════════════════════
+  const P4 = 76.98;
+  tl.from("#p4-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.1);
+  tl.from("#p4-quote-card", { y: 36, opacity: 0, scale: 0.95, duration: 0.7, ease: "power3.out" }, P4 + 0.5);
+  // Stacked key-phrase frames — opacity-swap (seek-safe).
+  tl.set(["#p4-key-1", "#p4-key-2", "#p4-key-3"], { opacity: 0 }, 0);
+  tl.to("#p4-key-1", { opacity: 1, duration: 0.45, ease: "power2.out" }, 82.50);
+  // Morph 1 → coverage-models takeaway
+  tl.to("#p4-key-1", { opacity: 0, duration: 0.20, ease: "power2.in" }, 87.50);
+  tl.to("#p4-key-2", { opacity: 1, duration: 0.20, ease: "power2.out" }, 87.72);
+  // Morph 2 → step-change takeaway
+  tl.to("#p4-key-2", { opacity: 0, duration: 0.20, ease: "power2.in" }, 92.00);
+  tl.to("#p4-key-3", { opacity: 1, duration: 0.20, ease: "power2.out" }, 92.22);
+
+  // ─── Transition phase4 → phase5 at T4=93.76 ───
+  const T4 = 93.76;
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0, duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T4 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 — Video clip (94.56 → 106.09s)
+  // The <video> element auto-plays via class="clip" + data-start.
+  // ═══════════════════════════════════════════════════════
+  const P5 = 94.56;
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P5 + 0.1);
+  tl.from("#p5-caption",  { y: 28, opacity: 0, duration: 0.6, ease: "power3.out" }, P5 + 0.4);
+  tl.from("#p5-frame",    { scale: 0.92, opacity: 0, duration: 0.6, ease: "power3.out" }, P5 + 0.6);
+  tl.from("#p5-source-line", { y: 14, opacity: 0, duration: 0.5, ease: "power2.out" }, P5 + 1.0);
+
+  // ─── Transition phase5 → phase6 at T5=105.69 ───
+  const T5 = 105.69;
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5", { opacity: 0, duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase6", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase6", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T5 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 6 — FIS quote (106.49 → 122.91s)
+  // 5s-rule beats — same pattern as P4.
+  // ═══════════════════════════════════════════════════════
+  const P6 = 106.29;
+  tl.from("#p6-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P6 + 0.1);
+  tl.from("#p6-quote-card", { y: 36, opacity: 0, scale: 0.95, duration: 0.7, ease: "power3.out" }, P6 + 0.5);
+  // Stacked key-phrase frames — opacity-swap (seek-safe).
+  tl.set(["#p6-key-1", "#p6-key-2", "#p6-key-3"], { opacity: 0 }, 0);
+  tl.to("#p6-key-1", { opacity: 1, duration: 0.45, ease: "power2.out" }, 112.50);
+  // Morph 1 → "Anthropic was the clear choice."
+  tl.to("#p6-key-1", { opacity: 0, duration: 0.20, ease: "power2.in" }, 117.50);
+  tl.to("#p6-key-2", { opacity: 1, duration: 0.20, ease: "power2.out" }, 117.72);
+  // Morph 2 → "AML: days → minutes."
+  tl.to("#p6-key-2", { opacity: 0, duration: 0.20, ease: "power2.in" }, 121.20);
+  tl.to("#p6-key-3", { opacity: 1, duration: 0.20, ease: "power2.out" }, 121.42);
+
+  // ─── Transition phase6 → phase7 at T6=122.51 ───
+  const T6 = 122.51;
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T6);
+  tl.to("#phase6", { opacity: 0, duration: 0.4, ease: "power1.in" }, T6 + 0.3);
+  tl.set("#phase6", { visibility: "hidden" }, T6 + 0.7);
+  tl.set("#phase7", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T6 + 0.4);
+  tl.to("#phase7", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T6 + 0.4);
+  tl.to("#phase7", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T6 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 7 — Receipts (123.31 → 151.23s)
+  // Stat 1 anchored to "64" at 128.36s, Stat 2 anchored to "100" at 144.09s
+  // Firm rows anchored to Carlyle / BNY / Travelers
+  // ═══════════════════════════════════════════════════════
+  const P7 = 123.11;
+  tl.set("#p7-pill-1", { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p7-pill-2", { scale: 0.85, opacity: 0 }, 0);
+  tl.set(["#p7-firm-1","#p7-firm-2","#p7-firm-3"], { x: -32, opacity: 0 }, 0);
+  tl.set(["#p7-firms-label"], { opacity: 0 }, 0);
+
+  tl.from("#p7-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P7 + 0.1);
+  tl.from("#p7-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P7 + 0.5);
+  tl.to("#p7-pill-1", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 128.30);
+  tl.to("#p7-firms-label", { opacity: 1, duration: 0.4, ease: "power2.out" }, 130.00);
+  tl.to("#p7-firm-1", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 130.23);  // Carlyle
+  tl.to("#p7-firm-2", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 134.27);  // BNY
+  tl.to("#p7-firm-3", { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 139.40);  // Travelers
+  tl.to("#p7-pill-2", { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 144.04);
+  // Content beat — tail caption "Every employee. AI-first." enters at "every" (149.51)
+  tl.set("#p7-tail", { opacity: 0, y: 14 }, 0);
+  tl.to("#p7-tail", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 149.40);
+
+  // ─── Transition phase7 → phase8 at T7=150.83 ───
+  const T7 = 150.83;
+  tl.to("#phase7", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T7);
+  tl.to("#phase7", { opacity: 0, duration: 0.4, ease: "power1.in" }, T7 + 0.3);
+  tl.set("#phase7", { visibility: "hidden" }, T7 + 0.7);
+  tl.set("#phase8", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T7 + 0.4);
+  tl.to("#phase8", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T7 + 0.4);
+  tl.to("#phase8", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T7 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 8 — CTA (151.63 → 160.94s, ~9.3s)
+  // URL slam anchored to "anthropic" at 152.90s.
+  // Subscribe pill enters after "agents." (156.17) before "If you want…" line.
+  // ═══════════════════════════════════════════════════════
+  const P8 = 151.43;
+  tl.from("#p8-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P8 + 0.1);
+  tl.from("#p8-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, 152.85);
+  tl.from("#p8-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 156.40);
+  // Content beat — bonus chip "10% off auto-applies" enters at "dynamous" anchor (159.26)
+  tl.set("#p8-bonus", { opacity: 0, y: 14 }, 0);
+  tl.to("#p8-bonus", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 159.10);
+
+  // ═══════════════════════════════════════════════════════
+  // DYNAMOUS endcard handoff — fade phase 8 + badge 0.5s before endcard
+  // Endcard fires at totalDuration - 5 = 162.45s  →  fade at 161.95s
+  // ═══════════════════════════════════════════════════════
+  tl.to("#phase8",         { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 161.95);
+  tl.to("#dynamous-badge", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 161.95);
+
+  // Re-randomise shape backdrop at every phase transition
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'anthropic-finance',
+    [T1, T2, T3, T4, T5, T6, T7]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

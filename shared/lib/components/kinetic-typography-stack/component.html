@@ -1,0 +1,178 @@
+<!--
+  shared/lib/components/kinetic-typography-stack/component.html
+  3–4 words slam in vertically stacked with back.out(1.7) spring + 4-tick
+  inline shake on each; rhythmic stagger. Words sourced from
+  [data-stack-words] JSON array attribute. Words appear in sequence at
+  +stagger each. Last word holds 1s before fade.
+
+  COMPONENT IS PASTE-IN — three sections below. Merge each section into
+  the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste the stack container into your composition root.
+     Set data-stack-words to a JSON array of word strings.
+-->
+
+<div class="kts-stack" id="kts-stack"
+     data-stack-words='["FAST.","BOLD.","DONE."]'>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block:
+-->
+
+<style>
+  /* shared/lib/components/kinetic-typography-stack — keep this comment block */
+
+  .kts-stack {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Individual word rows — injected by addKineticTypographyStack */
+  .kts-word {
+    font-family: var(--sans, 'Inter', system-ui, sans-serif);
+    font-weight: 900;
+    font-size: var(--kts-size, 160px);
+    line-height: 0.92;
+    letter-spacing: -5px;
+    color: var(--accent, #E97458);
+    text-shadow:
+      0 0 80px rgba(233, 116, 88, 0.4),
+      0 6px 28px rgba(0, 0, 0, 0.6);
+    user-select: none;
+    white-space: nowrap;
+    opacity: 0;
+    transform-origin: center center;
+    /* Accent color alternation via CSS var override on nth-child */
+  }
+
+  /* Second word gets accent-2 if set */
+  .kts-word:nth-child(2) {
+    color: var(--kts-accent2, var(--purple, #A78BFA));
+    text-shadow:
+      0 0 80px rgba(167, 139, 250, 0.4),
+      0 6px 28px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Third word gets accent-3 if set */
+  .kts-word:nth-child(3) {
+    color: var(--kts-accent3, var(--blue, #60A5FA));
+    text-shadow:
+      0 0 80px rgba(96, 165, 250, 0.4),
+      0 6px 28px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Fourth word gets accent-4 if set */
+  .kts-word:nth-child(4) {
+    color: var(--kts-accent4, var(--green, #4ADE80));
+    text-shadow:
+      0 0 80px rgba(74, 222, 128, 0.4),
+      0 6px 28px rgba(0, 0, 0, 0.6);
+  }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addKineticTypographyStack(tl, "#kts-stack", 8.0);
+       addKineticTypographyStack(tl, "#kts-stack", 8.0, { stagger: 0.4 });
+
+     The function reads data-stack-words JSON from the container, builds
+     word div elements, then schedules the reveal sequence.
+
+     Wire SFX in host index.html:
+       impact-slam per word, stagger matches visual. For 3 words:
+         impact-slam at `at + 0.0` on track-index 3
+         impact-slam at `at + 0.4` on track-index 4
+         impact-slam at `at + 0.8` on track-index 5
+     See recipe.md for the full <audio> snippets.
+-->
+
+<script>
+  function addKineticTypographyStack(tl, sel, at, opts) {
+    var options = opts || {};
+    var stagger = options.stagger !== undefined ? options.stagger : 0.4;
+    var holdSec = options.holdSec !== undefined ? options.holdSec : 1.0;
+
+    var container = document.querySelector(sel);
+    if (!container) return;
+
+    // Parse words from data attribute
+    var words = [];
+    try {
+      words = JSON.parse(container.dataset.stackWords || '[]');
+    } catch (e) {
+      words = ['WORD'];
+    }
+    if (!words.length) return;
+
+    // Build word divs
+    container.innerHTML = '';
+    var wordEls = [];
+    for (var i = 0; i < words.length; i++) {
+      var div = document.createElement('div');
+      div.className = 'kts-word';
+      div.textContent = words[i];
+      container.appendChild(div);
+      wordEls.push(div);
+    }
+
+    // ── t=0: hide all words explicitly (hidden-until-reveal) ──
+    for (var j = 0; j < wordEls.length; j++) {
+      tl.set(wordEls[j], { opacity: 0, scale: 0.72, y: 40 }, 0);
+    }
+    tl.set(sel, { opacity: 1 }, 0); // container itself visible
+
+    // ── Reveal each word at stagger intervals ──
+    for (var k = 0; k < wordEls.length; k++) {
+      (function(idx) {
+        var wordAt = at + idx * stagger;
+        var wSel   = wordEls[idx];
+
+        // Slam in: back.out(1.7) spring from below
+        tl.to(wSel, {
+          opacity:  1,
+          scale:    1.0,
+          y:        0,
+          duration: 0.55,
+          ease:     'back.out(1.7)'
+        }, wordAt);
+
+        // 4-tick inline shake on land (x offsets)
+        tl.to(wSel, { x:  6, duration: 0.04, ease: 'none' }, wordAt + 0.05);
+        tl.to(wSel, { x: -6, duration: 0.04, ease: 'none' }, wordAt + 0.09);
+        tl.to(wSel, { x:  4, duration: 0.04, ease: 'none' }, wordAt + 0.13);
+        tl.to(wSel, { x:  0, duration: 0.04, ease: 'none' }, wordAt + 0.17);
+      })(k);
+    }
+
+    // ── Fade all words out after last word + holdSec ──
+    var lastWordAt = at + (wordEls.length - 1) * stagger;
+    var fadeOutAt  = lastWordAt + 0.55 + holdSec; // after last slam settles + hold
+
+    for (var m = 0; m < wordEls.length; m++) {
+      tl.to(wordEls[m], {
+        opacity:  0,
+        y:        -20,
+        duration: 0.45,
+        ease:     'power2.in'
+      }, fadeOutAt + m * 0.04); // slight cascade on exit
+    }
+  }
+  // End addKineticTypographyStack
+</script>

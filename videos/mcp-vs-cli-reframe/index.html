@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>MCP vs CLI: The Debate Everyone Got Wrong</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    perspective: 2000px;
+  }
+
+  /* ── Layer 0 — base wash (dampened) ──────────────────── */
+  #ambient {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(900px 700px at 88% 92%, rgba(251, 146, 60, 0.05), transparent 60%),
+      radial-gradient(900px 700px at 12% 8%,  rgba(34, 211, 238, 0.04), transparent 60%),
+      radial-gradient(1200px 800px at 50% 130%, rgba(167, 139, 250, 0.03), transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layer 1 — code grid (dampened to barely-visible) ── */
+  #code-grid {
+    position: absolute;
+    inset: -2px;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.012) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.010) 1px, transparent 1px);
+    background-size: 56px 56px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse 1300px 850px at 50% 50%, black 25%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 1300px 850px at 50% 50%, black 25%, transparent 85%);
+  }
+
+  /* ── Layer 1b — token field (dampened ~60%) ──────────── */
+  #token-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #token-field .tk {
+    position: absolute;
+    font-family: var(--mono);
+    font-weight: 500;
+    color: rgba(167, 139, 250, 0.055);
+    user-select: none;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  #token-field .tk.a { color: rgba(34, 211, 238, 0.042); }
+  #token-field .tk.b { color: rgba(251, 146, 60, 0.042); }
+  #token-field .tk.c { color: rgba(250, 204, 21, 0.038); }
+  #token-field .tk.d { color: rgba(167, 139, 250, 0.042); }
+
+  /* ── Layer 2 — animated scanbeam (dampened) ──────────── */
+  #scanbeam {
+    position: absolute;
+    left: -300px;
+    top: 0;
+    width: 380px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(34, 211, 238, 0.012) 30%,
+      rgba(34, 211, 238, 0.045) 50%,
+      rgba(34, 211, 238, 0.012) 70%,
+      transparent 100%);
+    mix-blend-mode: screen;
+    opacity: 0;
+  }
+
+  /* ── Layer 3 — vignette (slightly stronger to push bg back) ── */
+  #vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background:
+      radial-gradient(ellipse 1600px 1100px at 50% 50%, transparent 45%, rgba(0,0,0,0.65) 100%);
+  }
+
+  /* ── Layer 9 — film grain (dampened) ─────────────────── */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+  }
+
+  /* ── Top chrome ──────────────────────────────────────── */
+  #top-chrome {
+    position: absolute;
+    top: 30px;
+    left: 60px;
+    right: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 18px;
+    letter-spacing: 1.5px;
+  }
+  #top-chrome .prompt { display: flex; align-items: center; gap: 14px; color: var(--text-secondary); font-weight: 600; }
+  #top-chrome .prompt .dots { display: flex; gap: 6px; }
+  #top-chrome .prompt .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+  #top-chrome .prompt .dot.r { background: #ef4444; }
+  #top-chrome .prompt .dot.y { background: var(--accent-stat); }
+  #top-chrome .prompt .dot.g { background: var(--accent-4); }
+  #top-chrome .prompt .path { color: var(--text-secondary); }
+  #top-chrome .prompt .cmd { color: var(--text); font-weight: 700; }
+  #top-chrome .prompt .cmd .accent { color: var(--accent-warn); }
+  #top-chrome .prompt .caret {
+    display: inline-block; width: 11px; height: 22px;
+    background: var(--accent-stat); vertical-align: middle; margin-left: 6px;
+    box-shadow: 0 0 12px var(--glow-yellow);
+  }
+  #top-chrome .strap { color: var(--text-muted); font-weight: 500; letter-spacing: 4px; text-transform: uppercase; font-size: 13px; }
+  #top-chrome .strap .sep { color: var(--text-dim); margin: 0 10px; }
+  #top-chrome .strap .live { display: inline-flex; align-items: center; gap: 8px; color: var(--accent-warn); font-weight: 700; }
+  #top-chrome .strap .live::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-warn); box-shadow: 0 0 10px var(--glow-orange);
+  }
+
+  /* ── Bottom rail ─────────────────────────────────────── */
+  #bottom-rail {
+    position: absolute; bottom: 0; left: 0;
+    width: 1920px; height: 36px;
+    z-index: 10; pointer-events: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 60px;
+    font-family: var(--mono); font-size: 13px;
+    letter-spacing: 2px; color: var(--text-muted);
+    font-weight: 600; text-transform: uppercase;
+  }
+  #bottom-rail .seg { display: flex; align-items: center; gap: 14px; }
+  #bottom-rail .seg .accent { color: var(--accent-stat); }
+  #bottom-rail .seg .ts { color: var(--text-secondary); font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+  #progress-track {
+    position: absolute; bottom: 0; left: 0;
+    width: 1920px; height: 4px;
+    background: rgba(255, 255, 255, 0.05); z-index: 10;
+  }
+  #progress-fill {
+    width: 0; height: 100%;
+    background: linear-gradient(90deg, var(--accent-warn) 0%, var(--accent-stat) 60%, var(--accent-2) 100%);
+    box-shadow: 0 0 14px var(--glow-orange);
+  }
+
+  /* ── Side rails (dampened) ───────────────────────────── */
+  .side-rail {
+    position: absolute; top: 80px; bottom: 50px; width: 1px;
+    background: linear-gradient(to bottom,
+      transparent 0%, rgba(255,255,255,0.04) 10%, rgba(255,255,255,0.04) 90%, transparent 100%);
+    pointer-events: none; z-index: 1;
+  }
+  .side-rail.left { left: 30px; }
+  .side-rail.right { right: 30px; }
+  .rail-ticks {
+    position: absolute; top: 100px; bottom: 80px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px;
+    color: rgba(255, 255, 255, 0.12); letter-spacing: 1px;
+    z-index: 1; pointer-events: none;
+  }
+  .rail-ticks.left { left: 38px; }
+  .rail-ticks.right { right: 38px; text-align: right; }
+
+  /* ── Sub-composition wrappers (3D perspective) ──────── */
+  .scene-wrapper {
+    position: absolute; top: 0; left: 0;
+    width: 1920px; height: 1080px;
+    z-index: 3;
+    transform-style: preserve-3d;
+  }
+  #scene-hook-wrap         { z-index: 3; opacity: 1; }
+  #scene-image-hero-wrap   { z-index: 3; opacity: 0; visibility: hidden; }
+  #scene-side-by-side-wrap { z-index: 3; opacity: 0; visibility: hidden; }
+  #scene-stat-pill-row-wrap{ z-index: 3; opacity: 0; visibility: hidden; }
+  #scene-arch-stack-wrap   { z-index: 3; opacity: 0; visibility: hidden; }
+  #scene-source-cards-wrap { z-index: 3; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap          { z-index: 3; opacity: 0; visibility: hidden; }
+
+  #captions-wrap {
+    position: absolute; inset: 0;
+    z-index: 9; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="532"
+     data-width="1920"
+     data-height="1080">
+
+  <div id="ambient"></div>
+  <div id="code-grid"></div>
+  <div id="token-field"></div>
+  <div id="scanbeam"></div>
+
+  <div class="side-rail left"></div>
+  <div class="side-rail right"></div>
+  <div class="rail-ticks left">
+    <span>L01</span><span>L02</span><span>L03</span><span>L04</span><span>L05</span>
+    <span>L06</span><span>L07</span><span>L08</span><span>L09</span><span>L10</span>
+  </div>
+  <div class="rail-ticks right">
+    <span>TKN</span><span>0x01</span><span>0x02</span><span>0x03</span><span>0x04</span>
+    <span>0x05</span><span>0x06</span><span>0x07</span><span>0x08</span><span>EOF</span>
+  </div>
+
+  <div id="top-chrome">
+    <div class="prompt">
+      <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <span class="path">~/smartcode<span style="color: var(--accent-warn);">.</span>diy/labs</span>
+      <span style="color: var(--accent-stat);">$</span>
+      <span class="cmd">mcp <span class="accent">vs</span> cli</span>
+      <span class="caret" id="top-caret"></span>
+    </div>
+    <div class="strap">
+      <span class="live">REFRAME</span>
+      <span class="sep">·</span>
+      <span>EP.07 · LONG-FORM</span>
+    </div>
+  </div>
+
+  <div id="vignette"></div>
+
+  <div id="scene-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-image-hero-wrap" class="scene-wrapper"
+       data-composition-id="scene-image-hero"
+       data-composition-src="compositions/scene-image-hero.html"
+       data-start="45.5"
+       data-track-index="1"></div>
+
+  <div id="scene-side-by-side-wrap" class="scene-wrapper"
+       data-composition-id="scene-side-by-side"
+       data-composition-src="compositions/scene-side-by-side.html"
+       data-start="84.1"
+       data-track-index="1"></div>
+
+  <div id="scene-stat-pill-row-wrap" class="scene-wrapper"
+       data-composition-id="scene-stat-pill-row"
+       data-composition-src="compositions/scene-stat-pill-row.html"
+       data-start="170.5"
+       data-track-index="1"></div>
+
+  <div id="scene-arch-stack-wrap" class="scene-wrapper"
+       data-composition-id="scene-architecture-stack"
+       data-composition-src="compositions/scene-architecture-stack.html"
+       data-start="238.8"
+       data-track-index="1"></div>
+
+  <div id="scene-source-cards-wrap" class="scene-wrapper"
+       data-composition-id="scene-source-cards"
+       data-composition-src="compositions/scene-source-cards.html"
+       data-start="320.6"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="412.6"
+       data-track-index="1"></div>
+
+  <div id="bottom-rail">
+    <div class="seg">
+      <span class="accent">▍</span>
+      <span>HYPERFRAMES</span>
+      <span style="color: var(--text-dim);">·</span>
+      <span>1920×1080 · 30FPS</span>
+    </div>
+    <div class="seg">
+      <span class="ts" id="time-cur">00:00</span>
+      <span style="color: var(--text-dim);">/</span>
+      <span class="ts">08:50</span>
+    </div>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="529.9"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Cinematic-whoosh SFX — one per scene transition. -->
+  <audio id="sfx-whoosh-t1" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="45.1" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="83.7" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="170.1" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="238.4" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="320.2" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="412.2" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Film grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // Deterministic xmur3 hash
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  /* Token field — 30 tokens at low opacity, far behind main content. */
+  function spawnTokenField(seedPrefix, container) {
+    const tokens = [
+      'tools.read', 'mcp.invoke()', 'curl -sS', 'oauth/token',
+      'import {fetch}', '@tools/github', '@tools/slack', 'execute()',
+      'search()', 'tokens=2k', 'ctx.win', 'schema.json',
+      'await fn()', 'agent.step', 'sandbox.run', 'L1 → L5',
+      'bash $PATH', '150k → 2k', '0x7f3a', 'json-rpc',
+      'typed.import', 'mcp://server', '99.9%', '16,506 tk',
+      '443s', 'session_id', '~/.config', 'transport', 'stdio',
+      '101 tools'
+    ];
+    const tiers = ['', 'a', 'b', 'c', 'd'];
+    const count = 30, W = 1920, H = 1080;
+    for (let i = 0; i < count; i++) {
+      const seed = seedPrefix + '-tk-' + i;
+      const x = Math.floor(seedHash(seed + '-x') * (W - 200));
+      const y = Math.floor(seedHash(seed + '-y') * (H - 30));
+      const idx = Math.floor(seedHash(seed + '-w') * tokens.length);
+      const tier = tiers[Math.floor(seedHash(seed + '-t') * tiers.length)];
+      const size = 10 + Math.floor(seedHash(seed + '-s') * 5);
+      const el = document.createElement('span');
+      el.className = 'tk ' + tier;
+      el.textContent = tokens[idx];
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.fontSize = size + 'px';
+      container.appendChild(el);
+    }
+  }
+
+  function animateTokenDrift(tl, container, seedPrefix, totalDuration) {
+    const els = container.querySelectorAll('.tk');
+    els.forEach((el, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dy = -6 - seedHash(seed + '-dy') * 14;
+      const dur = 24 + seedHash(seed + '-dur') * 14;
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(el, {
+        y: dy,
+        duration: dur,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: repeatCount
+      }, seedHash(seed + '-d') * 4);
+    });
+  }
+
+  function animateScanbeam(tl, totalDuration) {
+    const passCount = Math.floor(totalDuration / 28);
+    for (let i = 0; i < passCount; i++) {
+      const t = 6 + i * 28;
+      tl.fromTo("#scanbeam",
+        { x: -400, opacity: 0 },
+        { x: 2000, opacity: 1, duration: 6.5, ease: "power1.inOut", immediateRender: false },
+        t);
+      tl.to("#scanbeam", { opacity: 0, duration: 0.4, ease: "power1.in", immediateRender: false }, t + 6.4);
+    }
+  }
+
+  function animateTopCaret(tl, totalDuration) {
+    const cycle = 1.0;
+    const blinks = Math.floor(totalDuration / cycle);
+    tl.to("#top-caret", {
+      opacity: 0.15,
+      duration: cycle / 2,
+      ease: "steps(1)",
+      yoyo: true,
+      repeat: blinks * 2 - 1,
+      immediateRender: false
+    }, 0);
+  }
+
+  function animateTimeCounter(tl, totalDuration) {
+    const obj = { t: 0 };
+    tl.to(obj, {
+      t: totalDuration,
+      duration: totalDuration,
+      ease: "none",
+      onUpdate: () => {
+        const s = Math.floor(obj.t);
+        const mm = String(Math.floor(s / 60)).padStart(2, '0');
+        const ss = String(s % 60).padStart(2, '0');
+        const el = document.getElementById('time-cur');
+        if (el) el.textContent = mm + ':' + ss;
+      }
+    }, 0);
+  }
+
+  /* 3D crossfade between two scene wrappers — outgoing rotates away,
+     incoming rotates in from the opposite side. */
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { rotationY: -10, filter: "blur(14px)", scale: 1.03, duration: 0.55, ease: "power2.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.35);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.8);
+    tl.set(toSel,   { rotationY: 12, filter: "blur(14px)", scale: 0.96, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.4, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.45);
+    tl.to(toSel,    { rotationY: 0, filter: "blur(0px)", scale: 1, duration: 0.65, ease: "power2.out", overwrite: "auto" }, atTime + 0.55);
+  }
+
+  /* Relayout token-field on each scene transition — paired with whoosh SFX. */
+  function relayoutTokenField(tl, container, seedPrefix, sceneIdx, atTime) {
+    tl.to(container, { opacity: 0, duration: 0.35, ease: "power1.in", immediateRender: false }, atTime - 0.05);
+    tl.call(() => {
+      while (container.firstChild) container.removeChild(container.firstChild);
+      spawnTokenField(seedPrefix + '-s' + sceneIdx, container);
+    }, [], atTime + 0.55);
+    tl.set(container, { opacity: 0 }, atTime + 0.55);
+    tl.to(container, { opacity: 1, duration: 0.7, ease: "power2.out", immediateRender: false }, atTime + 0.65);
+  }
+
+  spawnTokenField('mcp-vs-cli-reframe', document.getElementById('token-field'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 532;
+  const tl = gsap.timeline({ paused: true });
+
+  const breathDur = 26;
+  const breathRepeats = Math.max(0, Math.floor(TOTAL_DURATION / breathDur) - 1);
+  tl.fromTo("#ambient",
+    { opacity: 0.85 },
+    { opacity: 1.0, duration: breathDur, ease: "sine.inOut", yoyo: true, repeat: breathRepeats },
+    0);
+
+  animateTokenDrift(tl, document.getElementById('token-field'), 'mcp-vs-cli-reframe', TOTAL_DURATION);
+  animateScanbeam(tl, TOTAL_DURATION);
+  animateTopCaret(tl, TOTAL_DURATION);
+  animateTimeCounter(tl, TOTAL_DURATION);
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#top-chrome", { y: -20, opacity: 0, duration: 0.8, ease: "power2.out" }, 0.2);
+  tl.from("#bottom-rail", { y: 20, opacity: 0, duration: 0.8, ease: "power2.out" }, 0.4);
+
+  // Scene labels match wrapper data-start values (computed from ElevenLabs transcript)
+  tl.addLabel("hook",          0)
+    .addLabel("image-hero",    45.5)
+    .addLabel("side-by-side",  84.1)
+    .addLabel("stat-pills",    170.5)
+    .addLabel("arch-stack",    238.8)
+    .addLabel("source-cards",  320.6)
+    .addLabel("cta",           412.6);
+
+  crossfadeScenes(tl, "#scene-hook-wrap",          "#scene-image-hero-wrap",   "image-hero-=0.4");
+  crossfadeScenes(tl, "#scene-image-hero-wrap",    "#scene-side-by-side-wrap", "side-by-side-=0.4");
+  crossfadeScenes(tl, "#scene-side-by-side-wrap",  "#scene-stat-pill-row-wrap","stat-pills-=0.4");
+  crossfadeScenes(tl, "#scene-stat-pill-row-wrap", "#scene-arch-stack-wrap",   "arch-stack-=0.4");
+  crossfadeScenes(tl, "#scene-arch-stack-wrap",    "#scene-source-cards-wrap", "source-cards-=0.4");
+  crossfadeScenes(tl, "#scene-source-cards-wrap",  "#scene-cta-wrap",          "cta-=0.4");
+
+  const __tf = document.getElementById('token-field');
+  relayoutTokenField(tl, __tf, 'mcp-vs-cli-reframe', 1, 45.1);
+  relayoutTokenField(tl, __tf, 'mcp-vs-cli-reframe', 2, 83.7);
+  relayoutTokenField(tl, __tf, 'mcp-vs-cli-reframe', 3, 170.1);
+  relayoutTokenField(tl, __tf, 'mcp-vs-cli-reframe', 4, 238.4);
+  relayoutTokenField(tl, __tf, 'mcp-vs-cli-reframe', 5, 320.2);
+  relayoutTokenField(tl, __tf, 'mcp-vs-cli-reframe', 6, 412.2);
+
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+
+<!-- Standalone fallback for previewing outside the hyperframes runtime -->
+<script>
+(async function fallbackLoadScenes() {
+  if (window.__hyperframesRuntime) return;
+  const wraps = document.querySelectorAll('[data-composition-src]');
+  for (const wrap of wraps) {
+    const src = wrap.dataset.compositionSrc;
+    if (!src) continue;
+    try {
+      const r = await fetch(src);
+      const html = await r.text();
+      const m = html.match(/<template[^>]*>([\s\S]*?)<\/template>/);
+      if (!m) continue;
+      const holder = document.createElement('div');
+      holder.style.cssText = 'position:absolute; inset:0;';
+      holder.innerHTML = m[1];
+      wrap.appendChild(holder);
+      const scripts = Array.from(holder.querySelectorAll('script'));
+      for (const old of scripts) {
+        await new Promise((resolve) => {
+          const s = document.createElement('script');
+          for (const a of old.attributes) s.setAttribute(a.name, a.value);
+          if (old.src) {
+            s.onload = resolve; s.onerror = resolve;
+            document.head.appendChild(s);
+          } else {
+            s.textContent = old.textContent;
+            old.parentNode.insertBefore(s, old);
+            resolve();
+          }
+          old.remove();
+        });
+      }
+    } catch (e) { /* noop */ }
+  }
+  if (window.__timelines && window.__timelines.main) {
+    window.__timelines.main.play(0);
+  }
+})();
+</script>
+</body>
+</html>

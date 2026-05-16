@@ -1,0 +1,126 @@
+<!--
+  scene-verify.html — terminal-style verify scene with real local output.
+  Tightened to fit within 1920x1080 safe-zone (no overflow into top-banner).
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-verify-template">
+  <div data-composition-id="scene-verify"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #verify-content {
+        width:100%; height:100%;
+        padding: 110px var(--pad-x) 110px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 28px; box-sizing:border-box;
+      }
+      #verify-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:10px; text-align:center;
+      }
+      #verify-content .overline {
+        font-family: var(--mono); font-weight: 700;
+        font-size: 24px; letter-spacing: 6px;
+        text-transform: uppercase; color: var(--accent-4);
+      }
+      #verify-content .headline {
+        font-family: var(--sans); font-weight: 800;
+        font-size: 48px; line-height: 1.05;
+        letter-spacing: -1px; color: var(--text);
+      }
+      .verify-term {
+        width: 1180px;
+        background: rgba(0, 0, 0, 0.72);
+        border: 1.5px solid var(--border-bright);
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        font-family: var(--mono);
+      }
+      .verify-term .term-bar {
+        background: rgba(255,255,255,0.06);
+        padding: 10px 16px;
+        font-weight: 700; font-size: 14px;
+        letter-spacing: 2px; text-transform: uppercase;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+        display:flex; align-items:center; gap: 8px;
+      }
+      .verify-term .dot {
+        display:inline-block; width:11px; height:11px; border-radius:50%;
+        background:#ff5f57; margin-right:5px;
+      }
+      .verify-term .dot.y { background:#febc2e; }
+      .verify-term .dot.g { background:#28c840; }
+      .verify-term .term-body {
+        padding: 18px 22px;
+        font-size: 19px; line-height: 1.5;
+        color: var(--text);
+      }
+      .verify-term .prompt { color: var(--text-secondary); margin-right: 8px; }
+      .verify-term .cmd-text { color: var(--accent-stat); font-weight: 700; }
+      .verify-term .out { display:block; color: var(--text); margin-top: 2px; }
+      .verify-term .out.ok { color: var(--accent-4); font-weight: 700; }
+      .verify-term .out.dim { color: var(--text-secondary); font-size: 16px; }
+      .verify-term .blank { display:block; height: 10px; }
+      #verify-note {
+        font-family: var(--mono); font-weight: 600;
+        font-size: 19px; letter-spacing: 1px;
+        color: var(--text-secondary);
+        text-align: center;
+        max-width: 1180px;
+      }
+      #verify-note b { color: var(--accent-warn); font-weight: 700; }
+    </style>
+
+    <div id="verify-content">
+      <div class="header-block">
+        <div class="overline" id="verify-overline">VERIFY &middot; STEP 3</div>
+        <div class="headline" id="verify-headline">Two checks &middot; you're done with prereqs</div>
+      </div>
+
+      <div class="verify-term" id="verify-term">
+        <div class="term-bar">
+          <span class="dot"></span><span class="dot y"></span><span class="dot g"></span>
+          &nbsp; PowerShell &mdash; setup-check
+        </div>
+        <div class="term-body">
+          <span id="verify-line-1"><span class="prompt">PS&gt;</span><span class="cmd-text">node --version</span><span class="out ok">v22.17.0</span></span>
+          <span class="blank"></span>
+          <span id="verify-line-2"><span class="prompt">PS&gt;</span><span class="cmd-text">ffmpeg -version</span><span class="out">ffmpeg version 6.0-full_build</span><span class="out dim">built with gcc 12.2.0 (Rev10, MSYS2 project)</span></span>
+        </div>
+      </div>
+
+      <div id="verify-note">
+        Docs target <b>FFmpeg 7+</b>. <b>6.x</b> works fine in practice. If "not found," reopen your terminal so PATH refreshes.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#verify-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#verify-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#verify-term",     { y: 28, scale: 0.97, opacity: 0 }, 0);
+      tl.set("#verify-line-1",   { x: -16, opacity: 0 }, 0);
+      tl.set("#verify-line-2",   { x: -16, opacity: 0 }, 0);
+      tl.set("#verify-note",     { y: 14, opacity: 0 }, 0);
+
+      tl.to("#verify-overline", { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0);
+      tl.to("#verify-headline", { y: 0, opacity: 1, duration: 0.55 }, 0.25);
+      tl.to("#verify-term",     { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 0.7);
+      tl.to("#verify-line-1",   { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 1.2);
+      tl.to("#verify-line-2",   { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 1.7);
+      tl.to("#verify-note",     { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 2.3);
+
+      window.__timelines["scene-verify"] = tl;
+    </script>
+  </div>
+</template>

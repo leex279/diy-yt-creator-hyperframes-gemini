@@ -1,0 +1,19 @@
+Your AI agent has goldfish memory.
+
+Every session it asks your name again. Every chat, the same context. You stuff a hundred thousand tokens of history into every call, and watch latency climb past twenty-eight seconds.
+
+In twenty twenty-six, three systems fixed it. And the gap between them is twenty-two points on the same benchmark.
+
+Number three: Letta. Twenty-two thousand stars on GitHub. The OG agent memory project, formerly mem G P T. Letta gives the agent its own tiered memory. Core context, recall, archival. The agent itself decides what to keep, what to swap out. Operating-system style.
+
+Number two: Mem-zero. Fifty-five thousand stars. The largest memory community by far. Hybrid storage. Vector, plus graph, plus key-value. Auto-extraction. The easiest drop-in for any agent framework. Third-party benchmark, forty-nine percent on long-mem-eval.
+
+Number one: Zep. Seventy-one point two percent on long-mem-eval, with G P T four-oh. That is twenty-two points above Mem-zero. Zep runs on Graphiti. A temporal knowledge graph that tracks when facts were true, and when they stopped being true. Eleven times faster than full-context. Less than two percent of the tokens.
+
+But here is the catch. Long-mem-eval is G P T four-oh biased. Your mileage will vary on Claude, on Gemini, on Llama.
+
+And the leaderboard moves fast. In December twenty twenty-five, an open-source upset called Hindsight hit ninety-one point four percent on Gemini three Pro. The first system to break ninety. Your top three ranking is already six months behind the frontier.
+
+But for production agents shipping today: Zep wins the benchmark. Mem-zero wins adoption. Letta wins on architecture.
+
+Zep, Mem-zero, or Letta. Which one is running your agent in twenty twenty-six?

@@ -1,0 +1,247 @@
+<!--
+  scene-pattern1-nav.html — Scene 8 / Pattern 1 navigability (78.621s).
+  6 sub-pattern cards step-by-step at "One." through "Six." anchors.
+-->
+<template id="scene-pattern1-nav-template">
+  <div data-composition-id="scene-pattern1-nav"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-p1-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 22px;
+        box-sizing: border-box;
+      }
+      #p1-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-3);
+      }
+      #p1-header-row {
+        display: flex; align-items: baseline; gap: 24px;
+      }
+      #p1-big-num {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 132px;
+        line-height: 0.9;
+        letter-spacing: -4px;
+        color: var(--accent-3);
+        text-shadow: 0 0 60px rgba(107, 154, 239, 0.40);
+      }
+      #p1-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 54px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1500px;
+      }
+      .p1-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 16px;
+        width: 100%;
+      }
+      .p1-card {
+        padding: 18px 22px 20px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(107, 154, 239, 0.10), rgba(107, 154, 239, 0.03));
+        border: 1.5px solid rgba(107, 154, 239, 0.35);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+        display: flex; flex-direction: column;
+        gap: 8px;
+      }
+      .p1-card-head {
+        display: flex; align-items: baseline; gap: 10px;
+      }
+      .p1-card-num {
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 28px;
+        color: var(--accent-3);
+        letter-spacing: -1px;
+      }
+      .p1-card-label {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.1;
+        color: var(--text);
+        letter-spacing: -0.5px;
+        position: relative;
+        display: inline-block;
+      }
+      .p1-card-desc {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 28px;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+      .p1-mark {
+        display: inline-block;
+        height: 3px;
+        width: 0;
+        background: var(--accent-3);
+        border-radius: 2px;
+        vertical-align: bottom;
+        margin-left: 4px;
+        box-shadow: 0 0 10px rgba(107, 154, 239, 0.5);
+      }
+      /* ── Card visualizations ─────────────────────────── */
+      .p1-vis {
+        margin-top: 6px;
+        font-family: var(--mono);
+        font-size: 18px;
+        line-height: 1.55;
+        color: var(--text-secondary);
+        white-space: pre;
+        overflow: hidden;
+        background: rgba(255,255,255,0.04);
+        border-radius: 8px;
+        padding: 8px 12px;
+        border: 1px solid rgba(255,255,255,0.07);
+        max-height: 112px;
+        box-sizing: border-box;
+      }
+      .p1-vis .v-accent { color: var(--accent-3); }
+      .p1-vis .v-green  { color: var(--accent-4); }
+      .p1-vis .v-orange { color: var(--accent-1); }
+      .p1-vis .v-red    { color: var(--accent-warn); }
+      .p1-vis .v-num    { font-weight: 900; font-size: 22px; }
+    </style>
+
+    <div id="scene-p1-content">
+      <div id="p1-overline">PATTERN 1 &middot; NAVIGABILITY</div>
+      <div id="p1-header-row">
+        <div id="p1-big-num">1</div>
+        <div id="p1-headline">Make the codebase navigable at scale.</div>
+      </div>
+      <div class="p1-grid">
+        <div class="p1-card" id="p1-card-1">
+          <div class="p1-card-head"><div class="p1-card-num">1.</div><div class="p1-card-label">Lean &amp; layered CLAUDE.md<span class="p1-mark" id="p1-mark-1"></span></div></div>
+          <div class="p1-card-desc">Root for the big picture, subdir files for local conventions.</div>
+          <div class="p1-vis"><span class="v-accent">&#9500; CLAUDE.md</span>           &larr; root
+<span class="v-accent">&#9500; src/</span>
+<span class="v-accent">&#9474;  &#9500; CLAUDE.md</span>        &larr; service
+<span class="v-accent">&#9474;  &#9492; payments/
+&#9474;      &#9492; CLAUDE.md</span>    &larr; module</div>
+        </div>
+        <div class="p1-card" id="p1-card-2">
+          <div class="p1-card-head"><div class="p1-card-num">2.</div><div class="p1-card-label">Init in subdirectories</div></div>
+          <div class="p1-card-desc">Claude walks up the directory tree and loads every CLAUDE.md it finds.</div>
+          <div class="p1-vis"><span class="v-green">$</span> cd src/payments
+<span class="v-green">$</span> claude
+<span class="v-green">&#8627;</span> walks up &amp; loads <span class="v-accent">3</span> CLAUDE.md files</div>
+        </div>
+        <div class="p1-card" id="p1-card-3">
+          <div class="p1-card-head"><div class="p1-card-num">3.</div><div class="p1-card-label">Scope tests &amp; lint</div></div>
+          <div class="p1-card-desc">Per subdir. Full suite wastes context on irrelevant output.</div>
+          <div class="p1-vis"><span class="v-red">&#10007; npm test</span>             (full repo)
+<span class="v-green">&#10003; npm test src/api</span>     (scoped)</div>
+        </div>
+        <div class="p1-card" id="p1-card-4">
+          <div class="p1-card-head"><div class="p1-card-num">4.</div><div class="p1-card-label">.gitignore + permissions.deny</div></div>
+          <div class="p1-card-desc">Version-controlled exclusions. Same noise reduction for every dev.</div>
+          <div class="p1-vis"><span class="v-orange">"permissions"</span>: {
+  <span class="v-accent">"deny"</span>: [<span class="v-orange">"build/**"</span>,
+           <span class="v-orange">"dist/**"</span>,
+           <span class="v-orange">"node_modules"</span>]
+}</div>
+        </div>
+        <div class="p1-card" id="p1-card-5">
+          <div class="p1-card-head"><div class="p1-card-num">5.</div><div class="p1-card-label">Codebase maps</div></div>
+          <div class="p1-card-desc">Lightweight markdown at the root. One-line description per folder.</div>
+          <div class="p1-vis"><span class="v-orange">## src/api</span>     REST endpoints
+<span class="v-orange">## src/jobs</span>    background queue
+<span class="v-orange">## src/web</span>     React app
+<span class="v-orange">## src/admin</span>   staff console</div>
+        </div>
+        <div class="p1-card" id="p1-card-6">
+          <div class="p1-card-head"><div class="p1-card-num">6.</div><div class="p1-card-label">LSP: search by symbol<span class="p1-mark" id="p1-mark-6"></span></div></div>
+          <div class="p1-card-desc">Not by string. Grep returns thousands; LSP returns only true references.</div>
+          <div class="p1-vis">grep "process": <span class="v-red v-num">1,247</span> hits  &larr; noise
+LSP references:   <span class="v-green v-num">3</span> hits  &larr; signal</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 78.621;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      tl.set("#p1-overline",  { y: 18, opacity: 0 }, 0);
+      tl.set("#p1-big-num",   { scale: 0.7, opacity: 0 }, 0);
+      tl.set("#p1-headline",  { x: -30, opacity: 0 }, 0);
+      tl.set("#p1-card-1",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p1-card-2",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p1-card-3",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p1-card-4",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p1-card-5",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+      tl.set("#p1-card-6",    { x: -40, scale: 0.95, opacity: 0 }, 0);
+
+      // scene_start = 272.060 — times below are scene-relative
+      tl.to("#p1-overline", { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.0);
+      tl.to("#p1-big-num",  { scale: 1, opacity: 1, duration: 0.65, ease: "back.out(1.5)" }, 0.25);
+      tl.to("#p1-headline", { x: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.4);
+
+      // Card anchors (scene-relative):
+      //   Card 1 (One.):    278.991 → 6.931
+      //   Card 2 (Two.):    290.206 → 18.146
+      //   Card 3 (Three.):  301.967 → 29.907
+      //   Card 4 (Four.):   311.753 → 39.693
+      //   Card 5 (Five.):   323.734 → 51.674
+      //   Card 6 (Six.):    335.716 → 63.656
+
+      tl.to("#p1-card-1", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 6.931);
+      // Marker on "lean and layered" — word "lean" at 281.441 → scene 9.381
+      tl.to("#p1-mark-1", { width: 220, duration: 0.8, ease: "power2.out" }, 9.381);
+
+      tl.to("#p1-card-2", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 18.146);
+      // Sub-beat — "walks up directory tree" scale-pulse on card 2 at scene ~21.940
+      tl.to("#p1-card-2", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.940);
+
+      tl.to("#p1-card-3", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 29.907);
+      // Sub-beat — "wastes context" scale-pulse on card 3 at ~33.940
+      tl.to("#p1-card-3", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 33.940);
+
+      tl.to("#p1-card-4", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 39.693);
+      // Sub-beat — "version-controlled exclusions" scale-pulse at ~43.940
+      tl.to("#p1-card-4", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 43.940);
+
+      tl.to("#p1-card-5", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 51.674);
+      // Sub-beat — "one-line description" scale-pulse at ~55.940
+      tl.to("#p1-card-5", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 55.940);
+
+      tl.to("#p1-card-6", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 63.656);
+      // Marker on "symbol, not by string" — word "symbol," at 338.560 → scene 66.500
+      tl.to("#p1-mark-6", { width: 280, duration: 2.0, ease: "power2.out" }, 66.500);
+
+      // Tail glow-pulse on all cards
+      tl.to(".p1-card", { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.03 }, 72.940);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-pattern1-nav"] = tl;
+    </script>
+  </div>
+</template>

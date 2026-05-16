@@ -1,0 +1,143 @@
+<!--
+  shared/lib/components/cinematic-letterbox-reveal/component.html
+  Cinematic black bars descend from top + ascend from bottom (each 120px on 1080px
+  canvas), hold, then retract. While bars are landed the inner content reveals
+  via vertical clip-path from center (inset(50% 0 50% 0) → inset(0 0 0 0)).
+
+  SOURCE: Original — no template extraction. Authored for shared/lib.
+
+  COMPONENT IS PASTE-IN — split into three sections below.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — place #lb-bar-top, #lb-bar-bottom inside your root div (not
+     inside any phase — they position fixed over the canvas). Your content
+     element gets data-letterbox-content attribute; pass its selector to
+     addLetterboxReveal as contentSel.
+
+  2) CSS — merge the <style> block below into your host <style>.
+
+  3) JS — call addLetterboxReveal(tl, contentSel, at, opts) from your host
+     timeline.
+
+     Parameters:
+       tl          — GSAP timeline (paused)
+       contentSel  — CSS selector for the element to clip-reveal (the content
+                     inside the letterbox, e.g. "#p1-hero" or ".lb-content-wrap")
+       at          — timeline insertion time (seconds)
+       opts        — optional:
+                     { barHeight: 120,     // px height of each bar, default 120
+                       holdSec: 1.6,       // seconds bars stay landed, default 1.6
+                       barDuration: 0.5,   // seconds for bar entry, default 0.5
+                       revealDuration: 0.6 // content clip-path reveal, default 0.6
+                     }
+
+     TOTAL DURATION of the effect:
+       barDuration + 0.1 (content reveal starts 0.1s after bars land) +
+       revealDuration + holdSec + barDuration (retract) ≈ 3.5s at defaults.
+     Budget this gap in your visual-pacing audit.
+
+     GOTCHAS:
+     - The bars use position:fixed at z-index 20 so they overlay all phases.
+       If your composition uses z-indices above 20, increase --lb-z in CSS.
+     - clip-path: inset() clips the content visually but does not remove it from
+       layout. Wrap your hero content in a div with overflow:hidden if you want
+       the surrounding layout unaffected during clip.
+     - Both bars start off-screen: top bar at y = -(barHeight) (above canvas),
+       bottom bar at y = +(barHeight) (below canvas). They translate INTO frame.
+     - The bottom bar's initial position is calculated by CSS: bottom:-barHeight.
+       The GSAP tween uses y:0 to land it flush with the canvas bottom edge.
+     - Do NOT use this on elements that have their own clip-path — the two
+       clip paths do not compose correctly in most browsers.
+     - This component manages its own bars (#lb-bar-top, #lb-bar-bottom).
+       Only one letterbox instance per composition; id names are unique.
+-->
+
+<!-- 1) HTML — paste inside your root div, before any phase content -->
+
+<div id="lb-bar-top"></div>
+<div id="lb-bar-bottom"></div>
+
+<!--
+  2) CSS — merge into host <style>
+-->
+
+<style>
+  /* shared/lib/components/cinematic-letterbox-reveal — keep this comment */
+  #lb-bar-top,
+  #lb-bar-bottom {
+    position: absolute;
+    left: 0;
+    width: 1080px;
+    height: var(--lb-bar-height, 120px);
+    background: var(--lb-bar-color, #000000);
+    pointer-events: none;
+    z-index: var(--lb-z, 20);
+  }
+  #lb-bar-top {
+    top: 0;
+    transform: translateY(calc(-1 * var(--lb-bar-height, 120px)));
+  }
+  #lb-bar-bottom {
+    bottom: 0;
+    transform: translateY(var(--lb-bar-height, 120px));
+  }
+</style>
+
+<!--
+  3) JS — merge into host <script>
+-->
+
+<script>
+  /**
+   * addLetterboxReveal(tl, contentSel, at, opts)
+   *
+   * Cinematic letterbox: black bars close over the canvas, content reveals
+   * via clip-path, bars retract after holdSec.
+   *
+   * @param {gsap.core.Timeline} tl
+   * @param {string} contentSel     CSS selector for the element to clip-reveal
+   * @param {number} at             Insertion time on host timeline (seconds)
+   * @param {object} [opts]
+   * @param {number} [opts.barHeight=120]      Bar height in px
+   * @param {number} [opts.holdSec=1.6]        How long bars stay landed (seconds)
+   * @param {number} [opts.barDuration=0.5]    Bar entry/exit animation duration
+   * @param {number} [opts.revealDuration=0.6] Content clip-path reveal duration
+   */
+  function addLetterboxReveal(tl, contentSel, at, opts) {
+    var barH      = (opts && opts.barHeight      != null) ? opts.barHeight      : 120;
+    var hold      = (opts && opts.holdSec        != null) ? opts.holdSec        : 1.6;
+    var barDur    = (opts && opts.barDuration    != null) ? opts.barDuration    : 0.5;
+    var revealDur = (opts && opts.revealDuration != null) ? opts.revealDuration : 0.6;
+
+    var topBar = '#lb-bar-top';
+    var botBar = '#lb-bar-bottom';
+
+    /* ── Bars enter ───────────────────────────────────────────────────── */
+    tl.set(topBar, { y: -barH }, at);
+    tl.set(botBar, { y:  barH }, at);
+    tl.to(topBar, { y: 0, duration: barDur, ease: 'power3.inOut' }, at);
+    tl.to(botBar, { y: 0, duration: barDur, ease: 'power3.inOut' }, at);
+
+    /* ── Content reveal via clip-path (starts 0.1s after bars land) ──── */
+    var revealAt = at + barDur + 0.1;
+    tl.set(contentSel, { clipPath: 'inset(50% 0% 50% 0%)' }, revealAt);
+    tl.to(contentSel, {
+      clipPath: 'inset(0% 0% 0% 0%)',
+      duration: revealDur,
+      ease: 'power2.out',
+    }, revealAt);
+
+    /* ── Bars retract after hold ──────────────────────────────────────── */
+    var retractAt = revealAt + revealDur + hold;
+    tl.to(topBar, { y: -barH, duration: barDur, ease: 'power3.inOut' }, retractAt);
+    tl.to(botBar, { y:  barH, duration: barDur, ease: 'power3.inOut' }, retractAt);
+    /* Clean up clip-path after retract so element renders normally */
+    tl.set(contentSel, { clipPath: 'none' }, retractAt + barDur);
+  }
+  // Usage:
+  // addLetterboxReveal(tl, "#p1-hero-wrap", 0.5);
+  // addLetterboxReveal(tl, "#p1-hero-wrap", 0.5, { barHeight: 160, holdSec: 2.0 });
+</script>

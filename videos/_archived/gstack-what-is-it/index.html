@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>gstack — what is it? do you need it?</title>
+<link rel="stylesheet" href="tokens/standard-short.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ────────────────────────────────────────────────────────
+     PER-VIDEO PALETTE OVERRIDE — YC orange as ACCENT on dark.
+     Dark warm canvas + bright YC orange used as a signal color
+     (Y-mark watermarks, photo border, stat number, marker
+     highlight, progress bar). White headlines, JetBrains Mono
+     attributions. Less dominant than a full orange wall.
+     ──────────────────────────────────────────────────────── */
+  #root {
+    --bg:             #14100E;
+    --bg-card:        rgba(255, 102, 0, 0.07);
+    --bg-surface:     #1E1814;
+    --bg-tint:        rgba(255, 102, 0, 0.10);
+
+    --border:         rgba(255, 255, 255, 0.14);
+    --border-bright:  rgba(255, 102, 0, 0.55);
+    --shadow-warm:    0 16px 40px rgba(0, 0, 0, 0.55),
+                      0 2px 6px rgba(0, 0, 0, 0.35);
+
+    --accent-warm:    #FF6600;
+    --accent-deep:    #FFFFFF;
+    --accent-sage:    #FFD060;
+    --accent-gold:    #FFB300;
+    --accent-rose:    #FF8C42;
+    --accent-ink:     #FFFFFF;
+
+    --text:           #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.80);
+    --text-muted:     rgba(255, 255, 255, 0.55);
+    --text-on-warm:   #1A1A1A;
+    --text-on-deep:   #14100E;
+
+    --pill-bg:        rgba(255, 255, 255, 0.10);
+    --pill-border:    rgba(255, 255, 255, 0.22);
+
+    --serif:          'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #14100E;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #FFFFFF;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 18%, rgba(255, 140, 60, 0.16), transparent 55%),
+      radial-gradient(circle at 80% 75%, rgba(180, 50, 18, 0.20), transparent 60%),
+      radial-gradient(circle at 50% 105%, rgba(0, 0, 0, 0.20), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.10;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #grain-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.045;
+    mix-blend-mode: multiply;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+  }
+  #top-banner-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 30px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 4px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+  }
+  #top-banner-yc {
+    width: 44px;
+    height: 44px;
+    display: block;
+  }
+  #top-banner-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.30);
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.18);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: #FFFFFF;
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
+  }
+
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 1;
+  }
+  #scene-title-wrap            { z-index: 1; opacity: 1; }
+  #scene-stat-wrap             { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-bullets-wrap          { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-counter-grid-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-marker-wrap           { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-praise-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-skeptic-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-critic-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-marker-question-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Dynamous endcard — overlays the trailing window with the brand CTA */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* shared/lib/components/dynamous-badge — persistent brand mark */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 360px;
+    left: 60px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 21px 12px 15px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  #dynamous-badge-mark {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="102"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <div id="top-banner-text">
+      <img id="top-banner-yc" src="assets/yc-logo.svg" alt="Y Combinator" />
+      <span id="top-banner-divider"></span>
+      <span>gstack</span>
+    </div>
+  </div>
+
+  <!-- Persistent Dynamous brand mark — fades in once at t=3.0s, stays. -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" crossorigin="anonymous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Scene wrappers — 9 scenes, timestamps from transcript.json word anchors.
+       data-track-index="1"; sub-comp's internal timeline owns its length.
+       Closing scene-cta is replaced by the Dynamous endcard (last 5s). -->
+
+  <div id="scene-title-wrap" class="scene-wrapper"
+       data-composition-id="scene-title"
+       data-composition-src="compositions/scene-title.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-stat-wrap" class="scene-wrapper"
+       data-composition-id="scene-stat"
+       data-composition-src="compositions/scene-stat.html"
+       data-start="6.51"
+       data-track-index="1"></div>
+
+  <div id="scene-bullets-wrap" class="scene-wrapper"
+       data-composition-id="scene-bullets"
+       data-composition-src="compositions/scene-bullets.html"
+       data-start="16.99"
+       data-track-index="1"></div>
+
+  <div id="scene-counter-grid-wrap" class="scene-wrapper"
+       data-composition-id="scene-counter-grid"
+       data-composition-src="compositions/scene-counter-grid.html"
+       data-start="25.85"
+       data-track-index="1"></div>
+
+  <div id="scene-marker-wrap" class="scene-wrapper"
+       data-composition-id="scene-marker"
+       data-composition-src="compositions/scene-marker.html"
+       data-start="36.92"
+       data-track-index="1"></div>
+
+  <div id="scene-quote-praise-wrap" class="scene-wrapper"
+       data-composition-id="scene-quote-praise"
+       data-composition-src="compositions/scene-quote-praise.html"
+       data-start="45.51"
+       data-track-index="1"></div>
+
+  <div id="scene-quote-skeptic-wrap" class="scene-wrapper"
+       data-composition-id="scene-quote-skeptic"
+       data-composition-src="compositions/scene-quote-skeptic.html"
+       data-start="57.99"
+       data-track-index="1"></div>
+
+  <div id="scene-quote-critic-wrap" class="scene-wrapper"
+       data-composition-id="scene-quote-critic"
+       data-composition-src="compositions/scene-quote-critic.html"
+       data-start="71.67"
+       data-track-index="1"></div>
+
+  <div id="scene-marker-question-wrap" class="scene-wrapper"
+       data-composition-id="scene-marker-question"
+       data-composition-src="compositions/scene-marker-question.html"
+       data-start="82.54"
+       data-track-index="1"></div>
+
+  <!-- Dynamous endcard — replaces the trailing 5s with brand-locked CTA -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="97"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="101.5"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — cinematic-whoosh on every scene transition (paired with shape rearrange).
+       impact-slam on the marker sweep moments. scale-slam on the 89,100 stat reveal.
+       All data-start values anchored to transcript.json word boundaries. -->
+
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="6.11" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-spring-photo" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="6.51" data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+
+  <audio id="sfx-scale-stat" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="12.29" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="16.59" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-pop-b1" class="clip" src="assets/sfx/pop.mp3"
+         data-start="18.84" data-duration="0.4" data-track-index="4" data-volume="0.10"></audio>
+  <audio id="sfx-pop-b2" class="clip" src="assets/sfx/pop.mp3"
+         data-start="21.36" data-duration="0.4" data-track-index="4" data-volume="0.10"></audio>
+  <audio id="sfx-pop-b3" class="clip" src="assets/sfx/pop.mp3"
+         data-start="24.53" data-duration="0.4" data-track-index="4" data-volume="0.10"></audio>
+
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="25.45" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-spring-c1" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="26.39" data-duration="0.4" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-spring-c2" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="28.27" data-duration="0.4" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-spring-c3" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="29.36" data-duration="0.4" data-track-index="5" data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="36.52" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-impact-marker" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="38.20" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+
+  <audio id="sfx-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="45.11" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="57.59" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="71.27" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-whoosh-8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="82.14" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-impact-question" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="82.99" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+
+  <audio id="sfx-whoosh-9" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="96.60" data-duration="0.8" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Paper-grain overlay -->
+  <svg id="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="11" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#grain-filter)" fill="#2B2A28" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter. Re-seeds on every
+  // scene transition for the "shape-rearrange-on-whoosh" pattern (per
+  // .claude/memory feedback_shape_rearrange_on_whoosh_default.md).
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function placeShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      positions.push({
+        left: best.cx - best.size / 2,
+        top: best.cy - best.size / 2,
+        size: best.size,
+        rot: best.rot,
+        shape: shapes[i % shapes.length]
+      });
+    }
+    return positions;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const positions = placeShapes(seedPrefix, container);
+    positions.forEach((p) => {
+      const img = document.createElement('img');
+      img.src = p.shape;
+      img.style.cssText =
+        'left:' + p.left + 'px;' +
+        'top:' + p.top + 'px;' +
+        'width:' + p.size + 'px;' +
+        'height:' + p.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: p.rot });
+    });
+    return positions;
+  }
+
+  // Rearrange the existing shape backdrop to a new seeded layout.
+  // Called at every scene transition — paired with cinematic-whoosh SFX.
+  function rearrangeShapes(tl, container, newSeedPrefix, atTime) {
+    const newPositions = placeShapes(newSeedPrefix, container);
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      if (i >= newPositions.length) return;
+      const p = newPositions[i];
+      tl.to(img, {
+        left: p.left + 'px',
+        top: p.top + 'px',
+        width: p.size + 'px',
+        height: p.size + 'px',
+        rotation: p.rot,
+        duration: 1.0,
+        ease: 'power2.inOut'
+      }, atTime);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0,                          duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  const shapeContainer = document.getElementById('shape-backdrop');
+  spawnShapes('gstack-scene-1-title', shapeContainer);
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 102;
+  const tl = gsap.timeline({ paused: true });
+
+  // Slow ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Linear progress bar across the full composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Dynamous badge — single 0.6s entrance at t=3.0s (after the hook frame)
+  tl.from("#dynamous-badge", { opacity: 0, x: -12, duration: 0.6, ease: "power2.out" }, 3.0);
+
+  // ─── Scene labels — anchors derived from transcript.json word boundaries ───
+  tl.addLabel("title",            0)
+    .addLabel("stat",             6.51)
+    .addLabel("bullets",         16.99)
+    .addLabel("counter-grid",    25.85)
+    .addLabel("marker",          36.92)
+    .addLabel("quote-praise",    45.51)
+    .addLabel("quote-skeptic",   57.99)
+    .addLabel("quote-critic",    71.67)
+    .addLabel("marker-question", 82.54)
+    .addLabel("endcard",         97.00);
+
+  // ─── Crossfades between adjacent scenes ───
+  crossfadeScenes(tl, "#scene-title-wrap",            "#scene-stat-wrap",            "stat-=0.4");
+  crossfadeScenes(tl, "#scene-stat-wrap",             "#scene-bullets-wrap",         "bullets-=0.4");
+  crossfadeScenes(tl, "#scene-bullets-wrap",          "#scene-counter-grid-wrap",    "counter-grid-=0.4");
+  crossfadeScenes(tl, "#scene-counter-grid-wrap",     "#scene-marker-wrap",          "marker-=0.4");
+  crossfadeScenes(tl, "#scene-marker-wrap",           "#scene-quote-praise-wrap",    "quote-praise-=0.4");
+  crossfadeScenes(tl, "#scene-quote-praise-wrap",     "#scene-quote-skeptic-wrap",   "quote-skeptic-=0.4");
+  crossfadeScenes(tl, "#scene-quote-skeptic-wrap",    "#scene-quote-critic-wrap",    "quote-critic-=0.4");
+  crossfadeScenes(tl, "#scene-quote-critic-wrap",     "#scene-marker-question-wrap", "marker-question-=0.4");
+
+  // ─── Endcard handoff — fade out competing content 0.5s before endcard fires ───
+  tl.to("#scene-marker-question-wrap", { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL_DURATION - 5.5);
+  tl.to("#dynamous-badge",             { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, TOTAL_DURATION - 5.5);
+
+  // ─── Shape rearrange on every scene transition (paired with cinematic-whoosh) ───
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-2-stat',             "stat-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-3-bullets',          "bullets-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-4-counter-grid',     "counter-grid-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-5-marker',           "marker-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-6-quote-praise',     "quote-praise-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-7-quote-skeptic',    "quote-skeptic-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-8-quote-critic',     "quote-critic-=0.4");
+  rearrangeShapes(tl, shapeContainer, 'gstack-scene-9-marker-question',  "marker-question-=0.4");
+
+  // Pad timeline to TOTAL_DURATION so renderer captures the closing tail
+  tl.to({}, { duration: 0.01 }, TOTAL_DURATION - 0.01);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

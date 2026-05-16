@@ -1,0 +1,182 @@
+<!--
+  scene-cta.html — CTA + FINAL FRAME (138.58–154.0s, scene-rel 0–15.42)
+  Word anchors (scene-rel = abs - 138.58):
+    0.00  "So next time someone tells you"
+    1.45  "that you cannot make an L L M faster"
+    4.58  "without losing quality"
+    6.14  "they are wrong"           → "WRONG" stamp
+    7.43  "The math has been here since 2022"  → 2022 receipt line
+    9.99  "If you want to learn more about A I"  → handoff to dynamous endcard at scene-rel 10.42 (abs 149.0)
+
+  Visual = thumbnail-grade final frame:
+    [DRAFT] → [TARGET]
+    "2-3× FASTER"
+    "same output · since 2022"
+  Held still from scene-rel ~3 onward; dynamous endcard fades on top at 10.42.
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #sc-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        justify-content: flex-start;
+      }
+      .sc-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sc-pair {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        margin-top: 4px;
+      }
+      .sc-box {
+        flex: 1 1 0;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 22px;
+        padding: 28px 22px;
+        text-align: center;
+        box-shadow: 0 14px 32px rgba(28, 26, 24, 0.14);
+      }
+      .sc-box .lab {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 6px;
+      }
+      .sc-box .nm {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 80px;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sc-arrow {
+        font-family: var(--mono);
+        font-weight: 800;
+        font-size: 88px;
+        color: var(--accent-1);
+      }
+      .sc-slam {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 240px;
+        line-height: 0.95;
+        letter-spacing: -6px;
+        color: var(--accent-1);
+        text-align: center;
+      }
+      .sc-slam .unit {
+        font-size: 168px;
+        color: var(--accent-1);
+      }
+      .sc-receipt {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 36px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+      .sc-receipt .em {
+        color: var(--accent-1);
+        font-weight: 800;
+      }
+      .sc-wrong {
+        position: absolute;
+        top: 320px;
+        right: 60px;
+        font-family: var(--mono);
+        font-weight: 900;
+        font-size: 64px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-on-warm);
+        background: var(--accent-1);
+        padding: 18px 28px;
+        border-radius: 16px;
+        transform: rotate(-6deg);
+        box-shadow: 0 10px 24px rgba(199, 90, 63, 0.30);
+      }
+    </style>
+
+    <div id="sc-content">
+      <div class="sc-overline" id="sc-overline">THE TAKEAWAY</div>
+
+      <div class="sc-pair" id="sc-pair">
+        <div class="sc-box" id="sc-draft">
+          <div class="lab">DRAFT</div>
+          <div class="nm">small</div>
+        </div>
+        <div class="sc-arrow" id="sc-arrow">&rarr;</div>
+        <div class="sc-box" id="sc-target">
+          <div class="lab">TARGET</div>
+          <div class="nm">big</div>
+        </div>
+      </div>
+
+      <div class="sc-slam" id="sc-slam">2&ndash;3<span class="unit">&times;</span></div>
+      <div class="sc-receipt" id="sc-receipt">FASTER &middot; <span class="em">SAME OUTPUT</span> &middot; SINCE 2022</div>
+
+      <div class="sc-wrong" id="sc-wrong">WRONG</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sc-overline", { y: -8, opacity: 0 }, 0);
+      tl.set("#sc-draft",    { x: -32, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#sc-arrow",    { opacity: 0, scale: 0.6 }, 0);
+      tl.set("#sc-target",   { x: 32, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#sc-slam",     { y: 32, opacity: 0, scale: 0.85, filter: "blur(15px)" }, 0);
+      tl.set("#sc-receipt",  { opacity: 0, y: 16 }, 0);
+      tl.set("#sc-wrong",    { opacity: 0, scale: 0.4, rotate: -25 }, 0);
+
+      tl.to("#sc-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+      tl.to("#sc-draft",  { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 0.30);
+      tl.to("#sc-arrow",  { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 0.80);
+      tl.to("#sc-target", { x: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, 0.95);
+
+      // 2-3x slam at scene start (matches the headline arrival)
+      tl.to("#sc-slam",   { y: 0, opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.7, ease: "back.out(1.5)" }, 1.45);
+      tl.to("#sc-slam",   { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1 }, 2.20);
+
+      // "WRONG" stamp lands at "they are wrong"
+      tl.to("#sc-wrong",  { opacity: 1, scale: 1, rotate: -6, duration: 0.55, ease: "back.out(1.6)" }, 6.14);
+      tl.to("#sc-wrong",  { rotate: -3, duration: 0.15, yoyo: true, repeat: 3 }, 6.70);
+
+      // Receipt line at "The math has been here since 2022"
+      tl.to("#sc-receipt", { y: 0, opacity: 1, duration: 0.5 }, 7.43);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

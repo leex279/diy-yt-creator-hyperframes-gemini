@@ -1,0 +1,214 @@
+<!--
+  shared/lib/components/glitch-text-reveal/component.html
+  Text materializes via digital glitch: RGB-split (cyan/magenta clones
+  offset ±4–8px), scrambled-char effect for ~0.5s (deterministic via
+  mulberry32 seed 0xCAFE), scanline jitter overlay, settles clean over 0.7s.
+
+  COMPONENT IS PASTE-IN — three sections below. Merge each section into
+  the matching part of your host composition's HTML.
+
+  DETERMINISM: All randomness seeded with mulberry32(0xCAFE). No Date.now(),
+  no Math.random(), no setTimeout. Fully reproducible at any seek point.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — add class="gtr-target" to any text element you want to reveal.
+     Also paste the scanline overlay div inside your composition root:
+-->
+
+<!-- Example text target — add class="gtr-target" to your element -->
+<div class="clip gtr-target" id="gtr-demo-text"
+     data-start="0" data-duration="10" data-track-index="1">GLITCH</div>
+
+<!-- Scanline jitter overlay — paste once per composition root -->
+<div class="gtr-scanline" id="gtr-scanline"></div>
+
+<!--
+  2) CSS — merge into your composition's <style> block:
+-->
+
+<style>
+  /* shared/lib/components/glitch-text-reveal — keep this comment block */
+
+  /* Scanline overlay: repeating thin lines for the CRT jitter effect */
+  .gtr-scanline {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.08) 3px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+    pointer-events: none;
+    opacity: 0;
+    z-index: 90;
+  }
+
+  /* CA clone elements injected by addGlitchTextReveal — hidden initially */
+  .gtr-clone-cyan,
+  .gtr-clone-magenta {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    user-select: none;
+  }
+  .gtr-clone-cyan {
+    color: #00FFFF;
+    mix-blend-mode: screen;
+  }
+  .gtr-clone-magenta {
+    color: #FF00FF;
+    mix-blend-mode: screen;
+  }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addGlitchTextReveal(tl, "#my-text", 8.0);
+       addGlitchTextReveal(tl, "#my-text", 8.0, { duration: 0.9 });
+
+     The function:
+       1. Reads the element's original text content
+       2. Creates two absolutely-positioned CA clone spans (cyan left-offset,
+          magenta right-offset) overlaid on the element
+       3. Builds a deterministic scramble sequence via mulberry32(0xCAFE)
+       4. Drives the scrambled-char swap via GSAP calls (one per char tick)
+       5. Animates the CA clones ±4–8px over the glitch window
+       6. Fires a scanline jitter pulse over the glitch window
+       7. Settles all elements to clean final state
+
+     Wire SFX in host index.html:
+       glitch-zap at `at + 0.0` on track-index 3
+       glitch-zap at `at + 0.3` on track-index 3 (mid-reveal stutter)
+     See recipe.md for the full <audio> snippets.
+-->
+
+<script>
+  // mulberry32: deterministic PRNG. Seed 0xCAFE for glitch-text-reveal.
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // Glitch character table — deterministic substitution set
+  var GTR_CHARS = '█▓▒░@#$%&?!01ABCDEFabcdef';
+
+  function addGlitchTextReveal(tl, sel, at, opts) {
+    var options       = opts || {};
+    var totalDuration = options.duration !== undefined ? options.duration : 0.9;
+
+    var el = document.querySelector(sel);
+    if (!el) return;
+
+    var originalText = el.textContent || '';
+    var scanlineSel  = options.scanlineSel || '#gtr-scanline';
+    var rng          = mulberry32(0xCAFE);
+
+    // ── Position reference for clone placement ──
+    // Clones are injected as siblings inside el's parent, absolutely positioned
+    var parent = el.parentNode;
+
+    function createClone(className) {
+      var clone = document.createElement('div');
+      clone.className = className;
+      // Match font properties from target element
+      clone.style.fontFamily    = window.getComputedStyle(el).fontFamily;
+      clone.style.fontSize      = window.getComputedStyle(el).fontSize;
+      clone.style.fontWeight    = window.getComputedStyle(el).fontWeight;
+      clone.style.letterSpacing = window.getComputedStyle(el).letterSpacing;
+      clone.style.lineHeight    = window.getComputedStyle(el).lineHeight;
+      clone.style.textAlign     = window.getComputedStyle(el).textAlign;
+      clone.style.whiteSpace    = 'nowrap';
+      clone.textContent         = originalText;
+      parent.appendChild(clone);
+      return clone;
+    }
+
+    // ── t=0: hide target + create clones ──
+    tl.set(sel,        { opacity: 0 }, 0);
+    tl.set(scanlineSel, { opacity: 0 }, 0);
+
+    // Clones are created inline at call time (GSAP set handles initial state)
+    var cyanClone    = createClone('gtr-clone-cyan');
+    var magentaClone = createClone('gtr-clone-magenta');
+
+    // Position clones to overlay the target element
+    // Using GSAP's set at t=0 keeps them invisible until triggered
+    gsap.set(cyanClone,    { opacity: 0, x: 0, y: 0 });
+    gsap.set(magentaClone, { opacity: 0, x: 0, y: 0 });
+
+    // ── Glitch window: at → at + 0.5s ──
+    var glitchWindow = 0.5;
+    var settleWindow = totalDuration - glitchWindow; // ~0.4s
+
+    // Show target immediately (it's scrambled at first)
+    tl.set(sel, { opacity: 1 }, at);
+
+    // Scramble: 6 ticks over glitchWindow, each swapping to random chars
+    var tickCount = 6;
+    for (var tick = 0; tick < tickCount; tick++) {
+      // Closure to capture tick value
+      (function(t) {
+        var tickAt = at + (t / tickCount) * glitchWindow;
+        var scrambled = '';
+        for (var c = 0; c < originalText.length; c++) {
+          if (originalText[c] === ' ') {
+            scrambled += ' ';
+          } else {
+            var charIdx = Math.floor(rng() * GTR_CHARS.length);
+            scrambled += GTR_CHARS[charIdx];
+          }
+        }
+        tl.call(function() {
+          el.textContent = scrambled;
+        }, null, tickAt);
+      })(tick);
+    }
+
+    // Settle: restore original text at the settle point
+    tl.call(function() {
+      el.textContent = originalText;
+    }, null, at + glitchWindow);
+
+    // ── CA clones: fly in from ±4–8px, peak mid-glitch, exit clean ──
+    var cxOff = 6;  // cyan offset px
+    var mxOff = -8; // magenta offset px
+
+    tl.to(cyanClone, {
+      keyframes: [
+        { opacity: 0.55, x: cxOff,  duration: glitchWindow * 0.4, ease: 'power1.out' },
+        { opacity: 0.30, x: cxOff,  duration: glitchWindow * 0.3, ease: 'none'       },
+        { opacity: 0.0,  x: 0,      duration: settleWindow,        ease: 'power2.in'  }
+      ]
+    }, at);
+
+    tl.to(magentaClone, {
+      keyframes: [
+        { opacity: 0.45, x: mxOff,  duration: glitchWindow * 0.4, ease: 'power1.out' },
+        { opacity: 0.25, x: mxOff,  duration: glitchWindow * 0.3, ease: 'none'       },
+        { opacity: 0.0,  x: 0,      duration: settleWindow,        ease: 'power2.in'  }
+      ]
+    }, at);
+
+    // ── Scanline jitter: flash on/off twice in the glitch window ──
+    tl.to(scanlineSel, {
+      keyframes: [
+        { opacity: 0.7, duration: 0.06, ease: 'none' },
+        { opacity: 0.0, duration: 0.08, ease: 'none' },
+        { opacity: 0.5, duration: 0.06, ease: 'none' },
+        { opacity: 0.0, duration: 0.30, ease: 'power2.in' }
+      ]
+    }, at);
+  }
+  // End addGlitchTextReveal
+</script>

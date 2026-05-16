@@ -1,0 +1,236 @@
+<!--
+  scene-cta.html — Scene 10: The Debate + Dynamous Outro (215.93 - 245.00, 29.07s)
+  Editor body fades to clean stage. #cta-question + comment pill + subscribe +
+  Dynamous wordmark + URL pill. Persists through final thumbnail frame.
+
+  Scene-local anchors (local = root - 215.93):
+    0.00   "So here's the question"          → overline
+    2.02   "Your AI agent burns money"       → question line 1
+    5.61   "122% more work than it needs"    → 122% pulse + marker
+    10.60  "Are you fixing that today"       → question line 2 (binary)
+    13.80  "Or accepting the waste"          → "or accepting?" highlight
+    15.00  "Drop your pick"                  → comment pill
+    17.31  "Subscribe for more"              → subscribe pill + pulse
+    20.87  "learn more about AI"             → Dynamous wordmark
+    22.59  "dynamous dot AI community"       → Dynamous URL pill
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1556"
+       data-height="998"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, -apple-system, sans-serif; color:var(--fg-default);
+              background: var(--bg-deep);">
+
+    <style>
+      #s10 {
+        position: absolute; inset: 0;
+        padding: 50px 60px 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      #s10-overline {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 22px;
+        letter-spacing: 6px;
+        color: var(--brand-orange);
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      #cta-question {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 58px;
+        line-height: 1.12;
+        letter-spacing: -1px;
+        color: var(--fg-bright);
+        max-width: 1380px;
+        text-align: center;
+        position: relative;
+      }
+      #cta-question .pct {
+        position: relative;
+        display: inline-block;
+        color: var(--err);
+      }
+      #s10-mark-122 {
+        position: absolute;
+        left: 0; right: 0; bottom: -6px;
+        height: 6px;
+        width: 0;
+        background: var(--err);
+        border-radius: 3px;
+      }
+      #cta-question .ok { color: var(--ok); }
+
+      #cta-binary-row {
+        display: flex;
+        gap: 26px;
+        align-items: center;
+        margin-top: 4px;
+      }
+      .cta-choice {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 42px;
+        letter-spacing: -0.5px;
+        padding: 14px 28px;
+        border-radius: 12px;
+        border: 2.5px solid;
+        color: var(--fg-bright);
+      }
+      .cta-choice.fix {
+        border-color: var(--ok);
+        background: rgba(78, 201, 176, 0.12);
+        color: var(--ok);
+      }
+      .cta-choice.waste {
+        border-color: var(--err);
+        background: rgba(247, 129, 102, 0.10);
+        color: var(--err);
+      }
+      .cta-vs {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 26px;
+        color: var(--fg-muted);
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+
+      #s10-pills {
+        display: flex; gap: 24px; align-items: center;
+        margin-top: 6px;
+      }
+      #cta-comment-pill, #cta-subscribe-pill {
+        padding: 14px 28px;
+        border-radius: 999px;
+        background: var(--bg-panel);
+        border: 1.5px solid var(--border-strong);
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 1.5px;
+        color: var(--fg-bright);
+      }
+      #cta-subscribe-pill {
+        background: var(--brand-orange);
+        border-color: var(--brand-orange);
+        color: var(--bg-deep);
+      }
+
+      #dynamous-outro {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 12px;
+        margin-top: 12px;
+      }
+      #dynamous-wordmark {
+        height: 70px;
+        width: auto;
+      }
+      #dynamous-url-pill {
+        padding: 12px 26px;
+        border-radius: 999px;
+        background: rgba(103, 61, 230, 0.20);
+        border: 1.5px solid rgba(103, 61, 230, 0.65);
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 1.5px;
+        color: #b6a5f5;
+      }
+    </style>
+
+    <div id="s10">
+      <div id="s10-overline">// the debate</div>
+
+      <div id="cta-question">
+        Your AI agent burns money on every refactor &mdash;
+        <span class="pct" id="cta-question-122">
+          122% more work
+          <span id="s10-mark-122"></span>
+        </span>
+        than it needs, on <span class="ok">real code.</span>
+      </div>
+
+      <div id="cta-binary-row">
+        <div class="cta-choice fix" id="choice-fix">FIX TODAY</div>
+        <div class="cta-vs">or</div>
+        <div class="cta-choice waste" id="choice-waste">ACCEPT THE WASTE</div>
+      </div>
+
+      <div id="s10-pills">
+        <div id="cta-comment-pill">✎ drop your pick</div>
+        <div id="cta-subscribe-pill">SUBSCRIBE →</div>
+      </div>
+
+      <div id="dynamous-outro">
+        <img id="dynamous-wordmark" src="assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" />
+        <div id="dynamous-url-pill">dynamous.ai</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // HIDE
+      tl.set("#s10-overline",      { opacity: 0, y: -10 }, 0);
+      tl.set("#cta-question",      { opacity: 0, y: 24 }, 0);
+      tl.set("#s10-mark-122",      { width: 0 }, 0);
+      tl.set("#choice-fix",        { opacity: 0, x: -24 }, 0);
+      tl.set("#cta-binary-row .cta-vs", { opacity: 0 }, 0);
+      tl.set("#choice-waste",      { opacity: 0, x: 24 }, 0);
+      tl.set("#cta-comment-pill",  { opacity: 0, y: 16 }, 0);
+      tl.set("#cta-subscribe-pill",{ opacity: 0, y: 16 }, 0);
+      tl.set("#dynamous-wordmark", { opacity: 0 }, 0);
+      tl.set("#dynamous-url-pill", { opacity: 0, scale: 0.85 }, 0);
+
+      // Overline — local 0
+      tl.to("#s10-overline", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.0);
+
+      // Question — "Your AI agent burns money" (local 2.02)
+      tl.to("#cta-question", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 2.02);
+
+      // 122% pulse + marker — local 5.61 ("one-hundred-and-twenty-two")
+      tl.to("#cta-question-122", { scale: 1.08, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.61);
+      tl.to("#s10-mark-122", { width: "100%", duration: 0.6, ease: "power2.out" }, 5.61);
+
+      // Binary choice row — "Are you fixing that today" (local 10.60)
+      tl.to("#choice-fix", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.5)" }, 10.60);
+      tl.to("#cta-binary-row .cta-vs", { opacity: 1, duration: 0.3, ease: "power2.out" }, 11.4);
+      // "Or accepting the waste" (local 13.80)
+      tl.to("#choice-waste", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.5)" }, 13.80);
+
+      // Comment pill — "Drop your pick" (local 15.00)
+      tl.to("#cta-comment-pill", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 15.00);
+
+      // Subscribe pill — "Subscribe for more" (local 17.31)
+      tl.to("#cta-subscribe-pill", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 17.31);
+      tl.to("#cta-subscribe-pill", {
+        boxShadow: "0 0 0 8px rgba(247, 129, 102, 0.35)",
+        duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 4
+      }, 17.7);
+
+      // Dynamous wordmark — "learn more about AI" (local 20.87)
+      tl.to("#dynamous-wordmark", { opacity: 1, duration: 0.6, ease: "expo.out" }, 20.87);
+
+      // URL pill — "dynamous dot AI" (local 22.59)
+      tl.to("#dynamous-url-pill", { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 22.59);
+
+      // Hold final frame thumbnail-grade — narration ends ~24.45 local. Composition is 29.07s.
+      // Final ~4.6s of static hold — keeps CTA + Dynamous visible thru end.
+
+      tl.set({}, {}, 29.07);
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

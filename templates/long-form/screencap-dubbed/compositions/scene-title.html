@@ -1,0 +1,78 @@
+<!--
+  scene-title.html — Opening title card for a screencap-dubbed long-form
+  (the first ~4-5s before the screen recording takes over).
+
+  Structure:
+    overline (kicker tag) → headline (video title) → subline (what we'll do)
+
+  The whole scene is its own paused GSAP timeline, registered on
+  window.__timelines["scene-title"]. The root composition only handles
+  the wrapper-level crossfade out of this scene into the screencap.
+-->
+<template id="scene-title-template">
+  <div data-composition-id="scene-title"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-title-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:32px;
+        box-sizing:border-box;
+      }
+      #scene-title-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #scene-title-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 96px;
+        line-height: 1.02;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1500px;
+      }
+      #scene-title-content .subline {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 28px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        max-width: 1300px;
+      }
+    </style>
+
+    <div id="scene-title-content">
+      <div class="overline" id="title-overline">WALKTHROUGH</div>
+      <div class="headline" id="title-headline">REPLACE: video title goes here</div>
+      <div class="subline"  id="title-subline">Replace: one-line preview of what we'll cover</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Entrance only — exit owned by the root crossfade into the screencap.
+      tl.from("#title-overline", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#title-headline", { y: 36, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.3);
+      tl.from("#title-subline",  { y: 16, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.9);
+
+      window.__timelines["scene-title"] = tl;
+    </script>
+  </div>
+</template>

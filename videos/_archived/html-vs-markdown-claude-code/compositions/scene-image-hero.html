@@ -1,0 +1,579 @@
+<!--
+  scene-image-hero.html — Information Density (8 things HTML can carry, with examples)
+  Scene-relative duration: 74.27s. data-start in root = 48.53.
+
+  Each card now shows a tiny example visual of what that information type looks
+  like rendered (not just the headline + tag), so the viewer immediately sees
+  what HTML can actually carry. Back half punches up the fail-mode reveal with
+  a big "MARKDOWN'S WORKAROUND" stamp + larger fail cards + clearer strikethrough.
+
+  Beats (scene-relative):
+    0     — section "01" + overline + h2 enter
+    4.45  — h2 italic emphasis pulse on "density"
+    5.52  — comparison sub-line enters (".md only carries headings, bullets, a table")
+    14.70 — "EIGHT" stat callout pulses
+    16.85 — card 1 Tables (mini grid svg)
+    17.34 — card 2 CSS-driven design (color swatches)
+    18.74 — card 3 SVG illustrations (inline circle + curve)
+    20.99 — card 4 Code snippets (3 mono lines)
+    22.91 — card 5 JS+CSS interactions (button + cursor)
+    26.70 — card 6 Workflows (boxes + arrows svg)
+    31.11 — card 7 Spatial canvas (dot grid + placed shapes)
+    36.24 — card 8 Images (mini photo svg)
+    38.71 — Thariq attribution badge
+    47.0  — cards dim 60% to make room for fail-mode reveal
+    47.5  — "MARKDOWN'S WORKAROUND" stamp drops in (big serif italic)
+    49.88 — Fail card 1 (full-width ASCII pseudo-chart) reveals
+    50.80 — Fail card 1 highlight pulse
+    53.20 — Fail card 2 (unicode hash colors trying to be swatches) reveals
+    58     — "When the format fails, the model improvises." caption appears
+    65.64 — "1990S README" stamp pulses
+    69.91 — strikethrough fail card 1
+    70.30 — strikethrough fail card 2
+    71.38 — lead-out: stamp fades, cards re-brighten ready for scene 2
+-->
+<template id="scene-image-hero-template">
+  <div data-composition-id="scene-image-hero"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--serif); color:var(--text);">
+
+    <style>
+      #scene-image-hero-content {
+        width: 100%; height: 100%;
+        padding: 60px var(--pad-x) 40px;
+        position: relative;
+        box-sizing: border-box;
+      }
+
+      .ih-header {
+        position: relative;
+        margin-bottom: 24px;
+        padding-left: 88px;
+      }
+      .ih-section-number {
+        position: absolute;
+        left: 0;
+        top: 6px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-1);
+        line-height: 1;
+      }
+      .ih-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 14px;
+      }
+      .ih-h2 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 68px;
+        color: var(--text);
+        letter-spacing: -1px;
+        line-height: 1.04;
+      }
+      .ih-divider {
+        height: 1px;
+        background: var(--border);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      .ih-sublines {
+        display: flex;
+        align-items: center;
+        gap: 56px;
+        padding-left: 88px;
+        margin-bottom: 22px;
+      }
+      .ih-md-line {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 28px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        max-width: 900px;
+      }
+      .ih-md-line .md-tag {
+        font-family: var(--mono);
+        font-size: 20px;
+        color: var(--accent-2);
+        background: var(--bg-surface);
+        border-radius: 4px;
+        padding: 4px 12px;
+        margin-right: 10px;
+        letter-spacing: 1px;
+      }
+
+      .ih-count-callout {
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        padding: 10px 26px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--accent-1);
+        border-radius: 999px;
+      }
+      .ih-count-num {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 52px;
+        color: var(--accent-1);
+        line-height: 1;
+      }
+      .ih-count-label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .ih-grid {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        top: 320px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+      }
+      .ih-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px 24px;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ih-card-num {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 3px;
+        color: var(--accent-1);
+        text-transform: uppercase;
+      }
+      .ih-card-title {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 30px;
+        color: var(--text);
+        line-height: 1.05;
+      }
+      .ih-card-vis {
+        flex: 1 1 auto;
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .ih-card-vis svg, .ih-card-vis > div {
+        max-width: 100%;
+      }
+      .ih-card-meta {
+        font-family: var(--mono);
+        font-size: 18px;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+      }
+
+      /* Card-1 visual: mini table grid */
+      .vis-table {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        width: 100%;
+      }
+      .vis-table div {
+        height: 22px;
+        border: 1px solid var(--text-muted);
+        border-radius: 2px;
+      }
+      .vis-table div:nth-child(-n+3) {
+        background: var(--bg-surface);
+      }
+
+      /* Card-2 visual: 4 swatches */
+      .vis-swatches {
+        display: flex; gap: 8px;
+      }
+      .vis-swatches div {
+        width: 48px; height: 48px; border-radius: 8px;
+      }
+
+      /* Card-4 visual: code lines */
+      .vis-code {
+        font-family: var(--mono);
+        font-size: 15px;
+        line-height: 1.4;
+        color: var(--text);
+        padding-left: 4px;
+      }
+      .vis-code .kw { color: var(--accent-1); }
+      .vis-code .str { color: var(--accent-3); }
+
+      /* Card-5 visual: button + cursor */
+      .vis-button {
+        display: flex; align-items: center; gap: 10px;
+      }
+      .vis-button .btn {
+        background: var(--accent-1);
+        color: #FBF8F1;
+        padding: 10px 22px;
+        border-radius: 8px;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .vis-button .arrow {
+        font-size: 22px; color: var(--accent-2);
+      }
+      .vis-button .label {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .ih-attr-badge {
+        position: absolute;
+        right: 100px;
+        top: 244px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 20px;
+        font-family: var(--serif);
+        font-size: 24px;
+        color: var(--text-secondary);
+        max-width: 520px;
+        line-height: 1.4;
+      }
+      .ih-attr-badge em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+
+      /* Fail-mode block — full-width when revealed */
+      .ih-fail-zone {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        bottom: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .ih-fail-stamp {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-style: italic;
+        font-size: 64px;
+        color: var(--accent-1);
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+      .ih-fail-row {
+        display: grid;
+        grid-template-columns: 200px 1fr 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+      .ih-fail-pill {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 4px;
+        color: var(--accent-2);
+        background: var(--bg-card);
+        border: 1.5px solid var(--accent-2);
+        border-radius: 6px;
+        padding: 12px 18px;
+        text-align: center;
+      }
+      .ih-fail-card {
+        background: var(--bg-card);
+        border: 1.5px dashed var(--accent-2);
+        border-radius: 10px;
+        padding: 16px 22px;
+        font-family: var(--mono);
+        font-size: 20px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        white-space: pre;
+        position: relative;
+        min-height: 64px;
+        display: flex;
+        align-items: center;
+      }
+      .ih-fail-strike {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        top: 50%;
+        height: 3px;
+        background: var(--accent-2);
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+      .ih-fail-caption {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 24px;
+        color: var(--text-muted);
+        max-width: 1200px;
+      }
+    </style>
+
+    <div id="scene-image-hero-content">
+      <div class="ih-header">
+        <div class="ih-section-number" id="ih-num">01</div>
+        <div class="ih-overline" id="ih-overline">WHY HTML — REASON 01</div>
+        <div class="ih-h2" id="ih-h2">Information <em class="accent-italic" id="ih-h2-em">density</em>.</div>
+        <div class="ih-divider" id="ih-divider"></div>
+      </div>
+
+      <div class="ih-sublines">
+        <div class="ih-md-line" id="ih-md-line">
+          <span class="md-tag">.md</span>
+          headings, bold, a bullet list, a table if you squint.
+        </div>
+        <div class="ih-count-callout" id="ih-count">
+          <div class="ih-count-num">8</div>
+          <div class="ih-count-label">things in one .html</div>
+        </div>
+      </div>
+
+      <div class="ih-grid">
+        <!-- 1: Tables -->
+        <div class="ih-card" id="ih-card-1">
+          <div class="ih-card-num">01 / 08</div>
+          <div class="ih-card-title">Tables</div>
+          <div class="ih-card-vis">
+            <div class="vis-table"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+          </div>
+          <div class="ih-card-meta">&lt;table&gt;</div>
+        </div>
+
+        <!-- 2: CSS-driven design -->
+        <div class="ih-card" id="ih-card-2">
+          <div class="ih-card-num">02 / 08</div>
+          <div class="ih-card-title">CSS design</div>
+          <div class="ih-card-vis">
+            <div class="vis-swatches">
+              <div style="background:#C75A3F"></div>
+              <div style="background:#586F4F"></div>
+              <div style="background:#1A1815"></div>
+              <div style="background:#FBF8F1; border:1px solid var(--border);"></div>
+            </div>
+          </div>
+          <div class="ih-card-meta">&lt;style&gt;</div>
+        </div>
+
+        <!-- 3: SVG illustrations -->
+        <div class="ih-card" id="ih-card-3">
+          <div class="ih-card-num">03 / 08</div>
+          <div class="ih-card-title">SVG art</div>
+          <div class="ih-card-vis">
+            <svg viewBox="0 0 220 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+              <circle cx="40" cy="35" r="22" stroke="#C75A3F" stroke-width="2" fill="none"/>
+              <path d="M 80 58 Q 110 12 150 38 T 220 22" stroke="#586F4F" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <rect x="100" y="10" width="14" height="14" fill="#C75A3F" transform="rotate(20 107 17)"/>
+            </svg>
+          </div>
+          <div class="ih-card-meta">&lt;svg&gt;</div>
+        </div>
+
+        <!-- 4: Code snippets -->
+        <div class="ih-card" id="ih-card-4">
+          <div class="ih-card-num">04 / 08</div>
+          <div class="ih-card-title">Code</div>
+          <div class="ih-card-vis">
+            <div class="vis-code">
+              <div><span class="kw">function</span> render() {</div>
+              <div>&nbsp;&nbsp;<span class="kw">return</span> <span class="str">'hi'</span>;</div>
+              <div>}</div>
+            </div>
+          </div>
+          <div class="ih-card-meta">&lt;script&gt;</div>
+        </div>
+
+        <!-- 5: Live interactions -->
+        <div class="ih-card" id="ih-card-5">
+          <div class="ih-card-num">05 / 08</div>
+          <div class="ih-card-title">Interactions</div>
+          <div class="ih-card-vis">
+            <div class="vis-button">
+              <div class="btn">Click</div>
+              <span class="arrow">→</span>
+              <span class="label">onClick()</span>
+            </div>
+          </div>
+          <div class="ih-card-meta">js + css</div>
+        </div>
+
+        <!-- 6: Workflows -->
+        <div class="ih-card" id="ih-card-6">
+          <div class="ih-card-num">06 / 08</div>
+          <div class="ih-card-title">Workflows</div>
+          <div class="ih-card-vis">
+            <svg viewBox="0 0 240 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+              <defs><marker id="arr-flow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M 0 0 L 5 3 L 0 6 Z" fill="#C75A3F"/></marker></defs>
+              <rect x="2" y="25" width="58" height="24" rx="4" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)"/>
+              <rect x="91" y="25" width="58" height="24" rx="4" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)"/>
+              <rect x="180" y="25" width="58" height="24" rx="4" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)"/>
+              <line x1="60" y1="37" x2="86" y2="37" stroke="#C75A3F" stroke-width="2" marker-end="url(#arr-flow)"/>
+              <line x1="149" y1="37" x2="175" y2="37" stroke="#C75A3F" stroke-width="2" marker-end="url(#arr-flow)"/>
+            </svg>
+          </div>
+          <div class="ih-card-meta">svg + html</div>
+        </div>
+
+        <!-- 7: Spatial canvas -->
+        <div class="ih-card" id="ih-card-7">
+          <div class="ih-card-num">07 / 08</div>
+          <div class="ih-card-title">Spatial</div>
+          <div class="ih-card-vis">
+            <svg viewBox="0 0 220 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+              <g fill="#1A1815">
+                <circle cx="20" cy="15" r="2"/><circle cx="60" cy="15" r="2"/><circle cx="100" cy="15" r="2"/><circle cx="140" cy="15" r="2"/><circle cx="180" cy="15" r="2"/>
+                <circle cx="20" cy="35" r="2"/><circle cx="60" cy="35" r="2"/><circle cx="100" cy="35" r="2"/><circle cx="140" cy="35" r="2"/><circle cx="180" cy="35" r="2"/>
+                <circle cx="20" cy="55" r="2"/><circle cx="60" cy="55" r="2"/><circle cx="100" cy="55" r="2"/><circle cx="140" cy="55" r="2"/><circle cx="180" cy="55" r="2"/>
+              </g>
+              <rect x="48" y="22" width="26" height="20" fill="#C75A3F" rx="3"/>
+              <circle cx="130" cy="44" r="9" fill="#586F4F"/>
+            </svg>
+          </div>
+          <div class="ih-card-meta">absolute pos</div>
+        </div>
+
+        <!-- 8: Images -->
+        <div class="ih-card" id="ih-card-8">
+          <div class="ih-card-num">08 / 08</div>
+          <div class="ih-card-title">Images</div>
+          <div class="ih-card-vis">
+            <svg viewBox="0 0 220 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+              <rect x="2" y="2" width="216" height="66" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)" rx="6"/>
+              <path d="M 12 60 L 70 22 L 100 42 L 140 26 L 210 60 Z" fill="#586F4F" opacity="0.65"/>
+              <circle cx="170" cy="22" r="8" fill="#C75A3F"/>
+            </svg>
+          </div>
+          <div class="ih-card-meta">&lt;img&gt;</div>
+        </div>
+      </div>
+
+      <div class="ih-attr-badge" id="ih-attr">
+        Thariq: <em>almost nothing</em> Claude can read that you cannot represent in HTML.
+      </div>
+
+      <div class="ih-fail-zone" id="ih-fail">
+        <div class="ih-fail-stamp" id="ih-fail-stamp">Markdown's <em>workaround</em>:</div>
+        <div class="ih-fail-row">
+          <div class="ih-fail-pill" id="ih-fail-pill">FAIL MODE</div>
+          <div class="ih-fail-card" id="ih-fail-1">|||||---&nbsp;&nbsp;||||----&nbsp;&nbsp;|||||||---&nbsp;&nbsp;||||||----<span class="ih-fail-strike" id="ih-fail-1-strike"></span></div>
+          <div class="ih-fail-card" id="ih-fail-2">color:&nbsp;###&nbsp;&nbsp;background:&nbsp;@@@<span class="ih-fail-strike" id="ih-fail-2-strike"></span></div>
+        </div>
+        <div class="ih-fail-caption" id="ih-fail-caption">A 1990s readme, pretending to be a chart.</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      const cardSels = ["#ih-card-1","#ih-card-2","#ih-card-3","#ih-card-4",
+                        "#ih-card-5","#ih-card-6","#ih-card-7","#ih-card-8"];
+      cardSels.forEach(sel => tl.set(sel, { y: 18, opacity: 0, scale: 0.96 }, 0));
+      tl.set("#ih-md-line", { y: 14, opacity: 0 }, 0);
+      tl.set("#ih-count",   { y: 14, opacity: 0 }, 0);
+      tl.set("#ih-attr",    { y: 10, opacity: 0 }, 0);
+      tl.set("#ih-fail",    { opacity: 0, visibility: "hidden" }, 0);
+      tl.set("#ih-fail-stamp",   { y: 30, opacity: 0, scale: 0.9 }, 0);
+      tl.set("#ih-fail-pill",    { opacity: 0, scale: 0.85 }, 0);
+      tl.set("#ih-fail-1",       { opacity: 0, x: -30 }, 0);
+      tl.set("#ih-fail-2",       { opacity: 0, x: 30 }, 0);
+      tl.set("#ih-fail-caption", { opacity: 0, y: 10 }, 0);
+      tl.set("#ih-divider", { scaleX: 0 }, 0);
+
+      // Header
+      tl.from("#ih-num",      { y: 14, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.2);
+      tl.from("#ih-overline", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.4);
+      tl.from("#ih-h2",       { y: 20, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.6);
+      tl.to("#ih-divider",    { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.1);
+
+      // h2 italic emphasis pulse on "density" spoken at 4.45s
+      tl.to("#ih-h2-em", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 4.45);
+
+      // Markdown sub-line + count callout
+      tl.to("#ih-md-line", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 5.52);
+      tl.to("#ih-count",   { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 14.0);
+      tl.to("#ih-count",   { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 14.70);
+
+      // 8 cards reveal — quick-stagger matching narration burst
+      tl.to("#ih-card-1", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 16.85);
+      tl.to("#ih-card-2", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 17.34);
+      tl.to("#ih-card-3", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 18.74);
+      tl.to("#ih-card-4", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 20.99);
+      tl.to("#ih-card-5", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 22.91);
+      tl.to("#ih-card-6", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 26.70);
+      tl.to("#ih-card-7", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 31.11);
+      tl.to("#ih-card-8", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 36.24);
+
+      // Attribution badge at 38.71s
+      tl.to("#ih-attr", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 38.71);
+
+      // Cards dim to 40% to make room for fail-mode reveal at 47s
+      tl.to(cardSels.join(", "), { opacity: 0.4, duration: 0.6, ease: "power2.out" }, 47.0);
+      tl.to("#ih-attr",          { opacity: 0.55, duration: 0.6, ease: "power2.out", overwrite: "auto" }, 47.0);
+
+      // Fail zone reveals
+      tl.set("#ih-fail", { visibility: "visible" }, 47.4);
+      tl.to("#ih-fail",  { opacity: 1, duration: 0.4, ease: "power2.out" }, 47.4);
+
+      // "MARKDOWN'S WORKAROUND" stamp — big serif italic
+      tl.to("#ih-fail-stamp", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 47.5);
+
+      // FAIL MODE pill
+      tl.to("#ih-fail-pill", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 48.7);
+
+      // ASCII fail card 1 — slides in from left at "improvises" / "ASCII diagrams"
+      tl.to("#ih-fail-1", { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 49.88);
+      tl.to("#ih-fail-1", { scale: 1.02, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 50.80);
+
+      // Unicode color fail card 2 — slides in from right at "estimating colors"
+      tl.to("#ih-fail-2", { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 53.20);
+
+      // Caption "A 1990s readme, pretending to be a chart" appears at 58s as breath
+      tl.to("#ih-fail-caption", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 58.0);
+
+      // 1990s readme caption pulse at 65.64
+      tl.to("#ih-fail-caption", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 65.64);
+
+      // "stops faking the chart" — strike through both fail cards
+      tl.to("#ih-fail-1-strike", { scaleX: 1, duration: 0.55, ease: "power2.out" }, 69.91);
+      tl.to("#ih-fail-2-strike", { scaleX: 1, duration: 0.55, ease: "power2.out" }, 70.30);
+      tl.to("#ih-fail-stamp",    { color: "var(--text-muted)", duration: 0.4 }, 70.30);
+
+      // Lead-out — fail dims, cards re-brighten
+      tl.to("#ih-fail",          { opacity: 0.45, duration: 0.6, ease: "power2.out" }, 71.38);
+      tl.to(cardSels.join(", "), { opacity: 1.0, duration: 0.6, ease: "power2.out" }, 71.38);
+
+      window.__timelines["scene-image-hero"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,164 @@
+<!--
+  scene-image-3d-reveal.html — Hero image reveal with cinematic 3D entrance.
+
+  NEW archetype for the Anthropic long-form template.
+
+  Structure:
+    - Mono overline (e.g. "FROM THE ARTICLE")
+    - Hero screenshot/image, ~1440x810, 20px radius + orange border + glow
+    - 100px headline below the image
+    - Callout pill that enters after the image settles
+
+  3D entrance:
+    Parent has perspective:2000px so rotationY creates genuine 3D depth.
+    Image enters: scale 0.7→1, rotationY -25→0, opacity 0→1, back.out(1.4).
+    After entrance: micro-yoyo rotationY ±1.5deg, finite repeats.
+
+  OPERATOR:
+    - Replace assets/screenshots/blog-img-01.png with your real image.
+    - Update placeholder text in overline, headline, callout-pill.
+    - Tune SCENE_DURATION to match narration length.
+-->
+<template id="scene-image-3d-reveal-template">
+  <div data-composition-id="scene-image-3d-reveal"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-3d-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 20px;
+        box-sizing: border-box;
+      }
+      #img3d-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      /* 3D stage: perspective set on this parent so rotationY works correctly */
+      #img3d-stage {
+        perspective: 2000px;
+        transform-style: preserve-3d;
+        position: relative;
+      }
+      #img3d-frame {
+        width: 1200px;
+        max-width: 100%;
+        border-radius: 20px;
+        border: 2px solid rgba(233, 116, 88, 0.53);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55),
+                    0 0 80px rgba(233, 116, 88, 0.22);
+        display: block;
+        transform-style: preserve-3d;
+        object-fit: cover;
+        aspect-ratio: 16 / 9;
+        /* Placeholder when no image — operator replaces with real src */
+        background: #161B26;
+      }
+      #img3d-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 72px;
+        line-height: 1.05;
+        letter-spacing: -2px;
+        color: var(--text);
+        max-width: 1500px;
+        text-align: center;
+      }
+      #img3d-callout {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        border: 1.5px solid rgba(233, 116, 88, 0.40);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 2px;
+        color: var(--accent-1);
+        opacity: 0;
+      }
+      #img3d-callout .callout-arrow {
+        font-weight: 400;
+        font-size: 28px;
+      }
+    </style>
+
+    <div id="scene-3d-content">
+      <div id="img3d-overline">FROM THE ARTICLE</div>
+      <div id="img3d-stage">
+        <!--
+          OPERATOR: replace src with your real image path.
+          Keep the image inside assets/screenshots/ — no external URLs.
+          Recommended max source size: 2880x1620 (2x canvas, per hyperframes-pitfalls.md).
+          Bare template omits the src so lint stays clean (no audio_src_not_found equivalent).
+          Wire the image element per video:
+            img id="img3d-frame" src="assets/screenshots/blog-img-01.png" alt="Article image"
+        -->
+        <div id="img3d-frame" role="img" aria-label="Article image placeholder">
+          <!-- OPERATOR: replace this div with an img element once you have your screenshot -->
+        </div>
+      </div>
+      <div id="img3d-headline">YOUR IMAGE SCENE HEADLINE</div>
+      <div id="img3d-callout">
+        <span>REPLACE: callout label</span>
+        <span class="callout-arrow">&rarr;</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 18;
+      // Micro-yoyo cycle for the 3D drift after entrance
+      const YOYO_CYCLE = 12;
+      const yoyoRepeats = Math.max(0, Math.floor(SCENE_DURATION / YOYO_CYCLE) - 1);
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Overline entrance
+      tl.from("#img3d-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+
+      // 3D hero image entrance — scale + rotationY + opacity
+      tl.fromTo("#img3d-stage",
+        { scale: 0.7, rotationY: -25, opacity: 0, transformPerspective: 2000 },
+        { scale: 1.0, rotationY: 0,   opacity: 1, duration: 1.2, ease: "back.out(1.4)", immediateRender: false },
+        0.3);
+
+      // Micro-yoyo: subtle ±1.5deg rotation after image settles (finite)
+      tl.to("#img3d-stage", {
+        rotationY: 1.5,
+        duration: YOYO_CYCLE / 2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: yoyoRepeats,
+        immediateRender: false
+      }, 1.8);
+
+      // Headline enters after image settles
+      tl.from("#img3d-headline", { y: 28, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 1.6);
+
+      // Callout pill enters — distinct beat ~3s after image, satisfies visual-pacing-5s
+      tl.to("#img3d-callout", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 3.5);
+
+      // Pin timeline to scene duration
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-image-3d-reveal"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,226 @@
+<!--
+  shared/lib/components/burst-rays/component.html
+  12-ray sun-burst radiating outward from a configurable origin point.
+
+  Each of the 12 rays is a tapered SVG polygon rotated 30° apart around the
+  origin. Rays scale from 0 to full length (~600px) with a 30ms stagger;
+  brightness ramps 0→1→0 (peak mid-expansion). A radial-gradient flash blooms
+  and collapses behind the rays over 0.6s. Subtle chromatic aberration at peak:
+  thin red and cyan clones offset ±4px at reduced opacity.
+
+  Color: var(--burst, #FFD93D) with fallback.
+  DETERMINISM: fully deterministic — angle math only, no PRNG.
+  No Math.random, no Date.now.
+
+  COMPONENT IS PASTE-IN — three sections below.
+
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this container at the desired layer:
+-->
+
+<div class="burst-rays" data-origin-x="540" data-origin-y="960"></div>
+
+<!--
+  2) CSS — merge into your <style> block:
+-->
+
+<style>
+  /* shared/lib/components/burst-rays — keep this comment block */
+  .burst-rays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .burst-rays svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .br-flash { opacity: 0; }
+  .br-ray   { opacity: 0; }
+  .br-ray-ca { opacity: 0; }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addBurstRays(tl, ".burst-rays", 8.0);
+       addBurstRays(tl, ".burst-rays", 8.0, {
+         originX: 540, originY: 960,
+         rayCount: 12, length: 600,
+         duration: 0.9,
+         color: "var(--burst, #FFD93D)"
+       });
+
+     The host element may carry data-origin-x / data-origin-y attributes; if
+     provided and opts are omitted those values are used automatically.
+-->
+
+<script>
+  function addBurstRays(tl, containerSel, at, opts) {
+    var container = document.querySelector(containerSel);
+    if (!container) return;
+
+    var options  = opts || {};
+    var ox       = options.originX   !== undefined ? options.originX   : (parseFloat(container.dataset.originX)  || 540);
+    var oy       = options.originY   !== undefined ? options.originY   : (parseFloat(container.dataset.originY)  || 960);
+    var rayCount = options.rayCount  !== undefined ? options.rayCount  : 12;
+    var length   = options.length    !== undefined ? options.length    : 600;
+    var duration = options.duration  !== undefined ? options.duration  : 0.9;
+    var color    = options.color     !== undefined ? options.color     : 'var(--burst, #FFD93D)';
+
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // Remove any previously injected SVG (idempotent)
+    var svgId = containerSel.replace(/[^a-zA-Z0-9]/g, '_') + '_br_svg';
+    var existing = container.querySelector('#' + svgId);
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('id', svgId);
+    svg.setAttribute('viewBox', '0 0 1080 1920');
+    container.appendChild(svg);
+
+    // ── Defs: radial flash gradient ──
+    var defs = document.createElementNS(ns, 'defs');
+    var flashGradId = svgId + '_flash';
+    var radial = document.createElementNS(ns, 'radialGradient');
+    radial.setAttribute('id', flashGradId);
+    radial.setAttribute('cx', '50%'); radial.setAttribute('cy', '50%'); radial.setAttribute('r', '50%');
+    var sFlash0 = document.createElementNS(ns, 'stop');
+    sFlash0.setAttribute('offset', '0%');
+    sFlash0.setAttribute('stop-color', color);
+    sFlash0.setAttribute('stop-opacity', '0.9');
+    var sFlash1 = document.createElementNS(ns, 'stop');
+    sFlash1.setAttribute('offset', '100%');
+    sFlash1.setAttribute('stop-color', color);
+    sFlash1.setAttribute('stop-opacity', '0');
+    radial.appendChild(sFlash0); radial.appendChild(sFlash1);
+    defs.appendChild(radial);
+    svg.appendChild(defs);
+
+    // ── Flash bloom circle ──
+    var flashR = length * 0.45;
+    var flash = document.createElementNS(ns, 'circle');
+    flash.setAttribute('class', 'br-flash');
+    flash.setAttribute('cx', ox);
+    flash.setAttribute('cy', oy);
+    flash.setAttribute('r', flashR);
+    flash.setAttribute('fill', 'url(#' + flashGradId + ')');
+    svg.appendChild(flash);
+
+    // ── Rays ──
+    // Ray shape: tapered polygon — wide at base, pointed at tip
+    // base half-width = 12px, tip half-width = 1px, length units drive scale-from-0
+    var baseHW = 12;   // half-width at origin end (px)
+
+    function makeRayPoly(angle, len) {
+      // Points relative to origin in unrotated coords (pointing "up" = angle 0 = -Y)
+      // We'll place them in final canvas coords rotated by `angle`.
+      var rad = (angle - 90) * Math.PI / 180;   // rotate so angle=0 points right
+      var cos = Math.cos(rad), sin = Math.sin(rad);
+      function rotate(x, y) {
+        return [(ox + x * cos - y * sin), (oy + x * sin + y * cos)];
+      }
+      // Polygon: base-left, base-right, tip, close
+      var p0 = rotate(-baseHW, 0);
+      var p1 = rotate( baseHW, 0);
+      var p2 = rotate(1, -len);          // near-point tip
+      var p3 = rotate(-1, -len);
+      return [p0, p1, p2, p3].map(function(p) { return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' ');
+    }
+
+    var rayEls  = [];
+    var caEls   = [];   // chromatic aberration clones (red + cyan pair)
+
+    for (var i = 0; i < rayCount; i++) {
+      var angle = (i / rayCount) * 360;
+      var points = makeRayPoly(angle, length);
+
+      // Main ray
+      var ray = document.createElementNS(ns, 'polygon');
+      ray.setAttribute('class', 'br-ray');
+      ray.setAttribute('points', points);
+      ray.setAttribute('fill', color);
+      ray.setAttribute('transform-origin', ox + 'px ' + oy + 'px');
+      svg.appendChild(ray);
+      rayEls.push(ray);
+
+      // CA clone red (+4px right)
+      var caRed = document.createElementNS(ns, 'polygon');
+      caRed.setAttribute('class', 'br-ray-ca');
+      caRed.setAttribute('points', points);
+      caRed.setAttribute('fill', '#FF4444');
+      caRed.setAttribute('opacity', '0');
+      caRed.setAttribute('transform', 'translate(4 0)');
+      svg.appendChild(caRed);
+
+      // CA clone cyan (-4px right)
+      var caCyan = document.createElementNS(ns, 'polygon');
+      caCyan.setAttribute('class', 'br-ray-ca');
+      caCyan.setAttribute('points', points);
+      caCyan.setAttribute('fill', '#44FFFF');
+      caCyan.setAttribute('opacity', '0');
+      caCyan.setAttribute('transform', 'translate(-4 0)');
+      svg.appendChild(caCyan);
+
+      caEls.push({ red: caRed, cyan: caCyan });
+    }
+
+    // ── GSAP timeline tweens ──
+    var expandDur   = duration * 0.55;
+    var peakFrac    = 0.4;             // brightness peak at 40% of expansion
+    var peakAt      = at + expandDur * peakFrac;
+    var staggerStep = 0.03;            // 30ms stagger between rays
+
+    // Flash: bloom 0→1→0 over 0.6s centered near the start
+    gsap.set(flash, { scale: 0.2, opacity: 0, transformOrigin: ox + 'px ' + oy + 'px' });
+    tl.to(flash, {
+      keyframes: [
+        { scale: 1,   opacity: 1,   duration: 0.18, ease: 'power2.out' },
+        { scale: 1.6, opacity: 0,   duration: 0.42, ease: 'power1.in'  }
+      ]
+    }, at);
+
+    // Rays: each scales from 0 to full length (scaleY), staggered 30ms
+    rayEls.forEach(function(ray, i) {
+      var rayAt = at + i * staggerStep;
+      gsap.set(ray, { scaleY: 0, opacity: 0, transformOrigin: ox + 'px ' + oy + 'px' });
+      tl.to(ray, {
+        keyframes: [
+          { scaleY: 0.4, opacity: 0.9, duration: expandDur * peakFrac,        ease: 'power2.out' },
+          { scaleY: 1.0, opacity: 0.8, duration: expandDur * (1 - peakFrac),  ease: 'power1.out' },
+          { scaleY: 1.0, opacity: 0,   duration: duration - expandDur,        ease: 'power2.in'  }
+        ]
+      }, rayAt);
+    });
+
+    // CA clones: appear only at peak (brief flash at peak brightness)
+    var caWindow = 0.14;
+    caEls.forEach(function(pair, i) {
+      var caAt = peakAt + i * staggerStep;
+      gsap.set(pair.red,  { opacity: 0 });
+      gsap.set(pair.cyan, { opacity: 0 });
+      tl.to(pair.red, {
+        keyframes: [
+          { opacity: 0.22, duration: caWindow * 0.4, ease: 'power1.out' },
+          { opacity: 0,    duration: caWindow * 0.6, ease: 'power2.in'  }
+        ]
+      }, caAt);
+      tl.to(pair.cyan, {
+        keyframes: [
+          { opacity: 0.22, duration: caWindow * 0.4, ease: 'power1.out' },
+          { opacity: 0,    duration: caWindow * 0.6, ease: 'power2.in'  }
+        ]
+      }, caAt);
+    });
+  }
+  // End addBurstRays
+</script>

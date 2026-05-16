@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Code Version Update — Template</title>
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080 dark stage, Claude Code palette.
+     Forked from templates/long-form/standard/index.html.
+     Variant deltas:
+       - VersionBranding overlay (top-right logos + bottom-right URL line)
+       - Scene mix: stats-opener, feature-cards, terminal in place of
+         source-cards, architecture-stack, image-hero
+       - <title> updated; ambient gradient retuned for #0D1117 surface
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient wash — slow breath under all scenes. Tints retuned for
+     Claude Code accent triad (cyan-blue / purple / green). */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 25% 20%, rgba(88, 166, 255, 0.08), transparent 55%),
+      radial-gradient(circle at 78% 78%, rgba(163, 113, 247, 0.06), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(63, 185, 80, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — 14 deterministic shapes scattered at ~3.8% opacity
+     (15% more transparent than the original 4.5%). Shapes also re-randomise
+     their position at every scene boundary — see repositionShapesPerScene(). */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.038;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay — fractal noise via SVG feTurbulence. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — persistent banner across all scenes.
+     The variant ships with VersionBranding overlay
+     enabled. Per DESIGN.md "Variant-specific surfaces",
+     the operator picks ONE of:
+       (a) keep #top-banner centered + accept VersionBranding
+           top-right as a secondary brand cue, OR
+       (b) hide #top-banner-logo per video and let
+           VersionBranding own the top brand zone.
+     Default ships (a). To switch, set
+     #top-banner-logo { display:none; } per video.
+     ────────────────────────────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 1920px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* VersionBranding overlay — persistent, full-duration, no class="clip".
+     Source: diy-yt-creator/src/ClaudeCodeV21112-118/components/VersionBranding.tsx
+     Sits inside #root but outside any scene wrapper so it renders for the
+     full duration regardless of which scene is active. */
+  #version-branding {
+    position: absolute;
+    inset: 0;
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 9;
+  }
+  #version-branding .vb-logos {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  #version-branding .vb-logos img {
+    width: 240px;
+    height: auto;
+  }
+  #version-branding .vb-version {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+  }
+
+  /* Slim progress bar — bottom edge */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.55);
+  }
+
+  /* Sub-composition wrappers — each scene's container div.
+     Initially invisible; the root timeline crossfades them in/out.
+     The first scene starts visible (no incoming crossfade needed). */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-stats-opener-wrap          { z-index: 1; opacity: 1; }
+  #scene-feature-cards-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-headless-wrap       { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-performance-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-plugin-system-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-terminal-ui-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-detail-network-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap                   { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Captions wrapper sits above scenes, below noise overlay */
+  #captions-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+
+  /* ── VIDEO_CONFIG opt-in overlays ────────────────────────────────── */
+  #dynamous-badge {
+    position: absolute;
+    bottom: 48px;
+    left: 48px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px 8px 10px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.55;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.4));
+  }
+  /* Logo source is 771x1161 (portrait, ratio ~0.66) — anchor on height,
+     auto width preserves the original aspect ratio. */
+  #dynamous-badge-mark { height: 38px; width: auto; display: block; }
+  #dynamous-badge-url {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 0.6px;
+    color: #e2e8f0;
+  }
+
+  #dynamous-discount-bubble {
+    position: absolute;
+    bottom: 130px;
+    left: 48px;
+    z-index: 11;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #ddb-mark {
+    width: 28px;
+    height: 28px;
+    display: block;
+    background-image: url('assets/dynamous-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #ddb-url { font-weight: 700; font-size: 20px; color: #e2e8f0; letter-spacing: 0.3px; }
+  #ddb-discount {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 18px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+  #ddb-pointer { font-weight: 600; font-size: 18px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<script src="video.config.js"></script>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="298"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Ambient + shape backdrop — sit behind scenes -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Top banner — DISABLED in the Claude Code variant.
+       Per DESIGN.md "Variant-specific surfaces", VersionBranding is the
+       single brand surface for this variant (top-right logo stack
+       claims the same safe zone as a centered wordmark, and ships
+       hard-blocked the duplicate-media-discovery-risk lint warning).
+       To re-enable a centered wordmark per video, drop a different logo
+       (e.g. assets/claude-logo-light.svg) into assets/ and uncomment:
+         div id="top-banner"
+           img id="top-banner-logo" src="assets/<your-wordmark>.svg" alt="Brand"
+         /div
+       Then re-enable the matching tl.from() call below. -->
+  <div id="top-banner" style="display:none;">
+    <span id="top-banner-logo"></span>
+  </div>
+
+  <!-- VersionBranding overlay — Anthropic + Claude Code logos top-right;
+       version string + repo URL bottom-right. Renders for full duration. -->
+  <div id="version-branding">
+    <div class="vb-logos">
+      <img src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      <img src="assets/claude-code-logo-light.svg" alt="Claude Code" />
+    </div>
+    <div class="vb-version" id="vb-version-string">github.com/anthropics/claude-code/releases  |  v2.1.128 → v2.1.133</div>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ── VIDEO_CONFIG opt-in overlays ────────────────────────────────
+       All three are removed by the guard script below when disabled in
+       video.config.js, so they never affect layout or lint counts.
+       Enable per video by setting flags in video.config.js.          -->
+
+  <!-- Dynamous badge — persistent, no class="clip" (full duration) -->
+  <div id="dynamous-badge">
+    <img id="dynamous-badge-mark" src="assets/dynamous-logo.png" alt="Dynamous" />
+    <span id="dynamous-badge-url">dynamous.ai</span>
+  </div>
+
+  <!-- Dynamous discount bubble — time-bounded to CTA scene (timing set by guard) -->
+  <div id="dynamous-discount-bubble"
+       class="clip"
+       data-start="0"
+       data-duration="12"
+       data-track-index="10">
+    <span id="ddb-mark"></span>
+    <span id="ddb-url">Dynamous.ai</span>
+    <span id="ddb-discount">10% OFF</span>
+    <span id="ddb-pointer">in the link ↓</span>
+  </div>
+
+  <!-- Dynamous module interstitial — 3s sub-composition at first scene transition -->
+  <div id="dynamous-module-interstitial-wrap"
+       data-composition-id="dynamous-module-interstitial"
+       data-composition-src="compositions/dynamous-module-interstitial.html"
+       data-start="44.18"
+       data-track-index="11"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — canonical 8-scene Claude Code release structure.
+       Mirrors diy-yt-creator/src/ClaudeCodeV21112-118 reference Remotion
+       project (Scene01McpOauth → Scene08Cta). Each release video gets:
+
+         1. stats-opener         — 3 huge stats + lead-detail dive
+         2. feature-cards        — 6-card highlights overview
+         3. detail-headless      — Headless & SDK category dive
+         4. detail-performance   — Performance & Safety category dive
+         5. detail-plugin-system — Plugin System category dive
+         6. detail-terminal-ui   — Terminal UI category dive
+         7. detail-network       — Network & Proxy category dive
+         8. cta                  — `$ claude update` close-out
+
+       Data-start values below are placeholders for a typical 3-minute
+       release video (~187s narration). Operators MUST replace them per
+       release using transcript.json word-level timestamps after running
+       `npx hyperframes tts` + `npx hyperframes transcribe`.
+
+       data-track-index="1" (scene layer); NO data-duration — each
+       sub-comp's internal timeline anchors its slot length via
+       `tl.set({}, {}, slot_seconds)`.
+
+       The unused scene-hook, scene-side-by-side, scene-stat-pill-row,
+       scene-video-embed, and scene-terminal sub-comp files remain on
+       disk under compositions/ for variants that need them — they are
+       intentionally not wired here. The release-update format opens
+       cold with the stats opener (no hook intro).
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-stats-opener-wrap" class="scene-wrapper"
+       data-composition-id="scene-stats-opener"
+       data-composition-src="compositions/scene-stats-opener.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-feature-cards-wrap" class="scene-wrapper"
+       data-composition-id="scene-feature-cards"
+       data-composition-src="compositions/scene-feature-cards.html"
+       data-start="44.18"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-headless-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-headless"
+       data-composition-src="compositions/scene-detail-headless.html"
+       data-start="98.42"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-performance-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-performance"
+       data-composition-src="compositions/scene-detail-performance.html"
+       data-start="137.91"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-plugin-system-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-plugin-system"
+       data-composition-src="compositions/scene-detail-plugin-system.html"
+       data-start="169.34"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-terminal-ui-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-terminal-ui"
+       data-composition-src="compositions/scene-detail-terminal-ui.html"
+       data-start="207.65"
+       data-track-index="1"></div>
+
+  <div id="scene-detail-network-wrap" class="scene-wrapper"
+       data-composition-id="scene-detail-network"
+       data-composition-src="compositions/scene-detail-network.html"
+       data-start="246.79"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="282.27"
+       data-track-index="1"></div>
+
+  <!-- Captions sub-composition — populated by `npx hyperframes transcribe`.
+       Sits on track 9, above scenes but below the noise overlay z-index. -->
+  <div id="captions-wrap"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-track-index="9"></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUDIO BED — narration + SFX wired for v2.1.128–v2.1.133.
+       Track 2: narration. Tracks 3+4: SFX (whoosh + pop, sequential).
+       Per .claude/rules/audio-design.md, volumes are calibrated below
+       the 0.25 hard cap. NEVER use class="clip" on <audio>.
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Narration -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="298"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — cinematic-whoosh on every scene transition (data-start = scene - 0.40s) -->
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="43.78"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="98.02"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="137.51" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="168.94" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="207.25" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="246.39" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="281.87" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- SFX — spring-pop at first card entrance per scene (scene_t + relative card-1 at) -->
+  <audio id="sfx-pop-so"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="3.94"    data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-fc"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="46.79"   data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dh"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="100.36"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dp"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="140.43"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dpl" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="171.79"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dt"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="210.66"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-dn"  class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="250.27"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-pop-cta" class="clip" src="assets/sfx/spring-pop.mp3"
+         data-start="284.07"  data-duration="0.4" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- VIDEO_CONFIG guard — runs synchronously before HyperFrames scans
+       the DOM. Removes disabled overlay elements so they never appear
+       in the clip list or sub-composition queue. Also auto-wires the
+       discount bubble's data-start to the CTA scene. -->
+  <script>
+  (function () {
+    var d = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+    if (!d.badge)              { var e = document.getElementById('dynamous-badge');                     if (e) e.remove(); }
+    if (!d.moduleInterstitial) { var e = document.getElementById('dynamous-module-interstitial-wrap'); if (e) e.remove(); }
+    if (!d.discountBubble) {
+      var e = document.getElementById('dynamous-discount-bubble'); if (e) e.remove();
+    } else {
+      var cta    = document.getElementById('scene-cta-wrap');
+      var bubble = document.getElementById('dynamous-discount-bubble');
+      if (cta && bubble) {
+        bubble.dataset.start    = cta.dataset.start;
+        bubble.dataset.duration = String(d.discountBubbleDuration || 12);
+      }
+    }
+  })();
+  </script>
+
+  <!-- Film-grain overlay — last child so it tints everything below via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Shape backdrop — deterministic seeded scatter of 14 shapes.
+  // Mirrors templates/long-form/standard/index.html spawnShapes() exactly;
+  // seed prefix changed to keep shape positions distinct from standard.
+  // No Math.random / Date.now — uses xmur3-style hash.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  // Re-randomise shape positions at every scene boundary. Each scene gets a
+  // fresh deterministic placement (overlap-aware, mirrors spawnShapes); the
+  // tween animates over the crossfade window so it reads as part of the
+  // scene transition rather than independent drift.
+  function repositionShapesPerScene(tl, container, seedPrefix, sceneStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !sceneStartTimes.length) return;
+    const w = 1920, h = 1080, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    sceneStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      // Compute all target positions for this scene up-front, then emit ONE
+      // tween targeting every img via function-based values. This ensures GSAP
+      // treats all 14 shapes as a single animation unit rather than 14
+      // separate tweens at the same timeline position.
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  // atTime MUST be a numeric absolute time (seconds). Label-relative strings
+  // like "label-=0.4" cannot be passed because string + number concatenation
+  // (atTime + 0.3) collapses to a malformed position; GSAP then parses each
+  // sub-tween at the same time, breaking the staggered crossfade.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  spawnShapes('long-form-claude-code-version', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 298;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath across full duration (slow sine yoyo). 298s / 30s ≈ 10 cycles.
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 9 },
+    0);
+
+  // Reposition shapes at each scene change. Skip t=0 — initial spawn covers it.
+  repositionShapesPerScene(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'long-form-claude-code-version',
+    [44.18, 98.42, 137.91, 169.34, 207.65, 246.79, 282.27]
+  );
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#version-branding", { opacity: 0, duration: 0.8, ease: "power2.out" }, 0.4);
+
+  // ─── Scene labels — transcript-driven for v2.1.128–v2.1.133 ───
+  tl.addLabel("stats-opener",            0)
+    .addLabel("feature-cards",          44.18)
+    .addLabel("detail-headless",        98.42)
+    .addLabel("detail-performance",    137.91)
+    .addLabel("detail-plugin-system",  169.34)
+    .addLabel("detail-terminal-ui",    207.65)
+    .addLabel("detail-network",        246.79)
+    .addLabel("cta",                   282.27);
+
+  // ─── Crossfades between adjacent scenes ───
+  // Numeric atTimes only (scene boundary - 0.4). Never pass label-relative
+  // strings — see crossfadeScenes() comment above.
+  crossfadeScenes(tl, "#scene-stats-opener-wrap",          "#scene-feature-cards-wrap",          43.78);
+  crossfadeScenes(tl, "#scene-feature-cards-wrap",         "#scene-detail-headless-wrap",        98.02);
+  crossfadeScenes(tl, "#scene-detail-headless-wrap",       "#scene-detail-performance-wrap",    137.51);
+  crossfadeScenes(tl, "#scene-detail-performance-wrap",    "#scene-detail-plugin-system-wrap",  168.94);
+  crossfadeScenes(tl, "#scene-detail-plugin-system-wrap",  "#scene-detail-terminal-ui-wrap",    207.25);
+  crossfadeScenes(tl, "#scene-detail-terminal-ui-wrap",    "#scene-detail-network-wrap",        246.39);
+  crossfadeScenes(tl, "#scene-detail-network-wrap",        "#scene-cta-wrap",                   281.87);
+
+  // Pad timeline to the full composition duration so the renderer captures
+  // the trailing static frames of the last scene.
+  tl.set({}, {}, TOTAL_DURATION);
+
+  // ─── VIDEO_CONFIG opt-in GSAP wiring ───
+  var _dyn = ((window.VIDEO_CONFIG || {}).dynamous) || {};
+  if (_dyn.badge) {
+    tl.from('#dynamous-badge', { opacity: 0, x: -12, duration: 0.6, ease: 'power2.out' }, 3.0);
+  }
+  if (_dyn.discountBubble) {
+    var _ctaEl    = document.getElementById('scene-cta-wrap');
+    var _ctaStart = _ctaEl ? parseFloat(_ctaEl.dataset.start || '0') : TOTAL_DURATION - 14;
+    var _bubDur   = _dyn.discountBubbleDuration || 12;
+    tl.from('#dynamous-discount-bubble', { y: 16, opacity: 0, duration: 0.5, ease: 'power2.out' }, _ctaStart);
+    tl.to(  '#dynamous-discount-bubble', { opacity: 0, duration: 0.4, ease: 'power2.in', overwrite: 'auto' }, _ctaStart + _bubDur - 0.4);
+  }
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

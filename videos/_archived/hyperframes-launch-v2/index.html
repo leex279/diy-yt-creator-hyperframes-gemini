@@ -1,0 +1,2208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Agentic Video is HTML — HyperFrames Launch (v2)</title>
+<link rel="stylesheet" href="tokens/standard-short.css" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Full design system
+     in DESIGN.md. The "world" is much larger than the
+     viewport: a hub + 6 hex-arranged spokes inside a
+     4080x4518 camera box. A GSAP-driven camera transform
+     pans + scales between sections instead of phase
+     mutex / fade transitions.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* World geometry — set on #root since :root tokens come from standard-short.css.
+     The standard-short palette (--accent-1..4, --bg, --text, --pad-*) is provided
+     via <link rel="stylesheet"> above. We add legacy aliases so any leftover
+     shared-lib code in the file that references --orange / --purple / --blue /
+     --green continues to resolve to the new accents. */
+  #root {
+    --orange: var(--accent-1);  /* anthropic legacy → standard-short blue */
+    --purple: var(--accent-3);  /* legacy purple → standard-short purple */
+    --blue:   var(--accent-2);  /* legacy blue → standard-short cyan */
+    --green:  var(--accent-4);  /* legacy green → standard-short green */
+    --red:    var(--accent-warn);
+    --text-dim: #9AA0A6;
+    --card: rgba(241,243,244,0.05);
+
+    --world-w: 3280px;   /* v2.1: stretched-hex world — narrower than v1 (4080)  */
+    --world-h: 5210px;   /* but taller (was 4518) — fits 9:16 viewport at ~0.329 */
+    --section-w: 1080px;
+    --section-h: 1920px;
+
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+
+  /* Ambient wash — viewport-fixed (NOT inside the camera so it stays as a
+     constant glow regardless of camera move). Standard-short palette uses
+     blue+purple radials, mirroring videos/what-is-hyperframes. */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(59, 130, 246, 0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.07), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ──────────────────────────────────────────────────
+     CAMERA — the giant world canvas, full viewport height.
+     Transform-origin 0 0; translate(x,y) scale(s) maps a
+     camera-local point (Lx, Ly) to screen (Lx*s + tx, Ly*s + ty).
+     To put a camera-local point at viewport centre (540, 960):
+       tx = 540 - Lx*s
+       ty = 960 - Ly*s
+     For a section view at scale 1 with section top-left at
+     (sec_tl_x, sec_tl_y), put section LOCAL (540, 960) at
+     viewport (540, 960):  tx = -sec_tl_x, ty = -sec_tl_y.
+     ────────────────────────────────────────────────── */
+  #camera {
+    position: absolute;
+    width: var(--world-w);
+    height: var(--world-h);
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    z-index: 1;
+  }
+
+  /* World fill — subtle vignette inside the camera. Drawn behind sections
+     so the area between sections doesn't read as flat black. */
+  #world-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(233,116,88,0.04), transparent 55%),
+      radial-gradient(circle at 50% 50%, #0E1320 0%, #0B0F18 70%);
+    pointer-events: none;
+  }
+
+  /* Shape backdrop — populated per-section by spawnShapesPerSection()
+     in the script. Each section has its own scattered shape group so the
+     map shows shapes everywhere; section view shows that section's shapes.
+     Anchored on its parent .section so positions are local to the section. */
+  .section-shapes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .section-shapes .bg-mark {
+    position: absolute;
+    opacity: 0.07;
+    pointer-events: none;
+    color: var(--accent-1);   /* HUB default; overridden per section below */
+  }
+  /* Per-section accent colour on the </> background marks */
+  #sec-hub .section-shapes .bg-mark { color: var(--accent-1); }
+  #sec-1   .section-shapes .bg-mark { color: var(--accent-warn); }
+  #sec-2   .section-shapes .bg-mark { color: var(--accent-3); }
+  #sec-3   .section-shapes .bg-mark { color: var(--accent-2); }
+  #sec-4   .section-shapes .bg-mark { color: var(--accent-3); }
+  #sec-5   .section-shapes .bg-mark { color: var(--accent-stat); }
+  #sec-6   .section-shapes .bg-mark { color: var(--accent-4); }
+
+  /* ──────────────────────────────────────────────────
+     SECTIONS — 7 absolute-positioned tiles inside #camera.
+     Each is 1080x1920. v2.1 layout: STRETCHED HEX with
+     rad_horizontal=1100, rad_vertical=1645 around a hub
+     at world centre (1640, 2605). The stretched aspect
+     ratio (3280x5210 ≈ 0.629) fits 9:16 viewport (0.5625)
+     far better than v1 — map fills nearly the full canvas
+     at scale 0.329 instead of leaving 745px of dead space.
+       HUB    centre (1640, 2605)  → top:1645  left:1100
+       S1 NW  centre (1090,  960)  → top:   0  left: 550
+       S2 NE  centre (2190,  960)  → top:   0  left:1650
+       S3  E  centre (2740, 2605)  → top:1645  left:2200
+       S4 SE  centre (2190, 4250)  → top:3290  left:1650
+       S5 SW  centre (1090, 4250)  → top:3290  left: 550
+       S6  W  centre ( 540, 2605)  → top:1645  left:   0
+     ────────────────────────────────────────────────── */
+  .section {
+    position: absolute;
+    width: var(--section-w);
+    height: var(--section-h);
+    overflow: hidden;
+  }
+  #sec-hub { top:1645px; left:1100px; }
+  #sec-1   { top:   0px; left: 550px; }
+  #sec-2   { top:   0px; left:1650px; }
+  #sec-3   { top:1645px; left:2200px; }
+  #sec-4   { top:3290px; left:1650px; }
+  #sec-5   { top:3290px; left: 550px; }
+  #sec-6   { top:1645px; left:   0px; }
+
+  /* Per-section ground tile — gives each section a soft accent wash that
+     reads as "you're inside this room" at section zoom and as a coloured
+     map node at zoomed-out view. */
+  .section-tile {
+    position: absolute;
+    inset: 60px;
+    border-radius: 60px;
+    pointer-events: none;
+  }
+  /* Per-section tile colors — v2 distinct accent per spoke for richer rotation:
+     HUB blue, S1 PROBLEM orange (warn), S2 INSIGHT purple, S3 HOW cyan,
+     S4 MAGIC purple (showcase), S5 CATALYST yellow (the inflection),
+     S6 OPEN SOURCE green (go signal). */
+  #sec-hub .section-tile { background: radial-gradient(circle at 50% 40%, rgba(59,130,246,0.16), transparent 60%); }
+  #sec-1   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(249,115,22,0.16), transparent 60%); }
+  #sec-2   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(139,92,246,0.14), transparent 60%); }
+  #sec-3   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(6,182,212,0.16),  transparent 60%); }
+  #sec-4   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(139,92,246,0.16), transparent 60%); }
+  #sec-5   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(251,188,4,0.14),  transparent 60%); }
+  #sec-6   .section-tile { background: radial-gradient(circle at 50% 40%, rgba(34,197,94,0.16),  transparent 60%); }
+
+  /* Section node badge — visible at all camera depths. Acts as the readable
+     anchor in map view (where the full content is too small to read) and as
+     the "phase 03" chip at section zoom. Centered horizontally near the top
+     of each section so the connecting lines, which terminate at the section
+     centre, visually "lead into" the badge. */
+  .section-node {
+    position: absolute;
+    left: 390px;
+    top: 280px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 4px solid;
+    background: rgba(11,15,24,0.78);
+    backdrop-filter: blur(6px);
+  }
+  .section-node .node-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 0.9;
+    letter-spacing: -3px;
+  }
+  .section-node .node-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  /* Per-section node accent. Each spoke gets its own color — the rotation is
+     no longer 3-repeated like in v1 since the standard-short palette has 6
+     accent slots that we can map 1:1 to sections. */
+  #sec-hub .section-node {
+    width: 380px; height: 380px;
+    left: 350px; top: 240px;
+    border-color: var(--accent-1);
+    box-shadow: 0 0 80px rgba(59,130,246,0.50), inset 0 0 60px rgba(59,130,246,0.22);
+  }
+  #sec-hub .section-node .node-num { color: var(--accent-1); font-size: 130px; text-shadow: 0 0 40px rgba(59,130,246,0.6); }
+  #sec-hub .section-node .node-label { color: var(--accent-1); }
+
+  #sec-1 .section-node { border-color: var(--accent-warn); box-shadow: 0 0 60px rgba(249,115,22,0.45); }
+  #sec-1 .section-node .node-num { color: var(--accent-warn); }
+
+  #sec-2 .section-node { border-color: var(--accent-3); box-shadow: 0 0 60px rgba(139,92,246,0.45); }
+  #sec-2 .section-node .node-num { color: var(--accent-3); }
+
+  #sec-3 .section-node { border-color: var(--accent-2); box-shadow: 0 0 60px rgba(6,182,212,0.50); }
+  #sec-3 .section-node .node-num { color: var(--accent-2); }
+
+  #sec-4 .section-node { border-color: var(--accent-3); box-shadow: 0 0 60px rgba(139,92,246,0.50); }
+  #sec-4 .section-node .node-num { color: var(--accent-3); }
+
+  #sec-5 .section-node { border-color: var(--accent-stat); box-shadow: 0 0 60px rgba(251,188,4,0.45); }
+  #sec-5 .section-node .node-num { color: var(--accent-stat); }
+
+  #sec-6 .section-node { border-color: var(--accent-4); box-shadow: 0 0 60px rgba(34,197,94,0.50); }
+  #sec-6 .section-node .node-num { color: var(--accent-4); }
+
+  /* "Visited" check — small green tick that appears on a node after the
+     camera has visited it. Used in the final completion screen so the map
+     reads as a finished journey when the camera pulls back at the end.
+     Sits inside the badge (NOT overlapping the ring) so the contrast
+     stack is just green-on-dark — passes WCAG AA without depending on
+     whatever happens to be behind the badge's outer edge. */
+  .node-check {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #0B0F18;
+    color: var(--green);
+    border: 3px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 1;
+    box-shadow: 0 0 14px rgba(125,211,166,0.55);
+    opacity: 0;
+  }
+
+  /* Section content — full-height envelope (v2 restored): badge at y=280..580,
+     content area at y=620..1700, bottom safe-zone at y=1700..1920 for the
+     progress dots. Each section uses this generous space for its own creative
+     identity — no shared lower-third anymore. */
+  .section-content {
+    position: absolute;
+    top: 620px;
+    left: 60px;
+    width: 960px;
+    bottom: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -1px;
+    max-width: 920px;
+  }
+  .body {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 880px;
+  }
+  .accent-pill {
+    margin-top: 12px;
+    padding: 18px 36px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  /* Per-section overline color — matches the section's node accent. */
+  #sec-hub .overline { color: var(--accent-1); }
+  #sec-1   .overline { color: var(--accent-warn); }
+  #sec-2   .overline { color: var(--accent-3); }
+  #sec-3   .overline { color: var(--accent-2); }
+  #sec-4   .overline { color: var(--accent-3); }
+  #sec-5   .overline { color: var(--accent-stat); }
+  #sec-6   .overline { color: var(--accent-4); }
+
+  /* Hub content lays out a true scroll-stop hero with a slam word. */
+  #sec-hub .section-content {
+    top: 700px;
+    gap: 24px;
+  }
+  #sec-hub .hero-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.9;
+    letter-spacing: -8px;
+    color: var(--accent-1);
+    text-shadow: 0 0 80px rgba(59,130,246,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 920px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     SECTION CALLOUT — secondary content card revealed mid-section
+     so the visual surface keeps changing every 5s in a 18-25s section.
+     One per spoke; the variant class controls the inner layout.
+     ────────────────────────────────────────────────── */
+  .section-callout {
+    margin-top: 12px;
+    width: 880px;
+    padding: 22px 26px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(245,241,235,0.06), rgba(245,241,235,0.02));
+    border: 1.5px solid rgba(245,241,235,0.16);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.30);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  /* Variant: list — vertical stack of items with X / check marks */
+  .callout-list { gap: 8px; }
+  .callout-list .row {
+    display: flex; flex-direction: row; align-items: center; gap: 18px;
+    width: 100%;
+    font-family: var(--sans); font-weight: 700; font-size: 38px;
+    color: var(--text);
+  }
+  .callout-list .row .mark {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--sans); font-weight: 900; font-size: 28px;
+    line-height: 1;
+  }
+  .callout-list .row .mark.x  { background: rgba(209,67,67,0.18); color: var(--red);   border: 2px solid rgba(209,67,67,0.55); }
+  .callout-list .row .mark.ok { background: rgba(125,211,166,0.18); color: var(--green); border: 2px solid rgba(125,211,166,0.55); }
+  .callout-list .row .brand-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 12px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.45));
+  }
+  .callout-list .row .label { flex: 1; text-align: left; }
+  /* Variant: code — monospace block (lines or single line) */
+  .callout-code {
+    font-family: var(--mono); font-weight: 600; font-size: 38px;
+    color: var(--text); letter-spacing: 1px; text-align: left;
+    background: rgba(11,15,24,0.55);
+    padding: 22px 26px;
+    border-radius: 16px;
+    width: 100%;
+  }
+  .callout-code .line { line-height: 1.45; }
+  .callout-code .accent { color: var(--accent-2); }
+  /* S6 (Open source) uses green for its accent — it's the "go signal" */
+  #s6-callout .accent { color: var(--accent-4); }
+  /* Variant: chips — horizontal row of small accent pills */
+  .callout-chips {
+    flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: center;
+  }
+  .callout-chips .chip {
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: var(--mono); font-weight: 700; font-size: 30px;
+    letter-spacing: 1px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    color: var(--text);
+  }
+  /* Variant: pills — bigger, accent-color pills (for stat / brand pairs) */
+  .callout-pills {
+    flex-direction: row; gap: 18px; justify-content: center;
+  }
+  .callout-pills .pill {
+    padding: 18px 30px;
+    border-radius: 18px;
+    font-family: var(--sans); font-weight: 800; font-size: 42px;
+    line-height: 1;
+  }
+  .callout-pills .pill.purple { background: rgba(139,92,246,0.18);  color: var(--accent-3);    border: 2px solid rgba(139,92,246,0.5); }
+  .callout-pills .pill.blue   { background: rgba(59,130,246,0.18);  color: var(--accent-1);    border: 2px solid rgba(59,130,246,0.5); }
+  .callout-pills .pill.cyan   { background: rgba(6,182,212,0.18);   color: var(--accent-2);    border: 2px solid rgba(6,182,212,0.5); }
+  .callout-pills .pill.green  { background: rgba(34,197,94,0.18);   color: var(--accent-4);    border: 2px solid rgba(34,197,94,0.5); }
+  .callout-pills .pill.yellow { background: rgba(251,188,4,0.20);   color: var(--accent-stat); border: 2px solid rgba(251,188,4,0.5); }
+  .callout-pills .pill.orange { background: rgba(249,115,22,0.18);  color: var(--accent-warn); border: 2px solid rgba(249,115,22,0.5); }
+  /* Variant: stat — single big number/phrase + caption */
+  .callout-stat {
+    align-items: center; padding: 26px 30px;
+  }
+  .callout-stat .num {
+    font-family: var(--sans); font-weight: 900; font-size: 96px;
+    line-height: 0.9; letter-spacing: -3px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .callout-stat .cap {
+    margin-top: 6px;
+    font-family: var(--mono); font-weight: 700; font-size: 28px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  /* Per-section accent on the callout-stat number */
+  #sec-2 .callout-stat .num { color: var(--accent-3);    text-shadow: 0 0 36px rgba(139,92,246,0.55); }
+  #sec-5 .callout-stat .num { color: var(--accent-stat); text-shadow: 0 0 36px rgba(251,188,4,0.55); }
+
+  /* Sub-callout on hub — tiny mono chip below the accent pill */
+  .hub-meta {
+    margin-top: 14px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: rgba(34,197,94,0.12);
+    border: 1.5px solid rgba(34,197,94,0.45);
+    font-family: var(--mono); font-weight: 700; font-size: 28px;
+    letter-spacing: 1.5px;
+    color: var(--accent-4);
+  }
+
+  /* ──────────────────────────────────────────────────
+     VIEWPORT-FIXED CHROME — sits above #camera, never moves.
+     The top banner and progress bar must stay anchored to
+     the viewport regardless of camera scale / position so
+     they read as constants throughout the journey.
+     ────────────────────────────────────────────────── */
+  /* Top banner — v2.1: real HyperFrames icon (from the upstream repo)
+     replaces the styled dot, and the text drops the "v1.0" + grows 25%. */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 22;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 38px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 38px;            /* +25% over v2's 30px */
+    letter-spacing: 5px;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  #top-banner-icon {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.6));
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(241,243,244,0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent-1);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.55);
+  }
+
+  /* ──────────────────────────────────────────────────
+     HOOK OVERLAY — viewport-fixed cold-open hero text that delivers
+     the narration arc as a build → pivot → punchline, sitting on TOP
+     of the camera + HUB content during t=3.0–13.0. Sequence:
+       3.4  : "AI AGENTS" overline drops in
+       3.99 : "WRITE."   slams in (first capability)
+       4.83 : "TALK."    slams in
+       5.54 : "CODE."    slams in
+       7.04 : checkmarks fire on all 3 in fast succession
+       7.43 : "AUTONOMOUSLY." finale word slams in
+       8.37 : red strike sweeps across the stack, "BUT…" appears
+      10.50 : "UNTIL THIS WEEK." big red kicker line
+      11.95 : white flash → black wipe → final punchline reveal
+      12.11 : "Edit video." massive serif-italic slam (the moment)
+      12.90 : hook fades, camera-clip + HUB existing brand content resumes
+     ────────────────────────────────────────────────── */
+  #hook-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 20;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 1;
+    /* Solid dark backdrop so the camera dive happens privately
+       behind the hook — viewer sees the hook as the "cold open". */
+    background: radial-gradient(ellipse at 50% 42%, rgba(20,28,46,1) 0%, #0B0F1A 65%, #050811 100%);
+  }
+  #hook-tint {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 45%, rgba(180,28,28,0.0), rgba(120,8,8,0.18) 70%);
+    opacity: 0;
+  }
+  #hook-stack {
+    position: absolute;
+    left: 0; right: 0;
+    top: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    text-align: center;
+  }
+  #hook-overline {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 44px;
+    letter-spacing: 14px;
+    text-transform: uppercase;
+    color: var(--accent-1);
+    margin-bottom: 24px;
+    opacity: 0;
+  }
+  .hook-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 168px;
+    line-height: 0.95;
+    letter-spacing: -5px;
+    color: #fff;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    opacity: 0;
+  }
+  .hook-row.finale {
+    font-size: 108px;
+    letter-spacing: -2px;
+    color: var(--accent-1);
+    text-shadow: 0 0 70px rgba(59,130,246,0.55), 0 12px 30px rgba(0,0,0,0.7);
+    margin-top: 14px;
+  }
+  .hook-tick {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    font-weight: 900;
+    background: rgba(34,197,94,0.18);
+    color: var(--accent-4);
+    border: 3.5px solid rgba(34,197,94,0.55);
+    box-shadow: 0 0 24px rgba(34,197,94,0.35);
+    opacity: 0;
+  }
+  .hook-row.finale .hook-tick {
+    width: 72px;
+    height: 72px;
+    font-size: 46px;
+    border-width: 3px;
+  }
+  #hook-strike {
+    position: absolute;
+    left: 60px;
+    right: 60px;
+    top: 880px;
+    height: 16px;
+    background: var(--red);
+    border-radius: 8px;
+    transform: scaleX(0);
+    transform-origin: left center;
+    box-shadow: 0 0 22px rgba(249,115,22,0.55);
+  }
+  #hook-pivot {
+    position: absolute;
+    top: 220px;
+    left: 30px; right: 30px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 124px;
+    color: var(--red);
+    text-align: center;
+    letter-spacing: -3px;
+    line-height: 0.95;
+    text-shadow: 0 10px 28px rgba(0,0,0,0.75);
+    opacity: 0;
+  }
+  #hook-week {
+    position: absolute;
+    bottom: 320px;
+    left: 0; right: 0;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 60px;
+    color: var(--red);
+    text-align: center;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    text-shadow: 0 0 22px rgba(249,115,22,0.5);
+    opacity: 0;
+  }
+  #hook-punch {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #050811;
+    opacity: 0;
+  }
+  #hook-punch-word {
+    font-family: var(--sans);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 144px;
+    line-height: 0.95;
+    letter-spacing: -5px;
+    color: var(--red);
+    text-shadow: 0 0 90px rgba(249,115,22,0.5), 0 14px 36px rgba(0,0,0,0.7);
+    text-align: center;
+    padding: 0 40px;
+  }
+  #hook-flash {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    z-index: 26;
+  }
+
+  /* Final-frame CTA pill — sits at viewport bottom during the completion
+     screen. Subordinate to the map (per shorts-thumbnail-frames rule
+     the topic must dominate, the CTA is small). */
+  #final-cta {
+    position: absolute;
+    bottom: 140px;
+    left: 0;
+    width: 1080px;
+    z-index: 9;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #final-cta .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 40px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  #final-cta .cta-pill .arrow {
+    color: var(--accent-1);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 52px;
+    line-height: 0.7;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PER-SECTION CREATIVE LAYERS
+     Each section has its own visual signature on top of the
+     standard headline/body/callout — decorative HTML tags
+     floating in HUB, strike-through lines drawing across S1
+     rows, HTML-tag rain in S2 background, code-editor frame
+     around S3's code, terminal frame around S6's command, etc.
+     ────────────────────────────────────────────────── */
+
+  /* S1 — animated strike-through across each tool name. Drawn as an
+     SVG <line> on top of each row, animated stroke-dashoffset 1→0. */
+  #s1-callout .strike {
+    position: absolute;
+    left: 60px; right: 24px;
+    top: 50%;
+    height: 4px;
+    background: var(--accent-warn);
+    box-shadow: 0 0 10px rgba(249,115,22,0.7);
+    border-radius: 2px;
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+  #s1-callout .row { position: relative; }
+
+  /* S2 — HTML-tag rain behind the headline. 18 tags absolutely positioned
+     across the section background. Each falls slowly via a single CSS
+     keyframe (the framework needs deterministic so we use long-period
+     finite-cycle keyframes seeded by row position). */
+  .s2-rain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .s2-rain .rain-tag {
+    position: absolute;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    color: #DDD6FE;
+    opacity: 0;
+    text-shadow: 0 0 10px rgba(139,92,246,0.5);
+    animation: s2-fall 10s linear infinite;
+  }
+  @keyframes s2-fall {
+    0%   { transform: translateY(-100px); opacity: 0; }
+    15%  { opacity: 0.20; }
+    85%  { opacity: 0.20; }
+    100% { transform: translateY(2000px); opacity: 0; }
+  }
+
+  /* S3 — code-editor frame with title bar + line numbers. Replaces the
+     simple code-callout with a real-looking VS-Code-style window. */
+  .code-editor {
+    width: 920px;
+    margin-top: 16px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #0c1220, #060912);
+    border: 2px solid rgba(6,182,212,0.40);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(6,182,212,0.18);
+    overflow: hidden;
+  }
+  .code-editor .editor-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: rgba(20,28,48,0.85);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .code-editor .traffic { display: flex; gap: 8px; }
+  .code-editor .traffic .light { width: 12px; height: 12px; border-radius: 50%; }
+  .code-editor .traffic .red    { background: #ff5f56; }
+  .code-editor .traffic .yellow { background: #ffbd2e; }
+  .code-editor .traffic .green  { background: #27c93f; }
+  .code-editor .editor-title {
+    margin-left: 12px;
+    font-family: var(--mono);
+    font-size: 20px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 1px;
+  }
+  .code-editor .editor-body {
+    padding: 24px 28px;
+    font-family: var(--mono);
+    font-size: 34px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.85);
+    text-align: left;
+  }
+  .code-editor .editor-line {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .code-editor .editor-line .ln {
+    width: 32px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .code-editor .tag-name { color: #ff8da1; }
+  .code-editor .attr     { color: var(--accent-2); }
+  .code-editor .str      { color: #fbbf24; }
+  .code-editor .punct    { color: rgba(255,255,255,0.55); }
+
+  /* S3 export-format chips — HTML → MP4 / MOV / WEBM. Sits below the code
+     editor; each chip pops in as narration names the format. */
+  .export-arrow {
+    margin-top: 28px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 60px;
+    color: var(--accent-2);
+    line-height: 1;
+    text-shadow: 0 0 24px rgba(6,182,212,0.55);
+    opacity: 0;
+  }
+  .format-row {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    justify-content: center;
+    margin-top: 14px;
+  }
+  .fmt-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 30px;
+    border-radius: 16px;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 44px;
+    letter-spacing: 2px;
+    background: rgba(6,182,212,0.18);
+    border: 2.5px solid rgba(6,182,212,0.55);
+    color: var(--accent-2);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 30px rgba(6,182,212,0.25);
+    opacity: 0;
+  }
+  .fmt-chip .fmt-icon {
+    font-size: 32px;
+    color: var(--accent-4);
+    line-height: 1;
+  }
+
+  /* S5 — date-tile + lightning flash. The "November 2025" tile is the
+     centerpiece; a quick white flash overlays the entire section when
+     the narration says the date. */
+  .date-tile {
+    width: 720px;
+    padding: 28px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(251,188,4,0.18), rgba(251,188,4,0.04));
+    border: 2px solid rgba(251,188,4,0.50);
+    box-shadow: 0 14px 36px rgba(251,188,4,0.18), 0 0 40px rgba(251,188,4,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .date-tile .month {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 6px;
+    color: var(--accent-stat);
+    text-transform: uppercase;
+  }
+  .date-tile .day-year {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 96px;
+    line-height: 0.9;
+    letter-spacing: -3px;
+    color: var(--text);
+    text-shadow: 0 0 36px rgba(251,188,4,0.55);
+  }
+  /* S5 pre-state — "QUALITY: NOT RELIABLE" status during the "for a long
+     time, the models weren't quite there" narration. Fades out at date slam. */
+  .s5-pre {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    border-radius: 14px;
+    background: rgba(209,67,67,0.12);
+    border: 2px solid rgba(209,67,67,0.55);
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 3px;
+    color: var(--red);
+    opacity: 0;
+  }
+  .s5-pre .s5-pre-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 14px rgba(209,67,67,0.85);
+    animation: s5-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes s5-pulse {
+    0%, 100% { opacity: 1.0; }
+    50%      { opacity: 0.35; }
+  }
+  /* S5 outcome badges below the model pills — land as narration names them */
+  .s5-badge-row {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    justify-content: center;
+  }
+  .s5-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-radius: 14px;
+    background: rgba(34,197,94,0.14);
+    border: 2px solid rgba(34,197,94,0.55);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 30px;
+    color: var(--accent-4);
+    opacity: 0;
+  }
+  .s5-badge .s5-tick {
+    font-size: 26px;
+    color: var(--accent-4);
+    line-height: 1;
+  }
+
+  /* Full-section lightning flash overlay */
+  #s5-flash {
+    position: absolute;
+    inset: 60px;
+    border-radius: 60px;
+    background: radial-gradient(circle at 50% 50%, rgba(251,188,4,0.55), rgba(255,255,255,0.18) 30%, transparent 60%);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 2;
+    mix-blend-mode: screen;
+  }
+
+  /* S6 — terminal mockup with the install command. Mirrors the
+     videos/what-is-hyperframes terminal pattern. */
+  .terminal {
+    width: 920px;
+    margin-top: 16px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #0c1220, #060912);
+    border: 2px solid rgba(34,197,94,0.40);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(34,197,94,0.18);
+    overflow: hidden;
+  }
+  .terminal .term-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: rgba(20,28,48,0.85);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .terminal .term-bar .traffic .red    { background: #ff5f56; }
+  .terminal .term-bar .traffic .yellow { background: #ffbd2e; }
+  .terminal .term-bar .traffic .green  { background: #27c93f; }
+  .terminal .term-bar .traffic .light { width: 12px; height: 12px; border-radius: 50%; }
+  .terminal .term-bar .traffic { display: flex; gap: 8px; }
+  .terminal .term-title {
+    margin-left: 12px;
+    font-family: var(--mono);
+    font-size: 20px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 1px;
+  }
+  .terminal .term-body {
+    padding: 24px 28px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.5;
+    color: var(--text);
+    text-align: left;
+  }
+  .terminal .term-body .prompt { color: var(--accent-4); margin-right: 14px; }
+  .terminal .term-body .cmd    { color: var(--text); }
+  .terminal .term-body .cmd .url { color: var(--accent-4); }
+  .terminal .term-body .out    { color: rgba(255,255,255,0.62); font-weight: 500; margin-top: 6px; }
+  .terminal .cursor {
+    display: inline-block;
+    width: 14px;
+    height: 32px;
+    margin-left: 4px;
+    background: var(--accent-4);
+    vertical-align: middle;
+    animation: term-blink 0.9s steps(2, start) infinite;
+  }
+  @keyframes term-blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+  /* S6 stack-poll CTA — fades in at the end of the Short replacing the
+     terminal as the thumbnail-grade final frame. Three brand pills + a
+     "Comment your pick" CTA below. */
+  .s6-poll {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    padding: 0 60px;
+    opacity: 0;
+  }
+  .s6-poll-q {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 88px;
+    line-height: 0.98;
+    letter-spacing: -2px;
+    color: var(--text);
+    text-align: center;
+    text-shadow: 0 8px 24px rgba(0,0,0,0.55);
+  }
+  .s6-poll-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    align-items: center;
+  }
+  .s6-poll-pill {
+    width: 720px;
+    padding: 24px 32px;
+    border-radius: 22px;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 60px;
+    text-align: center;
+    letter-spacing: -1px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    opacity: 0;
+  }
+  .s6-poll-pill.is-hf {
+    background: rgba(59,130,246,0.22);
+    border: 3px solid var(--accent-1);
+    color: var(--accent-1);
+    text-shadow: 0 0 24px rgba(59,130,246,0.45);
+  }
+  .s6-poll-pill.is-rem {
+    background: rgba(139,92,246,0.20);
+    border: 3px solid var(--accent-3);
+    color: var(--accent-3);
+    text-shadow: 0 0 24px rgba(139,92,246,0.45);
+  }
+  .s6-poll-pill.is-canvas {
+    background: rgba(251,188,4,0.18);
+    border: 3px solid var(--accent-stat);
+    color: var(--accent-stat);
+    text-shadow: 0 0 24px rgba(251,188,4,0.45);
+  }
+  .s6-poll-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 36px;
+    border-radius: 999px;
+    background: var(--accent-4);
+    color: #062815;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 48px;
+    letter-spacing: -0.5px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.55), 0 0 24px rgba(34,197,94,0.45);
+    opacity: 0;
+  }
+  .s6-poll-cta .s6-poll-arrow {
+    font-size: 52px;
+    line-height: 0.8;
+    animation: cta-bounce 1.2s ease-in-out infinite;
+  }
+  @keyframes cta-bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(6px); }
+  }
+
+  /* COMPLETION CONFETTI — registry-inspired burst at the final pull-back.
+     20 deterministic particles fly outward from world centre. */
+  #confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 6;
+    overflow: hidden;
+    opacity: 0;
+  }
+  #confetti .piece {
+    position: absolute;
+    width: 14px;
+    height: 24px;
+    border-radius: 3px;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+  }
+
+  /* ──────────────────────────────────────────────────
+     S4 TECH DEMO GRID — replaces the chip-row in v1.
+     2x3 grid of 6 mini-demo panels. Each panel shows a
+     live example animation of the named tech (CSS, GSAP,
+     Lottie, Three.js, D3, Google Fonts). Panels enter as
+     narration names each tech (audio-synced).
+     ────────────────────────────────────────────────── */
+  #s4-demo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 16px;
+    width: 960px;
+    height: 480px;
+    margin-top: 12px;
+  }
+  .demo-panel {
+    position: relative;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(8,14,28,0.92), rgba(4,8,18,0.92));
+    border: 2px solid rgba(139,92,246,0.30);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(139,92,246,0.12);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  .demo-panel .demo-label {
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    z-index: 2;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--text);
+    background: rgba(11,15,26,0.78);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+  .demo-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* Question-mark placeholder visible until the demo is revealed.
+     The label below the question-mark stays generic ("?") until reveal. */
+  .demo-question {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 140px;
+    color: rgba(139,92,246,0.78);
+    text-shadow: 0 0 24px rgba(139,92,246,0.55);
+    z-index: 3;
+  }
+  .demo-stage.demo-reveal { opacity: 0; }
+  /* Demo 1 — CSS anim — a rotating colored ring (pure CSS keyframe) */
+  .demo-css .ring {
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    border: 8px solid var(--accent-warn);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    animation: demo-spin 1.8s linear infinite;
+    box-shadow: 0 0 20px rgba(249,115,22,0.55);
+  }
+  @keyframes demo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  /* Demo 2 — GSAP — a stack of 3 dots that spring-pulse (animated via GSAP in script) */
+  .demo-gsap .dot-row { display: flex; gap: 14px; }
+  .demo-gsap .dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-1);
+    box-shadow: 0 0 16px rgba(59,130,246,0.65);
+  }
+  /* Demo 3 — Lottie — SVG path morph (the framework's GSAP attrPlugin would handle this in a real
+     project, but we use a CSS @keyframes path transform for a deterministic stand-in) */
+  .demo-lottie .heart {
+    width: 130px; height: 130px;
+    animation: demo-heartbeat 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 14px rgba(249,115,22,0.55));
+  }
+  @keyframes demo-heartbeat {
+    0%, 100% { transform: scale(1); }
+    20%      { transform: scale(1.18); }
+    35%      { transform: scale(0.98); }
+    50%      { transform: scale(1.12); }
+  }
+  /* Demo 4 — Three.js — a pseudo-3D rotating cube (CSS 3D transforms standing in for a
+     full three.js scene; the framework would run real WebGL but the visual reads the same) */
+  .demo-three { perspective: 600px; }
+  .demo-three .cube {
+    position: relative;
+    width: 120px; height: 120px;
+    transform-style: preserve-3d;
+    animation: demo-cube 4s linear infinite;
+  }
+  .demo-three .cube .face {
+    position: absolute;
+    width: 120px; height: 120px;
+    border: 2px solid var(--accent-3);
+    background: rgba(139,92,246,0.18);
+    box-shadow: inset 0 0 20px rgba(139,92,246,0.40);
+  }
+  .demo-three .cube .face.front  { transform: translateZ(60px); }
+  .demo-three .cube .face.back   { transform: rotateY(180deg) translateZ(60px); }
+  .demo-three .cube .face.right  { transform: rotateY(90deg) translateZ(60px); }
+  .demo-three .cube .face.left   { transform: rotateY(-90deg) translateZ(60px); }
+  .demo-three .cube .face.top    { transform: rotateX(90deg) translateZ(60px); }
+  .demo-three .cube .face.bottom { transform: rotateX(-90deg) translateZ(60px); }
+  @keyframes demo-cube { from { transform: rotateY(0) rotateX(20deg); } to { transform: rotateY(360deg) rotateX(20deg); } }
+  /* Demo 5 — D3 — animated bar chart with 5 vertical bars rising (CSS keyframes) */
+  .demo-d3 .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 130px;
+  }
+  .demo-d3 .bars .bar {
+    width: 22px;
+    background: linear-gradient(180deg, var(--accent-2), rgba(6,182,212,0.6));
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 0 10px rgba(6,182,212,0.5);
+    animation: demo-bar 2.0s ease-in-out infinite;
+    transform-origin: bottom;
+  }
+  .demo-d3 .bars .bar:nth-child(1) { animation-delay: 0s;   --target: 30%; }
+  .demo-d3 .bars .bar:nth-child(2) { animation-delay: 0.15s; --target: 70%; }
+  .demo-d3 .bars .bar:nth-child(3) { animation-delay: 0.3s;  --target: 45%; }
+  .demo-d3 .bars .bar:nth-child(4) { animation-delay: 0.45s; --target: 90%; }
+  .demo-d3 .bars .bar:nth-child(5) { animation-delay: 0.6s;  --target: 55%; }
+  @keyframes demo-bar {
+    0%, 100% { height: 10%; }
+    50%      { height: var(--target, 60%); }
+  }
+  /* Demo 6 — Google Fonts — three font-family swaps in a loop ("Aa" glyph) */
+  .demo-fonts .glyph {
+    font-size: 90px; font-weight: 900; line-height: 1;
+    color: var(--accent-stat);
+    animation: demo-font-cycle 4.5s steps(3, end) infinite;
+    text-shadow: 0 0 14px rgba(251,188,4,0.6);
+  }
+  @keyframes demo-font-cycle {
+    0%   { font-family: 'Inter', sans-serif; font-style: normal; }
+    34%  { font-family: 'Georgia', serif; font-style: italic; }
+    67%  { font-family: 'JetBrains Mono', monospace; font-style: normal; }
+    100% { font-family: 'Inter', sans-serif; font-style: normal; }
+  }
+  /* Demo panel accent border per tech */
+  .demo-css    { border-color: rgba(249,115,22,0.45); box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(249,115,22,0.18); }
+  .demo-gsap   { border-color: rgba(59,130,246,0.45); box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(59,130,246,0.18); }
+  .demo-lottie { border-color: rgba(249,115,22,0.45); box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(249,115,22,0.18); }
+  .demo-three  { border-color: rgba(139,92,246,0.45); box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(139,92,246,0.18); }
+  .demo-d3     { border-color: rgba(6,182,212,0.45);  box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(6,182,212,0.18); }
+  .demo-fonts  { border-color: rgba(251,188,4,0.45);  box-shadow: 0 12px 30px rgba(0,0,0,0.40), 0 0 18px rgba(251,188,4,0.18); }
+
+  /* Film-grain overlay — sits above EVERYTHING so it tints the whole stack
+     regardless of camera state. */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="158.5"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient wash — viewport-fixed (not inside camera). -->
+  <div id="ambient"></div>
+
+  <!-- Camera — full-viewport. All section content lives inside. The camera
+       extends beyond #root which has overflow:hidden, so anything outside
+       the 1080x1920 box is clipped at the root boundary. -->
+  <div id="camera" data-layout-allow-overflow="true">
+    <div id="world-bg"></div>
+
+    <!-- HUB — section 0, the start node. Hero hook lives here. -->
+    <div id="sec-hub" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">00</div>
+        <div class="node-label">START</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="hub-content">
+        <div class="overline">Open Sourced Today</div>
+        <div class="hero-slam" id="hub-slam">HTML.</div>
+        <div class="accent-pill">Agentic video toolchain</div>
+        <div class="hub-meta" id="hub-meta">made with HyperFrames itself ✓</div>
+      </div>
+    </div>
+
+    <!-- SPOKE 1 — top-left -->
+    <div id="sec-1" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">01</div>
+        <div class="node-label">Problem</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s1-content">
+        <div class="overline">The Problem</div>
+        <div class="headline">Every video tool is built for humans.</div>
+        <div class="body">JSON and XML timelines. Layers. Keyframes. Years of muscle memory.</div>
+        <div class="section-callout callout-list" id="s1-callout">
+          <div class="row"><img class="brand-logo" src="assets/logos/after-effects.png" alt="After Effects"/><div class="label">After Effects</div><div class="strike" id="strike-1"></div></div>
+          <div class="row"><img class="brand-logo" src="assets/logos/davinci-resolve.png" alt="DaVinci Resolve"/><div class="label">DaVinci Resolve</div><div class="strike" id="strike-2"></div></div>
+          <div class="row"><img class="brand-logo" src="assets/logos/premiere.png" alt="Premiere Pro"/><div class="label">Premiere</div><div class="strike" id="strike-3"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 2 — top-right -->
+    <div id="sec-2" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <!-- HTML-tag rain — falling tokens behind the headline,
+           visualizes "billions of HTML pages in training data" -->
+      <div class="s2-rain">
+        <div class="rain-tag" style="left:  60px; animation-delay: -0.5s;">&lt;div&gt;</div>
+        <div class="rain-tag" style="left: 200px; animation-delay: -2.2s;">&lt;p&gt;</div>
+        <div class="rain-tag" style="left: 340px; animation-delay: -4.7s;">&lt;span&gt;</div>
+        <div class="rain-tag" style="left: 480px; animation-delay: -6.1s;">&lt;a&gt;</div>
+        <div class="rain-tag" style="left: 620px; animation-delay: -1.3s;">&lt;img&gt;</div>
+        <div class="rain-tag" style="left: 760px; animation-delay: -3.8s;">&lt;ul&gt;</div>
+        <div class="rain-tag" style="left: 900px; animation-delay: -5.5s;">&lt;h1&gt;</div>
+        <div class="rain-tag" style="left:  20px; animation-delay: -7.4s;">&lt;br&gt;</div>
+        <div class="rain-tag" style="left: 280px; animation-delay: -8.0s;">&lt;li&gt;</div>
+        <div class="rain-tag" style="left: 420px; animation-delay: -9.1s;">&lt;svg&gt;</div>
+        <div class="rain-tag" style="left: 560px; animation-delay: -0.8s;">&lt;form&gt;</div>
+        <div class="rain-tag" style="left: 700px; animation-delay: -2.6s;">&lt;nav&gt;</div>
+        <div class="rain-tag" style="left: 840px; animation-delay: -4.1s;">&lt;hr&gt;</div>
+        <div class="rain-tag" style="left: 980px; animation-delay: -5.9s;">&lt;b&gt;</div>
+      </div>
+      <div class="section-node">
+        <div class="node-num">02</div>
+        <div class="node-label">Insight</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s2-content">
+        <div class="overline">The Insight</div>
+        <div class="headline">Agents already speak the web.</div>
+        <div class="body">Billions of HTML pages. Millions of CSS and JS animations. Hundreds of thousands of GSAP snippets.</div>
+        <div class="section-callout callout-stat" id="s2-callout">
+          <div class="num">BILLIONS</div>
+          <div class="cap">of pages in their training data</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 3 — right (chapter break) -->
+    <div id="sec-3" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">03</div>
+        <div class="node-label">How</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s3-content">
+        <div class="overline">The How</div>
+        <div class="headline">Three data-attributes.</div>
+        <!-- Full VS-Code-style editor frame with traffic-light dots,
+             title bar, and syntax-highlighted code lines. -->
+        <div class="code-editor" id="s3-editor">
+          <div class="editor-bar">
+            <div class="traffic"><div class="light red"></div><div class="light yellow"></div><div class="light green"></div></div>
+            <div class="editor-title">index.html — HyperFrames</div>
+          </div>
+          <div class="editor-body">
+            <div class="editor-line" id="ed-line-1"><span class="ln">1</span><span><span class="punct">&lt;</span><span class="tag-name">div</span><span class="punct"> </span><span class="attr">data-start</span><span class="punct">=</span><span class="str">"0"</span><span class="punct">&gt;</span></span></div>
+            <div class="editor-line" id="ed-line-2"><span class="ln">2</span><span class="punct">&nbsp;&nbsp;</span><span><span class="punct">&lt;</span><span class="tag-name">div</span><span class="punct"> </span><span class="attr">data-duration</span><span class="punct">=</span><span class="str">"5"</span><span class="punct">&gt;</span></span></div>
+            <div class="editor-line" id="ed-line-3"><span class="ln">3</span><span class="punct">&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="attr">data-track-index</span><span class="punct">=</span><span class="str">"1"</span></span></div>
+          </div>
+        </div>
+        <!-- Export-format chips: HTML → MP4 / MOV / WEBM. Each pops in as
+             narration names the format ("MP4" at 85.5, "MOV" at 86.6, "WEBM" at 88.2). -->
+        <div class="export-arrow" id="s3-arrow">→</div>
+        <div class="format-row" id="s3-formats">
+          <div class="fmt-chip" id="fmt-mp4"><span class="fmt-icon">▶</span><span class="fmt-label">MP4</span></div>
+          <div class="fmt-chip" id="fmt-mov"><span class="fmt-icon">▶</span><span class="fmt-label">MOV</span></div>
+          <div class="fmt-chip" id="fmt-webm"><span class="fmt-icon">▶</span><span class="fmt-label">WEBM</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 4 — bottom-right -->
+    <div id="sec-4" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">04</div>
+        <div class="node-label">Magic</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s4-content">
+        <div class="overline">The Magic</div>
+        <div class="headline">Anything browser-native works.</div>
+        <!-- 2x3 grid of live demo panels — each panel runs a CSS / GSAP animation
+             that demonstrates what that tech can do. Panels enter in narration
+             order (CSS → GSAP → Lottie → Three.js → D3 → Fonts). -->
+        <div id="s4-demo-grid">
+          <div class="demo-panel demo-css" id="demo-css">
+            <div class="demo-question">?</div>
+            <div class="demo-stage demo-reveal"><div class="ring"></div></div>
+            <div class="demo-label">CSS anim</div>
+          </div>
+          <div class="demo-panel demo-gsap" id="demo-gsap">
+            <div class="demo-question">?</div>
+            <div class="demo-stage demo-reveal"><div class="dot-row"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div></div></div>
+            <div class="demo-label">GSAP</div>
+          </div>
+          <div class="demo-panel demo-lottie" id="demo-lottie">
+            <div class="demo-question">?</div>
+            <div class="demo-stage demo-reveal">
+              <svg class="heart" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 28 L4 16 A6 6 0 0 1 16 8 A6 6 0 0 1 28 16 Z" fill="#F97316" stroke="#F97316" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="demo-label">Lottie</div>
+          </div>
+          <div class="demo-panel demo-three" id="demo-three">
+            <div class="demo-question">?</div>
+            <div class="demo-stage demo-reveal">
+              <div class="cube">
+                <div class="face front"></div>
+                <div class="face back"></div>
+                <div class="face left"></div>
+                <div class="face right"></div>
+                <div class="face top"></div>
+                <div class="face bottom"></div>
+              </div>
+            </div>
+            <div class="demo-label">Three.js</div>
+          </div>
+          <div class="demo-panel demo-d3" id="demo-d3">
+            <div class="demo-question">?</div>
+            <div class="demo-stage demo-reveal">
+              <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            </div>
+            <div class="demo-label">D3</div>
+          </div>
+          <div class="demo-panel demo-fonts" id="demo-fonts">
+            <div class="demo-question">?</div>
+            <div class="demo-stage demo-reveal"><div class="glyph">Aa</div></div>
+            <div class="demo-label">Google Fonts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 5 — bottom-left -->
+    <div id="sec-5" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <!-- Lightning flash overlay — bright yellow radial that flashes ONCE
+           when narration says "November 2025" -->
+      <div id="s5-flash"></div>
+      <div class="section-node">
+        <div class="node-num">05</div>
+        <div class="node-label">Catalyst</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s5-content">
+        <div class="overline">The Catalyst</div>
+        <div class="headline">The moment everything changed.</div>
+        <!-- Pre-state: while narration says "for a long time, the models weren't
+             quite there", show this stumbling status; fades out as the date tile
+             slams in at "November 2025". -->
+        <div class="s5-pre" id="s5-pre">
+          <span class="s5-pre-dot"></span>
+          <span class="s5-pre-text">QUALITY: NOT RELIABLE</span>
+        </div>
+        <!-- Big date-tile centerpiece, paired with model pills below -->
+        <div class="date-tile" id="s5-date">
+          <div class="month">November</div>
+          <div class="day-year">2025</div>
+        </div>
+        <div class="section-callout callout-pills" id="s5-callout">
+          <div class="pill yellow">Gemini 3</div>
+          <div class="pill yellow">Opus 4.5</div>
+        </div>
+        <!-- Post-convergence outcome badges that land as narration names them -->
+        <div class="s5-badge-row">
+          <div class="s5-badge" id="s5-badge-motion"><span class="s5-tick">✓</span>Motion graphics</div>
+          <div class="s5-badge" id="s5-badge-rolls"><span class="s5-tick">✓</span>Multi-scene B-rolls</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOKE 6 — left (chapter break — final stop) -->
+    <div id="sec-6" class="section" data-layout-allow-overflow="true">
+      <div class="section-tile"></div>
+      <div class="section-shapes"></div>
+      <div class="section-node">
+        <div class="node-num">06</div>
+        <div class="node-label">Try It</div>
+        <div class="node-check">✓</div>
+      </div>
+      <div class="section-content" id="s6-content">
+        <div class="overline" id="s6-overline">Open Source</div>
+        <div class="headline" id="s6-headline">Apache 2.0. Try it now.</div>
+        <!-- Real terminal mockup — install command typewrites in, prompt blinks -->
+        <div class="terminal" id="s6-terminal">
+          <div class="term-bar">
+            <div class="traffic"><div class="light red"></div><div class="light yellow"></div><div class="light green"></div></div>
+            <div class="term-title">~/agent — zsh</div>
+          </div>
+          <div class="term-body">
+            <div><span class="prompt">$</span><span class="cmd" id="s6-typed">npx skills add <span class="url">heygen-com/hyperframes</span></span><span class="cursor"></span></div>
+            <div class="out" id="s6-output">✓ skill installed. agent is now a video editor.</div>
+          </div>
+        </div>
+        <!-- Stack-poll CTA — fades in at t=148.6 ("So tell me…") replacing the
+             terminal as the thumbnail-grade final frame of the Short. -->
+        <div class="s6-poll" id="s6-poll">
+          <div class="s6-poll-q" id="s6-poll-q">Which one are you<br/>shipping with?</div>
+          <div class="s6-poll-pills">
+            <div class="s6-poll-pill is-hf"    id="s6-pill-hf">HyperFrames</div>
+            <div class="s6-poll-pill is-rem"   id="s6-pill-rem">Remotion</div>
+            <div class="s6-poll-pill is-canvas" id="s6-pill-canvas">Motion&nbsp;Canvas</div>
+          </div>
+          <div class="s6-poll-cta" id="s6-poll-cta">
+            <span class="s6-poll-arrow">↓</span>
+            Comment your pick
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /#camera -->
+
+  <!-- Confetti burst — viewport-fixed, 20 deterministic particles fire on
+       the final pull-back to map view. Each is a small coloured rectangle
+       that flies outward + falls with gravity (computed in the script tag). -->
+  <div id="confetti"></div>
+
+  <!-- ═════════════════════════════════════════════════════════
+       HOOK OVERLAY (z=20) — viewport-fixed cold-open hero, plays
+       during 3.0–13.0s. Sits ABOVE the camera/map so the camera
+       can quietly dive to HUB underneath without distracting the
+       viewer. Fades out at t=12.9, revealing existing HUB brand
+       content (HTML. slam + accent pill + made-with chip).
+       ═════════════════════════════════════════════════════════ -->
+  <div id="hook-overlay">
+    <div id="hook-tint"></div>
+    <div id="hook-stack">
+      <div id="hook-overline">AI&nbsp;&nbsp;AGENTS</div>
+      <div class="hook-row" id="hook-row-write">
+        <span class="hook-tick" id="hook-tick-write">&#10003;</span><span>WRITE.</span>
+      </div>
+      <div class="hook-row" id="hook-row-talk">
+        <span class="hook-tick" id="hook-tick-talk">&#10003;</span><span>TALK.</span>
+      </div>
+      <div class="hook-row" id="hook-row-code">
+        <span class="hook-tick" id="hook-tick-code">&#10003;</span><span>CODE.</span>
+      </div>
+      <div class="hook-row finale" id="hook-row-auto">
+        <span class="hook-tick" id="hook-tick-auto">&#10003;</span><span>AUTONOMOUSLY.</span>
+      </div>
+    </div>
+    <div id="hook-strike"></div>
+    <div id="hook-pivot">BUT NOT<br/>VIDEO.</div>
+    <div id="hook-week">Until&nbsp;this&nbsp;week.</div>
+    <div id="hook-punch">
+      <div id="hook-punch-word">Editing&nbsp;video.</div>
+    </div>
+    <div id="hook-flash"></div>
+  </div>
+
+  <!-- Persistent top banner — v2.1 with real HyperFrames icon -->
+  <div id="top-banner">
+    <span id="top-banner-text">
+      <img id="top-banner-icon" src="assets/hyperframes-icon.png" alt="HyperFrames" />
+      HyperFrames
+    </span>
+  </div>
+
+  <!-- Slim progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- v2.3: dropped bottom progress dots. Each badge's ✓ check (visible at
+       map view + completion) serves as journey progress without overlap. -->
+
+  <!-- v2.3: dropped redundant map-overlay. Top banner (HYPERFRAMES + icon) carries
+       brand identity; each card now previews its own content so a separate
+       "what is this video about" headline is redundant + caused overlap. -->
+
+  <!-- ═══════════════════════════════════════════════════════
+       NARRATION + SFX
+       Rules:        .claude/rules/audio-design.md
+       Cue catalog:  shared/audio/MANIFEST.md
+       Sync into this project (after you copy this template):
+         bash scripts/sync-video-sfx.sh videos/<slug> cinematic-whoosh impact-slam scale-slam pop
+       Then uncomment the blocks below and tune the data-* values per scene.
+
+       The defaults below cue every camera move with a cinematic-whoosh.
+       This is intentional for the game-map metaphor: each move is a
+       physical journey beat, and the audio grounds it. Direct pans get
+       a softer whoosh (0.08); chapter zoom-out-in moves get the standard
+       0.11; the dive-in and final pull-back layer impact-slam / scale-slam.
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Narration — TTS via ElevenLabs, audio starts at camera-arrival on HUB (t=3.0). -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0.0"
+         data-duration="156.64"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- SFX — every camera move gets a whoosh; cold-open hook layers its own
+       SFX (strike-cross, glitch-zap, impact-slam, screen-shake) on the pivot
+       and punchline. Each whoosh's data-start equals the camera tween's `at`
+       time (per audio-design.md "SFX must be aligned to their visual triggers"). -->
+
+  <!-- Hook pivot SFX — strike-cross on "BUT" red strike, glitch-zap on the
+       pivot word, impact-slam on the "Edit video." punchline. All track 3
+       (no overlap inside the hook window). -->
+  <audio id="sfx-hook-strike"  class="clip" src="assets/sfx/strike-cross.mp3"
+         data-start="5.50"   data-duration="0.50" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-hook-pivot"   class="clip" src="assets/sfx/glitch-zap.mp3"
+         data-start="5.50"   data-duration="0.45" data-track-index="4" data-volume="0.09"></audio>
+  <audio id="sfx-hook-punch"   class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="8.40"  data-duration="0.60" data-track-index="3" data-volume="0.15"></audio>
+  <audio id="sfx-hook-shake"   class="clip" src="assets/sfx/screen-shake.mp3"
+         data-start="8.45"  data-duration="0.50" data-track-index="4" data-volume="0.11"></audio>
+
+  <audio id="sfx-pan-1"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="18.21"  data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+  <audio id="sfx-pan-2"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="40.06"  data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+
+  <audio id="sfx-chapter-1"    class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="64.6"  data-duration="0.80" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-pan-4"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="88.96"  data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+  <audio id="sfx-pan-5"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="110.3" data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+  <audio id="sfx-pan-6"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="132.50" data-duration="0.50" data-track-index="3" data-volume="0.08"></audio>
+
+  <!-- Stack-poll CTA SFX — a single soft whoosh on the question slam, then a
+       scale-slam on the final "Comment your pick" pill. No pull-back SFX
+       (the Short ends ON the CTA, not on a pull-back to map). -->
+  <audio id="sfx-cta-q"        class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="148.60" data-duration="0.50" data-track-index="3" data-volume="0.09"></audio>
+  <audio id="sfx-cta-pick"     class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="155.35" data-duration="0.50" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay — last child so it sits on top and tints everything via blend mode -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Deterministic hash — same xmur3-style PRNG as the Anthropic template
+  // so shape scatter is reproducible across renders.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  // v2.2 background — inline SVG </> marks (the HyperFrames brand essence)
+  // randomly scattered per section using deterministic rejection sampling.
+  // No PNG backdrop issue, no logo-with-white-square. Each mark inherits the
+  // section's accent colour via currentColor. Sizes 200..400px at 0.07 opacity.
+  function makeHFMark() {
+    // Two filled triangles (◄ ►) + a tilted slash — captures `</>`.
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" '
+      + 'style="width:100%;height:100%;color:currentColor" preserveAspectRatio="xMidYMid meet">'
+      + '<path d="M 10 50 L 38 28 L 38 72 Z" fill="currentColor" stroke-linejoin="round" />'
+      + '<path d="M 90 50 L 62 28 L 62 72 Z" fill="currentColor" stroke-linejoin="round" />'
+      + '<line x1="58" y1="22" x2="42" y2="78" stroke="currentColor" stroke-width="10" stroke-linecap="round" />'
+      + '</svg>';
+  }
+  function spawnShapesPerSection(seedPrefix, container) {
+    const count = 5;
+    const w = 1080, h = 1920;
+    const minDist = 380, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + (attempt++);
+        const size = 200 + seedHash(seed + '-s') * 200;
+        const cx = seedHash(seed + '-x') * (w - size * 0.5) + size * 0.25;
+        const cy = seedHash(seed + '-y') * (h - size * 0.5) + size * 0.25;
+        const rot = (seedHash(seed + '-r') - 0.5) * 60;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          nearest = Math.min(nearest, dx * dx + dy * dy);
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const div = document.createElement('div');
+      div.className = 'bg-mark';
+      div.innerHTML = makeHFMark();
+      div.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:'  + (best.cy - best.size / 2) + 'px;' +
+        'width:'  + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(div);
+      gsap.set(div, { rotation: best.rot });
+    }
+  }
+
+  // 5 marks per section × 7 sections = 35 marks total — random scatter,
+  // each carrying its section's accent colour via .section-shapes parent.
+  ['hub','1','2','3','4','5','6'].forEach((sid) => {
+    const el = document.querySelector('#sec-' + sid + ' .section-shapes');
+    if (el) spawnShapesPerSection('hf-mark-' + sid, el);
+  });
+
+  // Confetti burst — spawn N coloured rectangles at viewport centre. Each gets
+  // a deterministic colour from the standard-short palette. Trajectories set
+  // by GSAP tweens in the timeline (no Math.random — uses seedHash).
+  function spawnConfetti(containerSel, count) {
+    const palette = ['#3B82F6', '#06B6D4', '#8B5CF6', '#22C55E', '#F97316', '#FBBC04'];
+    const container = document.querySelector(containerSel);
+    if (!container) return;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'piece';
+      piece.style.background = palette[i % palette.length];
+      piece.style.boxShadow = '0 0 10px ' + palette[i % palette.length] + '66';
+      container.appendChild(piece);
+    }
+  }
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ─────────────────────────────────────────────────────
+  // Initial state — sections hidden, decoration hidden, camera on map.
+  // VIEWS now use FULL viewport (centred at 540, 960) — no upper-2/3 clip.
+  // ─────────────────────────────────────────────────────
+  tl.set('#camera', { x: 0, y: 170, scale: 0.329 }, 0.0);
+  tl.set('.section-content', { opacity: 0.4 }, 0.0);  // v2.2: cards preview at map view
+  // Hook overlay is opaque from t=0 so the cold open matches the narration
+  // immediately ("AI agents..." plays as the hook visuals appear).
+  tl.set('#hook-overlay', { opacity: 1 }, 0.0);
+  tl.set('.node-check', { opacity: 0, scale: 0.6 }, 0.0);
+  tl.set('.s2-rain', { opacity: 0 }, 0.0);
+  tl.set('#s5-flash', { opacity: 0 }, 0.0);
+  tl.set('#s6-typed', { opacity: 0 }, 0.0);
+  tl.set('#s6-output', { opacity: 0 }, 0.0);
+  tl.set('#confetti', { opacity: 0 }, 0.0);
+
+  // Top banner fade-in + subtle icon pulse
+  tl.from('#top-banner', { y: -20, opacity: 0, duration: 0.6, ease: 'power2.out' }, 0.0);
+  tl.to('#top-banner-icon', { scale: 1.08, duration: 1.2, yoyo: true, repeat: Math.floor(158.5 / 2.4) - 1, ease: 'sine.inOut' }, 0.0);
+
+  // Progress dots — fade in after the establishing shot completes
+
+  // Progress bar fills linearly across the composition (159.5s total)
+  tl.fromTo('#progress-fill',
+    { width: 0 },
+    { width: 1080, duration: 158.5, ease: 'none' }, 0.0);
+  // ═══════════════════════════════════════════════════════
+  // COLD OPEN (0 - 0.55s)
+  // Narration begins at t=0 (no silent intro). The camera is set
+  // directly to the HUB view so the hook overlay's fade-in (0–0.55s)
+  // reveals the hook against a quiet HUB backdrop, then covers it
+  // entirely once opaque. The map flyby was dropped to eliminate
+  // silence at the head of the video.
+  // ═══════════════════════════════════════════════════════
+  tl.set('#camera', { x: -1100, y: -1645, scale: 1.00, rotation: 0 }, 0.0);
+  // ═══════════════════════════════════════════════════════
+  // VIEWS — v2.1 stretched-hex camera transforms. World 3280x5210,
+  // world centre at (1640, 2605). Map view at scale 0.329 fills the
+  // 9:16 viewport edge-to-edge horizontally with a comfortable ~100px
+  // vertical margin top/bottom.
+  //   Map: tx = 540 - 1640*0.329 = 0,  ty = 960 - 2605*0.329 = 103
+  //   Section: tx = -sec_tl_x, ty = -sec_tl_y at scale 1
+  // v2.3: shift map ty 103 → 170 so cards sit ≥20px below the top banner
+  // (banner bottom ~y=150). This eliminates the overlap visible on the
+  // establishing shot between cards (S1/S2) and the banner chrome.
+  // ═══════════════════════════════════════════════════════
+  const VIEWS = {
+    map: { x:     0, y:   170, scale: 0.329 },
+    hub: { x: -1100, y: -1645, scale: 1.00 },
+    s1:  { x:  -550, y:     0, scale: 1.00 },
+    s2:  { x: -1650, y:     0, scale: 1.00 },
+    s3:  { x: -2200, y: -1645, scale: 1.00 },
+    s4:  { x: -1650, y: -3290, scale: 1.00 },
+    s5:  { x:  -550, y: -3290, scale: 1.00 },
+    s6:  { x:     0, y: -1645, scale: 1.00 },
+  };
+
+  function fadeContent(outId, inId, t, moveDuration) {
+    // v2.2: outgoing card returns to 0.4 (preview), not 0 (hidden). Each card
+    // is always at least 0.4 visible so the map view shows full content thumbnails.
+    if (outId) tl.to(outId, { opacity: 0.4, duration: 0.30, ease: 'power1.in' }, t);
+    if (inId)  tl.to(inId,  { opacity: 1,   duration: 0.40, ease: 'power2.out' }, t + moveDuration * 0.55);
+  }
+
+  // ─── 1. (was DIVE-IN) Camera already at HUB from t=0; no dive needed.
+  // The hook overlay covers everything from t=0–10.55, then fades out
+  // revealing HUB brand content.
+
+  // ═══════════════════════════════════════════════════════
+  // HOOK OVERLAY TIMELINE (3.0 → 13.0)
+  // Build → pivot → punchline, every beat word-anchored to narration.
+  // Audio narration starts at composition t=3.0, so transcript word times
+  // are offset by +3.0 to land in composition time.
+  // ═══════════════════════════════════════════════════════
+
+  // 3.4 — "AI AGENTS" overline drops in from above
+  tl.fromTo('#hook-overline',
+    { y: -30, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.4);
+  // 3.99 — "WRITE." slams in (transcript "write." at 0.987 → comp 3.99)
+  tl.fromTo('#hook-row-write',
+    { y: 40, scale: 0.78, opacity: 0, filter: 'blur(14px)' },
+    { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.45, ease: 'back.out(1.7)' }, 0.99);
+  // 4.83 — "TALK." slams in (transcript "talk." at 1.834 → comp 4.83)
+  tl.fromTo('#hook-row-talk',
+    { y: 40, scale: 0.78, opacity: 0, filter: 'blur(14px)' },
+    { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.45, ease: 'back.out(1.7)' }, 1.83);
+  // 5.54 — "CODE." slams in (transcript "code." at 2.543 → comp 5.54)
+  tl.fromTo('#hook-row-code',
+    { y: 40, scale: 0.78, opacity: 0, filter: 'blur(14px)' },
+    { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.45, ease: 'back.out(1.7)' }, 2.54);
+  // 6.6-7.0 — All 3 checkmarks fire in fast sequence (slight pre-roll
+  // before "operate / autonomously" so the list looks complete when the
+  // finale word lands).
+  tl.fromTo('#hook-tick-write',
+    { scale: 0.4, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' }, 3.6);
+  tl.fromTo('#hook-tick-talk',
+    { scale: 0.4, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' }, 3.78);
+  tl.fromTo('#hook-tick-code',
+    { scale: 0.4, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' }, 3.96);
+  // 7.43 — "AUTONOMOUSLY." finale word + its ✓ slam in together
+  // (transcript "autonomously." at 4.435 → comp 7.43)
+  tl.fromTo('#hook-row-auto',
+    { y: 50, scale: 0.74, opacity: 0, filter: 'blur(16px)' },
+    { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.55, ease: 'back.out(1.8)' }, 4.43);
+  tl.fromTo('#hook-tick-auto',
+    { scale: 0.4, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' }, 4.55);
+  // 8.30 — Tint behind the stack darkens slightly before the pivot
+  tl.to('#hook-tint',  { opacity: 1, duration: 0.45, ease: 'power2.in' }, 5.3);
+
+  // 8.37 — "But" lands (transcript "But" at 5.374 → comp 8.37).
+  // Red strike sweeps across the whole stack + the 4 rows desaturate.
+  tl.to('#hook-strike', { scaleX: 1, duration: 0.45, ease: 'power3.out' }, 5.37);
+  tl.to(['#hook-row-write', '#hook-row-talk', '#hook-row-code', '#hook-row-auto'],
+    { opacity: 0.32, filter: 'blur(3px)', scale: 0.95, duration: 0.5, ease: 'power2.inOut' }, 5.4);
+  tl.to('#hook-overline', { opacity: 0.25, duration: 0.4, ease: 'power2.in' }, 5.4);
+
+  // 8.50 — "BUT NOT VIDEO." red banner drops in at top
+  tl.fromTo('#hook-pivot',
+    { y: -40, opacity: 0, scale: 0.85 },
+    { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.6)' }, 5.5);
+  // Subtle shake on the pivot word
+  tl.to('#hook-pivot', { x: -8, duration: 0.05, ease: 'none', overwrite: 'auto' }, 6.05);
+  tl.to('#hook-pivot', { x:  8, duration: 0.05, ease: 'none', overwrite: 'auto' }, 6.1);
+  tl.to('#hook-pivot', { x: -6, duration: 0.05, ease: 'none', overwrite: 'auto' }, 6.15);
+  tl.to('#hook-pivot', { x:  0, duration: 0.05, ease: 'none', overwrite: 'auto' }, 6.2);
+
+  // (UNTIL THIS WEEK visual dropped — recency claim removed per script rewrite)
+
+  // 8.30 — WHITE FLASH just before "Editing video." word arrives at 8.39
+  tl.fromTo('#hook-flash',
+    { opacity: 0 },
+    { opacity: 0.95, duration: 0.08, ease: 'power4.out' }, 8.30);
+  tl.to('#hook-flash', { opacity: 0, duration: 0.30, ease: 'power2.in' }, 8.38);
+
+  // 8.35 — The build-stack snaps away as the punch screen comes in
+  tl.to(['#hook-overline', '#hook-stack', '#hook-strike', '#hook-pivot', '#hook-week'],
+    { opacity: 0, duration: 0.20, ease: 'power2.in' }, 8.35);
+  // 8.40 — "Editing video." massive red sans-italic slam
+  // (transcript "Editing" at 8.394, "video." at 8.789)
+  tl.to('#hook-punch', { opacity: 1, duration: 0.20, ease: 'power2.out' }, 8.35);
+  tl.fromTo('#hook-punch-word',
+    { scale: 0.4, opacity: 0, filter: 'blur(20px)' },
+    { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.55, ease: 'back.out(1.6)', overwrite: 'auto' }, 8.40);
+  // Percussive shake on the punchline
+  tl.to('#hook-punch-word', { x:  10, duration: 0.045, ease: 'none', overwrite: 'auto' }, 8.95);
+  tl.to('#hook-punch-word', { x: -10, duration: 0.045, ease: 'none', overwrite: 'auto' }, 9.00);
+  tl.to('#hook-punch-word', { x:   6, duration: 0.045, ease: 'none', overwrite: 'auto' }, 9.05);
+  tl.to('#hook-punch-word', { x:   0, duration: 0.045, ease: 'none', overwrite: 'auto' }, 9.10);
+  tl.to('#hook-punch-word', { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: 'power2.inOut', overwrite: 'auto' }, 9.30);
+
+  // 9.85 — Hook overlay dissolves; HUB brand content lands on "HyperFrames"
+  // (transcript "HyperFrames" at 10.37 → hero-slam target).
+  tl.to('#hook-overlay', { opacity: 0, duration: 0.55, ease: 'power2.in' }, 9.85);
+
+  // ═══════════════════════════════════════════════════════
+  // HUB BRAND CONTENT (9.85 → 18.0) — reveals UNDER the dissolving hook.
+  // Lands the "HyperFrames" brand drop right as narration says it
+  // ("HyperFrames" at transcript 10.368).
+  // ═══════════════════════════════════════════════════════
+  tl.to('#hub-content', { opacity: 1, duration: 0.55, ease: 'power2.out' }, 9.85);
+  tl.from('#sec-hub .overline',     { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 9.85);
+  tl.from('#sec-hub .hero-slam',    { scale: 0.82, duration: 0.7, ease: 'back.out(1.7)', immediateRender: false }, 10.30);
+  // Percussive shake on the hero slam (lands with the brand word)
+  tl.to('#sec-hub .hero-slam',      { x:  5, duration: 0.04, ease: 'none', overwrite: 'auto' }, 10.90);
+  tl.to('#sec-hub .hero-slam',      { x: -5, duration: 0.04, ease: 'none', overwrite: 'auto' }, 10.95);
+  tl.to('#sec-hub .hero-slam',      { x:  4, duration: 0.04, ease: 'none', overwrite: 'auto' }, 11.00);
+  tl.to('#sec-hub .hero-slam',      { x:  0, duration: 0.04, ease: 'none', overwrite: 'auto' }, 11.05);
+  tl.from('#sec-hub .accent-pill',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 11.60);
+  tl.from('#sec-hub .hub-meta',     { y: 20, duration: 0.5, ease: 'back.out(1.5)', immediateRender: false }, 14.70);
+  tl.to('#sec-hub .node-check',     { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 17.40);
+
+  // ─── 2. PAN to S1 at t=21.21 ────────────────────────────
+  tl.to('#camera', { ...VIEWS.s1, duration: 0.5, ease: 'power2.inOut' }, 18.21);
+  fadeContent('#hub-content', '#s1-content', 18.21, 0.5);
+  tl.from('#sec-1 .overline',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 19.0);
+  tl.from('#sec-1 .headline',  { y: 30, duration: 0.5, ease: 'power3.out', immediateRender: false }, 19.5);
+  tl.from('#sec-1 .body',      { y: 24, duration: 0.5, ease: 'power2.out', immediateRender: false }, 20.6);
+  // Logo rows enter exactly as narration NAMES each editor.
+  // "After Effects." 22.19 / "DaVinci Resolve." 23.10 / "Premiere." 23.71
+  tl.fromTo('#s1-callout .row:nth-child(1)', { x: -40, scale: 0.9, opacity: 0 }, { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(1.7)' }, 22.19);
+  tl.fromTo('#s1-callout .row:nth-child(2)', { x: -40, scale: 0.9, opacity: 0 }, { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(1.7)' }, 23.10);
+  tl.fromTo('#s1-callout .row:nth-child(3)', { x: -40, scale: 0.9, opacity: 0 }, { x: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(1.7)' }, 23.71);
+  // Strikes sweep across all three when narration says "JSON or XML timelines" — the
+  // moment the indictment lands.
+  tl.to('#strike-1', { scaleX: 1, duration: 0.45, ease: 'power3.out' }, 25.94);
+  tl.to('#strike-2', { scaleX: 1, duration: 0.45, ease: 'power3.out' }, 26.42);
+  tl.to('#strike-3', { scaleX: 1, duration: 0.45, ease: 'power3.out' }, 27.08);
+  // Subtle scale pulse on the body line at "Layers / Keyframes / muscle memory" to
+  // keep the visual surface alive while narration enumerates.
+  tl.to('#sec-1 .body', { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 28.60);
+  tl.to('#sec-1 .body', { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 30.24);
+  // Headline glow-pulse on "bottleneck" word (~39.4).
+  tl.to('#sec-1 .headline', { textShadow: '0 0 28px rgba(249,115,22,0.75)', duration: 0.35, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 38.80);
+  tl.to('#sec-1 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 39.5);
+
+  // ─── 3. PAN to S2 at t=43.06 ────────────────────────────
+  tl.to('#camera', { ...VIEWS.s2, duration: 0.5, ease: 'power2.inOut' }, 40.06);
+  fadeContent('#s1-content', '#s2-content', 40.06, 0.5);
+  // HTML-tag rain fades in behind the headline — gives "billions of pages" weight
+  tl.to('#sec-2 .s2-rain', { opacity: 1, duration: 1.0, ease: 'power2.out' }, 41.5);
+  tl.from('#sec-2 .overline',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 40.9);
+  tl.from('#sec-2 .headline',  { y: 30, duration: 0.5, ease: 'power3.out', immediateRender: false }, 41.4);
+  tl.from('#sec-2 .body',      { y: 24, duration: 0.5, ease: 'power2.out', immediateRender: false }, 42.7);
+  // BILLIONS stat slams on the word "Billions" at 45.52.
+  tl.fromTo('#s2-callout',     { y: 30, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.7)' }, 45.52);
+  // Caption appears slightly after the number to give the eye time on BILLIONS.
+  tl.fromTo('#s2-callout .cap', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, 46.40);
+  // Scale-pulse pulses on "Millions" (47.87), "GSAP" (52.60), "compositions" (54.18) to
+  // keep the surface moving across the 18-second list narration.
+  tl.to('#s2-callout .num', { scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 47.87);
+  tl.to('#s2-callout .num', { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 52.60);
+  tl.to('#s2-callout .num', { scale: 1.10, duration: 0.35, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 54.18);
+  // Headline glow-pulse on "native tongue." (~63.7) — the lock-in moment.
+  tl.to('#sec-2 .headline', { textShadow: '0 0 30px rgba(139,92,246,0.85)', duration: 0.45, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 63.20);
+  // Rain fades back down before the chapter break so S3 has a clean stage
+  tl.to('#sec-2 .s2-rain', { opacity: 0, duration: 0.6, ease: 'power2.in' }, 63.8);
+  tl.to('#sec-2 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 64.0);
+
+  // ─── 4. CHAPTER BREAK: S2 → MAP → S3 at t=67.60 (0.8s total) ─
+  tl.to('#s2-content', { opacity: 0.4, duration: 0.25, ease: 'power1.in' }, 64.6);
+  tl.to('#camera',     { ...VIEWS.map, duration: 0.4, ease: 'power2.in' }, 64.6);
+  tl.to('#camera',     { ...VIEWS.s3,  duration: 0.4, ease: 'power2.out' }, 65.0);
+  tl.to('#s3-content', { opacity: 1, duration: 0.35, ease: 'power2.out' }, 65.1);
+  tl.from('#sec-3 .overline',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 65.9);
+  tl.from('#sec-3 .headline',  { y: 30, duration: 0.5, ease: 'power3.out', immediateRender: false }, 66.4);
+  // Editor entrance — frame pops in, then lines type in sequentially
+  tl.from('#s3-editor', { y: 30, scale: 0.94, duration: 0.6, ease: 'back.out(1.4)', immediateRender: false }, 68.8);
+  // Code lines reveal exactly when narration names each attribute.
+  // "data start." 70.35 / "data duration." 71.33 / "data track index." 72.82
+  tl.fromTo('#ed-line-1', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 70.35);
+  tl.fromTo('#ed-line-2', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 71.33);
+  tl.fromTo('#ed-line-3', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 72.82);
+  // Attr-name flash pulses run during the explanation phase (~74-78) so the
+  // editor doesn't sit static for the 13-second gap before format chips arrive.
+  tl.to('#ed-line-1 .attr', { color: '#06B6D4', textShadow: '0 0 16px rgba(6,182,212,0.9)', duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 74.5);
+  tl.to('#ed-line-2 .attr', { color: '#06B6D4', textShadow: '0 0 16px rgba(6,182,212,0.9)', duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 76.5);
+  tl.to('#ed-line-3 .attr', { color: '#06B6D4', textShadow: '0 0 16px rgba(6,182,212,0.9)', duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 78.5);
+  // Around 81-84, narration says "regular HTML, CSS, and JavaScript" — pulse the
+  // editor frame as a whole to mark the breath before the export reveal.
+  tl.to('#s3-editor', { scale: 1.03, duration: 0.35, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 81.50);
+  tl.to('#s3-editor', { scale: 1.03, duration: 0.35, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 83.20);
+  // Export arrow + format chips (HTML → MP4 / MOV / WEBM), word-anchored to
+  // "MP4" 85.47, "MOV" 86.62, "webM" 88.19.
+  tl.fromTo('#s3-arrow', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4, ease: 'back.out(1.6)' }, 85.20);
+  tl.fromTo('#fmt-mp4',  { opacity: 0, scale: 0.6, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'back.out(2.0)' }, 85.45);
+  tl.fromTo('#fmt-mov',  { opacity: 0, scale: 0.6, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'back.out(2.0)' }, 86.60);
+  tl.fromTo('#fmt-webm', { opacity: 0, scale: 0.6, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'back.out(2.0)' }, 88.15);
+  tl.to('#sec-3 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 88.4);
+
+  // ─── 5. PAN to S4 at t=91.96 ────────────────────────────
+  // NEW in v2: per-tech mini-demo panels enter in narration order — CSS,
+  // GSAP, Lottie, Three.js, D3, Google Fonts. Each panel runs a live
+  // animation showing what that tech does. Entry times derived from the
+  // transcript word starts (audio + 3.0 narration offset).
+  tl.to('#camera', { ...VIEWS.s4, duration: 0.5, ease: 'power2.inOut' }, 88.96);
+  fadeContent('#s3-content', '#s4-content', 88.96, 0.5);
+  tl.from('#sec-4 .overline',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 89.7);
+  tl.from('#sec-4 .headline',  { y: 30, duration: 0.5, ease: 'power3.out', immediateRender: false }, 90.2);
+  // All 6 demo panels enter together with "?" placeholders at section entrance.
+  // Each panel's question-mark fades out + actual demo fades in when narration
+  // names the tech. Anchors: CSS 95.48, GSAP 97.07, Lottie 98.37, Three 99.71,
+  // D3 100.64, Fonts 101.83.
+  tl.from('#s4-demo-grid', { y: 30, scale: 0.88, opacity: 0, duration: 0.55, ease: 'back.out(1.6)', immediateRender: false }, 90.7);
+
+  // 92.5-94.0 — "Anything browser-native works" beat: pulse all 6 question marks
+  // in a left-to-right wave so the grid doesn't sit static for 4 seconds before
+  // the first reveal at 95.48.
+  ['#demo-css','#demo-gsap','#demo-lottie','#demo-three','#demo-d3','#demo-fonts'].forEach((sel, i) => {
+    tl.to(sel + ' .demo-question', { scale: 1.2, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 92.5 + i * 0.18);
+  });
+
+  const s4Reveals = [
+    ['#demo-css',    95.48],
+    ['#demo-gsap',   97.07],
+    ['#demo-lottie', 98.37],
+    ['#demo-three',  99.71],
+    ['#demo-d3',    100.64],
+    ['#demo-fonts', 101.83],
+  ];
+  s4Reveals.forEach(([sel, t]) => {
+    tl.to(sel + ' .demo-question', { opacity: 0, scale: 0.6, duration: 0.35, ease: 'power2.in' }, t);
+    tl.to(sel + ' .demo-stage',    { opacity: 1, duration: 0.45, ease: 'power2.out' }, t + 0.10);
+    // Each newly revealed panel gets a 1.06× scale-pulse 0.55s later as the
+    // narration moves on — emphasises "this is real, it's working".
+    tl.to(sel,                    { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.inOut' }, t + 0.55);
+  });
+
+  // 103.5-108 — narration says "No wrappers. No framework to learn." Sweep a
+  // celebratory pulse through all 6 panels in sequence so the grid stays alive
+  // until the node check at 109.7.
+  ['#demo-css','#demo-gsap','#demo-lottie','#demo-three','#demo-d3','#demo-fonts'].forEach((sel, i) => {
+    tl.to(sel, { boxShadow: '0 12px 30px rgba(0,0,0,0.40), 0 0 32px rgba(139,92,246,0.55)', duration: 0.35, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 103.5 + i * 0.65);
+  });
+
+  // GSAP-driven dot pulse INSIDE the GSAP demo panel — three dots scale-pop
+  // with back.out(1.7), then loop. Demonstrates the signature GSAP feel
+  // (vs the CSS-keyframe panels around it).
+  tl.fromTo('#demo-gsap .dot', { scale: 0.6, opacity: 0.3 },
+    { scale: 1.0, opacity: 1.0, duration: 0.6, ease: 'back.out(2.5)', stagger: 0.12, yoyo: true, repeat: Math.floor((110.20 - 97.5) / 1.6) }, 97.5);
+  tl.to('#sec-4 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 109.7);
+
+  // ─── 6. PAN to S5 at t=113.30 ───────────────────────────
+  tl.to('#camera', { ...VIEWS.s5, duration: 0.5, ease: 'power2.inOut' }, 110.3);
+  fadeContent('#s4-content', '#s5-content', 110.30, 0.5);
+  tl.from('#sec-5 .overline',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 111.0);
+  tl.from('#sec-5 .headline',  { y: 30, duration: 0.5, ease: 'power3.out', immediateRender: false }, 111.5);
+  // 113.0 — "QUALITY: NOT RELIABLE" pre-state appears during "models weren't
+  // quite there" (narration 111.7-115.77).
+  tl.fromTo('#s5-pre', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(1.4)' }, 113.0);
+  // 116.8 — pre-state fades just before "November 2025" lands at 117.27.
+  tl.to('#s5-pre', { opacity: 0, y: -20, duration: 0.4, ease: 'power2.in' }, 116.80);
+  // 117.27 — Date-tile slams in with lightning flash (narration "November 2025").
+  tl.fromTo('#s5-date', { y: 30, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: 'back.out(1.7)' }, 117.27);
+  tl.fromTo('#s5-flash', { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'power4.out' }, 117.55);
+  tl.to('#s5-flash', { opacity: 0, duration: 0.5, ease: 'power2.out' }, 117.75);
+  // 119.16 — Gemini 3 pill (narration "Gemini 3" at 119.16).
+  tl.fromTo('#s5-callout .pill:nth-child(1)', { y: 20, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(1.6)' }, 119.16);
+  // 119.92 — Opus 4.5 pill (narration "Opus 4 point 5").
+  tl.fromTo('#s5-callout .pill:nth-child(2)', { y: 20, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(1.6)' }, 119.92);
+  // 121.66 — "swapped in" beat: pulse both pills as narration says "HeyGen
+  // swapped them in" so the surface stays alive in the 5-second gap before
+  // the "motion graphics" badge.
+  tl.to('#s5-callout .pill', { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, stagger: 0.1, ease: 'power2.inOut' }, 121.66);
+  // 123.5 — date-tile micro-pulse (narration "And the agent started producing").
+  tl.to('#s5-date', { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 123.50);
+  // 124.93 — "Motion graphics" badge (narration "motion graphics" at 124.93).
+  tl.fromTo('#s5-badge-motion', { y: 20, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(1.8)' }, 124.93);
+  // 126.21 — "Multi-scene B-rolls" badge.
+  tl.fromTo('#s5-badge-rolls', { y: 20, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(1.8)' }, 126.21);
+  // 131.0 — Date-tile scale-pulse on "converged." word.
+  tl.to('#s5-date', { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 131.0);
+  tl.to('#sec-5 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 132.4);
+
+  // ─── 7. PAN to S6 at t=136.01 ───────────────────────────
+  // S6 entrance — pan at 132.5 so the camera arrives before narration
+  // "HyperFrames is open source." at 132.82.
+  tl.to('#camera', { ...VIEWS.s6, duration: 0.5, ease: 'power2.inOut' }, 132.50);
+  fadeContent('#s5-content', '#s6-content', 132.50, 0.5);
+  tl.from('#sec-6 .overline',  { y: 20, duration: 0.4, ease: 'power2.out', immediateRender: false }, 133.30);
+  tl.from('#sec-6 .headline',  { y: 30, duration: 0.5, ease: 'power3.out', immediateRender: false }, 135.00);
+  // Terminal entrance — narration "One command turns any agent…" at 137.0.
+  tl.from('#s6-terminal',  { y: 30, scale: 0.94, duration: 0.6, ease: 'back.out(1.4)', immediateRender: false }, 137.00);
+  // 140.62 — narration starts spelling the install command "N P X skills add…".
+  tl.fromTo('#s6-typed', { opacity: 0, clipPath: 'inset(0 100% 0 0)' },
+    { opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: 1.8, ease: 'steps(40)' }, 140.60);
+  // 144.10 — output line "skill installed" after narration "Point your agent…".
+  tl.from('#s6-output', { y: 10, duration: 0.6, ease: 'power2.out', immediateRender: false }, 144.10);
+
+  // ─── STACK-POLL CTA (148.6 → end) ──────────────────────────
+  // 148.0 — terminal + headline + overline fade out as we transition to CTA.
+  tl.to(['#s6-overline', '#s6-headline', '#s6-terminal'],
+    { opacity: 0, y: -20, duration: 0.5, ease: 'power2.in' }, 148.00);
+  // 148.6 — Poll surface fades in as narration says "So tell me.".
+  tl.fromTo('#s6-poll', { opacity: 0 }, { opacity: 1, duration: 0.55, ease: 'power2.out' }, 148.60);
+  tl.fromTo('#s6-poll-q', { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.4)' }, 148.60);
+  // 149.54 — "HyperFrames." pill (transcript "HyperFrames." at 149.54).
+  tl.fromTo('#s6-pill-hf',     { y: 30, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 149.54);
+  // 151.20 — "Remotion." pill.
+  tl.fromTo('#s6-pill-rem',    { y: 30, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 151.20);
+  // 152.11 — "Motion Canvas." pill.
+  tl.fromTo('#s6-pill-canvas', { y: 30, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 152.11);
+  // 153.15 — "Which one are you shipping with." pulse on the question text to
+  // mirror the narrator's emphasis and keep visual motion before the CTA pill.
+  tl.to('#s6-poll-q', { scale: 1.05, duration: 0.4, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 153.15);
+  // 155.35 — "Comment your pick below." CTA pill at the bottom.
+  tl.fromTo('#s6-poll-cta', { y: 30, scale: 0.8, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(1.8)' }, 155.35);
+  // Section node-check lands with the CTA pill.
+  tl.to('#sec-6 .node-check',  { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 155.50);
+
+  // ─── CONFETTI BURST on CTA reveal ───────────────────────────
+  spawnConfetti('#confetti', 20);
+  tl.to('#confetti', { opacity: 1, duration: 0.3, ease: 'power2.out' }, 148.60);
+  tl.to('#confetti .piece', {
+    x: (i) => (seedHash('conf-x-' + i) - 0.5) * 1400,
+    y: (i) => -200 - seedHash('conf-y-' + i) * 300,
+    rotation: (i) => (seedHash('conf-r-' + i) - 0.5) * 720,
+    duration: 1.4,
+    ease: 'power2.out',
+  }, 148.60);
+  tl.to('#confetti .piece', {
+    y: '+=900',
+    rotation: '+=180',
+    duration: 1.8,
+    ease: 'power2.in',
+  }, 150.00);
+  tl.to('#confetti', { opacity: 0, duration: 0.5 }, 152.00);
+
+  window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

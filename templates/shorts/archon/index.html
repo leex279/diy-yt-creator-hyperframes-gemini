@@ -433,6 +433,22 @@
     font-size: 48px;
     line-height: 0.7;
   }
+  /* ────────────────────────────────────────────────
+     #p4-cta-question — MANDATORY debate-sparking CTA
+     (see .claude/rules/engagement-cta.md)
+     ──────────────────────────────────────────────── */
+  #p4-cta-question {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    color: var(--magenta);
+    text-align: center;
+    max-width: 920px;
+    margin-top: 18px;
+  }
+  #p4-cta-question .em { color: var(--text); font-style: italic; }
 </style>
 </head>
 <body>
@@ -538,6 +554,8 @@
       <div class="overline" id="p4-overline">Get started</div>
       <div id="p4-url">archon.diy</div>
       <div id="p4-subscribe">Subscribe<span class="arrow">&rarr;</span></div>
+      <!-- MANDATORY: debate-sparking CTA question per .claude/rules/engagement-cta.md -->
+      <div id="p4-cta-question">REPLACE: <span class="em">your debate question?</span></div>
     </div>
   </div>
 
@@ -692,9 +710,11 @@
   // PHASE 4 — CTA URL slam (18-24s) : entrances only
   // ═══════════════════════════════════════════════════════
   const P4 = 18.4;
-  tl.from("#p4-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
-  tl.from("#p4-url",       { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, P4 + 0.5);
-  tl.from("#p4-subscribe", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 1.6);
+  tl.from("#p4-overline",     { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 0.0);
+  tl.from("#p4-url",          { scale: 0.85, opacity: 0, duration: 0.7, ease: "expo.out" }, P4 + 0.5);
+  tl.from("#p4-subscribe",    { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, P4 + 1.6);
+  // CTA debate question entrance — retime to transcript word anchor when narration lands.
+  tl.from("#p4-cta-question", { y: 28, opacity: 0, duration: 0.6, ease: "power2.out" }, P4 + 2.3);
 
   // Phase 4 stays fully visible to the end — composition naturally ends at 24s
 

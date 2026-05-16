@@ -1,0 +1,85 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/standard/tokens/standard-short.css
+   Warm paper standard short (1080x1920) — palette + spacing + typography.
+
+   Brand-neutral baseline for any topic, intentionally warm and light to
+   contrast with the brand-specific dark-stage variants (anthropic / archon).
+   The aesthetic is "premium publication" — cream paper background, warm
+   near-black type, a 5-tier accent rotation tuned for serif-adjacent
+   sophistication: terracotta, indigo, sage, sunset gold, warm rose.
+
+   Per-video overrides go on a more specific selector (e.g. inside #root,
+   or a per-scene scope) — never edit this file in a video copy.
+
+   Scoped to :root (NOT #root) so every sub-composition wired via
+   data-composition-src inherits these vars without needing a wrapper.
+
+   USAGE:
+     - Linked once from index.html <head>:
+         <link rel="stylesheet" href="tokens/standard-short.css">
+     - Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────────────────────
+     Cream paper canvas with subtle warmth. NOT pure white (#FFFFFF
+     reads as a cold screen); NOT linen-white (loses contrast with type).
+     #FBF7EF lands in the "premium book paper" sweet spot. */
+  --bg:             #FBF7EF;
+  --bg-card:        #FFFFFF;
+  --bg-surface:     #F4ECDD;
+  --bg-tint:        #F0E6D2;   /* tinted cream for raised callouts */
+
+  --border:         rgba(43, 42, 40, 0.10);
+  --border-bright:  rgba(43, 42, 40, 0.20);
+  --shadow-warm:    0 12px 32px rgba(176, 124, 90, 0.18),
+                    0 2px 6px  rgba(43, 42, 40, 0.06);
+
+  /* ── Accents (5-tier warm rotation, project-swappable) ────────────
+     Default rotation order: warm → deep → sage → gold → rose. Rose is
+     the "soft pivot" accent reserved for light callouts; gold is the
+     stat/highlight accent that mirrors a sunset highlight. */
+  --accent-warm:    #E07A5F;   /* terracotta — primary lead */
+  --accent-deep:    #3D5A80;   /* indigo     — counterpoint */
+  --accent-sage:    #81B29A;   /* sage green — calm secondary */
+  --accent-gold:    #F2CC8F;   /* sunset gold — highlight / stat */
+  --accent-rose:    #F4978E;   /* warm rose — soft pivot */
+  --accent-ink:     #2B2A28;   /* warm near-black — strong contrast */
+
+  /* Convenience aliases — keep names that mirror anthropic-dark so lib
+     entries authored against either system stay portable. Override per
+     video by changing --accent-* above; aliases follow automatically. */
+  --primary:        var(--accent-warm);
+  --secondary:      var(--accent-deep);
+  --tertiary:       var(--accent-sage);
+  --highlight:      var(--accent-gold);
+  --pivot:          var(--accent-rose);
+
+  /* ── Text ──────────────────────────────────────────────────────────
+     Warm near-black on cream gives ~14:1 contrast (AAA) without the
+     glare of pure black on pure white. */
+  --text:           #2B2A28;
+  --text-secondary: #6B6862;
+  --text-muted:     #908A80;
+  --text-on-warm:   #FFFFFF;   /* on solid terracotta/rose fills */
+  --text-on-deep:   #FBF7EF;   /* on solid indigo fills */
+
+  /* ── Pill chrome ─────────────────────────────────────────────────── */
+  --pill-bg:        rgba(43, 42, 40, 0.05);
+  --pill-border:    rgba(43, 42, 40, 0.15);
+
+  /* ── Spacing (1080x1920 safe-zone for vertical Shorts) ───────────── */
+  /* Top/bottom 240px reserves space for the persistent banner and
+     mobile UI overlay (YouTube Shorts player chrome). */
+  --pad-top:        240px;
+  --pad-x:          80px;
+  --pad-bottom:     240px;
+
+  /* ── Type ──────────────────────────────────────────────────────────
+     Inter for sans (workhorse + display weights), Source Serif for
+     editorial pull-quotes (warmth + premium publication feel),
+     JetBrains Mono for technical/code/overline voice. */
+  --sans:           'Inter', system-ui, sans-serif;
+  --serif:          'Playfair Display', 'EB Garamond', Georgia, serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+}

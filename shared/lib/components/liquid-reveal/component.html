@@ -1,0 +1,243 @@
+<!--
+  shared/lib/components/liquid-reveal/component.html
+  Content emerges from a vertical liquid wipe — an SVG mask with a wavy
+  bottom edge sweeps from off-canvas-top to off-canvas-bottom, revealing
+  the content beneath. Two overlapping wave layers (primary + secondary
+  slow wave) give depth. The "ink" fill color defaults to --liquid
+  (dark background) and the revealed content sits inside .lr-content.
+
+  SOURCE: original — no template source.
+
+  COMPONENT IS PASTE-IN — split into three sections below. Merge each
+  section into the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this element where the liquid reveal should appear.
+     Replace [your content] with whatever you want to unveil.
+     The .lr-mask SVG is a full-bleed overlay that hides content until
+     the GSAP tween wipes it away.
+
+  SFX COUPLING:
+    cue: cinematic-whoosh   data-volume: 0.11   track-index: 3
+    offset: at + 0.0  (covers the full wipe duration)
+
+  Audio element to wire in your host index.html (adjust data-start):
+    <audio id="sfx-lr-whoosh-1"
+           class="clip"
+           src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="<AT>"
+           data-duration="0.84"
+           data-track-index="3"
+           data-volume="0.11"></audio>
+
+  ALIGNMENT CHECK:
+    SFX fires at data-start == at (the same time passed to addLiquidReveal).
+    The wipe animation lasts `duration` (default 1.4s); cinematic-whoosh is
+    0.84s — it covers the first 60% of the wipe, which is the visually dense
+    part. Drift must be ≤ 0.05s (percussive wipe onset).
+-->
+
+<div class="liquid-reveal" data-liquid>
+  <div class="lr-content"><!-- [your content] --></div>
+  <svg class="lr-mask" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <clipPath id="lr-clip" clipPathUnits="userSpaceOnUse">
+        <rect id="lr-clip-rect" x="-10" y="-10" width="calc(100% + 20px)" height="calc(100% + 20px)"/>
+      </clipPath>
+    </defs>
+    <!-- Primary wipe block — bottom edge has wave bumps (deterministic sine) -->
+    <path class="lr-ink-primary" id="lr-ink-p"/>
+    <!-- Secondary slower wave — slightly offset for depth -->
+    <path class="lr-ink-secondary" id="lr-ink-s"/>
+  </svg>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block.
+-->
+
+<style>
+  /* shared/lib/components/liquid-reveal — keep this comment block */
+  .liquid-reveal {
+    position: relative;
+    overflow: hidden;
+    /* Inherit width/height from parent — set explicit dimensions on the wrapper */
+    width: 100%;
+    height: 100%;
+  }
+
+  .lr-content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    /* Content rendered below the mask layer */
+  }
+
+  .lr-mask {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .lr-ink-primary {
+    fill: var(--liquid, #1A1A2E);
+    opacity: 1;
+  }
+
+  .lr-ink-secondary {
+    fill: var(--liquid, #1A1A2E);
+    opacity: 0.55;
+  }
+</style>
+
+<!--
+  3) JS — call addLiquidReveal() from the host root timeline.
+
+  SIGNATURE:
+    addLiquidReveal(tl, sel, at, opts)
+
+  PARAMETERS:
+    tl          — a paused gsap.timeline
+    sel         — CSS selector resolving to ONE .liquid-reveal element
+    at          — insertion time on tl (seconds)
+    opts        — optional config object:
+      duration    = 1.4     seconds for the wipe (primary wave)
+      color       = 'var(--liquid, #1A1A2E)'  ink fill color
+      direction   = 'down'  'down' or 'up'
+
+  WAVE GEOMETRY:
+    8 control points across the width (W/8 spacing). Amplitudes are computed
+    from a mulberry32(0xCAFE) seeded sequence, capped ±18px so the wave
+    reads as "liquid edge" without looking jagged. The secondary wave uses
+    seed 0xBEEF and 0.6× amplitude.
+
+  USAGE:
+    addLiquidReveal(tl, "#intro-card", P1 + 0.5);
+    addLiquidReveal(tl, "#intro-card", P1 + 0.5, { duration: 1.0, direction: 'up' });
+
+  CONSTRAINTS:
+    - The .liquid-reveal element must have explicit width + height set by its parent.
+    - The secondary wave's animation is duration * 1.3 — it lags the primary slightly.
+    - Wire the cinematic-whoosh <audio> at data-start == at (see top comment).
+    - The SVG paths are computed at call time using getBoundingClientRect(). Call
+      this after the DOM is ready (inside a DOMContentLoaded handler or after
+      the layout phase completes).
+    - direction 'down': ink starts covering content (top-anchor), wipes downward off screen.
+      direction 'up': ink starts covering content (bottom-anchor), wipes upward off screen.
+-->
+
+<script>
+  function addLiquidReveal(tl, sel, at, opts) {
+    opts = opts || {};
+    var duration  = opts.duration  !== undefined ? opts.duration  : 1.4;
+    var direction = opts.direction !== undefined ? opts.direction : 'down';
+
+    // ── mulberry32 PRNG ──────────────────────────────────────────────────────
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    var el = document.querySelector(sel);
+    if (!el) return;
+
+    var rect = el.getBoundingClientRect();
+    var W = rect.width  || 400;
+    var H = rect.height || 300;
+
+    // Build deterministic wave points across width
+    function buildWavePath(seed, ampScale) {
+      var rand = mulberry32(seed);
+      var pts = [];
+      var steps = 9; // 0..8 → 9 x-values
+      for (var i = 0; i <= steps; i++) {
+        var x = (W / steps) * i;
+        var amp = (rand() * 2 - 1) * 18 * ampScale;
+        pts.push({ x: x, amp: amp });
+      }
+      return pts;
+    }
+
+    var pPts = buildWavePath(0xCAFE, 1.0);
+    var sPts = buildWavePath(0xBEEF, 0.6);
+
+    // Build SVG path string — wave edge at yEdge (varies during animation)
+    function makePath(pts, yEdge, dir) {
+      // The "ink block" covers either top (dir=down) or bottom (dir=up)
+      var pathStr;
+      if (dir === 'down') {
+        // Block covers canvas TOP down to yEdge. Wave is the bottom edge.
+        pathStr = 'M -10 -10 L ' + (W + 10) + ' -10 ';
+        pathStr += 'L ' + (W + 10) + ' ' + (yEdge + pts[pts.length - 1].amp) + ' ';
+        // Wave: right-to-left for visual flow
+        for (var i = pts.length - 1; i >= 0; i--) {
+          pathStr += 'L ' + pts[i].x + ' ' + (yEdge + pts[i].amp) + ' ';
+        }
+        pathStr += 'Z';
+      } else {
+        // Block covers canvas BOTTOM up to yEdge. Wave is the top edge.
+        pathStr = 'M -10 ' + (H + 10) + ' L ' + (W + 10) + ' ' + (H + 10) + ' ';
+        pathStr += 'L ' + (W + 10) + ' ' + (yEdge + pts[pts.length - 1].amp) + ' ';
+        for (var i = pts.length - 1; i >= 0; i--) {
+          pathStr += 'L ' + pts[i].x + ' ' + (yEdge + pts[i].amp) + ' ';
+        }
+        pathStr += 'Z';
+      }
+      return pathStr;
+    }
+
+    var inkP = el.querySelector('#lr-ink-p');
+    var inkS = el.querySelector('#lr-ink-s');
+    if (!inkP || !inkS) return;
+
+    // Unique IDs when multiple instances exist on page
+    inkP.id = inkP.id + '-' + at.toFixed(2).replace('.', '-');
+    inkS.id = inkS.id + '-' + at.toFixed(2).replace('.', '-');
+
+    var startY, endY;
+    if (direction === 'down') {
+      startY = 0;
+      endY   = H + 30; // wipes below bottom edge
+    } else {
+      startY = H;
+      endY   = -30;    // wipes above top edge
+    }
+
+    // Set initial path covering content
+    inkP.setAttribute('d', makePath(pPts, startY, direction));
+    inkS.setAttribute('d', makePath(sPts, startY, direction));
+
+    // GSAP proxy object for the animated Y value
+    var proxy = { y: startY };
+
+    tl.to(proxy, {
+      y: endY,
+      duration: duration,
+      ease: 'power2.inOut',
+      onUpdate: function() {
+        inkP.setAttribute('d', makePath(pPts, proxy.y, direction));
+      }
+    }, at);
+
+    var proxyS = { y: startY };
+    tl.to(proxyS, {
+      y: endY,
+      duration: duration * 1.3,
+      ease: 'power2.inOut',
+      onUpdate: function() {
+        inkS.setAttribute('d', makePath(sPts, proxyS.y, direction));
+      }
+    }, at);
+  }
+</script>

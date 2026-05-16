@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!--
+  thumbnail.html — 1280×720 YouTube thumbnail for html-vs-markdown-claude-code
+
+  Style: #6 Cinematic text (per .claude/skills/shorts-final-frame-thumbnail
+  catalog). The text "lives inside" the editorial-light scene that the video
+  itself uses — same cream canvas, same serif italic terracotta accent on the
+  emphasis word ("effectiveness"). The article-cover screenshot is the small
+  receipt anchor at right; brand chrome at bottom-left.
+
+  Capture: open in Chrome at exactly 1280×720 viewport (DevTools → Device
+  Toolbar → Custom 1280×720) and screenshot. The output PNG is what gets
+  uploaded to YouTube Studio.
+
+  Tokens: inherits from ../tokens/long-form.css (cream + serif + terracotta).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Thumbnail — html-vs-markdown-claude-code</title>
+  <link rel="stylesheet" href="../tokens/long-form.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,800;1,8..60,800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #2a2a2a;
+    }
+
+    /* Two-column layout zone definitions:
+       Left text column:   x = 60 .. 880   (820px wide)
+       Right anchor column: x = 920 .. 1220 (300px wide)
+       Vertical gutter at x = 880 .. 920 keeps text + cover from colliding. */
+
+    .thumb {
+      width: 1280px;
+      height: 720px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      font-family: var(--serif);
+      color: var(--text);
+      box-sizing: border-box;
+    }
+
+    /* Subtle paper-grain ambient — picks up the editorial paper feel
+       without darkening the cream. */
+    .thumb::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(199, 90, 63, 0.07), transparent 50%),
+        radial-gradient(circle at 88% 92%, rgba(177, 73, 56, 0.04), transparent 55%);
+      pointer-events: none;
+    }
+
+    /* ── LEFT TEXT COLUMN ───────────────────────────────────────── */
+
+    .overline {
+      position: absolute;
+      top: 56px; left: 60px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--accent-2);
+    }
+
+    .overline-divider {
+      position: absolute;
+      top: 102px; left: 60px;
+      width: 60px; height: 3px;
+      background: var(--accent-1);
+      border-radius: 2px;
+    }
+
+    /* Headline — three-line cinematic slam. "effectiveness" is the
+       italic terracotta accent. Sized so each line fits in 820px wide. */
+    .headline {
+      position: absolute;
+      top: 138px; left: 60px;
+      width: 820px;
+      font-family: var(--serif);
+      font-weight: 800;
+      letter-spacing: -2px;
+      color: var(--text);
+      margin: 0;
+    }
+    .headline .l1 {
+      display: block;
+      font-size: 88px;
+      line-height: 1.0;
+      letter-spacing: -2px;
+    }
+    .headline .l2 {
+      display: block;
+      font-size: 132px;
+      font-style: italic;
+      color: var(--accent-1);
+      line-height: 0.94;
+      letter-spacing: -3px;
+      margin-top: 8px;
+      position: relative;
+    }
+    /* Hand-drawn-feel underline directly under "effectiveness".
+       Width ~ 720px to match the rendered word width at 132px italic. */
+    .headline .l2::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 6px;
+      width: 720px;
+      height: 6px;
+      background: var(--accent-1);
+      border-radius: 3px;
+      opacity: 0.85;
+    }
+    .headline .l3 {
+      display: block;
+      font-size: 88px;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-top: 14px;
+    }
+
+    /* Outcome receipt — single short line, mono caps, well below headline.
+       Right-bounded at 880 so it never collides with the cover column. */
+    .receipt {
+      position: absolute;
+      left: 60px; right: 400px;
+      bottom: 116px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .receipt strong {
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    /* Brand chrome — bottom-left */
+    .brand {
+      position: absolute;
+      left: 60px;
+      bottom: 50px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand .dot {
+      width: 10px; height: 10px;
+      background: var(--accent-1);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ── RIGHT ANCHOR COLUMN — article cover screenshot ─────────── */
+
+    .cover-stack {
+      position: absolute;
+      right: 60px;
+      top: 130px;
+      width: 300px;
+      transform: rotate(3deg);
+      transform-origin: top right;
+    }
+    .cover-label {
+      display: block;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 4px;
+      box-shadow: 0 4px 10px rgba(28, 26, 24, 0.10);
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+    .cover-frame {
+      width: 100%;
+      filter: drop-shadow(0 18px 36px rgba(28, 26, 24, 0.20));
+    }
+    .cover-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      border: 4px solid var(--bg-card);
+    }
+    /* "751K" stamp pinned to the cover — turns the screenshot into a
+       receipt by surfacing the engagement number. */
+    .cover-stamp {
+      position: absolute;
+      top: -22px;
+      right: -28px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--accent-1);
+      padding: 8px 14px;
+      border-radius: 999px;
+      transform: rotate(8deg);
+      box-shadow: 0 8px 20px rgba(199, 90, 63, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="thumb">
+    <div class="overline">Using Claude Code</div>
+    <div class="overline-divider"></div>
+
+    <h1 class="headline">
+      <span class="l1">The unreasonable</span>
+      <em class="l2">effectiveness</em>
+      <span class="l3">of HTML.</span>
+    </h1>
+
+    <div class="receipt">
+      <strong>751K read this.</strong><br>Here's why your codebase changes.
+    </div>
+
+    <div class="brand">
+      <span class="dot"></span>
+      <span>diy-yt-creator</span>
+    </div>
+
+    <div class="cover-stack">
+      <span class="cover-label">The Source · @trq212</span>
+      <div class="cover-frame">
+        <img src="../assets/article-cover.png" alt="Thariq's X-post: The Unreasonable Effectiveness of HTML">
+        <div class="cover-stamp">751K views</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

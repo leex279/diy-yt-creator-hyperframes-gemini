@@ -1,0 +1,138 @@
+﻿<!--
+  scene-prime-family.html â€” Focused prime command family list.
+  Terminal-style command rows. Each reveals on its own beat.
+-->
+<template id="scene-prime-family-template">
+  <div data-composition-id="scene-prime-family"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #pf-content {
+        width:100%; height:100%;
+        padding: 80px var(--pad-x) 70px;
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:center;
+        gap: 24px;
+        box-sizing:border-box;
+      }
+      #pf-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #pf-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #pf-content .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 70px;
+        line-height: 1.0;
+        letter-spacing: -0.022em;
+        color: var(--ink);
+      }
+      #pf-content .blurb {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 28px;
+        line-height: 1.32;
+        color: var(--ink-2);
+        max-width: 1400px;
+      }
+      #pf-list {
+        display: flex; flex-direction: column;
+        gap: 16px;
+        width: 100%;
+        margin-top: 12px;
+      }
+      .pf-row {
+        display: grid;
+        grid-template-columns: 460px 1fr;
+        gap: 36px;
+        align-items: center;
+        padding: 22px 28px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 14px;
+        position: relative;
+      }
+      .pf-row .cmd {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 36px;
+        color: var(--accent);
+        letter-spacing: 0.01em;
+      }
+      .pf-row .desc {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: 26px;
+        line-height: 1.3;
+        color: var(--ink-2);
+      }
+      .pf-row .marker {
+        position: absolute;
+        left: 0; bottom: -1px;
+        width: 0%; height: 3px;
+        background: var(--accent-2);
+        box-shadow: 0 0 10px rgba(96, 165, 250, 0.6);
+      }
+    </style>
+
+    <div id="pf-content">
+      <div class="eyebrow" id="pf-eyebrow" style="opacity:0;visibility:hidden;">STRATEGY 04 &middot; FOCUSED PRIMING</div>
+      <h2 class="headline" id="pf-headline" style="opacity:0;visibility:hidden;">Throw the right slice. Not the whole repo.</h2>
+
+      <div id="pf-list">
+        <div class="pf-row" id="pf-r1" style="opacity:0;visibility:hidden;"><div class="cmd">/prime</div><div class="desc">General project orientation. README, workspaces, entry points.</div><div class="marker"></div></div>
+        <div class="pf-row" id="pf-r2" style="opacity:0;visibility:hidden;"><div class="cmd">/prime-server</div><div class="desc">Backend slice. Routes, services, the orchestrator.</div><div class="marker"></div></div>
+        <div class="pf-row" id="pf-r3" style="opacity:0;visibility:hidden;"><div class="cmd">/prime-client</div><div class="desc">Frontend slice. UI, stores, the SSE consumer.</div><div class="marker"></div></div>
+        <div class="pf-row" id="pf-r4" style="opacity:0;visibility:hidden;"><div class="cmd">/prime-components</div><div class="desc">Shared UI components. Loaded only when working in design system.</div><div class="marker"></div></div>
+        <div class="pf-row" id="pf-r5" style="opacity:0;visibility:hidden;"><div class="cmd">/prime-endpoint</div><div class="desc">End-to-end API slice. Schema, route, handler, db, types.</div><div class="marker"></div></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#pf-eyebrow",  { y: 20 }, 0);
+      tl.set("#pf-headline", { y: 30 }, 0);
+      ["#pf-r1","#pf-r2","#pf-r3","#pf-r4","#pf-r5"].forEach(sel => {
+        tl.set(sel, { x: -32 }, 0);
+        tl.set(sel + " .marker", { width: "0%" }, 0);
+      });
+
+      tl.to("#pf-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#pf-headline", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 0.5);
+
+      // Five rows reveal ~6s apart (paced for narration)
+      const rowTimes = [2.0, 5.0, 8.0, 11.0, 14.0];
+      ["#pf-r1","#pf-r2","#pf-r3","#pf-r4","#pf-r5"].forEach((sel, i) => {
+        tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)" }, rowTimes[i]);
+        tl.to(sel + " .marker", { width: "100%", duration: 0.55, ease: "power2.out" }, rowTimes[i] + 0.3);
+      });
+
+      // Mid-hold beats
+      tl.to("#pf-list", { scale: 1.01, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
+      tl.to(["#pf-r2 .cmd", "#pf-r3 .cmd", "#pf-r4 .cmd", "#pf-r5 .cmd"],
+        { textShadow: "0 0 30px rgba(59, 130, 246, 0.7)", duration: 0.7, ease: "sine.inOut",
+          yoyo: true, repeat: 1, stagger: { each: 0.18 } }, 28.0);
+
+      // Extend timeline to full slot duration
+      tl.set({}, {}, 50);
+      window.__timelines["scene-prime-family"] = tl;
+    </script>
+  </div>
+</template>

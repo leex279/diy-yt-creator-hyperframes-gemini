@@ -1,0 +1,206 @@
+<!--
+  scene-hook.html — punchier intro hook (~13s).
+  3D-tilted code card lands center; headline + URL pill follow.
+  Pattern: tl.set() at t=0 + tl.to() animations.
+-->
+<template id="scene-hook-template">
+  <div data-composition-id="scene-hook"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-hook-content {
+        width:100%; height:100%;
+        padding: 90px 120px 80px;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        text-align:center; gap:30px;
+        box-sizing:border-box;
+        perspective: 2400px;
+        perspective-origin: 50% 45%;
+      }
+      #scene-hook-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+      }
+      #scene-hook-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 88px;
+        line-height: 1.02;
+        letter-spacing: -2.5px;
+        color: var(--text);
+        max-width: 1500px;
+      }
+      #scene-hook-content .headline .accent {
+        color: var(--accent-stat);
+        text-shadow: 0 0 38px rgba(251,188,4,.45);
+      }
+      #scene-hook-content .stage-3d {
+        position: relative;
+        width: 1080px; height: 360px;
+        transform-style: preserve-3d;
+      }
+      #scene-hook-content .code-card {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 980px; height: 320px;
+        transform: translate(-50%, -50%);
+        transform-style: preserve-3d;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(10,14,22,.92);
+        border: 1px solid rgba(255,255,255,.08);
+        box-shadow:
+          0 60px 130px rgba(0,0,0,.7),
+          0 30px 60px rgba(0,0,0,.5),
+          0 0 0 1px rgba(255,255,255,.04) inset,
+          inset 0 1px 0 rgba(255,255,255,.06);
+      }
+      #scene-hook-content .code-card .chrome {
+        height: 38px;
+        background: linear-gradient(180deg, rgba(34,40,54,.95), rgba(22,26,38,.95));
+        display: flex; align-items: center;
+        padding: 0 14px; gap: 8px;
+        border-bottom: 1px solid rgba(255,255,255,.05);
+      }
+      #scene-hook-content .code-card .dot {
+        width: 12px; height: 12px; border-radius: 50%;
+      }
+      #scene-hook-content .code-card .dot.r { background: #ff5f57; }
+      #scene-hook-content .code-card .dot.y { background: #febc2e; }
+      #scene-hook-content .code-card .dot.g { background: #28c840; }
+      #scene-hook-content .code-card .filename {
+        margin-left: 18px;
+        font-family: var(--mono); font-weight: 600;
+        font-size: 15px; letter-spacing: 0.5px;
+        color: var(--text-secondary);
+      }
+      #scene-hook-content .code-card pre {
+        margin: 0;
+        padding: 22px 30px;
+        font-family: var(--mono);
+        font-size: 22px;
+        line-height: 1.5;
+        color: #e9ecf3;
+        text-align: left;
+        white-space: pre;
+      }
+      #scene-hook-content .code-card .tag    { color: #c084fc; }
+      #scene-hook-content .code-card .attr   { color: #fbbc04; }
+      #scene-hook-content .code-card .str    { color: #34d399; }
+      #scene-hook-content .code-card .text   { color: #e9ecf3; }
+      #scene-hook-content .code-card .punct  { color: #94a3b8; }
+      #scene-hook-content .code-card .comm   { color: #94a3b8; font-style: italic; }
+      #scene-hook-content .code-glow {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 1100px; height: 380px;
+        transform: translate(-50%, -50%) translateZ(-180px);
+        background: radial-gradient(ellipse at center,
+                      rgba(251,188,4,.30) 0%,
+                      rgba(251,188,4,.10) 35%,
+                      rgba(11,15,26,0) 65%);
+        filter: blur(40px);
+        opacity: 0;
+        pointer-events: none;
+      }
+      #scene-hook-content .chips {
+        display:flex; flex-direction:row;
+        align-items:center; justify-content:center;
+        gap: 22px;
+      }
+      #scene-hook-content .chip {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        padding: 10px 20px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.10);
+        text-transform: uppercase;
+      }
+      #scene-hook-content .chip .strike {
+        text-decoration: line-through;
+        text-decoration-color: rgba(249,115,22,.85);
+        text-decoration-thickness: 2px;
+      }
+      #scene-hook-content .url-pill {
+        display: inline-flex; align-items: center; gap: 12px;
+        padding: 14px 28px; border-radius: 999px;
+        background: rgba(59,130,246,.16);
+        border: 1.5px solid rgba(59,130,246,.55);
+        font-family: var(--mono); font-weight: 700;
+        font-size: 26px; letter-spacing: 0.5px;
+        color: var(--accent-1);
+        box-shadow: 0 12px 32px rgba(59,130,246,.18);
+      }
+      #scene-hook-content .url-pill::before { content: "🔗"; font-size: 22px; }
+    </style>
+
+    <div id="scene-hook-content">
+      <div class="overline" id="hook-overline">HYPERFRAMES &middot; BEGINNER SETUP</div>
+
+      <div class="headline" id="hook-headline">
+        Make a video by writing <span class="accent">HTML</span>.
+      </div>
+
+      <div class="stage-3d">
+        <div class="code-glow" id="hook-glow"></div>
+        <div class="code-card" id="hook-card">
+          <div class="chrome">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="filename">index.html</span>
+          </div>
+          <pre id="hook-code"><span class="punct">&lt;</span><span class="tag">div</span> <span class="attr">data-start</span><span class="punct">=</span><span class="str">"0"</span> <span class="attr">data-duration</span><span class="punct">=</span><span class="str">"6"</span><span class="punct">&gt;</span>
+  <span class="punct">&lt;</span><span class="tag">h1</span><span class="punct">&gt;</span><span class="text">Hello world</span><span class="punct">&lt;/</span><span class="tag">h1</span><span class="punct">&gt;</span>
+<span class="punct">&lt;/</span><span class="tag">div</span><span class="punct">&gt;</span>
+<span class="comm">// npm run render -&gt; out.mp4</span></pre>
+        </div>
+      </div>
+
+      <div class="chips" id="hook-chips">
+        <div class="chip"><span class="strike">React</span></div>
+        <div class="chip"><span class="strike">build step</span></div>
+        <div class="chip"><span class="strike">node_modules</span></div>
+      </div>
+
+      <div class="url-pill" id="hook-url">hyperframes.heygen.com/quickstart</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#hook-overline", { y: 22, opacity: 0 }, 0);
+      tl.set("#hook-headline", { y: 32, opacity: 0 }, 0);
+      tl.set("#hook-card",     { rotateY: 38, rotateX: -10, scale: 0.78, z: -360, opacity: 0, transformPerspective: 2400, transformOrigin: "50% 50%" }, 0);
+      tl.set("#hook-glow",     { opacity: 0 }, 0);
+      tl.set("#hook-chips .chip", { y: 18, opacity: 0 }, 0);
+      tl.set("#hook-url",      { y: 22, scale: 0.92, opacity: 0 }, 0);
+
+      tl.to("#hook-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.15);
+      tl.to("#hook-headline", { y: 0, opacity: 1, duration: 0.65 }, 0.45);
+      tl.to("#hook-card",     { rotateY: 0, rotateX: 0, scale: 1, z: 0, opacity: 1, duration: 1.25, ease: "power3.out" }, 0.85);
+      tl.to("#hook-glow",     { opacity: 1, duration: 1.1, ease: "power2.out" }, 1.0);
+      tl.to("#hook-chips .chip", { y: 0, opacity: 1, duration: 0.45, stagger: 0.12, ease: "back.out(1.4)" }, 2.05);
+      tl.to("#hook-url",      { y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 2.65);
+
+      // Subtle parallax drift while card sits visible
+      tl.to("#hook-card", { rotateY: -3, rotateX: 1.5, duration: 4.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.4);
+      tl.to("#hook-glow", { opacity: 0.78, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 2 }, 3.4);
+
+      window.__timelines["scene-hook"] = tl;
+    </script>
+  </div>
+</template>

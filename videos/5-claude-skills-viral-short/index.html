@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>5 Claude Skills Eating GitHub</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 220px;
+    --pad-x: 60px;
+    --pad-bottom: 220px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  /* Dynamous endcard mount — full-frame overlay during the last 5s.
+     BLOCK: shared/lib/blocks/dynamous-endcard/ */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+  #phase6 { z-index: 6; opacity: 0; }
+  #phase7 { z-index: 7; opacity: 0; }
+  #phase8 { z-index: 8; opacity: 0; }
+  #phase9 { z-index: 9; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* PHASE 1 — Hero hook */
+  #phase1 .phase-content {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+    padding-top: 280px;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 68px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 960px;
+    letter-spacing: -0.5px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.88;
+    letter-spacing: -5px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+  }
+  #p1-caption {
+    margin-top: 24px;
+    padding: 14px 32px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* PHASE 2 — Receipts: 3 stat pills */
+  #phase2 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 32px;
+  }
+  #p2-overline { color: var(--orange); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 62px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 940px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  #p2-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .receipt-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    width: 940px;
+    padding: 28px 36px;
+    border-radius: 22px;
+  }
+  .receipt-pill.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 12px 32px rgba(233,116,88,0.18);
+  }
+  .receipt-pill.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 12px 32px rgba(167,139,250,0.18);
+  }
+  .receipt-pill.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 12px 32px rgba(107,154,239,0.18);
+  }
+  .receipt-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 136px;
+    line-height: 0.88;
+    letter-spacing: -3px;
+    font-variant-numeric: tabular-nums lining-nums;
+    min-width: 380px;
+    text-align: left;
+  }
+  .receipt-pill.orange .receipt-num { color: var(--orange); }
+  .receipt-pill.purple .receipt-num { color: var(--purple); }
+  .receipt-pill.blue   .receipt-num { color: var(--blue); }
+  .receipt-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    flex: 1;
+    gap: 4px;
+  }
+  .receipt-label-main {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 44px;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .receipt-label-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* PHASES 3-7 — Skill card pattern (one skill per phase) */
+  .skill-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 28px;
+    padding-top: 220px !important;
+  }
+  .skill-rank {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 38px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .skill-name {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 150px;
+    line-height: 0.92;
+    letter-spacing: -4px;
+    max-width: 960px;
+    text-shadow: 0 0 80px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.6);
+  }
+  .skill-name.tight {
+    font-size: 120px;
+  }
+  .skill-stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 32px 44px;
+    border-radius: 24px;
+    min-width: 700px;
+  }
+  .skill-stat-num {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.9;
+    letter-spacing: -3px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .skill-stat-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .skill-bullets {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+    width: 940px;
+  }
+  .skill-bullet {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1.25;
+    color: var(--text);
+    padding: 14px 28px;
+    border-radius: 16px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+  }
+
+  /* Per-skill accent colors */
+  .skill-orange .skill-rank { color: var(--orange); }
+  .skill-orange .skill-name { color: var(--orange); }
+  .skill-orange .skill-stat-pill {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 14px 36px rgba(233,116,88,0.20);
+  }
+  .skill-orange .skill-stat-num { color: var(--orange); text-shadow: 0 0 60px rgba(233,116,88,0.40); }
+  .skill-orange .skill-stat-label { color: var(--text); }
+
+  .skill-purple .skill-rank { color: var(--purple); }
+  .skill-purple .skill-name { color: var(--purple); }
+  .skill-purple .skill-stat-pill {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 14px 36px rgba(167,139,250,0.20);
+  }
+  .skill-purple .skill-stat-num { color: var(--purple); text-shadow: 0 0 60px rgba(167,139,250,0.40); }
+  .skill-purple .skill-stat-label { color: var(--text); }
+
+  .skill-blue .skill-rank { color: var(--blue); }
+  .skill-blue .skill-name { color: var(--blue); }
+  .skill-blue .skill-stat-pill {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 14px 36px rgba(107,154,239,0.20);
+  }
+  .skill-blue .skill-stat-num { color: var(--blue); text-shadow: 0 0 60px rgba(107,154,239,0.40); }
+  .skill-blue .skill-stat-label { color: var(--text); }
+
+  .skill-green .skill-rank { color: var(--green); }
+  .skill-green .skill-name { color: var(--green); }
+  .skill-green .skill-stat-pill {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 14px 36px rgba(125,211,166,0.20);
+  }
+  .skill-green .skill-stat-num { color: var(--green); text-shadow: 0 0 60px rgba(125,211,166,0.40); }
+  .skill-green .skill-stat-label { color: var(--text); }
+
+  /* PHASE 8 — Enterprise receipts */
+  #phase8 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 26px;
+    padding-top: 240px;
+  }
+  /* PHASE 9 — CTA + thumbnail-grade final frame */
+  #phase9 .phase-content {
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 24px;
+    padding-top: 240px;
+  }
+  #p9-overline { color: var(--orange); }
+  #p9-thumb-topic {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 132px;
+    line-height: 0.92;
+    letter-spacing: -3px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 980px;
+    margin-top: 8px;
+  }
+  #p9-subhead {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 960px;
+    margin-top: 4px;
+  }
+  #p9-stat {
+    margin-top: 12px;
+    padding: 18px 32px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+  }
+  #p9-cta {
+    margin-top: 12px;
+    padding: 22px 44px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.24), rgba(125,211,166,0.07));
+    border: 2px solid rgba(125,211,166,0.55);
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 46px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-shadow: 0 0 24px rgba(125,211,166,0.4);
+  }
+  #p8-overline { color: var(--orange); }
+  #p8-receipt-row {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 940px;
+    margin-bottom: 16px;
+  }
+  .p8-receipt {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 28px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(245,241,235,0.07), rgba(245,241,235,0.02));
+    border: 1.5px solid rgba(245,241,235,0.16);
+    text-align: left;
+  }
+  .p8-r-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 36px;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .p8-r-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .p8-r-line1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 36px;
+    line-height: 1.15;
+    color: var(--text);
+  }
+  .p8-r-line2 {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  #p8-thumb-topic {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 156px;
+    line-height: 0.88;
+    letter-spacing: -4px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+    margin-top: 8px;
+  }
+  #p8-outcome {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 52px;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 960px;
+    margin-top: 6px;
+  }
+  #p8-cta {
+    margin-top: 14px;
+    padding: 20px 40px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.22), rgba(125,211,166,0.07));
+    border: 2px solid rgba(125,211,166,0.50);
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 44px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-shadow: 0 0 24px rgba(125,211,166,0.4);
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="161"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO HOOK (0 - 6.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p1-overline">Anthropic Skill Marketplace</div>
+      <div id="p1-pre">Five skills are…</div>
+      <div id="p1-hero">EATING<br>GITHUB</div>
+      <div id="p1-caption">May 2026 · 360K weekly installs</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — THE RECEIPTS (6.5 - 26.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">The numbers are insane</div>
+      <div id="p2-headline">5 skills · 360,000+ weekly installs</div>
+      <div id="p2-pills">
+        <div class="receipt-pill orange" id="p2-pill-1">
+          <div class="receipt-num">360K</div>
+          <div class="receipt-label">
+            <div class="receipt-label-main">Weekly installs</div>
+            <div class="receipt-label-sub">5 skills combined</div>
+          </div>
+        </div>
+        <div class="receipt-pill purple" id="p2-pill-2">
+          <div class="receipt-num">132K</div>
+          <div class="receipt-label">
+            <div class="receipt-label-main">GitHub stars</div>
+            <div class="receipt-label-sub">anthropics/skills repo</div>
+          </div>
+        </div>
+        <div class="receipt-pill blue" id="p2-pill-3">
+          <div class="receipt-num">15.5K</div>
+          <div class="receipt-label">
+            <div class="receipt-label-main">Forks of the official repo</div>
+            <div class="receipt-label-sub">Thousands of public skills</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — SKILL 1 · Frontend Design (26.5 - 47.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase skill-orange">
+    <div class="phase-content skill-content">
+      <div class="skill-rank">01 / 05</div>
+      <div class="skill-name">FRONTEND<br>DESIGN</div>
+      <div class="skill-stat-pill" id="p3-stat">
+        <div class="skill-stat-num">110K</div>
+        <div class="skill-stat-label">Weekly installs</div>
+      </div>
+      <div class="skill-bullets">
+        <div class="skill-bullet" id="p3-bullet-1">Fixes vibe-coded UIs</div>
+        <div class="skill-bullet" id="p3-bullet-2">Real design system, before code</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — SKILL 2 · Superpowers (47.5 - 65.2s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase skill-purple">
+    <div class="phase-content skill-content">
+      <div class="skill-rank">02 / 05</div>
+      <div class="skill-name tight">SUPERPOWERS</div>
+      <div class="skill-stat-pill" id="p4-stat">
+        <div class="skill-stat-num">187K ★</div>
+        <div class="skill-stat-label">GitHub stars · 16K forks</div>
+      </div>
+      <div class="skill-bullets">
+        <div class="skill-bullet" id="p4-bullet-1">Subagents + test-driven workflows</div>
+        <div class="skill-bullet" id="p4-bullet-2">Claude as a planning agent</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — SKILL 3 · Remotion (65.2 - 82.5s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="phase skill-blue">
+    <div class="phase-content skill-content">
+      <div class="skill-rank">03 / 05</div>
+      <div class="skill-name tight">REMOTION<br>BEST PRACTICES</div>
+      <div class="skill-stat-pill" id="p5-stat">
+        <div class="skill-stat-num">117K</div>
+        <div class="skill-stat-label">Weekly installs · since Feb 2026</div>
+      </div>
+      <div class="skill-bullets">
+        <div class="skill-bullet" id="p5-bullet-1">Programmatic React videos</div>
+        <div class="skill-bullet" id="p5-bullet-2">Full pipelines from one prompt</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 6 — SKILL 4 · Vercel Web Design Guidelines (82.5 - 100.2s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase6" class="phase skill-green">
+    <div class="phase-content skill-content">
+      <div class="skill-rank">04 / 05</div>
+      <div class="skill-name tight">VERCEL WEB<br>DESIGN GUIDELINES</div>
+      <div class="skill-stat-pill" id="p6-stat">
+        <div class="skill-stat-num">133K</div>
+        <div class="skill-stat-label">Weekly installs</div>
+      </div>
+      <div class="skill-bullets">
+        <div class="skill-bullet" id="p6-bullet-1">100+ accessibility + UX rules</div>
+        <div class="skill-bullet" id="p6-bullet-2">Vercel's own internal playbook</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 7 — SKILL 5 · Skill Creator (100.2 - 116.3s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase7" class="phase skill-orange">
+    <div class="phase-content skill-content">
+      <div class="skill-rank">05 / 05</div>
+      <div class="skill-name">SKILL<br>CREATOR</div>
+      <div class="skill-stat-pill" id="p7-stat">
+        <div class="skill-stat-num">META</div>
+        <div class="skill-stat-label">Anthropic · ships free</div>
+      </div>
+      <div class="skill-bullets">
+        <div class="skill-bullet" id="p7-bullet-1">Answer a few questions</div>
+        <div class="skill-bullet" id="p7-bullet-2">Get a complete custom skill</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 8 — Skills-native receipts (135.0 - 156.0s)
+       Narration: "This is not toy stuff. The same skill format already runs on
+                   Claude Code, Codex, Gemini, Cursor, and Copilot. Vercel maintains
+                   skills.sh as the searchable index. The awesome-claude-skills list
+                   just crossed 8,700 stars on GitHub. Skills are not a side project.
+                   The skill is the new SDK."
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">Not a side project</div>
+      <div id="p8-receipt-row">
+        <div class="p8-receipt" id="p8-r-platforms">
+          <div class="p8-r-logo">5</div>
+          <div class="p8-r-body">
+            <div class="p8-r-line1">5 platforms · same skill format</div>
+            <div class="p8-r-line2">Claude Code · Codex · Gemini · Cursor · Copilot</div>
+          </div>
+        </div>
+        <div class="p8-receipt" id="p8-r-curation">
+          <div class="p8-r-logo">★</div>
+          <div class="p8-r-body">
+            <div class="p8-r-line1">skills.sh · 18,000 stars on GitHub</div>
+            <div class="p8-r-line2">Vercel's open agent skills tool</div>
+          </div>
+        </div>
+      </div>
+      <div id="p8-thumb-topic">SKILLS<br>EAT SDKs</div>
+      <div id="p8-outcome">5 skills · 360K weekly installs</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 9 — CTA question + thumbnail-grade final frame (150.7 - 159s)
+       Narration: "Did you know all of them? Let me know in the comments.
+                   If you want to learn more about AI, check out the dynamous AI community."
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase9" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p9-overline">Your turn</div>
+      <div id="p9-thumb-topic">DID YOU KNOW<br>ALL 5?</div>
+      <div id="p9-subhead">Let me know in the comments</div>
+      <div id="p9-stat">5 skills · 360K weekly installs</div>
+      <div id="p9-cta">dynamous.ai →</div>
+    </div>
+  </div>
+
+  <!-- Dynamous endcard — last 5s (156.0–161.0s). Overlaps the spoken dynamous
+       outro (158.95–160s) so the brand reveal lands on the narration. Fades to
+       black at 4.5–5.0s for a clean cut. -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="156"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Narration -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="161"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Cinematic whoosh on every phase transition. data-start = sceneT (the
+       visual transition moment) — the shape-backdrop reposition tween is
+       scheduled at the same sceneT in the script below, so whoosh + shape
+       motion + visual phase swap all fire on the same beat.
+       data-duration=1.5 exposes the whoosh's full natural decay tail past
+       the 0.84s source-file length. -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="7.8"   data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="32.8"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="57.4"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="77.5"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="97.5"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="118.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="134.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t8" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="152.2" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ─── Deterministic shape backdrop (same as template) ───
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      // Shape reposition fires at sceneT (the visual phase swap moment).
+      // This synchronises with the cinematic-whoosh SFX (also at sceneT) and
+      // the GSAP crossfade — whoosh + shape motion + visual swap on the same beat.
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT);
+    });
+  }
+
+  spawnShapes('5-claude-skills', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const TOTAL = 161;
+
+  // Phase transition times (anchored to ElevenLabs transcript with corrected star counts)
+  const T1 = 7.8;    // p1 → p2  ("The numbers" at 7.94)
+  const T2 = 32.8;   // p2 → p3  ("Frontend Design" at 33.30)
+  const T3 = 57.4;   // p3 → p4  ("Superpowers" at 58.01)
+  const T4 = 77.5;   // p4 → p5  ("Remotion" at 78.29)
+  const T5 = 97.5;   // p5 → p6  ("Vercel" at 98.22)
+  const T6 = 118.0;  // p6 → p7  ("Skill Creator" at 118.58)
+  const T7 = 134.5;  // p7 → p8  ("not toy stuff" at 134.95)
+  const T8 = 152.2;  // p8 → p9  ("Did" at 152.94) — CTA phase begins
+
+  // Ambient and persistent UI
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 26, ease: "sine.inOut", yoyo: true, repeat: 5 },
+    0);
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL, ease: "none" },
+    0);
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ─── PHASE 1 — Hero hook (0 – 7.8s) ───
+  tl.set("#p1-pre", { y: 30, opacity: 0 }, 0);
+  tl.set("#p1-hero", { scale: 0.78, opacity: 0 }, 0);
+  tl.set("#p1-caption", { y: 24, opacity: 0 }, 0);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+  tl.to("#p1-pre", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.9);
+  // Hero slam aligned with "eating GitHub" (5.86-6.13s) — pre-slam at 4.8s
+  tl.to("#p1-hero", { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }, 4.8);
+  tl.to("#p1-hero", { x: 6,  duration: 0.04, ease: "none" }, 5.05);
+  tl.to("#p1-hero", { x: -6, duration: 0.04, ease: "none" }, 5.10);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none" }, 5.15);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none" }, 5.20);
+  tl.to("#p1-caption", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 6.6);
+  // Mid-phase visual beat: caption pulse keeps the 5s-static cap honored
+  tl.to("#p1-caption", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1 }, 7.3);
+
+  // Transition P1 → P2 at T1 = 6.5
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in", overwrite: "auto" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in", overwrite: "auto" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ─── PHASE 2 — Receipts (6.5 – 26.5s) ───
+  const P2 = T1 + 0.6;
+  tl.set("#p2-headline", { y: 30, opacity: 0 }, 0);
+  tl.set("#p2-pill-1", { x: -50, opacity: 0, scale: 0.9 }, 0);
+  tl.set("#p2-pill-2", { x: -50, opacity: 0, scale: 0.9 }, 0);
+  tl.set("#p2-pill-3", { x: -50, opacity: 0, scale: 0.9 }, 0);
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2 + 0.1);
+  tl.to("#p2-headline", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, P2 + 0.6);
+  // 3 receipt pills, anchored to spoken numbers:
+  // "Three hundred sixty thousand" → 10.11s
+  // "one hundred thirty two thousand" → 16.66s
+  // "Fifteen thousand five hundred" → 20.71s
+  tl.to("#p2-pill-1", { x: 0, opacity: 1, scale: 1, duration: 0.65, ease: "back.out(1.5)" }, 10.2);
+  tl.to("#p2-pill-2", { x: 0, opacity: 1, scale: 1, duration: 0.65, ease: "back.out(1.5)" }, 16.7);
+  tl.to("#p2-pill-3", { x: 0, opacity: 1, scale: 1, duration: 0.65, ease: "back.out(1.5)" }, 20.7);
+  // Beats to prevent >5s static at end of phase
+  tl.to("#p2-headline", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1 }, 26.0);
+  tl.to("#p2-pill-3",   { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1 }, 30.0);
+
+  // Transition P2 → P3
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in", overwrite: "auto" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in", overwrite: "auto" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ─── Helper for skill-card phase animations ───
+  // Pattern (relative to phase start P):
+  //   P+0.1:  rank enters
+  //   P+0.5:  skill name slam
+  //   P+3.5:  stat pill pops
+  //   P+8.0:  bullet 1
+  //   P+13.0: bullet 2
+  //   P+17:   light pulse to prevent >5s static before exit
+  function animateSkill(P, phaseSel, rankSel, nameSel, statSel, b1Sel, b2Sel) {
+    tl.set(nameSel,  { scale: 0.8, opacity: 0 }, 0);
+    tl.set(statSel,  { scale: 0.85, opacity: 0, y: 30 }, 0);
+    tl.set(b1Sel,    { x: -40, opacity: 0 }, 0);
+    tl.set(b2Sel,    { x: -40, opacity: 0 }, 0);
+    tl.from(rankSel, { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P + 0.1);
+    tl.to(nameSel,   { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }, P + 0.5);
+    // Hero shake
+    tl.to(nameSel,   { x: 5,  duration: 0.04, ease: "none" }, P + 0.85);
+    tl.to(nameSel,   { x: -5, duration: 0.04, ease: "none" }, P + 0.90);
+    tl.to(nameSel,   { x: 0,  duration: 0.04, ease: "none" }, P + 0.95);
+    tl.to(statSel,   { scale: 1, opacity: 1, y: 0, duration: 0.65, ease: "back.out(1.6)" }, P + 3.5);
+    tl.to(b1Sel,     { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P + 8.0);
+    tl.to(b2Sel,     { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P + 13.0);
+    // Stat-num pulse to keep visual rhythm in long phases (P+17 ~ before exit)
+    tl.to(statSel,   { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1 }, P + 17);
+  }
+
+  function transitionOut(phaseSel, nextSel, T) {
+    tl.to(phaseSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in", overwrite: "auto" }, T);
+    tl.to(phaseSel, { opacity: 0, duration: 0.4, ease: "power1.in", overwrite: "auto" }, T + 0.3);
+    tl.set(phaseSel, { visibility: "hidden" }, T + 0.7);
+    tl.set(nextSel, { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T + 0.4);
+    tl.to(nextSel, { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T + 0.4);
+    tl.to(nextSel, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T + 0.6);
+  }
+
+  // ─── PHASE 3 — Skill 1 Frontend Design (26.5 – 47.5s) ───
+  animateSkill(T2 + 0.6,
+    "#phase3", "#phase3 .skill-rank", "#phase3 .skill-name", "#p3-stat", "#p3-bullet-1", "#p3-bullet-2");
+  transitionOut("#phase3", "#phase4", T3);
+
+  // ─── PHASE 4 — Skill 2 Superpowers (47.5 – 65.2s) ───
+  animateSkill(T3 + 0.6,
+    "#phase4", "#phase4 .skill-rank", "#phase4 .skill-name", "#p4-stat", "#p4-bullet-1", "#p4-bullet-2");
+  transitionOut("#phase4", "#phase5", T4);
+
+  // ─── PHASE 5 — Skill 3 Remotion (65.2 – 82.5s) ───
+  animateSkill(T4 + 0.6,
+    "#phase5", "#phase5 .skill-rank", "#phase5 .skill-name", "#p5-stat", "#p5-bullet-1", "#p5-bullet-2");
+  transitionOut("#phase5", "#phase6", T5);
+
+  // ─── PHASE 6 — Skill 4 Vercel WDG (82.5 – 100.2s) ───
+  animateSkill(T5 + 0.6,
+    "#phase6", "#phase6 .skill-rank", "#phase6 .skill-name", "#p6-stat", "#p6-bullet-1", "#p6-bullet-2");
+  transitionOut("#phase6", "#phase7", T6);
+
+  // ─── PHASE 7 — Skill 5 Skill Creator (116.5 – 135.8s) ───
+  animateSkill(T6 + 0.6,
+    "#phase7", "#phase7 .skill-rank", "#phase7 .skill-name", "#p7-stat", "#p7-bullet-1", "#p7-bullet-2");
+  transitionOut("#phase7", "#phase8", T7);
+
+  // ─── PHASE 8 — Skills-native receipts (134.5 – 152.2s) ───
+  // Narration anchors (verified-stars version):
+  //   "not toy stuff"                          134.95
+  //   "Claude Code, Codex, Gemini, Cursor…"    ~137 - 140
+  //   "Vercel ships the open skills tool at skills dot SH" 142.62 – 145.5
+  //   "Eighteen thousand stars on GitHub"      146.42 – 148
+  //   "The skill is the new SDK"               150 – 152.5
+  const P8 = T7 + 0.6;
+  tl.set("#p8-r-platforms", { x: -50, opacity: 0 }, 0);
+  tl.set("#p8-r-curation",  { x: -50, opacity: 0 }, 0);
+  tl.set("#p8-thumb-topic", { scale: 0.78, opacity: 0 }, 0);
+  tl.set("#p8-outcome",     { y: 24, opacity: 0 }, 0);
+  tl.from("#p8-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P8 + 0.1);
+  // Cross-platform receipt at "Claude Code, Codex…" (~137)
+  tl.to("#p8-r-platforms",  { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 137.0);
+  // skills.sh receipt at "Vercel ships… 18K stars" (~146.4)
+  tl.to("#p8-r-curation",   { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 146.4);
+  // "SKILLS EAT SDKs" topic slam + outcome aligned with "the new SDK" (~151)
+  tl.to("#p8-thumb-topic",  { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.7)" }, 151.0);
+  tl.to("#p8-outcome",      { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" },         151.4);
+  transitionOut("#phase8", "#phase9", T8);
+
+  // ─── PHASE 9 — CTA + thumbnail-grade final frame (152.2 – 161s) ───
+  // Narration:
+  //   "Did you know all of them? Let me know in the comments." 152.94 – 155.60
+  //   "If you want to learn more about AI, check out the dynamous AI community." 156.36 – 159.99
+  const P9 = T8 + 0.6;
+  tl.set("#p9-thumb-topic", { scale: 0.78, opacity: 0 }, 0);
+  tl.set("#p9-subhead",     { y: 24, opacity: 0 }, 0);
+  tl.set("#p9-stat",        { y: 20, opacity: 0 }, 0);
+  tl.set("#p9-cta",         { scale: 0.85, opacity: 0 }, 0);
+  tl.from("#p9-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P9 + 0.1);
+  // "DID YOU KNOW ALL 5?" topic slam aligned with "Did" at 152.94
+  tl.to("#p9-thumb-topic",  { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.7)" }, 153.0);
+  tl.to("#p9-thumb-topic",  { x: 5,  duration: 0.04, ease: "none" }, 153.3);
+  tl.to("#p9-thumb-topic",  { x: -5, duration: 0.04, ease: "none" }, 153.35);
+  tl.to("#p9-thumb-topic",  { x: 0,  duration: 0.04, ease: "none" }, 153.40);
+  // "Let me know in the comments" subhead aligned with "Let" at 154.92
+  tl.to("#p9-subhead",      { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 155.0);
+  // Stat pill enters during pre-dynamous pause
+  tl.to("#p9-stat",         { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 156.2);
+  // Dynamous CTA aligned with "dynamous" at 158.95
+  tl.to("#p9-cta",          { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 158.7);
+  // CTA pulse to keep the held-still frame visually alive
+  tl.to("#p9-cta",          { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1 }, 159.5);
+
+  // ─── DYNAMOUS ENDCARD HANDOFF (156.0 – 161.0s) ───
+  // Half a second before the endcard mounts, fade P9 out so the endcard owns
+  // the frame cleanly underneath the noise overlay.
+  tl.to("#phase9",       { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 155.5);
+  // Hide the persistent top banner + progress bar for the endcard window —
+  // the endcard is the full-frame brand moment.
+  tl.to("#top-banner",   { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 155.5);
+  tl.to("#progress-track",{ opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 155.5);
+
+  // Re-randomise shape backdrop at every phase transition (paired with whoosh SFX).
+  // Shape reposition tween fires AT sceneT (sync with the whoosh), so audio +
+  // shape motion + visual phase swap all hit the same beat.
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    '5-claude-skills',
+    [T1, T2, T3, T4, T5, T6, T7, T8]
+  );
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

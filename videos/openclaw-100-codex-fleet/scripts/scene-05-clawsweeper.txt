@@ -1,0 +1,5 @@
+Okay, back to the fleet, and the first custom tool. It's called claw-sweeper. Open source, MIT licensed, lives under the OpenClaw GitHub org. The job is simple to describe. It reads every open issue in your repo, checks whether the fix already landed on main, and if it did, it closes the issue with the exact merge reference attached.
+
+It runs in four lanes. Review proposes closures. Apply executes them with safety checks. Repair runs autofix and automerge through maintainer commands. Commit Review analyzes everything that hits main.
+
+Here's the part that makes it credible. In one reference week, claw-sweeper scanned three thousand four hundred seventy-eight issues. It closed about four of them. That's a zero point one percent close rate. Which sounds tiny, until you remember it never sleeps. It never closes a maintainer's own issue, never touches protected labels, and re-fetches the GitHub state right before any change. Conservative by design.

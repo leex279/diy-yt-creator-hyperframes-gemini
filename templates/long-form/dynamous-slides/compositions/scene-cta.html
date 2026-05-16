@@ -1,0 +1,182 @@
+<!--
+  scene-cta.html — Dynamous CTA close.
+
+  Logo lockup + wordmark + URL on the right; debate-sparking question
+  centered above; comment + subscribe pill row below. The #cta-debate
+  element is the on-screen engagement question per .claude/rules/engagement-cta.md.
+
+  HARD: #cta-debate text MUST match the final spoken line of script.txt
+  AND the closing paragraph of youtube-description.md. The question must
+  be polarizing, binary-answerable, and reference a specific claim from
+  the video. Banned closers ("What do you think?", "How would you build
+  this differently?") fail QG-2b regardless of the rest of the score.
+
+  Subscribe pulse uses FINITE repeat — never repeat:-1 (framework
+  requires deterministic timelines).
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--font-display); color:var(--ink);">
+
+    <style>
+      #cta-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #cta-content .lockup {
+        display: flex; align-items: center; justify-content: center;
+        gap: 56px;
+        margin-bottom: 12px;
+      }
+      #cta-content .flame {
+        filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.7));
+      }
+      #cta-content .wordmark-block {
+        display: flex; flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+      }
+      #cta-content .wordmark {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 144px;
+        line-height: 0.95;
+        letter-spacing: -0.035em;
+        color: var(--ink);
+        text-shadow: 0 0 60px rgba(59, 130, 246, 0.32);
+      }
+      #cta-content .url {
+        font-family: var(--font-data);
+        font-size: 38px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        color: var(--accent-2);
+      }
+      #cta-content .debate {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1.1;
+        letter-spacing: -0.018em;
+        color: var(--ink);
+        text-align: center;
+        max-width: 1500px;
+      }
+      #cta-content .pills {
+        display: flex; gap: 24px;
+        align-items: center; justify-content: center;
+        margin-top: 8px;
+      }
+      .cta-pill {
+        padding: 20px 36px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1.5px solid var(--border-bright);
+        font-family: var(--font-data);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: var(--ink);
+        display: inline-flex; align-items: center; gap: 12px;
+      }
+      .cta-pill.comment .icon { color: var(--accent-2); }
+      .cta-pill.subscribe {
+        background: linear-gradient(135deg,
+                      rgba(59, 130, 246, 0.22) 0%,
+                      rgba(59, 130, 246, 0.06) 100%);
+        border-color: rgba(59, 130, 246, 0.65);
+      }
+      .cta-pill.subscribe .arrow {
+        color: var(--accent);
+        font-weight: 900;
+      }
+    </style>
+
+    <div id="cta-content">
+      <div class="lockup">
+        <div class="flame" id="cta-flame">
+          <svg width="200" height="250" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="flame-grad-cta" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60A5FA"/>
+                <stop offset="100%" stop-color="#3B82F6"/>
+              </linearGradient>
+            </defs>
+            <path d="M40 6 C 24 30, 16 52, 16 70 C 16 87, 28 96, 40 96 C 52 96, 64 87, 64 70 C 64 52, 56 30, 40 6 Z"
+                  fill="url(#flame-grad-cta)" stroke="#2563EB" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="wordmark-block">
+          <div class="wordmark" id="cta-wordmark">Dynamous</div>
+          <div class="url" id="cta-url">REPLACE: dynamous.ai / @ChannelHandle</div>
+        </div>
+      </div>
+
+      <!-- REPLACE: debate-sparking question per .claude/rules/engagement-cta.md
+           Must satisfy ALL four HARD criteria: binary/short-list answerable,
+           polarizing stance, references a specific video claim, low cost to
+           answer. Wording must match the final spoken line of script.txt. -->
+      <div class="debate" id="cta-debate">REPLACE: your debate-sparking question?</div>
+
+      <div class="pills">
+        <div class="cta-pill comment" id="cta-comment">
+          <span class="icon">&#x270F;</span>
+          <span>Drop your take in the comments</span>
+        </div>
+        <div class="cta-pill subscribe" id="cta-subscribe">
+          <span>Subscribe</span>
+          <span class="arrow">&rarr;</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#cta-flame",     { autoAlpha: 0, scale: 0, rotation: -10 }, 0);
+      tl.set("#cta-wordmark",  { y: 40, autoAlpha: 0 }, 0);
+      tl.set("#cta-url",       { y: 20, autoAlpha: 0 }, 0);
+      tl.set("#cta-debate",    { y: 40, autoAlpha: 0 }, 0);
+      tl.set("#cta-comment",   { y: 24, autoAlpha: 0 }, 0);
+      tl.set("#cta-subscribe", { y: 24, autoAlpha: 0 }, 0);
+
+      tl.to("#cta-flame",     { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.6)" }, 0.2);
+      tl.to("#cta-wordmark",  { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.4);
+      tl.to("#cta-url",       { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.9);
+      tl.to("#cta-debate",    { y: 0, autoAlpha: 1, duration: 0.7, ease: "expo.out" }, 1.6);
+      tl.to("#cta-comment",   { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 3.0);
+      tl.to("#cta-subscribe", { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 3.2);
+
+      // Subscribe pulse — FINITE repeat (5 ticks ≈ 5s, ends before scene end)
+      tl.to("#cta-subscribe", {
+        boxShadow: "0 0 0 6px rgba(59, 130, 246, 0.35)",
+        duration: 0.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 5
+      }, 4.5);
+
+      // Flame drift — slow yoyo while holding
+      tl.to("#cta-flame", {
+        y: -12, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 4.8);
+
+      // Wordmark settle pulse — subtle but real
+      tl.to("#cta-wordmark", {
+        scale: 1.025, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 5.5);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,143 @@
+<!--
+  scene-stat-pill-row.html — Hero stat pills (Anthropic long-form).
+
+  Re-skin with orange + purple + blue rotation (Anthropic palette).
+  2-3 huge stat pills; step-by-step reveal (~1.5s apart).
+
+  OPERATOR:
+    - Replace digit and label text in each pill
+    - Tune SCENE_DURATION to narration length
+    - Remove the third pill if only 2 stats are needed
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-stat-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center; gap: 40px;
+        box-sizing: border-box;
+      }
+      #stat-overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #stat-headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+        max-width: 1400px;
+      }
+      .stat-pills-row {
+        display: flex;
+        flex-direction: row;
+        gap: 28px;
+        align-items: stretch;
+      }
+      .stat-pill-lf {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        min-width: 400px;
+        padding: 48px 32px;
+        border-radius: 26px;
+      }
+      .stat-pill-lf.orange {
+        background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.06));
+        border: 2px solid rgba(233,116,88,0.45);
+        box-shadow: 0 14px 40px rgba(233,116,88,0.20);
+      }
+      .stat-pill-lf.purple {
+        background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.06));
+        border: 2px solid rgba(167,139,250,0.45);
+        box-shadow: 0 14px 40px rgba(167,139,250,0.20);
+      }
+      .stat-pill-lf.blue {
+        background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.06));
+        border: 2px solid rgba(107,154,239,0.45);
+        box-shadow: 0 14px 40px rgba(107,154,239,0.20);
+      }
+      .stat-num-lf {
+        font-family: var(--sans);
+        font-weight: 900;
+        font-size: 200px;
+        line-height: 0.88;
+        letter-spacing: -5px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .stat-pill-lf.orange .stat-num-lf { color: var(--accent-1); text-shadow: 0 0 60px rgba(233,116,88,0.45); }
+      .stat-pill-lf.purple .stat-num-lf { color: var(--accent-2); text-shadow: 0 0 60px rgba(167,139,250,0.45); }
+      .stat-pill-lf.blue   .stat-num-lf { color: var(--accent-3); text-shadow: 0 0 60px rgba(107,154,239,0.45); }
+      .stat-label-lf {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 2px;
+        color: var(--text);
+        text-align: center;
+      }
+    </style>
+
+    <div id="scene-stat-content">
+      <div id="stat-overline">THE RECEIPTS</div>
+      <div id="stat-headline">Replace with stat context headline</div>
+      <div class="stat-pills-row">
+        <div class="stat-pill-lf orange" id="stat-pill-1">
+          <div class="stat-num-lf">0</div>
+          <div class="stat-label-lf">Replace label one</div>
+        </div>
+        <div class="stat-pill-lf purple" id="stat-pill-2">
+          <div class="stat-num-lf">0</div>
+          <div class="stat-label-lf">Replace label two</div>
+        </div>
+        <div class="stat-pill-lf blue" id="stat-pill-3">
+          <div class="stat-num-lf">0</div>
+          <div class="stat-label-lf">Replace label three</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 14;
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Hide pills at t=0
+      tl.set("#stat-pill-1", { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#stat-pill-2", { scale: 0.85, opacity: 0 }, 0);
+      tl.set("#stat-pill-3", { scale: 0.85, opacity: 0 }, 0);
+
+      tl.from("#stat-overline",  { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#stat-headline",  { y: 28, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+      // Step-by-step pill reveal
+      tl.to("#stat-pill-1", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 1.0);
+      tl.to("#stat-pill-2", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 2.5);
+      tl.to("#stat-pill-3", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 4.0);
+
+      // Pin timeline to scene duration
+      tl.set({}, {}, SCENE_DURATION);
+
+      window.__timelines["scene-stat-pill-row"] = tl;
+    </script>
+  </div>
+</template>

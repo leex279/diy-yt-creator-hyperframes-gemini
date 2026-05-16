@@ -1,0 +1,17 @@
+Agent Skills. The open standard for A I agent capabilities. Built by Anthropic. Adopted by thirty-seven tools. Here is how it works in under three minutes.
+
+A skill is one folder. Inside lives one file. Skill dot M D. That file holds two fields. A name. A description. Plus the instructions an agent follows to do the work. That is the whole spec.
+
+A skill is more than just Skill dot M D though. Drop scripts into a scripts folder, and the agent runs them. Drop reference docs into a references folder, and the agent reads them on demand. Drop templates into assets, and the agent uses them.
+
+Here is the part that makes it actually work. Progressive disclosure. Stage one. Discovery. At startup, the agent loads only each skill's name and description. About a hundred tokens each. Stage two. Activation. When your task matches the description, the full Skill dot M D loads into context. Stage three. Execution. Bundled scripts and reference files only load when the work demands them. Skills stay small until you need them.
+
+This is what a real Skill dot M D looks like. Required fields. A name. A description. Optional fields. A license. Compatibility hints. Metadata. Even pre-approved tools. Then Markdown instructions. No D S L. No S D K. Just a file in your Git repo.
+
+Here is the receipt. A hundred tokens to advertise a skill. Five thousand tokens to run it. Zero tokens until activation. Many skills. Tiny context footprint.
+
+So where can you use it? Claude Code. Cursor. V S Code. OpenAI Codex. And dozens more. Same file. Same format. Zero rewrites.
+
+The format was originally developed by Anthropic. Then released as an open standard. Open to contributions from anyone in the ecosystem.
+
+So one question. Skills, or M C P? Which one earns the spot in your stack first? Drop your pick in the comments. Full spec at agentskills dot io.

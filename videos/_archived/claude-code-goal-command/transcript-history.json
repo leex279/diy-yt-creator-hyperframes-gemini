@@ -1,0 +1,200 @@
+{
+  "voice_id": "7kXNOCqiaLdszL0OEXks",
+  "model_id": "eleven_multilingual_v2",
+  "voice_settings": {
+    "stability": 0.65,
+    "similarity_boost": 0.65,
+    "style": 0.0,
+    "speed": 1.13,
+    "use_speaker_boost": true
+  },
+  "pronunciation_dictionary_locators": [
+    {
+      "pronunciation_dictionary_id": "AhK3J8mZDRoShxfoJLk6",
+      "version_id": "pFvyQBbxEBKyF7C3IHpy"
+    }
+  ],
+  "inter_chunk_silence_ms": 650,
+  "chunks": [
+    {
+      "index": 0,
+      "text": "Wait. There's a new slash command in Claude Code, and Haiku judges Sonnet now.",
+      "checksum": "sha256:d45b2d4f0f9d8399b38aac777862ea3d611c603a4a5a6424aba72172912ff991",
+      "wav": "chunk-00.wav",
+      "duration": 4.922630385487528,
+      "word_count": 14,
+      "words_offset": 0
+    },
+    {
+      "index": 1,
+      "text": "It's called slash goal. And it just made typing \"keep going\" obsolete.",
+      "checksum": "sha256:c40f933f9ade49e867fa3657d6afc1cd2ae8c2a9b13f0ba916e41ba9531f4dbc",
+      "wav": "chunk-01.wav",
+      "duration": 3.9938321995464854,
+      "word_count": 12,
+      "words_offset": 14
+    },
+    {
+      "index": 2,
+      "text": "Because here's how it works. You state one completion condition.",
+      "checksum": "sha256:2adba547fd310e050bc263ee81519fe950e127e429153e77809b158e5f18e139",
+      "wav": "chunk-02.wav",
+      "duration": 3.4829931972789114,
+      "word_count": 10,
+      "words_offset": 26
+    },
+    {
+      "index": 3,
+      "text": "Claude does a turn. Then a small fast model, Haiku by default, checks the transcript and returns yes or no, with a short reason.",
+      "checksum": "sha256:dceff67c47e69054d6ff8b8a3fa882cc754787986d939ce38ce4fe9f00ec95a5",
+      "wav": "chunk-03.wav",
+      "duration": 7.151746031746032,
+      "word_count": 24,
+      "words_offset": 36
+    },
+    {
+      "index": 4,
+      "text": "No means keep working, with that reason as guidance.",
+      "checksum": "sha256:7c05ecdc86c7390ca6828c83480144aea41b7c8ca463b657da5fc812e6ff0eab",
+      "wav": "chunk-04.wav",
+      "duration": 2.786394557823129,
+      "word_count": 9,
+      "words_offset": 60
+    },
+    {
+      "index": 5,
+      "text": "Yes auto-clears the goal and writes \"achieved.\"\n\nSo here's what it looks like in your terminal.",
+      "checksum": "sha256:6f906bcd62ef807a10e2c1ceb0c929aaf2c227b9188e17a0e12da63601a17a4f",
+      "wav": "chunk-05.wav",
+      "duration": 5.526349206349207,
+      "word_count": 16,
+      "words_offset": 69
+    },
+    {
+      "index": 6,
+      "text": "You type slash goal, then a condition, something like \"all tests in test slash auth pass and the lint step is clean.\" Claude runs turn one.",
+      "checksum": "sha256:c4122f2e283a4d4ab2b5dc7bf6bd05fb10d842648d18cacf4222ad0d2d808f05",
+      "wav": "chunk-06.wav",
+      "duration": 8.870022675736962,
+      "word_count": 26,
+      "words_offset": 85
+    },
+    {
+      "index": 7,
+      "text": "Two tests still fail. Haiku reads the transcript and returns: \"no.",
+      "checksum": "sha256:ddb252e4e726f4a6677234a0796a7076738100995e11ba8f8cc43f67b2d77217",
+      "wav": "chunk-07.wav",
+      "duration": 4.08671201814059,
+      "word_count": 11,
+      "words_offset": 111
+    },
+    {
+      "index": 8,
+      "text": "Auth login still broken.\" That reason becomes turn two's directive.",
+      "checksum": "sha256:5bd8fb9a895d1928e5e3e05e3026b65adcd83b9e1fe30d8cd3beffa83903ab5e",
+      "wav": "chunk-08.wav",
+      "duration": 3.9938321995464854,
+      "word_count": 10,
+      "words_offset": 122
+    },
+    {
+      "index": 9,
+      "text": "Claude fixes it. Haiku checks again. \"Yes.",
+      "checksum": "sha256:41eebf6d00a48f73463fd12850455e041a4148a95e46471521e141b40d7ccfb1",
+      "wav": "chunk-09.wav",
+      "duration": 2.8328344671201813,
+      "word_count": 7,
+      "words_offset": 132
+    },
+    {
+      "index": 10,
+      "text": "Achieved.\" The goal clears itself. Wait.",
+      "checksum": "sha256:eba880d8de25a5dcaf7aef2f13e0d00265cf3979f570911164644d1f11717111",
+      "wav": "chunk-10.wav",
+      "duration": 2.414875283446712,
+      "word_count": 6,
+      "words_offset": 139
+    },
+    {
+      "index": 11,
+      "text": "Haiku just told Sonnet to keep working. That's the loop.",
+      "checksum": "sha256:9e2c30f5761f69f69e879b895283042c18bb44b1d709ccde3c7b5d0bc435bff5",
+      "wav": "chunk-11.wav",
+      "duration": 2.9257142857142857,
+      "word_count": 10,
+      "words_offset": 145
+    },
+    {
+      "index": 12,
+      "text": "And here's why it's not just another prompt.",
+      "checksum": "sha256:22dd162799d1788959a7066108982e63bf9df75608a41d2d154ec1a5c87bb120",
+      "wav": "chunk-12.wav",
+      "duration": 2.36843537414966,
+      "word_count": 8,
+      "words_offset": 155
+    },
+    {
+      "index": 13,
+      "text": "A prompt asks once. Claude answers, control returns to you, and you re-prompt to continue.",
+      "checksum": "sha256:5aeabc36d4e6b2679607e996e695bd6a43f19c682534803177ccf72c83871b78",
+      "wav": "chunk-13.wav",
+      "duration": 5.851428571428571,
+      "word_count": 15,
+      "words_offset": 163
+    },
+    {
+      "index": 14,
+      "text": "Slash goal keeps checking. Every turn, a fresh model, not the one doing the work, judges your condition against the conversation.",
+      "checksum": "sha256:c363899fdc6c91ab8429bf03daf612217017e9c125b2e46caab67b25d4af92b7",
+      "wav": "chunk-14.wav",
+      "duration": 6.965986394557823,
+      "word_count": 21,
+      "words_offset": 178
+    },
+    {
+      "index": 15,
+      "text": "If you've ever typed \"keep going\" eight times in a row, this replaces all eight.",
+      "checksum": "sha256:4d85464ab1a8c8537287b303bbbbcc1bfbe5b57143d1addb12fba3ecd966c9b6",
+      "wav": "chunk-15.wav",
+      "duration": 4.6439909297052155,
+      "word_count": 15,
+      "words_offset": 199
+    },
+    {
+      "index": 16,
+      "text": "So. Next time you're about to type \"keep going\" for the eighth time, type slash goal instead.",
+      "checksum": "sha256:3bcf150c14202a6875ca1fb3bd3fa9a1a1884fb99b9b6d32f7662e31eea9ad3c",
+      "wav": "chunk-16.wav",
+      "duration": 5.6656689342403626,
+      "word_count": 17,
+      "words_offset": 214
+    },
+    {
+      "index": 17,
+      "text": "State the finish line once. Shipped in version two point one point one three nine.",
+      "checksum": "sha256:afbd187387d5c06012f20643a226bc30a880a9df579ce3465f3b681783c0406b",
+      "wav": "chunk-17.wav",
+      "duration": 4.829750566893424,
+      "word_count": 15,
+      "words_offset": 231
+    },
+    {
+      "index": 18,
+      "text": "Quick question. How many times in a row have you typed \"keep going\"?",
+      "checksum": "sha256:111b54470e1096e886b899476cf64936e93bff6ffad74919dcab76e8da7991ec",
+      "wav": "chunk-18.wav",
+      "duration": 3.7151927437641725,
+      "word_count": 13,
+      "words_offset": 246
+    },
+    {
+      "index": 19,
+      "text": "Drop your number in the comments. If you want to learn more about AI, check out the dynamous dot ai community.",
+      "checksum": "sha256:f11fe9379cdf308e17a3e9de6a0105413b973a966acf6522234174cb8f51c019",
+      "wav": "chunk-19.wav",
+      "duration": 5.944308390022676,
+      "word_count": 21,
+      "words_offset": 259
+    }
+  ]
+}

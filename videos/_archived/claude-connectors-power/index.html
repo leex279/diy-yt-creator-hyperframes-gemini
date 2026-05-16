@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Connectors Power Moves</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 dark stage. Anthropic shorts.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    --bg: #0B0F18;
+    --card: #161B26;
+    --text: #F5F1EB;
+    --text-dim: #9A958D;
+    --orange: #E97458;
+    --purple: #A78BFA;
+    --blue:   #6B9AEF;
+    --green:  #7DD3A6;
+    --red:    #D14343;
+    --pill-bg: rgba(245, 241, 235, 0.08);
+    --pill-border: rgba(245, 241, 235, 0.18);
+
+    --pad-top: 240px;
+    --pad-x: 60px;
+    --pad-bottom: 200px;
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(233,116,88,0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.06), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    width: 972px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.08);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--orange);
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.6);
+  }
+
+  /* ── PHASES ── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+  #phase6 { z-index: 6; opacity: 0; }
+
+  .phase-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — Thumbnail-grade intro + Hook
+     ────────────────────────────────────────────────── */
+  #p1-topic-lockup {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1080px; height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 28px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #p1-brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  #p1-brand-logo {
+    height: 100px;
+    width: auto;
+    display: block;
+  }
+  #p1-topic-slam {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 138px;
+    line-height: 0.88;
+    letter-spacing: -4px;
+    color: var(--text);
+    max-width: 960px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #p1-topic-slam .accent { color: var(--orange); }
+  #p1-ga-receipt {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* Connector logo strip in thumbnail-grade first frame */
+  #p1-connector-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: nowrap;
+    margin-top: 8px;
+  }
+  .p1-conn-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 116px;
+    height: 116px;
+    border-radius: 24px;
+    background: rgba(245, 241, 235, 0.06);
+    border: 2px solid rgba(245, 241, 235, 0.16);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+  .p1-conn-chip img { width: 64px; height: 64px; object-fit: contain; display: block; }
+  .p1-conn-chip .conn-text {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 48px;
+    color: var(--purple);
+    line-height: 1;
+  }
+  .p1-conn-chip.orange { border-color: rgba(233,116,88,0.40); box-shadow: 0 6px 18px rgba(233,116,88,0.20); }
+  .p1-conn-chip.purple { border-color: rgba(167,139,250,0.40); box-shadow: 0 6px 18px rgba(167,139,250,0.20); }
+  .p1-conn-chip.blue   { border-color: rgba(107,154,239,0.40); box-shadow: 0 6px 18px rgba(107,154,239,0.20); }
+  .p1-conn-chip.green  { border-color: rgba(125,211,166,0.40); box-shadow: 0 6px 18px rgba(125,211,166,0.20); }
+  #p1-conn-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 168px;
+    height: 116px;
+    border-radius: 24px;
+    background: rgba(233, 116, 88, 0.12);
+    border: 2px solid rgba(233, 116, 88, 0.45);
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 38px;
+    color: var(--orange);
+    letter-spacing: 1px;
+    box-shadow: 0 6px 18px rgba(233,116,88,0.20);
+  }
+
+  #p1-hero-content {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1080px; height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    text-align: center;
+    gap: 32px;
+    z-index: 1;
+    opacity: 0;
+  }
+  #p1-overline { color: var(--orange); }
+  #p1-pre {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 62px;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 920px;
+  }
+  #p1-hero {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 158px;
+    line-height: 0.92;
+    letter-spacing: -3px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 960px;
+    text-align: center;
+  }
+  #p1-caption {
+    margin-top: 20px;
+    padding: 16px 32px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    border-radius: 999px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — Connectors: what + how it works
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 28px;
+  }
+  #p2-overline { color: var(--purple); }
+  #p2-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    color: var(--text);
+    max-width: 940px;
+  }
+
+  #p2-service-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    width: 940px;
+    margin-top: 4px;
+  }
+  .service-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 28px;
+    border-radius: 20px;
+    min-height: 110px;
+  }
+  .service-card.orange {
+    background: linear-gradient(135deg, rgba(233,116,88,0.18), rgba(233,116,88,0.05));
+    border: 2px solid rgba(233,116,88,0.40);
+    box-shadow: 0 8px 24px rgba(233,116,88,0.18);
+  }
+  .service-card.purple {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.05));
+    border: 2px solid rgba(167,139,250,0.40);
+    box-shadow: 0 8px 24px rgba(167,139,250,0.18);
+  }
+  .service-card.blue {
+    background: linear-gradient(135deg, rgba(107,154,239,0.18), rgba(107,154,239,0.05));
+    border: 2px solid rgba(107,154,239,0.40);
+    box-shadow: 0 8px 24px rgba(107,154,239,0.18);
+  }
+  .service-card.green {
+    background: linear-gradient(135deg, rgba(125,211,166,0.18), rgba(125,211,166,0.05));
+    border: 2px solid rgba(125,211,166,0.40);
+    box-shadow: 0 8px 24px rgba(125,211,166,0.18);
+  }
+  .service-icon {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .service-icon-text {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 38px;
+    flex-shrink: 0;
+  }
+  .service-card.purple .service-icon-text { color: var(--purple); }
+  .service-body { display: flex; flex-direction: column; }
+  .service-name {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 46px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .service-sub {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 28px;
+    margin-top: 2px;
+  }
+  .service-card.orange .service-sub { color: var(--orange); }
+  .service-card.purple .service-sub { color: var(--purple); }
+  .service-card.blue .service-sub { color: var(--blue); }
+  .service-card.green .service-sub { color: var(--green); }
+
+  #p2-mcp-strip {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px 28px;
+    border-radius: 16px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+    width: 940px;
+  }
+  #p2-mcp-badge {
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 42px;
+    color: var(--purple);
+    letter-spacing: 3px;
+    flex-shrink: 0;
+  }
+  #p2-mcp-text {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+
+  #p2-privacy-pill {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.15), rgba(125,211,166,0.04));
+    border: 2px solid rgba(125,211,166,0.40);
+  }
+  #p2-privacy-text {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--green);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES 3 / 4 / 5 — Workflow cards (uniform layout)
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content,
+  #phase4 .phase-content,
+  #phase5 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+
+  .wf-overline {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+  }
+  #p3-overline { color: var(--orange); }
+  #p4-overline { color: var(--blue); }
+  #p5-overline { color: var(--purple); }
+
+  .workflow-card {
+    width: 940px;
+    border-radius: 22px;
+    padding: 28px 32px;
+  }
+  .workflow-card.wf1 {
+    background: linear-gradient(135deg, rgba(233,116,88,0.15), rgba(233,116,88,0.04));
+    border: 2px solid rgba(233,116,88,0.42);
+    box-shadow: 0 12px 30px rgba(233,116,88,0.18);
+  }
+  .workflow-card.wf2 {
+    background: linear-gradient(135deg, rgba(107,154,239,0.15), rgba(107,154,239,0.04));
+    border: 2px solid rgba(107,154,239,0.42);
+    box-shadow: 0 12px 30px rgba(107,154,239,0.18);
+  }
+  .workflow-card.wf3 {
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.04));
+    border: 2px solid rgba(167,139,250,0.42);
+    box-shadow: 0 12px 30px rgba(167,139,250,0.18);
+  }
+  .wf-number {
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 30px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .workflow-card.wf1 .wf-number { color: var(--orange); }
+  .workflow-card.wf2 .wf-number { color: var(--blue); }
+  .workflow-card.wf3 .wf-number { color: var(--purple); }
+  .wf-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.04;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .wf-detail {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    max-width: 860px;
+  }
+
+  /* Detail chip rows used inside every workflow card */
+  .wf-chip-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 18px;
+    margin-bottom: 12px;
+  }
+  .wf-chip {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 22px;
+    border-radius: 16px;
+    background: rgba(245, 241, 235, 0.06);
+    border: 1.5px solid rgba(245, 241, 235, 0.18);
+  }
+  .wf-chip .chip-num {
+    flex-shrink: 0;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 56px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    min-width: 78px;
+    text-align: right;
+  }
+  .wf-chip .chip-icon {
+    flex-shrink: 0;
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wf-chip .chip-icon img { width: 46px; height: 46px; object-fit: contain; }
+  .wf-chip .chip-icon-text {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 38px;
+    color: var(--purple);
+  }
+  .wf-chip .chip-label {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    letter-spacing: -0.4px;
+  }
+  .workflow-card.wf1 .chip-num { color: var(--orange); }
+  .workflow-card.wf2 .chip-num { color: var(--blue); }
+  .workflow-card.wf3 .chip-num { color: var(--purple); }
+
+  /* Time reduction visualization for WF1 (and adaptable for WF2/3 outcomes) */
+  .wf-outcome {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 14px;
+    padding: 18px 26px;
+    border-radius: 18px;
+    background: rgba(245, 241, 235, 0.04);
+    border: 2px solid rgba(245, 241, 235, 0.16);
+  }
+  .wf-outcome .out-from {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 46px;
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: rgba(245, 241, 235, 0.5);
+  }
+  .wf-outcome .out-arrow {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 50px;
+    color: var(--text);
+  }
+  .wf-outcome .out-to {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 64px;
+    letter-spacing: -1px;
+  }
+  .workflow-card.wf1 .out-to { color: var(--orange); }
+  .workflow-card.wf2 .out-to { color: var(--blue); }
+  .workflow-card.wf3 .out-to { color: var(--purple); }
+
+  .wf-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 14px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1px;
+  }
+  .workflow-card.wf1 .wf-stat-pill {
+    background: rgba(233,116,88,0.18);
+    border: 1.5px solid rgba(233,116,88,0.40);
+    color: var(--orange);
+  }
+  .workflow-card.wf2 .wf-stat-pill {
+    background: rgba(107,154,239,0.18);
+    border: 1.5px solid rgba(107,154,239,0.40);
+    color: var(--blue);
+  }
+  .workflow-card.wf3 .wf-stat-pill {
+    background: rgba(167,139,250,0.18);
+    border: 1.5px solid rgba(167,139,250,0.40);
+    color: var(--purple);
+  }
+
+  /* WF3 subtitle badge */
+  .wf-subtitle-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: -2px;
+    margin-bottom: 8px;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 2px;
+    background: rgba(167, 139, 250, 0.16);
+    border: 1.5px solid rgba(167, 139, 250, 0.40);
+    color: var(--purple);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 6 — Enable steps + Stat slam (pre-endcard)
+     ────────────────────────────────────────────────── */
+  #phase6 .phase-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 26px;
+  }
+  #p6-overline { color: var(--green); }
+  #p6-headline {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    color: var(--text);
+    max-width: 940px;
+  }
+
+  #p6-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 940px;
+  }
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 26px;
+    border-radius: 16px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--pill-border);
+  }
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 30px;
+    flex-shrink: 0;
+    background: rgba(233,116,88,0.18);
+    border: 1.5px solid rgba(233,116,88,0.40);
+    color: var(--orange);
+  }
+  .step-text {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 36px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  #p6-stat-slam {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  #p6-stat-number {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 200px;
+    line-height: 0.85;
+    letter-spacing: -6px;
+    color: var(--orange);
+    text-shadow: 0 0 80px rgba(233,116,88,0.50), 0 8px 24px rgba(0,0,0,0.6);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p6-stat-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  #p6-stat-sub {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    letter-spacing: -1px;
+    margin-top: 4px;
+  }
+
+  /* Comment CTA card — appears below the stat slam to drive engagement */
+  #p6-cta-card {
+    width: 940px;
+    margin-top: 14px;
+    padding: 22px 26px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(125,211,166,0.16), rgba(125,211,166,0.04));
+    border: 2px solid rgba(125,211,166,0.45);
+    box-shadow: 0 10px 30px rgba(125,211,166,0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #p6-cta-pill {
+    align-self: flex-start;
+    padding: 8px 20px;
+    border-radius: 999px;
+    background: rgba(125,211,166,0.22);
+    border: 1.5px solid rgba(125,211,166,0.55);
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: 2.5px;
+    color: var(--green);
+    text-transform: uppercase;
+  }
+  .p6-cta-q {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--text);
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+  }
+  .p6-cta-q .cta-q-num {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-weight: 900;
+    font-size: 38px;
+    color: var(--green);
+  }
+  .p6-cta-q .cta-em {
+    color: var(--orange);
+    font-weight: 900;
+  }
+  #p6-cta-q1-chips {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-left: 54px;
+  }
+  .cta-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(245, 241, 235, 0.06);
+    border: 1.5px solid rgba(245, 241, 235, 0.20);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text);
+  }
+  .cta-mini img { width: 30px; height: 30px; object-fit: contain; }
+  .cta-mini .cta-mini-text {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--purple);
+  }
+
+  /* DYNAMOUS endcard mount — overlays everything for the last 5s */
+  #dynamous-endcard-mount {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="claude-connectors-power"
+     data-start="0"
+     data-duration="174.0"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — Thumbnail intro (0-2.4s) + Hook (2.5-14s)
+       Narration: "There is a feature in Claude that most users never turn on"
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase1" class="phase">
+    <!-- Beat 1a: thumbnail-grade lockup from t=0 (YouTube auto-thumbnail) -->
+    <div id="p1-topic-lockup">
+      <div id="p1-brand-lockup">
+        <img id="p1-brand-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+      </div>
+      <div id="p1-topic-slam">CONNECTORS<br><span class="accent">UNLOCKED.</span></div>
+      <div id="p1-connector-row">
+        <div class="p1-conn-chip orange"><img src="assets/google-g-logo.png" alt="Google Drive" /></div>
+        <div class="p1-conn-chip purple"><span class="conn-text">@</span></div>
+        <div class="p1-conn-chip blue"><img src="assets/github-logo.svg" alt="GitHub" style="filter: invert(1);" /></div>
+        <div class="p1-conn-chip green"><img src="assets/slack-logo.svg" alt="Slack" /></div>
+        <div id="p1-conn-more">+371</div>
+      </div>
+      <div id="p1-ga-receipt">375 INTEGRATIONS · MAY 2026</div>
+    </div>
+    <!-- Beat 1b: hook content (fades in at ~2.5s) -->
+    <div id="p1-hero-content">
+      <div class="overline" id="p1-overline">Claude Connectors</div>
+      <div id="p1-pre">Most users never turn on</div>
+      <div id="p1-hero">THE<br>MOST<br>POWERFUL<br>FEATURE.</div>
+      <div id="p1-caption">claude.ai → Settings → Connectors</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 2 — What Connectors connect + how it works (14-55.2s)
+       Narration: "Without Connectors / With them / MCP / Your files never leave"
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">What Claude can now reach</div>
+      <div id="p2-headline">Without copy-paste.<br>Without tabs.</div>
+
+      <div id="p2-service-grid">
+        <div class="service-card orange" id="p2-card-drive">
+          <img src="assets/google-g-logo.png" alt="Google" class="service-icon" />
+          <div class="service-body">
+            <div class="service-name">Drive</div>
+            <div class="service-sub">DOCS · SHEETS · FILES</div>
+          </div>
+        </div>
+        <div class="service-card purple" id="p2-card-gmail">
+          <div class="service-icon-text">@</div>
+          <div class="service-body">
+            <div class="service-name">Gmail</div>
+            <div class="service-sub">SEARCH · READ · REPLY</div>
+          </div>
+        </div>
+        <div class="service-card blue" id="p2-card-github">
+          <img src="assets/github-logo.svg" alt="GitHub" class="service-icon" style="filter: invert(1);" />
+          <div class="service-body">
+            <div class="service-name">GitHub</div>
+            <div class="service-sub">REPOS · PRs · ISSUES</div>
+          </div>
+        </div>
+        <div class="service-card green" id="p2-card-slack">
+          <img src="assets/slack-logo.svg" alt="Slack" class="service-icon" />
+          <div class="service-body">
+            <div class="service-name">Slack</div>
+            <div class="service-sub">CHANNELS · THREADS</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="p2-mcp-strip">
+        <div id="p2-mcp-badge">MCP</div>
+        <div id="p2-mcp-text">Secure permission tunnel — authorize once, Claude reads only what you ask</div>
+      </div>
+
+      <div id="p2-privacy-pill">
+        <div id="p2-privacy-text">🔒 Your files never leave your accounts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 3 — Workflow 1: Document Synthesis (55.2 → 86.20s)
+       Narration: "Workflow one: document synthesis ..."
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase3" class="phase">
+    <div class="phase-content">
+      <div class="wf-overline" id="p3-overline">Power moves · 1 of 3</div>
+
+      <div class="workflow-card wf1" id="p3-wf1">
+        <div class="wf-number">WORKFLOW 01</div>
+        <div class="wf-title">Document Synthesis</div>
+        <div class="wf-detail">Describe the project in one sentence — Claude surfaces, extracts, and summarizes.</div>
+        <div class="wf-chip-row" id="p3-chip-row">
+          <div class="wf-chip" id="p3-chip-drive">
+            <div class="chip-num">5</div>
+            <div class="chip-icon"><img src="assets/google-g-logo.png" alt="Drive" /></div>
+            <div class="chip-label">Drive files</div>
+          </div>
+          <div class="wf-chip" id="p3-chip-gmail">
+            <div class="chip-num">3</div>
+            <div class="chip-icon"><span class="chip-icon-text">@</span></div>
+            <div class="chip-label">Gmail threads</div>
+          </div>
+          <div class="wf-chip" id="p3-chip-slack">
+            <div class="chip-num">1</div>
+            <div class="chip-icon"><img src="assets/slack-logo.svg" alt="Slack" /></div>
+            <div class="chip-label">Slack thread</div>
+          </div>
+        </div>
+        <div class="wf-outcome" id="p3-outcome">
+          <div class="out-from">30 min</div>
+          <div class="out-arrow">→</div>
+          <div class="out-to" id="p3-out-to">90 sec</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 4 — Workflow 2: Code Review (86.20 → 111.56s)
+       Narration: "Workflow two: code review with full context"
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase4" class="phase">
+    <div class="phase-content">
+      <div class="wf-overline" id="p4-overline">Power moves · 2 of 3</div>
+
+      <div class="workflow-card wf2" id="p4-wf2">
+        <div class="wf-number">WORKFLOW 02</div>
+        <div class="wf-title">Code Review + Full Context</div>
+        <div class="wf-detail">Connect GitHub — Claude reviews the pull request end-to-end, no cloning, no pasting.</div>
+        <div class="wf-chip-row" id="p4-chip-row">
+          <div class="wf-chip" id="p4-chip-diff">
+            <div class="chip-icon"><span class="chip-icon-text" style="color: var(--blue);">⌥</span></div>
+            <div class="chip-label">Reads the diff</div>
+          </div>
+          <div class="wf-chip" id="p4-chip-trace">
+            <div class="chip-icon"><span class="chip-icon-text" style="color: var(--blue);">⊕</span></div>
+            <div class="chip-label">Traces functions through the repo</div>
+          </div>
+          <div class="wf-chip" id="p4-chip-check">
+            <div class="chip-icon"><span class="chip-icon-text" style="color: var(--blue);">✓</span></div>
+            <div class="chip-label">Checks issue · flags mismatches</div>
+          </div>
+        </div>
+        <div class="wf-outcome" id="p4-outcome">
+          <div class="out-from">Clone · Paste</div>
+          <div class="out-arrow">→</div>
+          <div class="out-to" id="p4-out-to">Full context</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 5 — Workflow 3: Background Agents (111.56 → 139.9s)
+       Narration: "Workflow three: background agents ..."
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase5" class="phase">
+    <div class="phase-content">
+      <div class="wf-overline" id="p5-overline">Power moves · 3 of 3</div>
+
+      <div class="workflow-card wf3" id="p5-wf3">
+        <div class="wf-number">WORKFLOW 03</div>
+        <div class="wf-title">Background Agents</div>
+        <div class="wf-subtitle-badge" id="p5-badge">MANAGED AGENTS · APRIL 2026</div>
+        <div class="wf-detail">Claude runs long-lived tasks in the background — not one-shot chats. Results delivered to you.</div>
+        <div class="wf-chip-row" id="p5-chip-row">
+          <div class="wf-chip" id="p5-chip-slack">
+            <div class="chip-icon"><img src="assets/slack-logo.svg" alt="Slack" /></div>
+            <div class="chip-label">Monitor a Slack channel</div>
+          </div>
+          <div class="wf-chip" id="p5-chip-github">
+            <div class="chip-icon"><img src="assets/github-logo.svg" alt="GitHub" style="filter: invert(1);" /></div>
+            <div class="chip-label">Summarize every GitHub issue</div>
+          </div>
+          <div class="wf-chip" id="p5-chip-drive">
+            <div class="chip-icon"><img src="assets/google-g-logo.png" alt="Drive" /></div>
+            <div class="chip-label">Flag any Drive doc mentioning a client</div>
+          </div>
+        </div>
+        <div class="wf-outcome" id="p5-outcome">
+          <div class="out-from">One-shot chat</div>
+          <div class="out-arrow">→</div>
+          <div class="out-to" id="p5-out-to">Long-lived agent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 6 — Enable steps + Stat slam (139.9 → 162.5s)
+       Narration: "To enable all of this / 375 integrations"
+       ═══════════════════════════════════════════════════════ -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">Turn it on — takes 2 minutes</div>
+      <div id="p6-headline">3 clicks. Then it's live.</div>
+
+      <div id="p6-steps">
+        <div class="step-row" id="p6-step-1">
+          <div class="step-num">1</div>
+          <div class="step-text">claude.ai → Settings → Connectors</div>
+        </div>
+        <div class="step-row" id="p6-step-2">
+          <div class="step-num">2</div>
+          <div class="step-text">Connect Google Workspace, GitHub, Slack</div>
+        </div>
+        <div class="step-row" id="p6-step-3">
+          <div class="step-num">3</div>
+          <div class="step-text">Open chat → tap + → toggle connectors</div>
+        </div>
+      </div>
+
+      <div id="p6-stat-slam">
+        <div id="p6-stat-number">375</div>
+        <div id="p6-stat-label">integrations available</div>
+        <div id="p6-stat-sub">Most users have zero enabled.</div>
+      </div>
+
+      <!-- Engagement CTA — comment prompt -->
+      <div id="p6-cta-card">
+        <div id="p6-cta-pill">👇 Your turn — drop a comment</div>
+        <div class="p6-cta-q" id="p6-cta-q1">
+          <span class="cta-q-num">1.</span>
+          <span class="cta-q-text">Which one are you turning on <span class="cta-em">FIRST</span>?</span>
+        </div>
+        <div id="p6-cta-q1-chips">
+          <div class="cta-mini"><img src="assets/google-g-logo.png" alt="Drive" /><span>Drive</span></div>
+          <div class="cta-mini"><span class="cta-mini-text">@</span><span>Gmail</span></div>
+          <div class="cta-mini"><img src="assets/github-logo.svg" alt="GitHub" style="filter: invert(1);" /><span>GitHub</span></div>
+          <div class="cta-mini"><img src="assets/slack-logo.svg" alt="Slack" /><span>Slack</span></div>
+        </div>
+        <div class="p6-cta-q" id="p6-cta-q2">
+          <span class="cta-q-num">2.</span>
+          <span class="cta-q-text">What's <span class="cta-em">MISSING</span> from the 375?</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       DYNAMOUS ENDCARD MOUNT — last 5s (169.0 → 174.0s)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="dynamous-endcard-mount"
+       data-composition-id="dynamous-endcard"
+       data-composition-src="compositions/dynamous-endcard.html"
+       data-start="169.0"
+       data-duration="5"
+       data-track-index="10"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- NARRATION — no class="clip" on audio per HyperFrames rules -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="173.78"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Phase 1 impact-slam on "MOST POWERFUL FEATURE" hero slam (fires at 4.4s) -->
+  <audio id="sfx-impact-p1-hero" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="4.35" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
+
+  <!-- Phase transition whooshes (one per scene change) -->
+  <!-- T1=14.0 -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="14.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T2=55.2 -->
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="55.2" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <!-- T3=86.20 (WF2 enters) -->
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="86.20" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T4=111.56 (WF3 enters) -->
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="111.56" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+  <!-- T5=139.9 (steps phase) -->
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="139.9" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- T6=169.0 (endcard entrance) -->
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="169.0" data-duration="1.5" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Film grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  // ── Seeded PRNG hash (deterministic, no Math.random) ──
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 180, sizeRange = 200;
+    const minDist = 340, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerPhase(tl, container, seedPrefix, phaseStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !phaseStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 340, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    phaseStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-phase' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  spawnShapes('connectors-power', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL_DURATION = 174.0;
+
+  // ── Ambient + Progress ──
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 83.75, ease: "sine.inOut", yoyo: true, repeat: 1 },
+    0);
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 1 (0 → T1=14.0s) — Thumbnail + Hook
+  // ═══════════════════════════════════════════════════════
+
+  // Beat 1a: lockup visible from t=0 (no entrance tween)
+  // Visual pacing relaxed for thumbnail-grade opening hold (≤ 2.5s)
+  tl.to("#p1-topic-lockup", { opacity: 0, duration: 0.5, ease: "power2.in" }, 2.4);
+
+  // Beat 1b: hook slam
+  tl.to("#p1-hero-content", { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.5);
+  tl.from("#p1-overline", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 2.5);
+  tl.from("#p1-pre",      { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 2.8);
+  // "most powerful" spoken at ~4.42s — paired with impact-slam SFX firing at 4.35
+  tl.from("#p1-hero", { scale: 0.78, opacity: 0, duration: 0.85, ease: "back.out(1.7)" }, 4.4);
+  tl.to("#p1-hero", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 4.85);
+  tl.to("#p1-hero", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 4.90);
+  tl.to("#p1-hero", { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 4.95);
+  tl.to("#p1-hero", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 5.00);
+  // "It's called Connectors" at ~7.43s
+  tl.from("#p1-caption", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 7.5);
+  // Beat at 10s — caption pulse to keep frame alive (gap from 7.5 → exit 14.0)
+  tl.to("#p1-caption", { scale: 1.04, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 11.0);
+
+  // ─── P1 → P2 at T1=14.0 ───
+  const T1 = 14.0;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 (T1=14.0 → T2=55.2s) — Connectors reveal + how it works
+  // ═══════════════════════════════════════════════════════
+  const P2 = T1 + 0.8;
+
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P2);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P2 + 0.3);
+
+  // Pre-hide all service cards (explicit tl.set for reliability)
+  tl.set("#p2-card-drive",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-gmail",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-github",  { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-card-slack",   { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p2-mcp-strip",    { y: 20, opacity: 0 }, 0);
+  tl.set("#p2-privacy-pill", { y: 20, opacity: 0 }, 0);
+
+  // Service cards enter at transcript word timestamps
+  tl.to("#p2-card-drive",  { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 19.62);
+  tl.to("#p2-card-gmail",  { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 21.08);
+  tl.to("#p2-card-github", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 22.56);
+  tl.to("#p2-card-slack",  { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 24.74);
+
+  // MCP strip at "Here is how it works" (30.06s)
+  tl.to("#p2-mcp-strip", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 30.06);
+  // Privacy pill at "Your files never leave" (47.19s)
+  tl.to("#p2-privacy-pill", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 47.19);
+
+  // Visual pacing micro-beats
+  tl.to("#p2-card-drive", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 27.0);
+  tl.to("#p2-mcp-strip", { scale: 1.02, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 35.0);
+  tl.to("#p2-card-github", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 40.0);
+  tl.to("#p2-mcp-badge", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 45.0);
+
+  // ─── P2 → P3 at T2=55.2 ───
+  const T2 = 55.2;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 3 (T2=55.2 → T_wf2=86.20s) — Workflow 1: Document Synthesis
+  // ═══════════════════════════════════════════════════════
+  const P3 = T2 + 0.8;
+
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P3);
+
+  // Pre-hide WF1 card body content
+  tl.set("#p3-wf1",        { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p3-chip-drive", { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-chip-gmail", { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-chip-slack", { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-outcome",    { y: 20, opacity: 0 }, 0);
+
+  // WF1 card enters at "Workflow one" (60.10s)
+  tl.to("#p3-wf1", { x: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 60.10);
+
+  // Chips synced to "five Drive files, three emails, and a Slack thread"
+  tl.to("#p3-chip-drive", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 64.29);
+  tl.to("#p3-chip-gmail", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 65.33);
+  tl.to("#p3-chip-slack", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 66.40);
+
+  // Outcome pill enters at "30 minutes" (68.87s) — dimmed "30 min" side
+  tl.to("#p3-outcome", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 68.87);
+
+  // Visual pacing beats during the 68.87 → 83.98 narration ("normally you'd spend... extracts the key decisions... summary")
+  tl.to("#p3-chip-drive", { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 73.0);
+  tl.to("#p3-chip-gmail", { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 77.0);
+  tl.to("#p3-chip-slack", { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 81.0);
+
+  // Time reduction climax at "30 minutes takes 90 seconds" (83.98 / 84.96)
+  // Pulse the dimmed "30 min" then slam the "90 sec"
+  tl.to("#p3-outcome .out-from", { scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 83.98);
+  tl.fromTo("#p3-out-to",
+    { scale: 1.0, color: "#E97458" },
+    { scale: 1.18, duration: 0.4, yoyo: true, repeat: 1, ease: "back.out(1.8)" }, 84.96);
+
+  // ─── P3 → P4 at T_wf2=86.20 ───
+  const T_wf2 = 86.20;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T_wf2);
+  tl.to("#phase3", { opacity: 0, duration: 0.4, ease: "power1.in" }, T_wf2 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T_wf2 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T_wf2 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T_wf2 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T_wf2 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 4 (T_wf2=86.20 → T_wf3=111.56s) — Workflow 2: Code Review
+  // ═══════════════════════════════════════════════════════
+  const P4 = T_wf2 + 0.8;
+
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P4);
+
+  // Pre-hide WF2 content
+  tl.set("#p4-wf2",       { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p4-chip-diff", { x: -30, opacity: 0 }, 0);
+  tl.set("#p4-chip-trace",{ x: -30, opacity: 0 }, 0);
+  tl.set("#p4-chip-check",{ x: -30, opacity: 0 }, 0);
+  tl.set("#p4-outcome",   { y: 20, opacity: 0 }, 0);
+
+  // Card enters at "Connect GitHub" (90.20s)
+  tl.to("#p4-wf2", { x: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 87.5);
+
+  // Chips: "Claude reads the diff" (94.41), "traces the functions" (95.41), "checks whether..." (97.95)
+  tl.to("#p4-chip-diff",  { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 94.41);
+  tl.to("#p4-chip-trace", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 95.41);
+  tl.to("#p4-chip-check", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 97.95);
+
+  // Pacing beat
+  tl.to("#p4-wf2", { scale: 1.02, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 101.0);
+
+  // Outcome pill at "No repository cloning. No pasting diffs. Full codebase context" (104.45)
+  tl.to("#p4-outcome", { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 104.45);
+  // "Full codebase context" emphasis at 107.61
+  tl.to("#p4-out-to", { scale: 1.12, duration: 0.4, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 107.61);
+
+  // ─── P4 → P5 at T_wf3=111.56 ───
+  const T_wf3 = 111.56;
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T_wf3);
+  tl.to("#phase4", { opacity: 0, duration: 0.4, ease: "power1.in" }, T_wf3 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T_wf3 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T_wf3 + 0.4);
+  tl.to("#phase5", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T_wf3 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T_wf3 + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 5 (T_wf3=111.56 → T_steps=139.9s) — Workflow 3: Background Agents
+  // ═══════════════════════════════════════════════════════
+  const P5 = T_wf3 + 0.8;
+
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P5);
+
+  // Pre-hide WF3 content
+  tl.set("#p5-wf3",        { x: -40, scale: 0.95, opacity: 0 }, 0);
+  tl.set("#p5-badge",      { y: 14, opacity: 0 }, 0);
+  tl.set("#p5-chip-slack", { x: -30, opacity: 0 }, 0);
+  tl.set("#p5-chip-github",{ x: -30, opacity: 0 }, 0);
+  tl.set("#p5-chip-drive", { x: -30, opacity: 0 }, 0);
+  tl.set("#p5-outcome",    { y: 20, opacity: 0 }, 0);
+
+  // Card enters with overline
+  tl.to("#p5-wf3", { x: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, P5 + 0.4);
+
+  // Badge "MANAGED AGENTS · APRIL 2026" at "Claude Managed Agents — launched in April 2026" (117.15s)
+  tl.to("#p5-badge", { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 117.15);
+
+  // Pacing beat
+  tl.to("#p5-badge", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 122.0);
+
+  // Chips synced to "monitor this Slack channel" (125.27), "summarize every GitHub issue" (126.85), "flag any Drive document" (129.56)
+  tl.to("#p5-chip-slack",  { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 125.27);
+  tl.to("#p5-chip-github", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 126.85);
+  tl.to("#p5-chip-drive",  { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 129.56);
+
+  // Pacing beat
+  tl.to("#p5-chip-drive", { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 132.5);
+
+  // Outcome at "long-lived agent, not just a one-shot chat" (134.78)
+  tl.to("#p5-outcome", { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 134.78);
+  // Emphasis at "results delivered to you" (139.0)
+  tl.to("#p5-out-to", { scale: 1.10, duration: 0.4, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 138.0);
+
+  // ─── P5 → P6 at T_steps=139.9 ───
+  const T_steps = 139.9;
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T_steps);
+  tl.to("#phase5", { opacity: 0, duration: 0.4, ease: "power1.in" }, T_steps + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T_steps + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T_steps + 0.4);
+  tl.to("#phase6", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T_steps + 0.4);
+  tl.to("#phase6", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T_steps + 0.6);
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 6 (T_steps=139.9 → T_endcard=162.5s) — Enable steps + 375 stat slam
+  // ═══════════════════════════════════════════════════════
+  const P6 = T_steps + 0.8;
+
+  tl.from("#p6-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, P6);
+  tl.from("#p6-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, P6 + 0.3);
+
+  // Pre-hide steps, stat slam, and CTA card
+  tl.set("#p6-step-1",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p6-step-2",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p6-step-3",     { x: -40, opacity: 0 }, 0);
+  tl.set("#p6-stat-slam",  { scale: 0.88, opacity: 0 }, 0);
+  tl.set("#p6-cta-card",   { y: 30, scale: 0.94, opacity: 0 }, 0);
+  tl.set("#p6-cta-q1-chips .cta-mini", { y: 16, opacity: 0 }, 0);
+
+  // Steps synced to narration
+  // "open claude.ai" at 141.81
+  tl.to("#p6-step-1", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 141.81);
+  // "Connect Google Workspace" at 147.51
+  tl.to("#p6-step-2", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 147.51);
+  // "Then open any chat" at 152.38
+  tl.to("#p6-step-3", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, 152.38);
+
+  // Visual pacing beats
+  tl.to("#p6-step-1", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 144.5);
+  tl.to("#p6-step-3", { scale: 1.03, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 154.9);
+
+  // Stat slam at "375 integrations" (157.62)
+  tl.to("#p6-stat-slam", { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.7)" }, 157.62);
+  tl.to("#p6-stat-number", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 158.1);
+  tl.to("#p6-stat-number", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 158.15);
+  tl.to("#p6-stat-number", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 158.20);
+
+  // "Most users have zero enabled" beat (stat-sub reads 159.01-160.49)
+  tl.to("#p6-stat-sub", { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 159.8);
+
+  // Comment CTA enters right before "Quick one before you go" (160.68s)
+  tl.to("#p6-cta-card", { y: 0, scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 159.9);
+  // CTA pill pulse on "Quick one before you go" (160.68s)
+  tl.to("#p6-cta-pill", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 160.7);
+  // Mini connector chips stagger in just before "Which connector are you turning on first?" (162.77s)
+  tl.to("#p6-cta-q1-chips .cta-mini", { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.5)", stagger: 0.08 }, 162.2);
+  // Q1 "FIRST" pulse on "turning on first?" (164.07-164.64)
+  tl.to("#p6-cta-q1 .cta-em", { scale: 1.18, duration: 0.4, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 164.0);
+  // Q2 "MISSING" pulse on "what's missing from the 375?" (165.95-167.35)
+  tl.to("#p6-cta-q2 .cta-em", { scale: 1.18, duration: 0.4, yoyo: true, repeat: 1, ease: "back.out(1.6)" }, 165.95);
+  // Card scale pulse on "Drop it in the comments" (167.40s)
+  tl.to("#p6-cta-card", { scale: 1.03, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 167.4);
+
+  // ─── P6 → Endcard at T_endcard=169.0 ───
+  // Phase 6 fades out as endcard takes z=100 overlay (Dynamous outro starts 169.41s)
+  const T_endcard = 169.0;
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T_endcard);
+  tl.to("#phase6", { opacity: 0, duration: 0.4, ease: "power1.in" }, T_endcard + 0.3);
+
+  // Timeline extender — ensures composition runs to TOTAL_DURATION
+  tl.set({}, {}, TOTAL_DURATION);
+
+  // ── Shape backdrop repositions at every phase transition ──
+  repositionShapesPerPhase(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'connectors-power',
+    [T1, T2, T_wf2, T_wf3, T_steps, T_endcard]
+  );
+
+  window.__timelines["claude-connectors-power"] = tl;
+</script>
+</body>
+</html>

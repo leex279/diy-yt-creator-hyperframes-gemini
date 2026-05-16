@@ -64,7 +64,7 @@ Sibling rules that the playbook depends on — read them too:
 - [`CLAUDE.md`](../../CLAUDE.md) — repo-wide rules, especially key rules 1-13
   and "Hard rules across every command".
 - [`.claude/rules/shorts-typography.md`](../../.claude/rules/shorts-typography.md) — minimum font sizes for the 1080×1920 canvas.
-- [`.claude/rules/shorts-thumbnail-final-frame.md`](../../.claude/rules/shorts-thumbnail-final-frame.md) — the final frame MUST be thumbnail-grade.
+- [`.claude/rules/shorts-thumbnail-frames.md`](../../.claude/rules/shorts-thumbnail-frames.md) — the final frame MUST be thumbnail-grade.
 - [`.claude/rules/step-by-step-reveal.md`](../../.claude/rules/step-by-step-reveal.md) — enumerated lists reveal item-by-item.
 - [`.claude/rules/visual-pacing-5s.md`](../../.claude/rules/visual-pacing-5s.md) — never let the foreground stay static more than 5s.
 - [`.claude/rules/tts-pronunciation.md`](../../.claude/rules/tts-pronunciation.md) — heteronym audit before TTS.
@@ -180,7 +180,7 @@ parameter substitutions for THIS run are:
     accents.
   - No orange anywhere — orange has no role in the Archon palette.
   - The final phase MUST satisfy
-    `.claude/rules/shorts-thumbnail-final-frame.md` — held still ≥1.5s
+    `.claude/rules/shorts-thumbnail-frames.md` — held still ≥1.5s
     with topic statement ≥120px, visual anchor, brand chrome, outcome
     line.
 - Step 8.5 (lib pick) — skip unless the topic specifically needs a

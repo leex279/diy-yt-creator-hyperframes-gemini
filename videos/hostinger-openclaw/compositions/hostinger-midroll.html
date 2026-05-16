@@ -1,0 +1,1107 @@
+<!--
+  shared/lib/blocks/hostinger-midroll/block.html
+  Long-form (1920x1080) Hostinger affiliate midroll break — 5-phase, 20s
+  promotional sub-composition modeled on shared/lib/blocks/dynamous-midroll/.
+  Designed to drop into the middle of a long-form video at a natural narration
+  pause. SILENT by default — the host video's narrator speaks over it during
+  the 20s window. (See recipe.md for the optional TTS-narration path.)
+
+  Phase layout (visual; affiliate-only — host narrator covers timing):
+    1. Hostinger intro     0.0 → 3.0s   Purple gradient hero word + tagline
+    2. Web Hosting         3.0 → 7.0s   Product screenshot + 4 features
+    3. VPS Hosting         7.0 → 11.5s  Product screenshot + 4 features
+    4. AI Website Builder 11.5 → 16.0s  Product screenshot + 3 features
+    5. CTA                16.0 → 18.5s  10% OFF badge + DIYSMARTCODE + URL
+    Outro                 18.5 → 20.0s  "Back to the video." → fade out
+
+  RELATIONSHIP:
+    Affiliate-only. NOT a paid sponsorship. The Werbung badge is mandatory
+    (DE UWG — affiliate links count as commercial advertising regardless of
+    headline framing). Default intro hero says "Try Hostinger" — NOT
+    "Sponsored by Hostinger". See memory feedback_hostinger_affiliate_not_sponsored.
+
+  SOURCE:
+    shared/lib/blocks/dynamous-midroll/block.html (parent pattern — paused
+    timeline, scoped CSS, self-registration, phase-mutex with crossfade
+    transitions, persistent Werbung + brand chrome, global root fade-in /
+    fade-out for host handoff)
+    shared/lib/components/hostinger-banner/ (sibling — color palette,
+    pill style, discount badge, URL panel)
+    templates/long-form/hostinger-sponsored/ (DESIGN.md tokens — Manrope
+    display + JetBrains Mono data, Hostinger purple #673de6, success
+    green #00c896)
+
+  REQUIRED HOST TOKENS:
+    None. The block inlines all colors (Hostinger palette: deep navy #0e0f19
+    + purple #673de6 / #8b5cf6 + green #00c896 + red #dc2626 for Werbung)
+    and the Manrope + JetBrains Mono fonts.
+
+  ASSET COPY (do BEFORE wiring — bundler rejects parent-of-project paths).
+  See ./recipe.md for full host wiring; the short list:
+    cp shared/logos/hostinger-brand/Hostinger_Horizontal_White.svg \
+       videos/<slug>/assets/hostinger-horizontal-white.svg
+    cp shared/screenshots/hostinger/web-hosting.png \
+       videos/<slug>/assets/hostinger-screens/web-hosting.png
+    cp shared/screenshots/hostinger/vps-hosting.png \
+       videos/<slug>/assets/hostinger-screens/vps-hosting.png
+    cp shared/screenshots/hostinger/ai-website-builder.png \
+       videos/<slug>/assets/hostinger-screens/ai-website-builder.png
+-->
+<template id="hostinger-midroll-template">
+  <div class="hm-root" data-composition-id="hostinger-midroll" data-start="0" data-duration="22" data-width="1920" data-height="1080">
+
+    <!-- ─────────── BACKGROUND LAYERS ─────────── -->
+    <div class="hm-bg-base"></div>
+    <div class="hm-orb hm-orb-1"></div>
+    <div class="hm-orb hm-orb-2"></div>
+    <div class="hm-orb hm-orb-3"></div>
+    <div class="hm-grid"></div>
+    <div class="hm-noise"></div>
+
+    <!-- ─────────── PERSISTENT CHROME ─────────── -->
+    <div class="hm-werbung">Werbung</div>
+
+    <div class="hm-brand">
+      <img class="hm-brand-logo" src="../assets/hostinger-horizontal-white.svg" alt="Hostinger" crossorigin="anonymous" />
+    </div>
+
+    <!-- Phase-transition flash overlay (white glitch flash at hard cuts) -->
+    <div class="hm-flash" id="hm-flash"></div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 1 — Hostinger intro
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hm-phase hm-phase-1" id="hm-phase-1">
+      <div class="hm-intro">
+        <div class="hm-intro-eyebrow" id="hm-intro-eyebrow">Today's pick</div>
+        <div class="hm-intro-hero" id="hm-intro-hero">Try Hostinger</div>
+        <div class="hm-intro-accent" id="hm-intro-accent"></div>
+        <div class="hm-intro-tagline" id="hm-intro-tagline">Hosting that just works — three products, one purple roof.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 2 — Services overview (3x2 grid of categories)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hm-phase hm-phase-2" id="hm-phase-2">
+      <div class="hm-overview">
+        <div class="hm-overview-header">
+          <div class="hm-overview-eyebrow">EVERYTHING UNDER ONE ROOF</div>
+          <div class="hm-overview-title">One platform · Six service families</div>
+        </div>
+        <div class="hm-overview-grid">
+
+          <div class="hm-cat hm-cat-1" id="hm-cat-1">
+            <div class="hm-cat-header">
+              <div class="hm-cat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                </svg>
+              </div>
+              <div class="hm-cat-title-block">
+                <div class="hm-cat-name">Create a Website</div>
+                <div class="hm-cat-accent-line"></div>
+              </div>
+            </div>
+            <ul class="hm-cat-list">
+              <li>Vibe code websites</li>
+              <li>Drag-and-drop builder</li>
+              <li>Managed WordPress</li>
+            </ul>
+          </div>
+
+          <div class="hm-cat hm-cat-2" id="hm-cat-2">
+            <div class="hm-cat-header">
+              <div class="hm-cat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="7" rx="1.5" />
+                  <rect x="2" y="14" width="20" height="7" rx="1.5" />
+                  <circle cx="6.5" cy="6.5" r="0.8" fill="currentColor" />
+                  <circle cx="6.5" cy="17.5" r="0.8" fill="currentColor" />
+                  <path d="M10 6.5h8" />
+                  <path d="M10 17.5h8" />
+                </svg>
+              </div>
+              <div class="hm-cat-title-block">
+                <div class="hm-cat-name">Host &amp; Deploy</div>
+                <div class="hm-cat-accent-line"></div>
+              </div>
+            </div>
+            <ul class="hm-cat-list">
+              <li>Web · Cloud · VPS</li>
+              <li>Node.js apps</li>
+              <li>Application catalog</li>
+            </ul>
+          </div>
+
+          <div class="hm-cat hm-cat-3" id="hm-cat-3">
+            <div class="hm-cat-header">
+              <div class="hm-cat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2.5" y="4.5" width="19" height="15" rx="2" />
+                  <path d="M3 7.5l9 6 9-6" />
+                </svg>
+              </div>
+              <div class="hm-cat-title-block">
+                <div class="hm-cat-name">Email &amp; Marketing</div>
+                <div class="hm-cat-accent-line"></div>
+              </div>
+            </div>
+            <ul class="hm-cat-list">
+              <li>Business email</li>
+              <li>Email marketing</li>
+              <li>Google Workspace</li>
+            </ul>
+          </div>
+
+          <div class="hm-cat hm-cat-4" id="hm-cat-4">
+            <div class="hm-cat-header">
+              <div class="hm-cat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1.4" fill="currentColor" />
+                  <circle cx="19" cy="21" r="1.4" fill="currentColor" />
+                  <path d="M2.5 2.5h3l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 7H6.5" />
+                </svg>
+              </div>
+              <div class="hm-cat-title-block">
+                <div class="hm-cat-name">Sell Online</div>
+                <div class="hm-cat-accent-line"></div>
+              </div>
+            </div>
+            <ul class="hm-cat-list">
+              <li>Ecommerce stores</li>
+              <li>Managed WooCommerce</li>
+            </ul>
+          </div>
+
+          <div class="hm-cat hm-cat-5" id="hm-cat-5">
+            <div class="hm-cat-header">
+              <div class="hm-cat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9.5" />
+                  <path d="M2.5 12h19" />
+                  <path d="M12 2.5c2.5 3 4 6 4 9.5s-1.5 6.5-4 9.5c-2.5-3-4-6-4-9.5s1.5-6.5 4-9.5z" />
+                </svg>
+              </div>
+              <div class="hm-cat-title-block">
+                <div class="hm-cat-name">Domains</div>
+                <div class="hm-cat-accent-line"></div>
+              </div>
+            </div>
+            <ul class="hm-cat-list">
+              <li>Domain name search</li>
+              <li>Free domain transfer</li>
+            </ul>
+          </div>
+
+          <div class="hm-cat hm-cat-6 hm-cat-ai" id="hm-cat-6">
+            <div class="hm-cat-header">
+              <div class="hm-cat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z" />
+                  <path d="M19 14l.75 2.5L22 17l-2.25.5L19 20l-.75-2.5L16 17l2.25-.5L19 14z" />
+                </svg>
+              </div>
+              <div class="hm-cat-title-block">
+                <div class="hm-cat-name">AI &amp; Automation <span class="hm-cat-badge">NEW</span></div>
+                <div class="hm-cat-accent-line"></div>
+              </div>
+            </div>
+            <ul class="hm-cat-list">
+              <li>1-click OpenClaw</li>
+              <li>Self-hosted n8n</li>
+              <li>Agents</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 3 — VPS Hosting
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hm-phase hm-phase-3" id="hm-phase-3">
+      <div class="hm-product">
+        <div class="hm-product-left">
+          <div class="hm-product-label">POWER USER PICK</div>
+          <div class="hm-product-title">VPS Hosting</div>
+          <div class="hm-product-hook">Full root access · AI-managed</div>
+          <ul class="hm-features">
+            <li><span class="hm-feature-check">✓</span><span>AMD EPYC processors</span></li>
+            <li><span class="hm-feature-check">✓</span><span>NVMe SSD storage</span></li>
+            <li><span class="hm-feature-check">✓</span><span>Free weekly backups</span></li>
+            <li><span class="hm-feature-check">✓</span><span>AI Web Terminal</span></li>
+          </ul>
+        </div>
+        <div class="hm-product-right">
+          <div class="hm-screen-frame">
+            <div class="hm-screen-bar">
+              <span class="hm-dot hm-dot-r"></span>
+              <span class="hm-dot hm-dot-y"></span>
+              <span class="hm-dot hm-dot-g"></span>
+              <span class="hm-screen-url">hostinger.com/vps-hosting</span>
+            </div>
+            <img class="hm-screen-img" src="../assets/hostinger-screens/vps-hosting.png" alt="Hostinger VPS Hosting product page" crossorigin="anonymous" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 4 — 1-Click OpenClaw (featured AI product)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hm-phase hm-phase-4" id="hm-phase-4">
+      <div class="hm-product">
+        <div class="hm-product-left">
+          <div class="hm-product-label">FEATURED · NEW</div>
+          <div class="hm-product-title">1-Click OpenClaw</div>
+          <div class="hm-product-hook">Your personal AI agent · 24/7</div>
+          <ul class="hm-features">
+            <li><span class="hm-feature-check">✓</span><span>One-click install, no Docker</span></li>
+            <li><span class="hm-feature-check">✓</span><span>Telegram, WhatsApp, Slack, more</span></li>
+            <li><span class="hm-feature-check">✓</span><span>Your data, your server, your rules</span></li>
+          </ul>
+        </div>
+        <div class="hm-product-right">
+          <div class="hm-screen-frame">
+            <div class="hm-screen-bar">
+              <span class="hm-dot hm-dot-r"></span>
+              <span class="hm-dot hm-dot-y"></span>
+              <span class="hm-dot hm-dot-g"></span>
+              <span class="hm-screen-url">hostinger.com/openclaw</span>
+            </div>
+            <img class="hm-screen-img" src="../assets/hostinger-screens/openclaw.png" alt="Hostinger 1-Click OpenClaw product page" crossorigin="anonymous" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHASE 5 — CTA
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hm-phase hm-phase-5" id="hm-phase-5">
+      <div class="hm-cta-card">
+        <div class="hm-cta-eyebrow">Extra 10% off · stacks with the deal</div>
+        <div class="hm-cta-code-row">
+          <div class="hm-cta-code-label">Code</div>
+          <div class="hm-cta-code">DIYSMARTCODE</div>
+        </div>
+        <div class="hm-cta-discount">10% OFF</div>
+        <div class="hm-cta-url" id="hm-cta-url">hostinger.com/DIYSMARTCODE</div>
+        <div class="hm-cta-arrow-row">
+          <span class="hm-cta-arrow" id="hm-cta-arrow">↓</span>
+          <span class="hm-cta-arrow-label">Link in description</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         OUTRO — "Back to the video."
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hm-phase hm-phase-outro" id="hm-phase-outro">
+      <div class="hm-outro-text" id="hm-outro-text">Back to the video.</div>
+    </div>
+
+    <style>
+      /* shared/lib/blocks/hostinger-midroll — keep this comment block */
+
+      .hm-root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: 'Manrope', system-ui, sans-serif;
+        color: #ffffff;
+      }
+
+      /* ─── Background layers ─── */
+      .hm-bg-base {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, #0e0f19 0%, #15172a 100%);
+        z-index: 0;
+      }
+      .hm-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.45;
+        z-index: 1;
+      }
+      .hm-orb-1 {
+        width: 700px; height: 700px;
+        left: -160px; top: -200px;
+        background: radial-gradient(circle, #673de6 0%, transparent 60%);
+      }
+      .hm-orb-2 {
+        width: 680px; height: 680px;
+        right: -180px; bottom: -180px;
+        background: radial-gradient(circle, #8b5cf6 0%, transparent 60%);
+      }
+      .hm-orb-3 {
+        width: 520px; height: 520px;
+        left: 40%; top: 35%;
+        background: radial-gradient(circle, #5b32d6 0%, transparent 65%);
+        opacity: 0.18;
+      }
+      .hm-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(139,92,246,0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(139,92,246,0.08) 1px, transparent 1px);
+        background-size: 80px 80px;
+        background-position: 0 0;
+        mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
+        -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
+        z-index: 2;
+        opacity: 0.7;
+      }
+      .hm-noise {
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 4px 4px;
+        z-index: 3;
+        opacity: 0.6;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+
+      /* ─── Persistent chrome ─── */
+      .hm-werbung {
+        position: absolute;
+        top: 40px;
+        left: 40px;
+        background: #dc2626;
+        color: #ffffff;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        padding: 8px 18px;
+        border-radius: 8px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        z-index: 100;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+        opacity: 0;
+      }
+      .hm-brand {
+        position: absolute;
+        top: 40px;
+        right: 40px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(139, 92, 246, 0.30);
+        border-radius: 14px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        opacity: 0;
+        z-index: 100;
+      }
+      .hm-brand-logo {
+        height: 36px;
+        width: auto;
+        display: block;
+      }
+
+      .hm-flash {
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+        z-index: 200;
+        opacity: 0;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+
+      /* ─── Phase wrappers ─── */
+      .hm-phase {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ─── PHASE 1 — intro ─── */
+      .hm-intro {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+      }
+      .hm-intro-eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 500;
+        color: #a0a3bd;
+        letter-spacing: 8px;
+        text-transform: uppercase;
+        opacity: 0;
+      }
+      .hm-intro-hero {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 220px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -4px;
+        background: linear-gradient(135deg, #673de6 0%, #8b5cf6 50%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        opacity: 0;
+        text-align: center;
+      }
+      .hm-intro-accent {
+        width: 0;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #673de6, #8b5cf6, #a78bfa);
+        box-shadow: 0 0 24px rgba(139, 92, 246, 0.55);
+      }
+      .hm-intro-tagline {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 38px;
+        font-weight: 500;
+        color: #e2e8f0;
+        max-width: 1100px;
+        text-align: center;
+        line-height: 1.25;
+        opacity: 0;
+      }
+
+      /* ─── PHASES 2–4 product layout ─── */
+      .hm-product {
+        position: absolute;
+        inset: 120px 100px 100px 100px;
+        display: flex;
+        align-items: center;
+        gap: 80px;
+      }
+      .hm-product-left {
+        flex: 0 0 720px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .hm-product-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        color: #8b5cf6;
+        letter-spacing: 6px;
+        opacity: 0;
+      }
+      .hm-product-title {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 96px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: #ffffff;
+        opacity: 0;
+      }
+      .hm-product-hook {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 30px;
+        font-weight: 500;
+        color: #a78bfa;
+        letter-spacing: 0.2px;
+        opacity: 0;
+      }
+      .hm-features {
+        list-style: none;
+        margin: 16px 0 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .hm-features li {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 30px;
+        font-weight: 600;
+        color: #ffffff;
+        line-height: 1.2;
+        opacity: 0;
+      }
+      .hm-feature-check {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 900;
+        color: #ffffff;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #673de6, #8b5cf6);
+        box-shadow: 0 0 16px rgba(103, 61, 230, 0.45);
+      }
+
+      .hm-product-right {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Perspective container — drives the 3D reveal zoom on .hm-screen-frame.
+           Sits on the parent so the child element transforms in true 3D space
+           (per the MDN perspective spec; setting perspective on the moving
+           element flattens the projection to per-element 2D-with-fake-depth). */
+        perspective: 1600px;
+        perspective-origin: 50% 50%;
+      }
+      .hm-screen-frame {
+        width: 100%;
+        max-width: 1040px;
+        background: #0a0b14;
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow:
+          0 24px 80px rgba(0, 0, 0, 0.55),
+          0 0 80px rgba(103, 61, 230, 0.25);
+        opacity: 0;
+        transform-origin: center center;
+        transform-style: preserve-3d;
+        will-change: transform, opacity;
+      }
+      .hm-screen-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .hm-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .hm-dot-r { background: #ff5f57; }
+      .hm-dot-y { background: #febc2e; }
+      .hm-dot-g { background: #28c840; }
+      .hm-screen-url {
+        margin-left: 14px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 16px;
+        font-weight: 500;
+        color: #94a3b8;
+        letter-spacing: 0.4px;
+      }
+      .hm-screen-img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* ─── PHASE 2 — Services overview (3x2 category grid) ─── */
+      .hm-overview {
+        position: absolute;
+        inset: 110px 100px 90px 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+      .hm-overview-header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+        align-items: center;
+      }
+      .hm-overview-eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 20px;
+        font-weight: 500;
+        color: #a78bfa;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+      }
+      .hm-overview-title {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 56px;
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -1.2px;
+        color: #ffffff;
+      }
+      .hm-overview-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 24px;
+      }
+      .hm-cat {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 32px 36px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 20px;
+        box-shadow:
+          0 4px 18px rgba(0, 0, 0, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        opacity: 0;
+        position: relative;
+        overflow: hidden;
+        /* Each card sets its own --cat-accent below (one of 6 brand-aligned colors).
+           All accent-driven styles read from this CSS variable. justify-content:
+           space-between pins header to top, list to bottom, filling the box. */
+      }
+      /* Per-category accent colors — rotation gives the grid life vs all-purple. */
+      .hm-cat-1 { --cat-accent: #a78bfa; --cat-accent-glow: rgba(167, 139, 250, 0.32); }  /* Create — lavender */
+      .hm-cat-2 { --cat-accent: #22d3ee; --cat-accent-glow: rgba(34, 211, 238, 0.32); }   /* Host — cyan */
+      .hm-cat-3 { --cat-accent: #f59e0b; --cat-accent-glow: rgba(245, 158, 11, 0.30); }   /* Email — amber */
+      .hm-cat-4 { --cat-accent: #f472b6; --cat-accent-glow: rgba(244, 114, 182, 0.30); }  /* Sell — pink */
+      .hm-cat-5 { --cat-accent: #60a5fa; --cat-accent-glow: rgba(96, 165, 250, 0.30); }   /* Domains — sky blue */
+      .hm-cat-6 { --cat-accent: #a78bfa; --cat-accent-glow: rgba(167, 139, 250, 0.45); }  /* AI — purple, brighter glow */
+
+      /* Top-left accent glow blob, behind content, tinted by the card's accent.
+         Adds depth + color identity without distracting from the text. */
+      .hm-cat::before {
+        content: '';
+        position: absolute;
+        top: -40px;
+        left: -40px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, var(--cat-accent-glow) 0%, transparent 65%);
+        z-index: 0;
+        pointer-events: none;
+      }
+      .hm-cat > * {
+        position: relative;
+        z-index: 1;
+      }
+      .hm-cat-ai {
+        border-color: var(--cat-accent);
+        box-shadow:
+          0 4px 18px rgba(0, 0, 0, 0.35),
+          0 0 60px var(--cat-accent-glow),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      .hm-cat-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .hm-cat-icon {
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid var(--cat-accent);
+        color: var(--cat-accent);
+        box-shadow:
+          0 0 22px var(--cat-accent-glow),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      .hm-cat-icon svg {
+        width: 34px;
+        height: 34px;
+      }
+      .hm-cat-title-block {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+      }
+      .hm-cat-name {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.4px;
+        line-height: 1.05;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .hm-cat-accent-line {
+        width: 0;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--cat-accent), transparent);
+      }
+      .hm-cat-badge {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 15px;
+        font-weight: 700;
+        color: #ffffff;
+        padding: 4px 11px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #00c896, #00a878);
+        letter-spacing: 1.5px;
+        box-shadow: 0 2px 8px rgba(0, 200, 150, 0.4);
+      }
+      .hm-cat-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .hm-cat-list li {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 28px;
+        font-weight: 500;
+        color: #e2e8f0;
+        line-height: 1.25;
+        padding-left: 20px;
+        position: relative;
+      }
+      .hm-cat-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 13px;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--cat-accent);
+        box-shadow: 0 0 10px var(--cat-accent-glow);
+      }
+
+      /* ─── PHASE 5 — CTA ─── */
+      .hm-cta-card {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+        padding: 60px 90px;
+        background: linear-gradient(180deg, rgba(31, 34, 64, 0.92) 0%, rgba(14, 15, 25, 0.95) 100%);
+        border: 2px solid rgba(139, 92, 246, 0.50);
+        border-radius: 32px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow:
+          0 24px 80px rgba(0, 0, 0, 0.55),
+          0 0 140px rgba(103, 61, 230, 0.35);
+        opacity: 0;
+      }
+      .hm-cta-eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 500;
+        color: #00c896;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .hm-cta-code-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 16px 36px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #673de6, #8b5cf6);
+        box-shadow: 0 6px 24px rgba(103, 61, 230, 0.45);
+      }
+      .hm-cta-code-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 20px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.75);
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .hm-cta-code {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 56px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 3px;
+      }
+      .hm-cta-discount {
+        padding: 14px 40px;
+        border-radius: 14px;
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 64px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1.5px;
+        background: linear-gradient(135deg, #00c896, #00a878);
+        box-shadow:
+          0 6px 24px rgba(0, 200, 150, 0.4),
+          0 0 80px rgba(0, 200, 150, 0.25);
+      }
+      .hm-cta-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 34px;
+        font-weight: 600;
+        color: #e2e8f0;
+        letter-spacing: 1px;
+      }
+      .hm-cta-arrow-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #a78bfa;
+      }
+      .hm-cta-arrow {
+        font-size: 32px;
+        line-height: 1;
+      }
+
+      /* ─── Outro ─── */
+      .hm-phase-outro {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .hm-outro-text {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 64px;
+        font-weight: 700;
+        color: #a0a3bd;
+        letter-spacing: -0.5px;
+        opacity: 0;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (function () {
+
+        // ──────────────────────────────────────────────────────────
+        // PHASE TIMING (seconds) — anchored to TTS narration word starts.
+        // Each visual phase transitions ~0.10s BEFORE its first spoken word
+        // so the visual leads the audio by a frame or two (cinematic feel).
+        // Anchors from shared/audio/voice/hostinger-midroll-narration-transcript.json:
+        //   "They"   = 1.76s   (overview phase start)
+        //   "Need"   = 7.41s   (VPS phase start)
+        //   "Or"     = 12.05s  (OpenClaw phase start)
+        //   "Code"   = 17.03s  (CTA phase start)
+        //   "Back"   = 20.70s  (outro start)
+        // ──────────────────────────────────────────────────────────
+        var P1_END = 1.65;   // intro → services overview ("They..." at 1.76)
+        var P2_END = 7.30;   // services overview → VPS ("Need..." at 7.41)
+        var P3_END = 11.95;  // VPS → OpenClaw ("Or..." at 12.05)
+        var P4_END = 16.95;  // OpenClaw → CTA ("Code..." at 17.03)
+        var P5_END = 20.65;  // CTA → outro ("Back..." at 20.70)
+        var DUR    = 22.0;   // composition end (last word ends 21.60, +0.4s tail)
+
+        var tl = gsap.timeline({ paused: true });
+
+        // ──────────────────────────────────────────────────────────
+        // GLOBAL FADE-IN — container appears with a subtle zoom-down
+        // ──────────────────────────────────────────────────────────
+        tl.set('.hm-root', { opacity: 0, scale: 1.04 }, 0);
+        tl.to('.hm-root',
+          { opacity: 1, scale: 1, duration: 0.55, ease: 'power2.out', overwrite: 'auto' }, 0);
+
+        // Background orbs — slow drift across the full 20s for ambient motion
+        tl.to('.hm-orb-1', { x: 80, y: 60, duration: DUR, ease: 'sine.inOut' }, 0);
+        tl.to('.hm-orb-2', { x: -60, y: -80, duration: DUR, ease: 'sine.inOut' }, 0);
+        tl.to('.hm-orb-3', { x: 40, y: -40, duration: DUR, ease: 'sine.inOut' }, 0);
+
+        // Persistent chrome — Werbung + brand label fade in after the
+        // container settles, stay on screen for the full midroll.
+        tl.to('.hm-werbung', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
+        tl.to('.hm-brand',   { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 1 — Hostinger intro  (0.0 → 1.65s)
+        // Compressed so the entire intro lands before audio says "They"
+        // (overview narration start at 1.76s).
+        // ══════════════════════════════════════════════════════════
+        tl.to('#hm-phase-1', { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0.10);
+
+        tl.fromTo('#hm-intro-eyebrow', { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }, 0.15);
+        tl.fromTo('#hm-intro-hero', { opacity: 0, y: 40, scale: 0.96 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.50, ease: 'back.out(1.3)' }, 0.30);
+        tl.to('#hm-intro-accent',
+          { width: 320, duration: 0.40, ease: 'power3.out' }, 0.65);
+        tl.fromTo('#hm-intro-tagline', { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.40, ease: 'power2.out' }, 0.85);
+
+        // Phase 1 → Phase 2 (web hosting) — white flash + crossfade
+        tl.to('#hm-flash', { opacity: 0.55, duration: 0.08, ease: 'power1.out', overwrite: 'auto' }, P1_END - 0.10);
+        tl.to('#hm-flash', { opacity: 0,    duration: 0.20, ease: 'power1.in',  overwrite: 'auto' }, P1_END);
+        tl.to('#hm-phase-1', { opacity: 0, duration: 0.30, ease: 'power2.in',   overwrite: 'auto' }, P1_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 2 — Services Overview  (2.5 → 7.5s)
+        // 3x2 category grid: Create / Host / Email / Sell / Domains / AI
+        // ══════════════════════════════════════════════════════════
+        tl.to('#hm-phase-2', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P1_END);
+
+        // Header (eyebrow + title)
+        tl.fromTo('.hm-overview-eyebrow', { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, P1_END + 0.10);
+        tl.fromTo('.hm-overview-title', { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.3)' }, P1_END + 0.20);
+
+        // Category cards — 3D flip-forward entrance with staggered reveal.
+        // Each card rotates from -25° forward-tilt to flat, scales up + accent
+        // line draws under the name 0.35s after the card lands. Stagger 0.22s
+        // across all 6 cards so the AI/Automation card (the punchline) lands
+        // last but the full grid fills before the hold.
+        var catBaseTime = P1_END + 0.45;
+        ['#hm-cat-1', '#hm-cat-2', '#hm-cat-3',
+         '#hm-cat-4', '#hm-cat-5', '#hm-cat-6'].forEach(function (sel, i) {
+          // Card flip-forward
+          tl.fromTo(sel,
+            { opacity: 0, y: 28, rotationX: -28, scale: 0.92, transformPerspective: 1200 },
+            { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: 0.55, ease: 'back.out(1.3)' },
+            catBaseTime + i * 0.22);
+          // Accent line draws under the category name
+          tl.to(sel + ' .hm-cat-accent-line',
+            { width: 80, duration: 0.40, ease: 'power3.out' },
+            catBaseTime + i * 0.22 + 0.35);
+          // Subtle ongoing breath — card scales 1.0 → 1.015 across the rest of
+          // the hold so the grid stays alive, never stone-still.
+          tl.to(sel,
+            { scale: 1.015, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: 1 },
+            catBaseTime + i * 0.22 + 0.80);
+        });
+
+        // AI/Automation card — extra spotlight: brighter glow pulse + a slow
+        // sweeping shimmer across the accent line during the hold to mark it
+        // as the punchline category.
+        tl.to('.hm-cat-ai',
+          { boxShadow: '0 4px 18px rgba(0,0,0,0.35), 0 0 120px rgba(167,139,250,0.65), inset 0 1px 0 rgba(255,255,255,0.10)',
+            duration: 1.0, ease: 'sine.inOut', yoyo: true, repeat: 1 },
+          catBaseTime + 1.80);
+
+        // Phase 2 → Phase 3 (VPS) — crossfade
+        tl.to('#hm-phase-2', { opacity: 0, duration: 0.30, ease: 'power2.in', overwrite: 'auto' }, P2_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 3 — VPS Hosting spotlight  (7.5 → 12.0s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#hm-phase-3', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P2_END);
+
+        tl.fromTo('.hm-phase-3 .hm-product-label', { opacity: 0, x: -40 },
+          { opacity: 1, x: 0, duration: 0.45, ease: 'power2.out' }, P2_END + 0.10);
+        tl.fromTo('.hm-phase-3 .hm-product-title', { opacity: 0, x: -60 },
+          { opacity: 1, x: 0, duration: 0.55, ease: 'back.out(1.3)' }, P2_END + 0.20);
+        tl.fromTo('.hm-phase-3 .hm-product-hook', { opacity: 0, x: -40 },
+          { opacity: 1, x: 0, duration: 0.45, ease: 'power2.out' }, P2_END + 0.40);
+        tl.fromTo('.hm-phase-3 .hm-features li', { opacity: 0, x: -28 },
+          { opacity: 1, x: 0, duration: 0.40, ease: 'power2.out', stagger: 0.08 }, P2_END + 0.55);
+
+        // Screenshot — 3D reveal zoom (rotateY + scale + opacity).
+        // Parent .hm-product-right carries `perspective: 1600px` so the
+        // rotation projects correctly in true 3D space.
+        tl.fromTo('.hm-phase-3 .hm-screen-frame',
+          { opacity: 0, rotationY: -38, scale: 0.62, transformPerspective: 1600 },
+          { opacity: 1, rotationY: 0, scale: 1, duration: 0.90, ease: 'power3.out', overwrite: 'auto' },
+          P2_END + 0.25);
+        // Settle: gentle hover-wobble during the hold
+        tl.to('.hm-phase-3 .hm-screen-frame',
+          { rotationY: 2.5, duration: 1.4, ease: 'sine.inOut', yoyo: true, repeat: 1, overwrite: 'auto' },
+          P2_END + 1.30);
+        // Slow "lean-in" zoom — scale 1.0 → 1.25 ending right at phase exit.
+        // Runs concurrent with the rotationY wobble (different property, no conflict).
+        // Power2.in = slow build, faster finale — pulls the eye in just as we cut away.
+        tl.to('.hm-phase-3 .hm-screen-frame',
+          { scale: 1.20, duration: 2.00, ease: 'power2.in' },
+          P2_END + 2.50);
+
+        // Phase 3 → Phase 4 (OpenClaw) — crossfade
+        tl.to('#hm-phase-3', { opacity: 0, duration: 0.30, ease: 'power2.in', overwrite: 'auto' }, P3_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 4 — 1-Click OpenClaw spotlight  (12.0 → 16.5s)
+        // The featured / hero AI product. Punchline of the midroll.
+        // ══════════════════════════════════════════════════════════
+        tl.to('#hm-phase-4', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P3_END);
+
+        tl.fromTo('.hm-phase-4 .hm-product-label', { opacity: 0, x: -40 },
+          { opacity: 1, x: 0, duration: 0.45, ease: 'power2.out' }, P3_END + 0.10);
+        tl.fromTo('.hm-phase-4 .hm-product-title', { opacity: 0, x: -60 },
+          { opacity: 1, x: 0, duration: 0.55, ease: 'back.out(1.3)' }, P3_END + 0.20);
+        tl.fromTo('.hm-phase-4 .hm-product-hook', { opacity: 0, x: -40 },
+          { opacity: 1, x: 0, duration: 0.45, ease: 'power2.out' }, P3_END + 0.40);
+        tl.fromTo('.hm-phase-4 .hm-features li', { opacity: 0, x: -28 },
+          { opacity: 1, x: 0, duration: 0.40, ease: 'power2.out', stagger: 0.08 }, P3_END + 0.55);
+
+        // Screenshot — 3D reveal zoom, mirrored angle vs VPS for variety
+        tl.fromTo('.hm-phase-4 .hm-screen-frame',
+          { opacity: 0, rotationY: 38, scale: 0.62, transformPerspective: 1600 },
+          { opacity: 1, rotationY: 0, scale: 1, duration: 0.90, ease: 'power3.out', overwrite: 'auto' },
+          P3_END + 0.25);
+        tl.to('.hm-phase-4 .hm-screen-frame',
+          { rotationY: -2.5, duration: 1.4, ease: 'sine.inOut', yoyo: true, repeat: 1, overwrite: 'auto' },
+          P3_END + 1.30);
+        // Slow "lean-in" zoom — same as VPS, lands at 1.25x right before crossfade.
+        tl.to('.hm-phase-4 .hm-screen-frame',
+          { scale: 1.20, duration: 2.00, ease: 'power2.in' },
+          P3_END + 2.50);
+
+        // Phase 4 → Phase 5 (CTA) — emphasis flash + crossfade
+        tl.to('#hm-flash', { opacity: 0.45, duration: 0.06, ease: 'power1.out', overwrite: 'auto' }, P4_END - 0.06);
+        tl.to('#hm-flash', { opacity: 0,    duration: 0.20, ease: 'power1.in',  overwrite: 'auto' }, P4_END);
+        tl.to('#hm-phase-4', { opacity: 0, duration: 0.30, ease: 'power2.in',   overwrite: 'auto' }, P4_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // PHASE 5 — CTA  (16.0 → 18.5s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#hm-phase-5', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P4_END);
+
+        tl.fromTo('.hm-cta-card', { opacity: 0, scale: 0.92 },
+          { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.4)' }, P4_END + 0.05);
+
+        // Discount badge breath pulse during the CTA hold
+        tl.to('.hm-cta-discount',
+          { scale: 1.04, duration: 0.9, ease: 'sine.inOut', yoyo: true, repeat: 2 }, P4_END + 0.50);
+        // Arrow bounce
+        tl.to('#hm-cta-arrow',
+          { y: 8, duration: 0.45, ease: 'sine.inOut', yoyo: true, repeat: 3 }, P4_END + 0.60);
+
+        // Phase 5 → Outro — gentle crossfade
+        tl.to('#hm-phase-5', { opacity: 0, duration: 0.30, ease: 'power2.in', overwrite: 'auto' }, P5_END - 0.10);
+
+        // ══════════════════════════════════════════════════════════
+        // OUTRO — "Back to the video."  (18.5 → 20.0s)
+        // ══════════════════════════════════════════════════════════
+        tl.to('#hm-phase-outro', { opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' }, P5_END);
+
+        tl.fromTo('#hm-outro-text', { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, P5_END + 0.05);
+
+        // Final fade-out — full composition hands back to the host video.
+        // Persistent chrome (Werbung + brand) goes with it.
+        tl.to('.hm-root', { opacity: 0, duration: 0.7, ease: 'power2.in' }, DUR - 0.7);
+
+        window.__timelines['hostinger-midroll'] = tl;
+      })();
+    </script>
+
+  </div>
+</template>

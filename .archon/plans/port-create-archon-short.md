@@ -178,7 +178,7 @@ to bring along — copy the whole directory.
 | Source (absolute) | Destination | Status |
 |---|---|---|
 | `C:\Users\Leex279\Documents\GitHub\diy-yt-creator-hyperframes\.claude\rules\shorts-typography.md` | `.claude/rules/shorts-typography.md` | Required |
-| `…\rules\shorts-thumbnail-final-frame.md` | `.claude/rules/shorts-thumbnail-final-frame.md` | Required |
+| `…\rules\shorts-thumbnail-frames.md` | `.claude/rules/shorts-thumbnail-frames.md` | Required |
 | `…\rules\step-by-step-reveal.md` | `.claude/rules/step-by-step-reveal.md` | Required |
 | `…\rules\visual-pacing-5s.md` | `.claude/rules/visual-pacing-5s.md` | Required |
 | `…\rules\tts-pronunciation.md` | `.claude/rules/tts-pronunciation.md` | Required |

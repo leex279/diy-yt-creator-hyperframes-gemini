@@ -1,0 +1,157 @@
+<!--
+  shared/lib/components/film-strip-reveal/component.html
+  Image/text revealed inside a horizontal 35mm-film-strip frame sliding
+  across the canvas. Sprocket holes (repeating rectangle pattern via CSS)
+  top + bottom. ~1.4s entrance with power3.out, frame holds, then exits.
+  Optional [data-film-content] slot inside the frame.
+
+  COMPONENT IS PASTE-IN — three sections below. Merge each section into
+  the matching part of your host composition's HTML.
+
+  ──────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste the film-strip container into your composition root:
+-->
+
+<div class="fsr-frame" id="fsr-frame">
+  <div class="fsr-sprockets fsr-sprockets-top"  id="fsr-sprockets-top"></div>
+  <div class="fsr-content-area" id="fsr-content-area">
+    <!-- Optional: add data-film-content to your inner content element -->
+    <div class="fsr-content" id="fsr-content" data-film-content>
+      FRAME
+    </div>
+  </div>
+  <div class="fsr-sprockets fsr-sprockets-bottom" id="fsr-sprockets-bottom"></div>
+</div>
+
+<!--
+  2) CSS — merge into your composition's <style> block:
+-->
+
+<style>
+  /* shared/lib/components/film-strip-reveal — keep this comment block */
+
+  /* Film strip frame container: offscreen left initially */
+  .fsr-frame {
+    position: absolute;
+    /* Centered vertically, full canvas width, 380px tall */
+    left: 0;
+    top: 50%;
+    transform: translateX(-1200px) translateY(-50%);
+    width: 1080px;
+    height: 380px;
+    background: var(--film-bg, #1A1A1A);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10;
+    opacity: 0;
+  }
+
+  /* Sprocket hole strips: repeating rectangle punches */
+  .fsr-sprockets {
+    flex-shrink: 0;
+    height: 40px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--film-bg, #1A1A1A)        0px,
+      var(--film-bg, #1A1A1A)        18px,
+      var(--film-hole, #000000)      18px,
+      var(--film-hole, #000000)      38px,
+      var(--film-bg, #1A1A1A)        38px,
+      var(--film-bg, #1A1A1A)        56px
+    );
+    border-top: 2px solid var(--film-edge, #333333);
+    border-bottom: 2px solid var(--film-edge, #333333);
+  }
+  .fsr-sprockets-bottom {
+    border-top: 2px solid var(--film-edge, #333333);
+    border-bottom: none;
+  }
+
+  /* Content area: the exposed "window" between sprocket strips */
+  .fsr-content-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--film-content-bg, #0A0E1A);
+  }
+
+  /* Default content slot: centered text */
+  .fsr-content {
+    font-family: var(--sans, 'Inter', system-ui, sans-serif);
+    font-weight: 800;
+    font-size: 80px;
+    color: var(--film-text, #F5F1EB);
+    letter-spacing: -2px;
+    text-align: center;
+    user-select: none;
+  }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addFilmStripReveal(tl, "#fsr-content", 8.0);
+       addFilmStripReveal(tl, "#fsr-content", 8.0, { duration: 1.4, holdSec: 1.6 });
+
+     contentSel: selector of the [data-film-content] element inside the frame.
+     The frame itself is resolved via closest parent .fsr-frame.
+
+     Wire SFX in host index.html:
+       cinematic-whoosh at `at + 0.0` on track-index 3 (slide-in)
+       pop              at `at + 0.7` on track-index 4 (frame locks into place)
+     See recipe.md for the full <audio> snippets.
+-->
+
+<script>
+  function addFilmStripReveal(tl, contentSel, at, opts) {
+    var options  = opts || {};
+    var duration = options.duration !== undefined ? options.duration : 1.4;
+    var holdSec  = options.holdSec  !== undefined ? options.holdSec  : 1.6;
+    var frameSel = options.frameSel !== undefined ? options.frameSel : '#fsr-frame';
+    var total    = duration + holdSec + 0.5; // entrance + hold + exit
+
+    // ── t=0: hide frame offscreen left ──
+    tl.set(frameSel, { x: -1200, opacity: 0 }, 0);
+
+    // ── Entrance: slide in from left with power3.out (0→1200 range slide) ──
+    tl.to(frameSel, {
+      x:       0,
+      opacity: 1,
+      duration: duration,
+      ease:    'power3.out'
+    }, at);
+
+    // ── t=at+duration: frame "locks" with micro-bounce (0.1s settle) ──
+    tl.to(frameSel, {
+      x:       -8,
+      duration: 0.07,
+      ease:    'none'
+    }, at + duration);
+    tl.to(frameSel, {
+      x:       0,
+      duration: 0.1,
+      ease:    'bounce.out'
+    }, at + duration + 0.07);
+
+    // ── Hold: frame stays, content visible ──
+    // (no tween — just the hold period passes)
+
+    // ── Exit: slide out to the right ──
+    var exitAt = at + duration + 0.17 + holdSec;
+    tl.to(frameSel, {
+      x:       1300,
+      opacity: 0,
+      duration: 0.45,
+      ease:    'power2.in'
+    }, exitAt);
+  }
+  // End addFilmStripReveal
+</script>

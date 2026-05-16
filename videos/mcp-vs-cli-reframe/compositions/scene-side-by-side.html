@@ -1,0 +1,409 @@
+<!--
+  scene-side-by-side.html — CLI camp vs MCP camp (~86s).
+  Narration anchors (t_rel):
+    0.0   "Here's what each side actually measured"  → overline + headline
+    2.2   "The C L I camp ran the numbers"           → CLI card 3D swing-in
+    5.3   "Playwright's M C P server eats ~15,000"    → CLI row 1 + meter→15K
+   11.8   "Chrome DevTools eats about 17,000"         → CLI row 2 + meter→32K
+   15.0   "Typical multi server setup burns 50,000"    → CLI row 3 + meter→50K
+   21.7   "We reproduced this · 16,506 tokens"         → CLI row 4 + meter→16,506
+   35.2   "Now the MCP camp's side"                    → MCP card 3D swing-in
+   37.2   "CLI agents break on multi-tenant"            → MCP row 1
+   42.2   "There are no typed contracts"               → MCP row 2
+   59.9   "Plain curl returns 1,737 tokens"            → MCP row 3 + HTML meter→1,737
+   69.7   "Playwright MCP returns 1,889"                → MCP row 4 + meter→1,889
+   79.0   "Both sides had receipts"                     → verdict bar
+   84.2   "That was the wrong question"                 → final lift
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden; perspective:2000px;
+              font-family:var(--sans); color:var(--text);">
+
+    <style>
+      #scene-side-by-side-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:32px;
+        box-sizing:border-box;
+        transform-style: preserve-3d;
+      }
+      #scene-side-by-side-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:12px;
+        text-align:center;
+      }
+      #scene-side-by-side-content .overline {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+      }
+      #scene-side-by-side-content .headline {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 52px;
+        line-height: 1.05;
+        letter-spacing: -1.5px;
+        color: var(--text);
+      }
+      #scene-side-by-side-content .headline b {
+        color: var(--accent-stat);
+      }
+      #scene-side-by-side-content .headline .w { display:inline-block; }
+
+      #scene-side-by-side-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 32px;
+        transform-style: preserve-3d;
+      }
+      .sbs-card {
+        width: 800px;
+        border-radius: 14px;
+        border: 1px solid var(--border-bright);
+        background: var(--bg-elev);
+        display:flex; flex-direction:column;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7),
+                    0 0 0 1px rgba(255,255,255,0.04) inset;
+        overflow: hidden;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      .sbs-card .term-bar {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 22px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255,255,255,0.02);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .sbs-card .term-bar .dots { display: flex; gap: 5px; }
+      .sbs-card .term-bar .dots span { width: 9px; height: 9px; border-radius: 50%; }
+      .sbs-card .term-bar .dots .r { background: #ef4444; }
+      .sbs-card .term-bar .dots .y { background: var(--accent-stat); }
+      .sbs-card .term-bar .dots .g { background: var(--accent-4); }
+      .sbs-card.a .term-bar .file { color: var(--accent-3); }
+      .sbs-card.b .term-bar .file { color: var(--accent-1); }
+      .sbs-card .body {
+        padding: 22px 30px 26px;
+        display: flex; flex-direction: column;
+        gap: 12px;
+        position: relative;
+      }
+      .sbs-card .body::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; top: 0;
+        height: 4px;
+      }
+      .sbs-card.a .body::after { background: linear-gradient(90deg, var(--accent-3), transparent); }
+      .sbs-card.b .body::after { background: linear-gradient(90deg, var(--accent-1), transparent); }
+      .sbs-card .label {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .sbs-card .label .badge {
+        padding: 3px 8px;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        border-radius: 3px;
+        background: rgba(255,255,255,0.06);
+        color: var(--text-muted);
+      }
+      .sbs-card.a .label { color: var(--accent-3); }
+      .sbs-card.b .label { color: var(--accent-1); }
+      .sbs-card .title {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.15;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .sbs-card .meter {
+        display: flex; align-items: center; gap: 14px;
+        padding: 10px 0;
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .sbs-card .meter .bar {
+        flex: 1;
+        height: 12px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 2px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .sbs-card .meter .bar .fill {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 0%;
+      }
+      .sbs-card.a .meter .bar .fill { background: var(--accent-3); box-shadow: 0 0 12px var(--glow-violet); }
+      .sbs-card.b .meter .bar .fill { background: var(--accent-1); box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
+      .sbs-card .meter .num {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        min-width: 70px;
+        text-align: right;
+        letter-spacing: 0;
+      }
+      .sbs-card .receipts {
+        list-style: none;
+        display:flex; flex-direction:column;
+        gap: 10px;
+        margin-top: 2px;
+      }
+      .sbs-card .receipts li {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 17px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+        transform-style: preserve-3d;
+      }
+      .sbs-card .receipts li::before {
+        content: ">";
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .sbs-card.a .receipts li::before { color: var(--accent-3); }
+      .sbs-card.b .receipts li::before { color: var(--accent-1); }
+      .sbs-card .receipts li b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums lining-nums; }
+      .sbs-card .footer {
+        margin-top: 10px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--border);
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 12px;
+        color: var(--text-muted);
+        letter-spacing: 1.5px;
+      }
+      .sbs-card .footer .ok { color: var(--accent-4); }
+
+      .verdict {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-stat);
+        text-align: center;
+        padding: 14px 32px;
+        border: 1.5px solid rgba(250, 204, 21, 0.4);
+        border-radius: 6px;
+        background: rgba(250, 204, 21, 0.06);
+      }
+      .verdict .dim { color: var(--text-secondary); margin-right: 10px; }
+    </style>
+
+    <div id="scene-side-by-side-content">
+      <div class="header-block">
+        <div class="overline" id="sbs-overline">BOTH CAMPS · REAL RECEIPTS</div>
+        <div class="headline" id="sbs-headline">
+          <span class="w" data-w="0">Both</span>
+          <span class="w" data-w="1">sides</span>
+          <span class="w" data-w="2">measured.</span>
+          <b><span class="w" data-w="3">Both</span>
+          <span class="w" data-w="4">were</span>
+          <span class="w" data-w="5">right.</span></b>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="sbs-card a" id="sbs-card-a">
+          <div class="term-bar">
+            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+            <div class="file">~/cli-camp.log</div>
+          </div>
+          <div class="body">
+            <div class="label">CLI camp <span class="badge">$ shell</span></div>
+            <div class="title">Schema bloat is real and measurable.</div>
+            <div class="meter">
+              <span>CTX</span>
+              <div class="bar"><div class="fill" id="meter-a"></div></div>
+              <span class="num" id="meter-a-num">0</span>
+            </div>
+            <ul class="receipts" id="sbs-a-receipts">
+              <li>Playwright MCP · <b>~15,000</b> tokens of schema</li>
+              <li>Chrome DevTools MCP · <b>~17,000</b> tokens</li>
+              <li>Typical multi-server stack · <b>50,000+</b> tokens before first action</li>
+              <li>We probed 7 servers ourselves · <b>16,506</b> tokens</li>
+            </ul>
+            <div class="footer">sources <span class="ok">●</span> morphllm · chromedevtools#340 · our experiments</div>
+          </div>
+        </div>
+
+        <div class="sbs-card b" id="sbs-card-b">
+          <div class="term-bar">
+            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+            <div class="file">~/mcp-camp.log</div>
+          </div>
+          <div class="body">
+            <div class="label">MCP camp <span class="badge">{ protocol }</span></div>
+            <div class="title">CLI breaks where it matters most.</div>
+            <div class="meter">
+              <span>HTML</span>
+              <div class="bar"><div class="fill" id="meter-b"></div></div>
+              <span class="num" id="meter-b-num">0</span>
+            </div>
+            <ul class="receipts" id="sbs-b-receipts">
+              <li>No <b>typed contracts</b> — agents guess at output shapes</li>
+              <li>No <b>multi-tenant state</b> for per-user OAuth</li>
+              <li>SPA · curl returns <b>1,737</b> tokens of empty HTML</li>
+              <li>Playwright MCP renders same page · <b>1,889</b> tokens, full content</li>
+            </ul>
+            <div class="footer">sources <span class="ok">●</span> IBM (Martin Keen) · our exp-04 fetch tests</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict" id="sbs-verdict">
+        <span class="dim">VERDICT //</span> BOTH ARGUMENTS WERE REAL. NEITHER ANSWERED THE QUESTION.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ══════════ HIDE EVERYTHING AT t=0 ══════════
+      tl.set("#sbs-overline",      { opacity: 0, y: -14 }, 0);
+      tl.set("#sbs-headline .w",   { opacity: 0, y: 20, rotationX: 50, transformOrigin: "center bottom" }, 0);
+      tl.set("#sbs-card-a",        { opacity: 0, rotationY: -90, x: -180, transformOrigin: "right center" }, 0);
+      tl.set("#sbs-card-b",        { opacity: 0, rotationY: 90,  x:  180, transformOrigin: "left center" }, 0);
+      tl.set("#sbs-a-receipts li", { opacity: 0, rotationX: 70, y: 12, transformOrigin: "center bottom" }, 0);
+      tl.set("#sbs-b-receipts li", { opacity: 0, rotationX: 70, y: 12, transformOrigin: "center bottom" }, 0);
+      tl.set("#sbs-verdict",       { opacity: 0, y: 18, scale: 0.96 }, 0);
+
+      // ══════════ NARRATION-SYNCED REVEALS ══════════
+
+      // 0.0–1.0s — overline lands first
+      tl.to("#sbs-overline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.0);
+
+      // 0.3–1.8s — headline word stagger
+      const hwTimes = [0.3, 0.55, 0.8, 1.1, 1.35, 1.6];
+      hwTimes.forEach((t, i) => {
+        tl.to(`#sbs-headline .w[data-w="${i}"]`,
+          { opacity: 1, y: 0, rotationX: 0, duration: 0.5, ease: "power3.out" }, t);
+      });
+
+      // 2.2s — CLI card swings in (3D door open from left)
+      tl.to("#sbs-card-a", { opacity: 1, rotationY: 0, x: 0, duration: 1.0, ease: "back.out(1.3)" }, 2.2);
+
+      // Meter A — counter helpers
+      const meterA = { v: 0 };
+      const updateA = () => {
+        const fill = document.getElementById('meter-a');
+        if (fill) fill.style.width = Math.min(meterA.v / 60000 * 100, 100) + '%';
+        const num = document.getElementById('meter-a-num');
+        if (num) num.textContent = Math.round(meterA.v).toLocaleString();
+      };
+
+      // 5.3s — receipt 1 (Playwright 15k) reveals + meter fills to 15k
+      tl.to("#sbs-a-receipts li:nth-child(1)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 5.3);
+      tl.to(meterA, { v: 15000, duration: 1.6, ease: "power2.out", onUpdate: updateA }, 5.5);
+
+      // 11.8s — receipt 2 (Chrome DevTools 17k) + meter to 32k cumulative
+      tl.to("#sbs-a-receipts li:nth-child(2)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 11.8);
+      tl.to(meterA, { v: 32000, duration: 1.4, ease: "power2.out", onUpdate: updateA }, 12.0);
+
+      // 15.0s — receipt 3 (Multi-server 50k+) + meter to 50k
+      tl.to("#sbs-a-receipts li:nth-child(3)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 15.0);
+      tl.to(meterA, { v: 50000, duration: 1.5, ease: "power2.out", onUpdate: updateA }, 15.2);
+
+      // 21.7s — receipt 4 (Our 16,506) + meter snaps DOWN to real measurement
+      tl.to("#sbs-a-receipts li:nth-child(4)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 21.7);
+      tl.to(meterA, { v: 16506, duration: 1.5, ease: "power2.inOut", onUpdate: updateA }, 21.9);
+      // Color flash on the final landing number (real measurement)
+      tl.to("#meter-a-num", {
+        color: "#FACC15", scale: 1.08,
+        duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 23.4);
+
+      // 35.2s — MCP card swings in (3D door open from right)
+      tl.to("#sbs-card-b", { opacity: 1, rotationY: 0, x: 0, duration: 1.0, ease: "back.out(1.3)" }, 35.2);
+
+      // Meter B — counter helpers
+      const meterB = { v: 0 };
+      const updateB = () => {
+        const fill = document.getElementById('meter-b');
+        if (fill) fill.style.width = (meterB.v / 2500 * 100) + '%';
+        const num = document.getElementById('meter-b-num');
+        if (num) num.textContent = Math.round(meterB.v).toLocaleString();
+      };
+
+      // 37.2s — MCP receipt 1 (CLI agents break on multi-tenant)
+      tl.to("#sbs-b-receipts li:nth-child(1)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 37.2);
+
+      // 42.2s — MCP receipt 2 (no typed contracts)
+      tl.to("#sbs-b-receipts li:nth-child(2)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 42.2);
+
+      // 59.9s — MCP receipt 3 (curl returns 1,737 of empty HTML)
+      tl.to("#sbs-b-receipts li:nth-child(3)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 59.9);
+      tl.to(meterB, { v: 1737, duration: 1.4, ease: "power2.out", onUpdate: updateB }, 60.1);
+
+      // 69.7s — MCP receipt 4 (Playwright MCP 1,889 full content)
+      tl.to("#sbs-b-receipts li:nth-child(4)",
+        { opacity: 1, rotationX: 0, y: 0, duration: 0.55, ease: "power3.out" }, 69.7);
+      tl.to(meterB, { v: 1889, duration: 1.3, ease: "power2.out", onUpdate: updateB }, 69.9);
+      tl.to("#meter-b-num", {
+        color: "#34D399", scale: 1.08,
+        duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 71.1);
+
+      // 79.0s — verdict bar reveal
+      tl.to("#sbs-verdict",
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.4)" }, 79.0);
+
+      // 81.5s — verdict glow once (no flicker, just one definite pulse)
+      tl.to("#sbs-verdict", {
+        boxShadow: "0 0 32px rgba(250, 204, 21, 0.55)",
+        duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, 81.5);
+
+      // 84.2s — both cards lift together on "wrong question" (single beat, not flicker)
+      tl.to(["#sbs-card-a", "#sbs-card-b"],
+        { y: -8, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 84.2);
+
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

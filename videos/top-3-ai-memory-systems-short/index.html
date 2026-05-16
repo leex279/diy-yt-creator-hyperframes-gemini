@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Top 3 AI Agent Memory Systems Ranked (2026)</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px; height: 1920px; overflow: hidden;
+    background: #0A0E18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #E8E9F0;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    --bg: #0A0E18;
+    --surface: #161B2C;
+    --card: #1E2336;
+    --text: #E8E9F0;
+    --text-dim: #9A9BA3;
+    --cyan: #22D9A0;
+    --magenta: #E64DCC;
+    --purple: #9D5BE0;
+    --blue: #4B82EF;
+    --gold: #F0B842;
+    --bronze: #B57845;
+    --silver: #B8C0CC;
+    --yellow: #E0AD3D;
+    --red: #DC4838;
+    --pill-bg: rgba(232, 233, 240, 0.06);
+    --pill-border: rgba(232, 233, 240, 0.16);
+    --pad-top: 220px;
+    --pad-x: 60px;
+    --pad-bottom: 200px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+  #ambient {
+    position: absolute; inset: -200px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(34, 217, 160, 0.10), transparent 60%),
+      radial-gradient(circle at 75% 80%, rgba(230, 77, 204, 0.08), transparent 55%);
+    pointer-events: none; z-index: 0;
+  }
+  #noise-overlay {
+    position: absolute; inset: 0; width: 1080px; height: 1920px;
+    pointer-events: none; z-index: 11; opacity: 0.035; mix-blend-mode: overlay;
+  }
+  #top-banner {
+    position: absolute; top: 60px; left: 0; width: 1080px;
+    z-index: 10; pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    text-align: center;
+  }
+  #top-banner-content { display: inline-flex; align-items: center; gap: 22px; }
+  #top-banner-icon { width: 84px; height: 84px; object-fit: contain; display: block; }
+  #top-banner-wordmark {
+    font-family: var(--sans); font-weight: 900; font-size: 72px;
+    letter-spacing: 5px; line-height: 1;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    background-clip: text; -webkit-background-clip: text; color: transparent;
+  }
+  #progress-track {
+    position: absolute; bottom: 0; left: 0; width: 1080px; height: 6px;
+    background: rgba(232, 233, 240, 0.06); z-index: 10;
+  }
+  #progress-fill {
+    width: 0; height: 100%; background: var(--cyan);
+    box-shadow: 0 0 12px rgba(34, 217, 160, 0.6);
+  }
+  .phase {
+    position: absolute; top: 0; left: 0; width: 1080px; height: 1920px;
+    overflow: hidden;
+  }
+  #phase1 { z-index: 1; opacity: 1; }
+  #phase2 { z-index: 2; opacity: 0; }
+  #phase3 { z-index: 3; opacity: 0; }
+  #phase4 { z-index: 4; opacity: 0; }
+  #phase5 { z-index: 5; opacity: 0; }
+  #phase6 { z-index: 6; opacity: 0; }
+  #phase7 { z-index: 7; opacity: 0; }
+  #phase8 { z-index: 8; opacity: 0; }
+  .phase-content {
+    width: 100%; height: 100%;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex; flex-direction: column;
+    box-sizing: border-box;
+  }
+  .overline {
+    font-family: var(--mono); font-weight: 700; font-size: 36px;
+    letter-spacing: 6px; text-transform: uppercase;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — Thumbnail-grade open (0–2.5s) + Pain hook (2.5–13.5s)
+     ────────────────────────────────────────────────── */
+  /* Thumbnail-grade lockup (beat 1a) */
+  #p1-thumb-overline {
+    position: absolute; top: 200px; left: 0; width: 1080px;
+    text-align: center;
+    font-family: var(--mono); font-weight: 700; font-size: 36px;
+    letter-spacing: 6px; text-transform: uppercase;
+    color: var(--cyan);
+  }
+  #p1-thumb-topic {
+    position: absolute; top: 320px; left: 60px; width: 960px;
+    font-family: var(--sans); font-weight: 900; font-size: 168px;
+    line-height: 0.92; letter-spacing: -5px; color: var(--text);
+    text-align: center;
+  }
+  #p1-thumb-topic .accent {
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    background-clip: text; -webkit-background-clip: text; color: transparent;
+  }
+  #p1-thumb-megapill {
+    position: absolute; top: 880px; left: 0; width: 1080px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  #p1-thumb-pill-inner {
+    display: inline-flex; flex-direction: column; align-items: center;
+    padding: 36px 64px; border-radius: 36px;
+    background: linear-gradient(135deg, rgba(34,217,160,0.22), rgba(34,217,160,0.06));
+    border: 3px solid rgba(34,217,160,0.55);
+    box-shadow: 0 18px 48px rgba(34,217,160,0.25);
+  }
+  #p1-thumb-pill-num {
+    font-family: var(--sans); font-weight: 900; font-size: 200px;
+    line-height: 0.9; letter-spacing: -5px; color: var(--cyan);
+    text-shadow: 0 0 60px rgba(34,217,160,0.4);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p1-thumb-pill-label {
+    margin-top: 14px;
+    font-family: var(--mono); font-weight: 700; font-size: 36px;
+    letter-spacing: 4px; color: var(--text);
+  }
+  #p1-thumb-foot {
+    position: absolute; top: 1380px; left: 60px; width: 960px;
+    text-align: center;
+    font-family: var(--sans); font-weight: 700; font-size: 48px;
+    line-height: 1.15; color: var(--text-dim);
+  }
+  /* Beat 1b — pain frame (goldfish) */
+  #p1-pain-emoji {
+    position: absolute; top: 460px; left: 0; width: 1080px;
+    text-align: center; font-size: 320px; line-height: 1;
+    filter: drop-shadow(0 12px 32px rgba(0,0,0,0.6));
+  }
+  #p1-pain-head {
+    position: absolute; top: 820px; left: 60px; width: 960px;
+    text-align: center;
+    font-family: var(--sans); font-weight: 900; font-size: 156px;
+    line-height: 0.92; letter-spacing: -4px;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    background-clip: text; -webkit-background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 60px rgba(34,217,160,0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.6));
+  }
+  #p1-pain-sub {
+    position: absolute; top: 1180px; left: 60px; width: 960px;
+    text-align: center;
+    font-family: var(--sans); font-weight: 700; font-size: 60px;
+    line-height: 1.15; color: var(--text);
+  }
+  #p1-pain-stat-row {
+    position: absolute; top: 1400px; left: 0; width: 1080px;
+    display: flex; justify-content: center; gap: 24px;
+  }
+  .pain-stat-pill {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 32px; border-radius: 22px;
+    background: rgba(220, 72, 56, 0.14);
+    border: 2px solid rgba(220, 72, 56, 0.50);
+  }
+  .pain-stat-num {
+    font-family: var(--sans); font-weight: 900; font-size: 96px;
+    line-height: 0.9; color: var(--red);
+    text-shadow: 0 0 40px rgba(220,72,56,0.5);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .pain-stat-label {
+    margin-top: 8px;
+    font-family: var(--mono); font-weight: 700; font-size: 26px;
+    letter-spacing: 2px; color: var(--text);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — Pivot (13.5–19.0s)
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content { align-items: center; justify-content: flex-start; text-align: center; gap: 36px; }
+  #p2-overline { color: var(--cyan); }
+  #p2-headline {
+    font-family: var(--sans); font-weight: 800; font-size: 84px;
+    line-height: 1.02; color: var(--text); max-width: 960px;
+    letter-spacing: -2px; margin-top: 40px;
+  }
+  #p2-three-row {
+    display: flex; flex-direction: row; gap: 18px; margin-top: 60px;
+  }
+  .p2-system-pill {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 28px 22px; min-width: 270px; border-radius: 22px;
+    background: var(--pill-bg);
+    border: 2px solid var(--pill-border);
+  }
+  .p2-system-pill.gold   { border-color: rgba(240,184,66,0.50); box-shadow: 0 12px 32px rgba(240,184,66,0.20); }
+  .p2-system-pill.silver { border-color: rgba(184,192,204,0.50); box-shadow: 0 12px 32px rgba(184,192,204,0.18); }
+  .p2-system-pill.bronze { border-color: rgba(181,120,69,0.50); box-shadow: 0 12px 32px rgba(181,120,69,0.18); }
+  .p2-system-num {
+    font-family: var(--mono); font-weight: 900; font-size: 60px;
+    letter-spacing: 1px; line-height: 1;
+  }
+  .p2-system-pill.gold   .p2-system-num { color: var(--gold); }
+  .p2-system-pill.silver .p2-system-num { color: var(--silver); }
+  .p2-system-pill.bronze .p2-system-num { color: var(--bronze); }
+  .p2-system-name {
+    margin-top: 16px;
+    font-family: var(--sans); font-weight: 900; font-size: 60px;
+    line-height: 1; color: var(--text); letter-spacing: -1px;
+  }
+  #p2-gap-callout {
+    margin-top: 40px;
+    font-family: var(--mono); font-weight: 700; font-size: 42px;
+    letter-spacing: 3px; color: var(--text);
+    padding: 18px 32px; border-radius: 999px;
+    background: linear-gradient(135deg, rgba(230,77,204,0.20), rgba(230,77,204,0.06));
+    border: 2px solid rgba(230,77,204,0.45);
+    box-shadow: 0 10px 28px rgba(230,77,204,0.22);
+  }
+  #p2-gap-callout .num { color: var(--magenta); font-family: var(--sans); font-weight: 900; font-size: 58px; }
+
+  /* ──────────────────────────────────────────────────
+     PHASES 3/4/5 — Tier-rank cards (Letta / Mem0 / Zep)
+     ────────────────────────────────────────────────── */
+  .rank-phase .phase-content {
+    align-items: center; justify-content: flex-start; text-align: center;
+    gap: 18px;
+  }
+  .rank-overline { color: var(--text-dim); }
+  .rank-card {
+    display: flex; flex-direction: column; align-items: center;
+    width: 960px; padding: 36px 44px 40px; border-radius: 32px;
+    margin-top: 24px;
+  }
+  .rank-card.bronze {
+    background: linear-gradient(135deg, rgba(181,120,69,0.20), rgba(181,120,69,0.05));
+    border: 3px solid rgba(181,120,69,0.55);
+    box-shadow: 0 18px 48px rgba(181,120,69,0.22);
+  }
+  .rank-card.silver {
+    background: linear-gradient(135deg, rgba(184,192,204,0.16), rgba(184,192,204,0.04));
+    border: 3px solid rgba(184,192,204,0.55);
+    box-shadow: 0 18px 48px rgba(184,192,204,0.18);
+  }
+  .rank-card.gold {
+    background: linear-gradient(135deg, rgba(240,184,66,0.20), rgba(240,184,66,0.05));
+    border: 3px solid rgba(240,184,66,0.55);
+    box-shadow: 0 18px 48px rgba(240,184,66,0.25);
+  }
+  .rank-badge {
+    display: inline-block; padding: 12px 30px;
+    font-family: var(--mono); font-weight: 900; font-size: 40px;
+    letter-spacing: 3px; line-height: 1;
+    border-radius: 999px; color: var(--bg);
+    text-transform: uppercase;
+  }
+  .rank-card.bronze .rank-badge { background: var(--bronze); }
+  .rank-card.silver .rank-badge { background: var(--silver); }
+  .rank-card.gold   .rank-badge { background: var(--gold); }
+  .rank-name {
+    margin-top: 22px;
+    font-family: var(--sans); font-weight: 900; font-size: 180px;
+    line-height: 0.9; letter-spacing: -5px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .rank-card.bronze .rank-name { color: var(--bronze); text-shadow: 0 0 48px rgba(181,120,69,0.4); }
+  .rank-card.silver .rank-name { color: var(--silver); text-shadow: 0 0 48px rgba(184,192,204,0.4); }
+  .rank-card.gold   .rank-name { color: var(--gold); text-shadow: 0 0 56px rgba(240,184,66,0.5); }
+  .rank-tag {
+    margin-top: 10px;
+    font-family: var(--mono); font-weight: 700; font-size: 30px;
+    letter-spacing: 3px; color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .rank-headline-stat {
+    margin-top: 24px; display: inline-block;
+    padding: 18px 32px; border-radius: 22px;
+    background: rgba(232,233,240,0.06);
+    border: 2px solid rgba(232,233,240,0.18);
+    font-family: var(--mono); font-weight: 800; font-size: 48px;
+    color: var(--text); letter-spacing: 1px;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .rank-headline-stat .num {
+    font-family: var(--sans); font-weight: 900; font-size: 72px;
+    letter-spacing: -2px;
+  }
+  .rank-card.bronze .rank-headline-stat .num { color: var(--bronze); }
+  .rank-card.silver .rank-headline-stat .num { color: var(--silver); }
+  .rank-card.gold   .rank-headline-stat .num { color: var(--gold); }
+  .rank-feat-list {
+    margin-top: 28px;
+    display: flex; flex-direction: column; gap: 16px;
+    width: 100%;
+  }
+  .rank-feat {
+    display: flex; flex-direction: row; align-items: center; gap: 18px;
+    padding: 16px 22px; border-radius: 14px;
+    background: rgba(232,233,240,0.04);
+    border: 1.5px solid rgba(232,233,240,0.12);
+    text-align: left;
+  }
+  .rank-feat-bullet {
+    flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%;
+  }
+  .rank-card.bronze .rank-feat-bullet { background: var(--bronze); box-shadow: 0 0 14px rgba(181,120,69,0.7); }
+  .rank-card.silver .rank-feat-bullet { background: var(--silver); box-shadow: 0 0 14px rgba(184,192,204,0.6); }
+  .rank-card.gold   .rank-feat-bullet { background: var(--gold); box-shadow: 0 0 14px rgba(240,184,66,0.8); }
+  .rank-feat-text {
+    font-family: var(--sans); font-weight: 700; font-size: 38px;
+    line-height: 1.18; color: var(--text);
+  }
+  .rank-foot-note {
+    margin-top: 22px;
+    font-family: var(--mono); font-weight: 700; font-size: 32px;
+    letter-spacing: 3px; color: var(--gold);
+  }
+
+  /* Zep (#1) gets the violent-contrast slam emphasis */
+  #p5-card.rank-card.gold {
+    border-width: 4px;
+    box-shadow: 0 22px 60px rgba(240,184,66,0.40);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 6 — Honesty: LongMemEval is GPT-4o biased (72–84s)
+     ────────────────────────────────────────────────── */
+  #phase6 .phase-content { align-items: center; justify-content: flex-start; text-align: center; gap: 28px; }
+  #p6-overline { color: var(--yellow); }
+  #p6-headline {
+    font-family: var(--sans); font-weight: 900; font-size: 124px;
+    line-height: 0.95; letter-spacing: -3px; color: var(--text);
+    margin-top: 60px; max-width: 960px;
+  }
+  #p6-headline .accent { color: var(--yellow); }
+  #p6-sub {
+    font-family: var(--sans); font-weight: 700; font-size: 56px;
+    line-height: 1.18; color: var(--text-dim); max-width: 960px;
+    margin-top: 16px;
+  }
+  #p6-model-row {
+    display: flex; flex-direction: row; gap: 18px; flex-wrap: wrap;
+    justify-content: center; margin-top: 50px;
+  }
+  .p6-model {
+    padding: 20px 32px; border-radius: 999px;
+    font-family: var(--mono); font-weight: 800; font-size: 38px;
+    letter-spacing: 2px;
+    background: var(--pill-bg); border: 2px solid var(--pill-border);
+    color: var(--text);
+  }
+  .p6-model.gpt    { color: var(--cyan); border-color: rgba(34,217,160,0.45); }
+  .p6-model.claude { color: var(--magenta); border-color: rgba(230,77,204,0.45); }
+  .p6-model.gemini { color: var(--blue); border-color: rgba(75,130,239,0.45); }
+  .p6-model.llama  { color: var(--purple); border-color: rgba(157,91,224,0.45); }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 7 — Hindsight contrarian upset (84–94s)
+     ────────────────────────────────────────────────── */
+  #phase7 .phase-content { align-items: center; justify-content: flex-start; text-align: center; gap: 24px; }
+  #p7-overline { color: var(--magenta); }
+  #p7-headline {
+    font-family: var(--sans); font-weight: 900; font-size: 100px;
+    line-height: 0.98; letter-spacing: -3px; color: var(--text);
+    margin-top: 30px; max-width: 960px;
+  }
+  #p7-hindsight-card {
+    margin-top: 40px;
+    width: 960px;
+    padding: 36px 44px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, rgba(230,77,204,0.20), rgba(157,91,224,0.10));
+    border: 3px solid rgba(230,77,204,0.55);
+    box-shadow: 0 18px 48px rgba(230,77,204,0.25);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  #p7-hindsight-name {
+    font-family: var(--sans); font-weight: 900; font-size: 104px;
+    line-height: 0.9; letter-spacing: -3px;
+    background: linear-gradient(135deg, var(--magenta), var(--purple));
+    background-clip: text; -webkit-background-clip: text; color: transparent;
+  }
+  #p7-hindsight-tag {
+    margin-top: 10px;
+    font-family: var(--mono); font-weight: 700; font-size: 30px;
+    letter-spacing: 3px; color: var(--text-dim);
+  }
+  #p7-hindsight-stat {
+    margin-top: 24px;
+    font-family: var(--sans); font-weight: 900; font-size: 148px;
+    line-height: 0.9; letter-spacing: -4px; color: var(--magenta);
+    text-shadow: 0 0 56px rgba(230,77,204,0.45);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  #p7-hindsight-foot {
+    margin-top: 14px;
+    font-family: var(--mono); font-weight: 700; font-size: 32px;
+    letter-spacing: 3px; color: var(--magenta);
+  }
+  #p7-disclaimer {
+    margin-top: 24px;
+    font-family: var(--sans); font-weight: 700; font-size: 44px;
+    line-height: 1.18; color: var(--text); max-width: 960px;
+    text-align: center;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 8 — Final tier-rank thumbnail frame + CTA (94–108.5s)
+     ────────────────────────────────────────────────── */
+  #phase8 .phase-content { align-items: center; justify-content: flex-start; text-align: center; gap: 20px; }
+  #p8-overline { color: var(--cyan); }
+  #p8-ranked-stack {
+    display: flex; flex-direction: column; gap: 16px;
+    width: 960px; margin-top: 30px;
+  }
+  .p8-rank-row {
+    display: flex; flex-direction: row; align-items: center; gap: 22px;
+    padding: 20px 26px; border-radius: 22px;
+  }
+  .p8-rank-row.gold {
+    background: linear-gradient(135deg, rgba(240,184,66,0.20), rgba(240,184,66,0.06));
+    border: 3px solid rgba(240,184,66,0.60);
+    box-shadow: 0 14px 36px rgba(240,184,66,0.25);
+  }
+  .p8-rank-row.silver {
+    background: linear-gradient(135deg, rgba(184,192,204,0.16), rgba(184,192,204,0.05));
+    border: 3px solid rgba(184,192,204,0.55);
+    box-shadow: 0 14px 36px rgba(184,192,204,0.18);
+  }
+  .p8-rank-row.bronze {
+    background: linear-gradient(135deg, rgba(181,120,69,0.18), rgba(181,120,69,0.05));
+    border: 3px solid rgba(181,120,69,0.55);
+    box-shadow: 0 14px 36px rgba(181,120,69,0.22);
+  }
+  .p8-rank-num {
+    flex-shrink: 0;
+    width: 100px; height: 100px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 20px;
+    font-family: var(--mono); font-weight: 900; font-size: 64px;
+    line-height: 1; color: var(--bg);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .p8-rank-row.gold   .p8-rank-num { background: var(--gold); }
+  .p8-rank-row.silver .p8-rank-num { background: var(--silver); }
+  .p8-rank-row.bronze .p8-rank-num { background: var(--bronze); }
+  .p8-rank-body { display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left; }
+  .p8-rank-name {
+    font-family: var(--sans); font-weight: 900; font-size: 76px;
+    line-height: 1.0; letter-spacing: -2px; color: var(--text);
+  }
+  .p8-rank-tag {
+    font-family: var(--mono); font-weight: 700; font-size: 28px;
+    letter-spacing: 2px;
+  }
+  .p8-rank-row.gold   .p8-rank-tag { color: var(--gold); }
+  .p8-rank-row.silver .p8-rank-tag { color: var(--silver); }
+  .p8-rank-row.bronze .p8-rank-tag { color: var(--bronze); }
+  .p8-rank-stat {
+    flex-shrink: 0;
+    padding: 14px 22px; border-radius: 16px;
+    font-family: var(--sans); font-weight: 900; font-size: 56px;
+    line-height: 1; letter-spacing: -1px;
+    background: rgba(0,0,0,0.30);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .p8-rank-row.gold   .p8-rank-stat { color: var(--gold); }
+  .p8-rank-row.silver .p8-rank-stat { color: var(--silver); }
+  .p8-rank-row.bronze .p8-rank-stat { color: var(--bronze); }
+  #p8-cta-question {
+    margin-top: 30px;
+    font-family: var(--sans); font-weight: 800; font-size: 52px;
+    line-height: 1.12; letter-spacing: -1px;
+    color: var(--magenta); text-align: center; max-width: 960px;
+  }
+  #p8-cta-question .em { color: var(--text); font-style: italic; }
+  #p8-foot-chrome {
+    margin-top: 18px;
+    display: inline-flex; align-items: center; gap: 16px;
+    padding: 14px 30px; border-radius: 999px;
+    background: var(--pill-bg); border: 1.5px solid var(--pill-border);
+    font-family: var(--mono); font-weight: 700; font-size: 30px;
+    letter-spacing: 2px; color: var(--text);
+  }
+  #p8-foot-chrome .arrow { color: var(--cyan); font-size: 36px; line-height: 0.7; }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="108.5"
+     data-width="1080"
+     data-height="1920">
+
+  <div id="ambient"></div>
+
+  <div id="top-banner">
+    <div id="top-banner-content">
+      <img id="top-banner-icon" src="assets/archon-logo.png" alt="" />
+      <div id="top-banner-wordmark">AGENT MEMORY</div>
+    </div>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- PHASE 1 — Thumbnail-grade open (0–2.5s) + Pain hook (2.5–13.5s) -->
+  <div id="phase1" class="phase">
+    <div class="phase-content">
+      <div id="p1-thumb-overline">AGENT MEMORY &middot; RANKED 2026</div>
+      <div id="p1-thumb-topic">TOP <span class="accent">3</span><br>RANKED</div>
+      <div id="p1-thumb-megapill">
+        <div id="p1-thumb-pill-inner">
+          <div id="p1-thumb-pill-num">71.2%</div>
+          <div id="p1-thumb-pill-label">LONGMEMEVAL &middot; GPT-4o</div>
+        </div>
+      </div>
+      <div id="p1-thumb-foot">Zep &middot; Mem0 &middot; Letta</div>
+
+      <div id="p1-pain-emoji">&#128032;</div>
+      <div id="p1-pain-head">GOLDFISH<br>MEMORY</div>
+      <div id="p1-pain-sub">Every session. Same intro.<br>Same context, stuffed in again.</div>
+      <div id="p1-pain-stat-row">
+        <div class="pain-stat-pill">
+          <div class="pain-stat-num">100K</div>
+          <div class="pain-stat-label">TOKENS / CALL</div>
+        </div>
+        <div class="pain-stat-pill">
+          <div class="pain-stat-num">28.9s</div>
+          <div class="pain-stat-label">LATENCY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 — Pivot: three systems fixed it -->
+  <div id="phase2" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p2-overline">THREE FIXED IT</div>
+      <div id="p2-headline">In 2026, three systems<br>solved agent memory.</div>
+      <div id="p2-three-row">
+        <div class="p2-system-pill bronze" id="p2-pill-letta">
+          <div class="p2-system-num">#3</div>
+          <div class="p2-system-name">LETTA</div>
+        </div>
+        <div class="p2-system-pill silver" id="p2-pill-mem0">
+          <div class="p2-system-num">#2</div>
+          <div class="p2-system-name">MEM0</div>
+        </div>
+        <div class="p2-system-pill gold" id="p2-pill-zep">
+          <div class="p2-system-num">#1</div>
+          <div class="p2-system-name">ZEP</div>
+        </div>
+      </div>
+      <div id="p2-gap-callout">GAP &nbsp;<span class="num">22</span>&nbsp; POINTS</div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 — #3 LETTA -->
+  <div id="phase3" class="phase rank-phase">
+    <div class="phase-content">
+      <div class="overline rank-overline" id="p3-overline">RANK &middot; NUMBER THREE</div>
+      <div class="rank-card bronze" id="p3-card">
+        <div class="rank-badge" id="p3-badge">#3</div>
+        <div class="rank-name" id="p3-name">LETTA</div>
+        <div class="rank-tag" id="p3-tag">FORMERLY MEMGPT</div>
+        <div class="rank-headline-stat" id="p3-headstat">
+          <span class="num">22.7K</span>&nbsp; GITHUB STARS
+        </div>
+        <div class="rank-feat-list">
+          <div class="rank-feat" id="p3-feat-1">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">Tiered memory: core, recall, archival</div>
+          </div>
+          <div class="rank-feat" id="p3-feat-2">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">Agent owns its own context</div>
+          </div>
+          <div class="rank-feat" id="p3-feat-3">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">Operating-system style architecture</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 — #2 MEM0 -->
+  <div id="phase4" class="phase rank-phase">
+    <div class="phase-content">
+      <div class="overline rank-overline" id="p4-overline">RANK &middot; NUMBER TWO</div>
+      <div class="rank-card silver" id="p4-card">
+        <div class="rank-badge" id="p4-badge">#2</div>
+        <div class="rank-name" id="p4-name">MEM0</div>
+        <div class="rank-tag" id="p4-tag">LARGEST MEMORY COMMUNITY</div>
+        <div class="rank-headline-stat" id="p4-headstat">
+          <span class="num">55.6K</span>&nbsp; GITHUB STARS
+        </div>
+        <div class="rank-feat-list">
+          <div class="rank-feat" id="p4-feat-1">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">Vector + graph + key-value hybrid</div>
+          </div>
+          <div class="rank-feat" id="p4-feat-2">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">Auto-extracts memories &mdash; drop-in</div>
+          </div>
+          <div class="rank-feat" id="p4-feat-3">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">49.0% LongMemEval (third-party)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 — #1 ZEP -->
+  <div id="phase5" class="phase rank-phase">
+    <div class="phase-content">
+      <div class="overline rank-overline" id="p5-overline">RANK &middot; NUMBER ONE</div>
+      <div class="rank-card gold" id="p5-card">
+        <div class="rank-badge" id="p5-badge">#1</div>
+        <div class="rank-name" id="p5-name">ZEP</div>
+        <div class="rank-tag" id="p5-tag">TEMPORAL KNOWLEDGE GRAPH</div>
+        <div class="rank-headline-stat" id="p5-headstat">
+          <span class="num">71.2%</span>&nbsp; LONGMEMEVAL &middot; GPT-4o
+        </div>
+        <div class="rank-feat-list">
+          <div class="rank-feat" id="p5-feat-1">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">Tracks when facts started and stopped</div>
+          </div>
+          <div class="rank-feat" id="p5-feat-2">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">11&times; faster than full-context</div>
+          </div>
+          <div class="rank-feat" id="p5-feat-3">
+            <div class="rank-feat-bullet"></div>
+            <div class="rank-feat-text">&lt;2% of baseline tokens &middot; Graphiti</div>
+          </div>
+        </div>
+        <div class="rank-foot-note" id="p5-foot">+22 PTS OVER MEM0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 — Honesty disclaimer -->
+  <div id="phase6" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p6-overline">HONESTY BEAT</div>
+      <div id="p6-headline">LongMemEval is<br><span class="accent">GPT-4o biased.</span></div>
+      <div id="p6-sub">Your real-world mileage<br>varies by base model.</div>
+      <div id="p6-model-row">
+        <div class="p6-model gpt" id="p6-m-gpt">GPT-4o</div>
+        <div class="p6-model claude" id="p6-m-claude">CLAUDE</div>
+        <div class="p6-model gemini" id="p6-m-gemini">GEMINI 3</div>
+        <div class="p6-model llama" id="p6-m-llama">LLAMA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 7 — Hindsight contrarian upset -->
+  <div id="phase7" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p7-overline">UNDERDOG UPSET</div>
+      <div id="p7-headline">The leaderboard<br>already moved on.</div>
+      <div id="p7-hindsight-card">
+        <div id="p7-hindsight-name">HINDSIGHT</div>
+        <div id="p7-hindsight-tag">VECTORIZE &middot; DEC 2025</div>
+        <div id="p7-hindsight-stat">91.4%</div>
+        <div id="p7-hindsight-foot">FIRST TO BREAK 90%</div>
+      </div>
+      <div id="p7-disclaimer">Your top-3 ranking is<br>6 months behind the frontier.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 8 — Final tier-rank + CTA + thumbnail hold -->
+  <div id="phase8" class="phase">
+    <div class="phase-content">
+      <div class="overline" id="p8-overline">FINAL RANKING &middot; 2026</div>
+      <div id="p8-ranked-stack">
+        <div class="p8-rank-row gold" id="p8-row-zep">
+          <div class="p8-rank-num">1</div>
+          <div class="p8-rank-body">
+            <div class="p8-rank-name">ZEP</div>
+            <div class="p8-rank-tag">BENCHMARK WINNER</div>
+          </div>
+          <div class="p8-rank-stat">71.2%</div>
+        </div>
+        <div class="p8-rank-row silver" id="p8-row-mem0">
+          <div class="p8-rank-num">2</div>
+          <div class="p8-rank-body">
+            <div class="p8-rank-name">MEM0</div>
+            <div class="p8-rank-tag">ADOPTION WINNER</div>
+          </div>
+          <div class="p8-rank-stat">55.6K&#9733;</div>
+        </div>
+        <div class="p8-rank-row bronze" id="p8-row-letta">
+          <div class="p8-rank-num">3</div>
+          <div class="p8-rank-body">
+            <div class="p8-rank-name">LETTA</div>
+            <div class="p8-rank-tag">ARCHITECTURE</div>
+          </div>
+          <div class="p8-rank-stat">22.7K&#9733;</div>
+        </div>
+      </div>
+      <div id="p8-cta-question">Zep, Mem0, or Letta &mdash;<br><span class="em">which one is running your agent?</span></div>
+      <div id="p8-foot-chrome">Follow for more <span class="arrow">&rarr;</span></div>
+    </div>
+  </div>
+
+  <!-- NARRATION + SFX -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="106.6"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="13.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="19.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="36.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="54.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="72.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="84.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="94.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-slam-zep" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="56.9" data-duration="0.7" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-slam-hindsight" class="clip" src="assets/sfx/impact-slam.mp3"
+         data-start="88.3" data-duration="0.7" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-slam-final" class="clip" src="assets/sfx/scale-slam.mp3"
+         data-start="96.5" data-duration="0.7" data-track-index="4" data-volume="0.15"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const TOTAL = 108.5;
+
+  // Background animations (full duration)
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 14, ease: "sine.inOut", yoyo: true, repeat: 7 },
+    0);
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL, ease: "none" },
+    0);
+  tl.from("#top-banner", { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // ════ PHASE 1 ════════════════════════════════════════
+  // Hide pain elements from frame 0 (so YouTube auto-thumbnail picks the topic frame)
+  tl.set("#p1-pain-emoji",    { opacity: 0, scale: 0.6 }, 0);
+  tl.set("#p1-pain-head",     { opacity: 0, scale: 0.78, y: 24 }, 0);
+  tl.set("#p1-pain-sub",      { opacity: 0, y: 24 }, 0);
+  tl.set("#p1-pain-stat-row", { opacity: 0, y: 24 }, 0);
+
+  // Beat 1a — thumbnail-grade lockup is visible at t=0 (no entrance)
+  tl.from("#p1-thumb-pill-inner", { scale: 0.94, duration: 0.6, ease: "back.out(1.8)" }, 0.2);
+
+  // Beat 1a → 1b crossfade at 2.5s
+  tl.to("#p1-thumb-overline",  { opacity: 0, duration: 0.4 }, 2.5);
+  tl.to("#p1-thumb-topic",     { opacity: 0, y: -30, duration: 0.5 }, 2.5);
+  tl.to("#p1-thumb-megapill",  { opacity: 0, scale: 0.92, duration: 0.5 }, 2.5);
+  tl.to("#p1-thumb-foot",      { opacity: 0, duration: 0.4 }, 2.5);
+
+  // Pain hook reveals (paced to narration anchors)
+  tl.to("#p1-pain-emoji", { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 2.8);
+  tl.to("#p1-pain-head",  { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.6)" }, 3.2);
+  // Subtle swim on goldfish for life
+  tl.to("#p1-pain-emoji", { x: 18, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 5 }, 3.6);
+  tl.to("#p1-pain-sub",      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5.2);
+  tl.to("#p1-pain-stat-row", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 8.4);
+
+  // Transition phase1 → phase2 at T1 = 13.5
+  const T1 = 13.5;
+  tl.to("#phase1", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T1);
+  tl.to("#phase1", { opacity: 0, duration: 0.4, ease: "power1.in" }, T1 + 0.3);
+  tl.set("#phase1", { visibility: "hidden" }, T1 + 0.7);
+  tl.set("#phase2", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T1 + 0.4);
+  tl.to("#phase2", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T1 + 0.4);
+  tl.to("#phase2", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T1 + 0.6);
+
+  // ════ PHASE 2 — Pivot (13.5–19.0s) ═══════════════════
+  const P2 = 14.0;
+  tl.from("#p2-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P2 + 0.0);
+  tl.from("#p2-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, P2 + 0.3);
+  tl.set("#p2-pill-letta", { scale: 0.78, opacity: 0 }, 0);
+  tl.set("#p2-pill-mem0",  { scale: 0.78, opacity: 0 }, 0);
+  tl.set("#p2-pill-zep",   { scale: 0.78, opacity: 0 }, 0);
+  tl.to("#p2-pill-letta", { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, P2 + 1.2);
+  tl.to("#p2-pill-mem0",  { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, P2 + 1.6);
+  tl.to("#p2-pill-zep",   { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, P2 + 2.0);
+  tl.from("#p2-gap-callout", { scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.7)", immediateRender: false }, P2 + 3.0);
+
+  // Transition phase2 → phase3 at T2 = 19.0
+  const T2 = 19.0;
+  tl.to("#phase2", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T2);
+  tl.to("#phase2", { opacity: 0, duration: 0.4, ease: "power1.in" }, T2 + 0.3);
+  tl.set("#phase2", { visibility: "hidden" }, T2 + 0.7);
+  tl.set("#phase3", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T2 + 0.4);
+  tl.to("#phase3", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T2 + 0.4);
+  tl.to("#phase3", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T2 + 0.6);
+
+  // ════ PHASE 3 — #3 LETTA (19–36.5s) ══════════════════
+  const P3 = 19.5;
+  tl.from("#p3-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P3 + 0.0);
+  tl.from("#p3-card", { y: 50, scale: 0.92, opacity: 0, duration: 0.7, ease: "back.out(1.5)", immediateRender: false }, P3 + 0.4);
+  tl.set("#p3-badge",   { scale: 0.5, opacity: 0 }, 0);
+  tl.set("#p3-name",    { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p3-tag",     { y: 18, opacity: 0 }, 0);
+  tl.set("#p3-headstat",{ scale: 0.8, opacity: 0 }, 0);
+  tl.set("#p3-feat-1",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-feat-2",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p3-feat-3",  { x: -30, opacity: 0 }, 0);
+  tl.to("#p3-badge",    { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, P3 + 0.6);
+  tl.to("#p3-name",     { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, P3 + 1.0);
+  tl.to("#p3-tag",      { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P3 + 1.8);
+  tl.to("#p3-headstat", { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P3 + 3.6);
+  tl.to("#p3-feat-1",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P3 + 6.2);
+  tl.to("#p3-feat-2",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P3 + 10.0);
+  tl.to("#p3-feat-3",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P3 + 13.5);
+
+  // Transition phase3 → phase4 at T3 = 36.5
+  const T3 = 36.5;
+  tl.to("#phase3", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T3);
+  tl.to("#phase3", { opacity: 0, duration: 0.4, ease: "power1.in" }, T3 + 0.3);
+  tl.set("#phase3", { visibility: "hidden" }, T3 + 0.7);
+  tl.set("#phase4", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T3 + 0.4);
+  tl.to("#phase4", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T3 + 0.4);
+  tl.to("#phase4", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T3 + 0.6);
+
+  // ════ PHASE 4 — #2 MEM0 (36.5–54.0s) ═════════════════
+  const P4 = 37.0;
+  tl.from("#p4-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P4 + 0.0);
+  tl.from("#p4-card", { y: 50, scale: 0.92, opacity: 0, duration: 0.7, ease: "back.out(1.5)", immediateRender: false }, P4 + 0.4);
+  tl.set("#p4-badge",   { scale: 0.5, opacity: 0 }, 0);
+  tl.set("#p4-name",    { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p4-tag",     { y: 18, opacity: 0 }, 0);
+  tl.set("#p4-headstat",{ scale: 0.8, opacity: 0 }, 0);
+  tl.set("#p4-feat-1",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p4-feat-2",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p4-feat-3",  { x: -30, opacity: 0 }, 0);
+  tl.to("#p4-badge",    { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, P4 + 0.6);
+  tl.to("#p4-name",     { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, P4 + 1.0);
+  tl.to("#p4-tag",      { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P4 + 1.8);
+  tl.to("#p4-headstat", { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.5)" }, P4 + 3.0);
+  tl.to("#p4-feat-1",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P4 + 5.6);
+  tl.to("#p4-feat-2",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P4 + 9.4);
+  tl.to("#p4-feat-3",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P4 + 13.4);
+
+  // Transition phase4 → phase5 at T4 = 54.0
+  const T4 = 54.0;
+  tl.to("#phase4", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T4);
+  tl.to("#phase4", { opacity: 0, duration: 0.4, ease: "power1.in" }, T4 + 0.3);
+  tl.set("#phase4", { visibility: "hidden" }, T4 + 0.7);
+  tl.set("#phase5", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T4 + 0.4);
+  tl.to("#phase5", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T4 + 0.4);
+  tl.to("#phase5", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T4 + 0.6);
+
+  // ════ PHASE 5 — #1 ZEP (54.0–72.0s) ══════════════════
+  const P5 = 54.5;
+  tl.from("#p5-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P5 + 0.0);
+  tl.from("#p5-card", { y: 50, scale: 0.88, opacity: 0, duration: 0.8, ease: "back.out(1.8)", immediateRender: false }, P5 + 0.3);
+  tl.set("#p5-badge",   { scale: 0.5, opacity: 0 }, 0);
+  tl.set("#p5-name",    { scale: 0.6, opacity: 0 }, 0);
+  tl.set("#p5-tag",     { y: 18, opacity: 0 }, 0);
+  tl.set("#p5-headstat",{ scale: 0.6, opacity: 0 }, 0);
+  tl.set("#p5-feat-1",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p5-feat-2",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p5-feat-3",  { x: -30, opacity: 0 }, 0);
+  tl.set("#p5-foot",    { y: 18, opacity: 0 }, 0);
+  tl.to("#p5-badge",    { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, P5 + 0.5);
+  tl.to("#p5-name",     { scale: 1.08, opacity: 1, duration: 0.5, ease: "back.out(2.2)" }, P5 + 0.9);
+  tl.to("#p5-name",     { scale: 1, duration: 0.3, ease: "power2.out", overwrite: "auto" }, P5 + 1.4);
+  tl.to("#p5-tag",      { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P5 + 1.5);
+  // Violent-contrast slam on 71.2%
+  tl.to("#p5-headstat", { scale: 1.10, opacity: 1, duration: 0.45, ease: "back.out(2.5)" }, P5 + 2.4);
+  tl.to("#p5-headstat", { scale: 1, duration: 0.3, ease: "power2.out", overwrite: "auto" }, P5 + 2.85);
+  tl.to("#p5-feat-1",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P5 + 6.5);
+  tl.to("#p5-feat-2",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P5 + 10.0);
+  tl.to("#p5-feat-3",   { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, P5 + 13.5);
+  tl.to("#p5-foot",     { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, P5 + 15.5);
+
+  // Transition phase5 → phase6 at T5 = 72.0
+  const T5 = 72.0;
+  tl.to("#phase5", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T5);
+  tl.to("#phase5", { opacity: 0, duration: 0.4, ease: "power1.in" }, T5 + 0.3);
+  tl.set("#phase5", { visibility: "hidden" }, T5 + 0.7);
+  tl.set("#phase6", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T5 + 0.4);
+  tl.to("#phase6", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T5 + 0.4);
+  tl.to("#phase6", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T5 + 0.6);
+
+  // ════ PHASE 6 — Honesty (72–84s) ═════════════════════
+  const P6 = 72.5;
+  tl.from("#p6-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P6 + 0.0);
+  tl.from("#p6-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, P6 + 0.5);
+  tl.from("#p6-sub",      { y: 24, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, P6 + 3.0);
+  tl.set("#p6-m-gpt",    { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p6-m-claude", { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p6-m-gemini", { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p6-m-llama",  { scale: 0.7, opacity: 0 }, 0);
+  tl.to("#p6-m-gpt",    { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, P6 + 5.5);
+  tl.to("#p6-m-claude", { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, P6 + 6.4);
+  tl.to("#p6-m-gemini", { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, P6 + 7.3);
+  tl.to("#p6-m-llama",  { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, P6 + 8.2);
+
+  // Transition phase6 → phase7 at T6 = 84.0
+  const T6 = 84.0;
+  tl.to("#phase6", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T6);
+  tl.to("#phase6", { opacity: 0, duration: 0.4, ease: "power1.in" }, T6 + 0.3);
+  tl.set("#phase6", { visibility: "hidden" }, T6 + 0.7);
+  tl.set("#phase7", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T6 + 0.4);
+  tl.to("#phase7", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T6 + 0.4);
+  tl.to("#phase7", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T6 + 0.6);
+
+  // ════ PHASE 7 — Hindsight upset (84–94s) ═════════════
+  const P7 = 84.5;
+  tl.from("#p7-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P7 + 0.0);
+  tl.from("#p7-headline", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, P7 + 0.4);
+  tl.set("#p7-hindsight-card", { scale: 0.85, opacity: 0 }, 0);
+  tl.set("#p7-hindsight-name", { scale: 0.7, opacity: 0 }, 0);
+  tl.set("#p7-hindsight-tag",  { y: 18, opacity: 0 }, 0);
+  tl.set("#p7-hindsight-stat", { scale: 0.6, opacity: 0 }, 0);
+  tl.set("#p7-hindsight-foot", { y: 18, opacity: 0 }, 0);
+  tl.set("#p7-disclaimer",     { y: 24, opacity: 0 }, 0);
+  tl.to("#p7-hindsight-card", { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, P7 + 1.2);
+  tl.to("#p7-hindsight-name", { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, P7 + 1.4);
+  tl.to("#p7-hindsight-tag",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P7 + 2.0);
+  tl.to("#p7-hindsight-stat", { scale: 1.10, opacity: 1, duration: 0.45, ease: "back.out(2.4)" }, P7 + 3.8);
+  tl.to("#p7-hindsight-stat", { scale: 1, duration: 0.3, ease: "power2.out", overwrite: "auto" }, P7 + 4.25);
+  tl.to("#p7-hindsight-foot", { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, P7 + 5.0);
+  tl.to("#p7-disclaimer",     { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P7 + 6.5);
+
+  // Transition phase7 → phase8 at T7 = 94.0
+  const T7 = 94.0;
+  tl.to("#phase7", { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, T7);
+  tl.to("#phase7", { opacity: 0, duration: 0.4, ease: "power1.in" }, T7 + 0.3);
+  tl.set("#phase7", { visibility: "hidden" }, T7 + 0.7);
+  tl.set("#phase8", { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, T7 + 0.4);
+  tl.to("#phase8", { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, T7 + 0.4);
+  tl.to("#phase8", { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, T7 + 0.6);
+
+  // ════ PHASE 8 — Final tier-rank + CTA + thumbnail hold (94–108.5s) ═══
+  const P8 = 94.5;
+  tl.from("#p8-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, P8 + 0.0);
+  tl.set("#p8-row-zep",      { x: -50, scale: 0.92, opacity: 0 }, 0);
+  tl.set("#p8-row-mem0",     { x: -50, scale: 0.92, opacity: 0 }, 0);
+  tl.set("#p8-row-letta",    { x: -50, scale: 0.92, opacity: 0 }, 0);
+  tl.set("#p8-cta-question", { y: 30, opacity: 0 }, 0);
+  tl.set("#p8-foot-chrome",  { y: 24, opacity: 0 }, 0);
+  // Step-by-step rows matched to narration: Zep @96.69 · Mem0 @97.97 · Letta @99.81 · CTA @103.56
+  tl.to("#p8-row-zep",   { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, P8 + 2.0);
+  tl.to("#p8-row-mem0",  { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, P8 + 3.3);
+  tl.to("#p8-row-letta", { x: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.6)" }, P8 + 5.2);
+  tl.to("#p8-cta-question", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, P8 + 7.5);
+  tl.to("#p8-foot-chrome",  { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, P8 + 9.2);
+
+  // Pin timeline to TOTAL so composition duration matches narration
+  tl.set({}, {}, TOTAL);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

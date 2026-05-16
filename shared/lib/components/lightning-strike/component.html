@@ -1,0 +1,158 @@
+<!--
+  shared/lib/components/lightning-strike/component.html
+  Jagged SVG lightning bolt drawn top-to-bottom via stroke-dashoffset from
+  path-length → 0 over 0.15s (fast draw). Three layers:
+    Layer 1: thick blue-white core stroke
+    Layer 2: cyan glow halo (wider stroke, low opacity)
+    Layer 3: brief full-canvas white flash div (opacity 0.4 for 50ms) at moment-of-strike
+  Path is a fixed deterministic zigzag. Override via [data-strike-path] attribute.
+
+  DETERMINISM: fixed path, no PRNG. No Math.random, no Date.now.
+
+  SFX coupling: glitch-zap (track 3) at at+0.0 + impact-slam (track 4) at at+0.2.
+
+  COMPONENT IS PASTE-IN — three sections below.
+
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  ──────────────────────────────────────────────────────────────────────────
+
+  1) HTML — paste this container at the desired z-index layer:
+-->
+
+<div class="lightning-strike">
+  <svg class="ls-svg" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="ls-glow" x="-50%" y="-10%" width="200%" height="120%">
+        <feGaussianBlur stdDeviation="8" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- Glow halo — drawn behind core -->
+    <path class="ls-halo" fill="none"
+          stroke="var(--lightning-glow, #44DDFF)"
+          stroke-width="18"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          filter="url(#ls-glow)"
+          d="M 560 0 L 480 260 L 620 310 L 440 620 L 600 680 L 380 1000 L 560 1060 L 320 1380 L 500 1430 L 280 1920"/>
+    <!-- Core bolt -->
+    <path class="ls-core" fill="none"
+          stroke="var(--lightning-core, #DDEEFF)"
+          stroke-width="5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M 560 0 L 480 260 L 620 310 L 440 620 L 600 680 L 380 1000 L 560 1060 L 320 1380 L 500 1430 L 280 1920"/>
+  </svg>
+  <div class="ls-flash"></div>
+</div>
+
+<!--
+  2) CSS — merge into your <style> block:
+-->
+
+<style>
+  /* shared/lib/components/lightning-strike — keep this comment block */
+  .lightning-strike {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .ls-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .ls-halo,
+  .ls-core {
+    opacity: 0;
+    stroke-dasharray: 3000;   /* overwritten by JS from getTotalLength() */
+    stroke-dashoffset: 3000;
+  }
+  .ls-flash {
+    position: absolute;
+    inset: 0;
+    background: #FFFFFF;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+
+<!--
+  3) JS — paste into your host <script> and call from the timeline.
+
+     Usage:
+       addLightningStrike(tl, ".lightning-strike", 8.0);
+       addLightningStrike(tl, ".lightning-strike", 8.0, { duration: 0.4 });
+
+     opts:
+       duration — total animation duration in seconds (default 0.4)
+                  draw phase: 0.15s, flash: 0.05s, linger+fade: remainder
+
+     Override the bolt path by setting [data-strike-path] on the container:
+       <div class="lightning-strike" data-strike-path="M 540 0 L ..."></div>
+-->
+
+<script>
+  function addLightningStrike(tl, containerSel, at, opts) {
+    var container = document.querySelector(containerSel);
+    if (!container) return;
+
+    var options  = opts || {};
+    var duration = options.duration !== undefined ? options.duration : 0.4;
+
+    var svg   = container.querySelector('.ls-svg');
+    var halo  = container.querySelector('.ls-halo');
+    var core  = container.querySelector('.ls-core');
+    var flash = container.querySelector('.ls-flash');
+
+    if (!svg || !halo || !core || !flash) return;
+
+    // Optional path override from [data-strike-path]
+    var pathOverride = container.dataset.strikePath;
+    if (pathOverride) {
+      halo.setAttribute('d', pathOverride);
+      core.setAttribute('d', pathOverride);
+    }
+
+    // Read path length and configure dash arrays
+    var pathLen = core.getTotalLength ? core.getTotalLength() : 3000;
+    halo.style.strokeDasharray  = pathLen;
+    halo.style.strokeDashoffset = pathLen;
+    core.style.strokeDasharray  = pathLen;
+    core.style.strokeDashoffset = pathLen;
+
+    var drawDur   = 0.15;                   // fast draw phase
+    var flashDur  = 0.05;                   // white flash duration at strike
+    var lingerDur = duration - drawDur - flashDur;  // tail hold + fade
+
+    // ── GSAP tweens ──
+
+    // Halo: draw slightly behind core (10ms), stay visible during linger, then fade
+    gsap.set(halo, { opacity: 0, strokeDashoffset: pathLen });
+    tl.to(halo, { opacity: 0.35, strokeDashoffset: 0, duration: drawDur + 0.01, ease: 'power3.in' }, at + 0.01);
+    if (lingerDur > 0) {
+      tl.to(halo, { opacity: 0, duration: lingerDur, ease: 'power2.in' }, at + drawDur + 0.01 + flashDur);
+    }
+
+    // Core bolt: fast draw
+    gsap.set(core, { opacity: 0, strokeDashoffset: pathLen });
+    tl.to(core, { opacity: 1.0, strokeDashoffset: 0, duration: drawDur, ease: 'power3.in' }, at);
+    if (lingerDur > 0) {
+      tl.to(core, { opacity: 0, duration: lingerDur, ease: 'power2.in' }, at + drawDur + flashDur);
+    }
+
+    // White canvas flash — fires at moment-of-strike (end of draw phase)
+    gsap.set(flash, { opacity: 0 });
+    tl.to(flash, {
+      keyframes: [
+        { opacity: 0.4, duration: 0.02, ease: 'power3.out' },
+        { opacity: 0,   duration: flashDur - 0.02, ease: 'power2.in' }
+      ]
+    }, at + drawDur);
+  }
+  // End addLightningStrike
+</script>
