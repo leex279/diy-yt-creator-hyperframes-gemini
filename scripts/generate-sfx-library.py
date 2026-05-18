@@ -104,6 +104,13 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Output directory (default: shared/audio/sfx/ relative to repo root).",
     )
+    parser.add_argument(
+        "--env-file",
+        type=Path,
+        default=None,
+        help="Path to env file (default: <repo-root>/.env). Relative paths "
+             "resolve against repo root. Use for per-creator configs like .env.cole.",
+    )
     return parser.parse_args()
 
 
@@ -134,7 +141,14 @@ def main() -> int:
     args = parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent
-    load_dotenv(repo_root / ".env", override=True)
+    env_path = args.env_file if args.env_file is not None else Path(".env")
+    if not env_path.is_absolute():
+        env_path = repo_root / env_path
+    if not env_path.exists():
+        print(f"ERROR: env file not found: {env_path}", file=sys.stderr)
+        return 2
+    load_dotenv(env_path, override=True)
+    print(f"[sfx] env_file={env_path}")
 
     api_key = os.environ.get("ELEVENLABS_API_KEY")
     if not api_key:

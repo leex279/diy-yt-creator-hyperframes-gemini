@@ -31,6 +31,17 @@ npx hyperframes lint --json    videos/<slug>    # machine-readable output for CI
 npx hyperframes docs <topic>                    # reference docs in terminal (no project needed)
 ```
 
+### Per-creator env configs (TTS scripts)
+
+The Python TTS scripts (`scripts/elevenlabs-tts.py`, `scripts/generate-sfx-library.py`) default to `<repo-root>/.env` but accept `--env-file PATH` to point at a per-creator config (e.g. `.env.cole`). Relative paths resolve against the repo root.
+
+```bash
+python scripts/elevenlabs-tts.py videos/<slug> --shorts --env-file .env.cole
+python scripts/generate-sfx-library.py --env-file .env.cole
+```
+
+`.env.*` is gitignored (with `.env.example` carved out) so per-creator configs stay local. This does NOT affect `npx hyperframes tts` — that path still reads `.env` only; the diy-yt-creator playbooks all invoke the Python scripts directly, so the flag is the supported route for per-video voice switching.
+
 ## Documentation
 
 **For quick reference**, use the local CLI docs command (no network required):

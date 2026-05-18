@@ -19,6 +19,9 @@ Flags:
   --no-chunk                    Single API call (legacy behavior, no delta regen).
   --inter-chunk-silence-ms N    Silence between chunks in chunked mode (default: 650).
                                 Calibrated to match natural sentence pauses.
+  --env-file PATH               Load env vars from PATH instead of repo-root .env.
+                                Relative paths resolve against the repo root.
+                                Useful for per-creator configs (e.g. .env.cole).
 
 Loads voice_id, model_id, and voice_settings from .env (see voice-settings.md).
 If ELEVENLABS_PRONUNCIATION_DICT_ID and ELEVENLABS_PRONUNCIATION_DICT_VERSION_ID
@@ -167,10 +170,24 @@ def main() -> int:
         default=DEFAULT_INTER_CHUNK_SILENCE_MS,
         help=f"Silence between chunks in ms (default: {DEFAULT_INTER_CHUNK_SILENCE_MS})",
     )
+    parser.add_argument(
+        "--env-file",
+        type=Path,
+        default=None,
+        help="Path to env file (default: <repo-root>/.env). Relative paths "
+             "resolve against repo root. Use for per-creator configs like .env.cole.",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent
-    load_dotenv(repo_root / ".env", override=True)
+    env_path = args.env_file if args.env_file is not None else Path(".env")
+    if not env_path.is_absolute():
+        env_path = repo_root / env_path
+    if not env_path.exists():
+        print(f"ERROR: env file not found: {env_path}", file=sys.stderr)
+        return 2
+    load_dotenv(env_path, override=True)
+    print(f"[tts] env_file={env_path}")
     project = (repo_root / args.project_dir).resolve() if not args.project_dir.is_absolute() else args.project_dir
     script_path = project / "script.txt"
     narration_wav = project / "audio" / "narration.wav"
