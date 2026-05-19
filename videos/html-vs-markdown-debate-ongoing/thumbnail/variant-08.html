@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<!-- Variant 08 — Conspiracy-take quote.
+     MARKDOWN vs HTML dominant topic at top. ROUND 2 chip subtle top-right.
+     Serif italic quote: "Someone earning money on token spending..."
+     Sub-receipt: "WHY THE PUSHBACK MATTERS." Theme: cream. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v08 — Topic + conspiracy-take quote + ROUND 2 chip</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Subtle ROUND 2 chip — top right */
+  .round2-chip {
+    position: absolute;
+    top: 52px; right: 60px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent-deep-red);
+    border: 1.5px solid var(--accent-terracotta);
+    padding: 7px 16px;
+    border-radius: 999px;
+    opacity: 0.8;
+    z-index: 10;
+  }
+
+  /* Topic header — dominant */
+  .topic-header {
+    position: absolute;
+    top: 108px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-term {
+    font-size: 96px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--accent-terracotta);
+    padding: 0 4px;
+  }
+  .topic-rule {
+    width: 70px; height: 3px;
+    background: var(--accent-terracotta);
+    margin: 12px auto 0;
+    border-radius: 2px;
+    opacity: 0.4;
+  }
+
+  /* Quote block */
+  .quote-block {
+    position: absolute;
+    top: 298px;
+    left: 60px;
+    width: 940px;
+  }
+  .open-quote {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 800;
+    font-style: italic;
+    font-size: 120px;
+    color: var(--accent-terracotta);
+    line-height: 0.6;
+    letter-spacing: -3px;
+    margin-bottom: -10px;
+  }
+  .quote-text {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 800;
+    font-style: italic;
+    font-size: 54px;
+    line-height: 1.2;
+    letter-spacing: -1.5px;
+    color: var(--text-cream);
+    margin-bottom: 16px;
+  }
+  .quote-text em {
+    font-style: italic;
+    color: var(--accent-terracotta);
+  }
+  .attribution {
+    display: block;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-muted-cream);
+    padding-left: 4px;
+  }
+  .attribution::before {
+    content: "— ";
+    color: var(--accent-terracotta);
+  }
+
+  .receipt-bot {
+    position: absolute;
+    left: 60px;
+    bottom: 88px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .receipt-bot strong { color: var(--accent-deep-red); }
+</style></head>
+<body>
+  <div class="thumb theme-cream">
+    <div class="overline">The Debate — Part 2</div>
+    <div class="overline-divider"></div>
+
+    <!-- Subtle ROUND 2 chip -->
+    <div class="round2-chip">ROUND 2</div>
+
+    <!-- Dominant topic header -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <div class="topic-rule"></div>
+    </div>
+
+    <!-- Quote -->
+    <div class="quote-block">
+      <span class="open-quote">"</span>
+      <span class="quote-text">Someone earning <em>money</em><br>on token spending..."</span>
+      <span class="attribution">most-liked comment</span>
+    </div>
+
+    <div class="receipt-bot"><strong>Why the pushback matters.</strong></div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

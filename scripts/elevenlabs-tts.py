@@ -47,8 +47,11 @@ from elevenlabs import ElevenLabs, VoiceSettings
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tts_lib import (  # noqa: E402
     DEFAULT_INTER_CHUNK_SILENCE_MS,
+    DEFAULT_OUTPUT_FORMAT,
+    SUPPORTED_OUTPUT_FORMATS,
     clean_sync_data,
     generate_chunked,
+    output_format_to_rate,
     write_pcm_as_wav,
 )
 
@@ -102,17 +105,19 @@ def run_single_call(
     model_id: str,
     voice_settings: VoiceSettings,
     pronunciation_dictionary_locators: list[dict] | None,
+    output_format: str = DEFAULT_OUTPUT_FORMAT,
 ) -> None:
     """Legacy --no-chunk path: one API call, write WAV + flat transcript.json.
 
     Kept as an escape hatch for back-compat. Does not write
     transcript-history.json (no chunks to track).
     """
+    sample_rate = output_format_to_rate(output_format)
     resp = client.text_to_speech.convert_with_timestamps(
         voice_id=voice_id,
         text=text,
         model_id=model_id,
-        output_format="pcm_44100",
+        output_format=output_format,
         voice_settings=voice_settings,
         pronunciation_dictionary_locators=pronunciation_dictionary_locators,
     )
@@ -121,8 +126,8 @@ def run_single_call(
     print(f"[tts] received pcm bytes={len(pcm_bytes)}")
 
     narration_wav.parent.mkdir(parents=True, exist_ok=True)
-    write_pcm_as_wav(pcm_bytes, str(narration_wav))
-    duration_s = len(pcm_bytes) / 2 / 44100
+    write_pcm_as_wav(pcm_bytes, str(narration_wav), sample_rate=sample_rate)
+    duration_s = len(pcm_bytes) / 2 / sample_rate
     print(f"[tts] wrote {narration_wav}  ({duration_s:.2f}s, {narration_wav.stat().st_size} bytes)")
 
     align = resp.normalized_alignment or resp.alignment
@@ -213,10 +218,20 @@ def main() -> int:
     model_id = os.environ["ELEVENLABS_MODEL_ID"]
     settings = project_voice_settings(is_shorts=args.shorts)
     locators = resolve_pronunciation_locators()
+    output_format = os.environ.get("ELEVENLABS_OUTPUT_FORMAT", DEFAULT_OUTPUT_FORMAT).strip() \
+        or DEFAULT_OUTPUT_FORMAT
+    if output_format not in SUPPORTED_OUTPUT_FORMATS:
+        print(
+            f"ERROR: ELEVENLABS_OUTPUT_FORMAT={output_format!r} not supported. "
+            f"Use one of: {sorted(SUPPORTED_OUTPUT_FORMATS)}",
+            file=sys.stderr,
+        )
+        return 2
 
     print(f"[tts] voice_id={voice_id} model_id={model_id} shorts={args.shorts}")
     print(f"[tts] settings stability={settings.stability} similarity={settings.similarity_boost} "
           f"style={settings.style} speed={settings.speed} speaker_boost={settings.use_speaker_boost}")
+    print(f"[tts] output_format={output_format} ({output_format_to_rate(output_format)}Hz)")
     if locators:
         print(f"[tts] pronunciation_dictionary={locators[0]['pronunciation_dictionary_id']} "
               f"version={locators[0]['version_id']}")
@@ -245,6 +260,7 @@ def main() -> int:
             model_id=model_id,
             voice_settings=settings,
             pronunciation_dictionary_locators=locators,
+            output_format=output_format,
         )
         return 0
 
@@ -259,6 +275,7 @@ def main() -> int:
         pronunciation_dictionary_locators=locators,
         inter_chunk_silence_ms=args.inter_chunk_silence_ms,
         force=args.force,
+        output_format=output_format,
     )
     print(f"[tts] wrote {narration_wav}  "
           f"({summary['duration_s']:.2f}s, {narration_wav.stat().st_size} bytes)")

@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Editorial Shorts Template — Demo</title>
+<link rel="stylesheet" href="tokens/editorial-short.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;0,8..60,800;0,8..60,900;1,8..60,400;1,8..60,700;1,8..60,800;1,8..60,900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 editorial-light vertical Short.
+     Warm cream + Source Serif 4 italic + single
+     terracotta accent. Mirrors long-form editorial.
+     Sub-composition architecture: each scene is a
+     self-contained .html with its own paused timeline
+     registered on window.__timelines[<scene-id>].
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient warm wash — subtle terracotta radials. */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Shape backdrop — ghosted brown smudges at ~3% opacity on cream. */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* Film-grain overlay — multiply on cream at low opacity. */
+  #grain-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 11;
+  }
+
+  /* ──────────────────────────────────────────────────
+     TOP CHROME — slim mono wordmark (no card pill).
+     Editorial style: uppercase mono + thin rule. Reads
+     as a chapter heading, not a UI element.
+     ────────────────────────────────────────────────── */
+  #top-banner {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+  }
+  #top-banner-wordmark {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    display: inline-block;
+  }
+  #top-banner-rule {
+    width: 80px;
+    height: 1.5px;
+    background: var(--accent-2);
+    margin: 8px auto 0;
+    opacity: 0.6;
+  }
+
+  /* Slim progress bar — terracotta gradient (styled in tokens). */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 4px;
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+  }
+
+  /* Scene wrappers — first scene visible, rest hidden. */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 1;
+  }
+  #scene-marker-wrap          { z-index: 1; opacity: 1; }
+  #scene-string-literal-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-chart-wrap           { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-stat-wrap            { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-compare-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-process-flow-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-code-block-wrap      { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap             { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Source URL chip — bottom-right, subtle terracotta-accented. */
+  #source-url {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(28, 26, 24, 0.06);
+    border: 1px solid rgba(28, 26, 24, 0.20);
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  #source-url .source-url-label {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: var(--text);  /* warm near-black hits ~12:1 vs chip bg — AAA */
+    text-transform: uppercase;
+  }
+  #source-url .source-url-text {
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text-secondary);
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="128"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Ambient + shape backdrop -->
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <!-- Top chrome — ast-grep wordmark -->
+  <div id="top-banner">
+    <span id="top-banner-wordmark">AST-GREP &middot; SHORT</span>
+    <div id="top-banner-rule"></div>
+  </div>
+
+  <!-- Bottom progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — 8 scenes pulled from the editorial archetype
+       library, retimed to the actual narration transcript anchors.
+
+       Narration: audio/narration.wav (118.2s spoken, 130s composition
+       to leave a 12s thumbnail-grade hold at the end for CTA).
+
+       Scene boundaries (paragraph-anchored from transcript.json):
+         0.0   → marker          (HOOK — "Your AI agent is bleeding tokens.")
+        11.0   → string-literal  (THE LIE — dag-executor.test.ts:2813)
+        26.3   → chart           (NUMBERS — 26 / 19 / 30 / 122%)
+        43.0   → stat            (TOKEN ECON — $15/dev/month)
+        57.9   → compare         (MEET AST-GREP — chars vs structure)
+        71.3   → process-flow    (HOW IT WORKS — tree-sitter / match / Rust)
+        90.6   → code-block      (INSTALL — npm + npx, restart, prompt)
+       107.6   → cta             (DEBATE + FULL BREAKDOWN ON CHANNEL)
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-marker-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-marker"
+       data-composition-src="compositions/scene-marker.html"
+       data-start="0"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-string-literal-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-string-literal"
+       data-composition-src="compositions/scene-string-literal.html"
+       data-start="12.2"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-chart-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-chart"
+       data-composition-src="compositions/scene-chart.html"
+       data-start="28.7"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-stat-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-stat"
+       data-composition-src="compositions/scene-stat.html"
+       data-start="44.2"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-compare-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-compare"
+       data-composition-src="compositions/scene-compare.html"
+       data-start="59.5"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-process-flow-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-process-flow"
+       data-composition-src="compositions/scene-process-flow.html"
+       data-start="71.8"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-code-block-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-code-block"
+       data-composition-src="compositions/scene-code-block.html"
+       data-start="92.9"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="108.6"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Persistent pointer to the long-form deep-dive on this channel. -->
+  <div id="source-url">
+    <span class="source-url-label">Full</span>
+    <span class="source-url-text">long-form on this channel &darr;</span>
+  </div>
+
+  <!-- Narration (draft voice — edge-tts AndrewNeural +10%) -->
+  <audio id="narration"
+         class="clip"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="126.5"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <!-- Cinematic whoosh on each scene transition (per audio-design rule):
+       data-volume 0.11, data-duration 1.5s, fires AT sceneT (not pre-roll). -->
+  <audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="12.2" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="28.7" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="44.2" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="59.5" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="71.8" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="92.9" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+         data-start="107.6" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Paper-grain overlay — last child so it tints everything below. -->
+  <svg id="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="11" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#grain-filter)" fill="#2B2A28" opacity="0.045" />
+  </svg>
+</div>
+
+<script>
+  // Shape backdrop — deterministic seeded scatter (14 shapes).
+  // Repositioned at every scene boundary (paired with cinematic-whoosh SFX).
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1080, h = 1920, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function repositionShapesPerScene(tl, container, seedPrefix, sceneStartTimes) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if (!imgs.length || !sceneStartTimes.length) return;
+    const w = 1080, h = 1920, minDist = 360, MAX_TRIES = 80;
+    const anchors = imgs.map(img => ({
+      left: parseFloat(img.style.left),
+      top:  parseFloat(img.style.top),
+      size: parseFloat(img.style.width),
+    }));
+    sceneStartTimes.forEach((sceneT, sceneIdx) => {
+      const placed = [];
+      let attempt = 0;
+      const positions = imgs.map((img, i) => {
+        const size = anchors[i].size;
+        let best = null, bestScore = -1;
+        for (let t = 0; t < MAX_TRIES; t++) {
+          const seed = seedPrefix + '-scene' + sceneIdx + '-' + i + '-' + (attempt++);
+          const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+          const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+          const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+          let nearest = Infinity;
+          for (const p of placed) {
+            const dx = cx - p.cx, dy = cy - p.cy;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < nearest) nearest = d2;
+          }
+          if (nearest >= minDist * minDist) { best = { cx, cy, rot }; break; }
+          if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, rot }; }
+        }
+        placed.push({ cx: best.cx, cy: best.cy });
+        return {
+          x: (best.cx - size / 2) - anchors[i].left,
+          y: (best.cy - size / 2) - anchors[i].top,
+          rot: best.rot,
+        };
+      });
+      tl.to(imgs, {
+        x: (i) => positions[i].x,
+        y: (i) => positions[i].y,
+        rotation: (i) => positions[i].rot,
+        duration: 1.0,
+        ease: 'power2.inOut',
+      }, sceneT - 0.4);
+    });
+  }
+
+  // Crossfade two scene wrappers at the root timeline level.
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0,                          duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  // Root timeline construction
+  spawnShapes('ast-grep-short', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 128;
+  const tl = gsap.timeline({ paused: true });
+
+  // Reposition shapes at each scene change (paired with whoosh feel)
+  repositionShapesPerScene(
+    tl,
+    document.getElementById('shape-backdrop'),
+    'ast-grep-short',
+    [12.2, 28.7, 44.2, 59.5, 71.8, 92.9, 108.6]
+  );
+
+  // Slow ambient breath
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: TOTAL_DURATION / 4, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  // Linear progress fill across the full composition
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner one-shot
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Source URL fade-in — only AFTER intro scene (scene-marker ends at 12.2)
+  // so it doesn't overlap with the hook's beat stack at bottom-left.
+  tl.to("#source-url", { opacity: 1, duration: 0.5, ease: "power2.out" }, 12.2);
+
+  // Scene labels — narration-paragraph-anchored from transcript.json
+  tl.addLabel("marker",          0)
+    .addLabel("string-literal", 12.2)
+    .addLabel("chart",          28.7)
+    .addLabel("stat",           44.2)
+    .addLabel("compare",        59.5)
+    .addLabel("process-flow",   71.8)
+    .addLabel("code-block",     92.9)
+    .addLabel("cta",           108.6);
+
+  // Crossfades between adjacent scenes
+  crossfadeScenes(tl, "#scene-marker-wrap",          "#scene-string-literal-wrap", "string-literal-=0.4");
+  crossfadeScenes(tl, "#scene-string-literal-wrap",  "#scene-chart-wrap",          "chart-=0.4");
+  crossfadeScenes(tl, "#scene-chart-wrap",           "#scene-stat-wrap",           "stat-=0.4");
+  crossfadeScenes(tl, "#scene-stat-wrap",            "#scene-compare-wrap",        "compare-=0.4");
+  crossfadeScenes(tl, "#scene-compare-wrap",         "#scene-process-flow-wrap",   "process-flow-=0.4");
+  crossfadeScenes(tl, "#scene-process-flow-wrap",    "#scene-code-block-wrap",     "code-block-=0.4");
+  crossfadeScenes(tl, "#scene-code-block-wrap",      "#scene-cta-wrap",            "cta-=0.4");
+
+  // Pad timeline to TOTAL_DURATION
+  tl.to({}, { duration: 0.01 }, TOTAL_DURATION - 0.01);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

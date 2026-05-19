@@ -1,0 +1,153 @@
+[SCENE: hook]
+One post.
+
+Seven days.
+
+And the dev internet went to war.
+
+Eight days ago, an engineer at Anthropic dropped a thesis. Markdown is the wrong format. For every spec. Every plan. Every P R writeup.
+
+Almost all of it. Out.
+
+Seven hundred and fifty thousand views. Two thousand seven hundred likes. Three hundred and forty reposts.
+
+That was day one.
+
+By day three, the Markdown camp came out swinging. By day five, the hybrid camp landed in the middle. By day seven, the conspiracy camp pointed at the tokens. And four days ago, the same engineer doubled down. H T M L continues to be undefeated.
+
+This is the debate that is still going.
+
+The pros. The cons. The receipts. And the question every team is going to have to answer themselves.
+
+[SCENE: image-hero]
+First — the case for H T M L. Thariq's original list.
+
+Information density.
+
+Markdown can carry headings, bold, bullets, and a table if you squint at it.
+
+H T M L can carry eight things in one file. Tables. C S S design. S V G illustrations. Code snippets inside script tags. Interactions wired with JavaScript. Workflows drawn side by side. Spatial data on a canvas. And actual images.
+
+The argument — there is almost nothing Claude can read that you cannot represent in H T M L.
+
+A second engineer, on X, put it this way. H T M L gives agents a richer canvas than Markdown. Diagrams, styling, layout, tables, S V Gs, images, and interactive elements.
+
+And the human in the loop. Instead of reviewing walls of text, you inspect, tweak, annotate, move sliders, copy changes back into prompts.
+
+That is the steel-manned version of the H T M L side. Information goes in. A working interface comes out. The viewer is back in the loop.
+
+[SCENE: side-by-side]
+Now the case for Markdown. Which is louder than you might expect.
+
+One comment, three hundred and sixty-nine likes. Simplicity is the feature, not a bug.
+
+Another, one hundred and forty-nine likes. Markdown already supports H T M L totally. Just put H T M L into your markdown when you need it.
+
+Another, ninety-seven likes. M D saves so much tokens. All the time. Not some times.
+
+Another, fifty-nine likes. Since when does markdown not have tables? M D can be themed by editor previews. M D can be understood by non-technical people. So many pros over H T M L.
+
+And the strongest one. Markdown is not a competitor to H T M L. Markdown was literally designed to compile to H T M L. They are not opposing formats. One is the source. The other is the rendered artifact.
+
+The pushback is structural. Markdown is small. Markdown is portable. Markdown is editable without tools. Markdown can already do tables, Mermaid diagrams, embedded images, S V G, and inline H T M L when you actually need it.
+
+If you can do all of that in markdown, the question becomes — what is H T M L actually buying you?
+
+[SCENE: stat-pill-row]
+Here are the receipts. From people who have actually measured it.
+
+One engineer, on X. Twenty-five thousand tokens to generate one H T M L. One thousand tokens for the same content in markdown.
+
+Twenty-five times more tokens. Per artifact.
+
+Another, on YouTube. Creating an H T M L explainer eats fifty percent of the five hour limit on Opus four point seven.
+
+The pro-H T M L side has its own number. Opus four point seven ships with a one million token context window. So the extra tokens, in absolute terms, fit.
+
+But here is the catch the community keeps pointing at. Token capacity is not the only cost.
+
+A third commenter. A I tends to become significantly less accurate when you exceed ten to twenty percent of the maximum token capacity. So using H T M L with more code comes with a tradeoff.
+
+In other words — even when the budget exists, spending it on layout instead of content has a quality cost. The community is not buying the it-barely-registers framing.
+
+[SCENE: source-cards]
+And then there are the workflows people have actually settled on. Six patterns showed up repeatedly across the replies.
+
+Pattern one. Markdown for agents only. H T M L for agents and humans.
+
+The exact framing from a builder running a content system. Reviewing ideas, drafts, and a whole workspace end-to-end in markdown is — terrible U X. So markdown stays as the agent layer. H T M L becomes the human review layer.
+
+Pattern two. Data visualization in H T M L. Everything else in markdown.
+
+There is no comparison for data viz. But for hierarchical text, a clean markdown viewer is just as legible. And saves tokens.
+
+Pattern three. Markdown for input. H T M L for output to the customer.
+
+As everything — it depends. H T M L is great for output to the customer. M D is better for input. You must understand where you will use it.
+
+Pattern four. M D X. The Markdown-plus-React format.
+
+One commenter. H T M L is triple the size and harder to read and write. The solution is M D X. Markdown is small, fast, readable. M D X combines dynamic content and web components when needed.
+
+Pattern five. Mermaid stays in markdown.
+
+You would think H T M L would win here. But a markdown viewer with Mermaid support is way better. I don't want an L L M coding a custom network diagram when I already have a clean, standard, token-efficient way to view them.
+
+Pattern six. The conspiracy take.
+
+The framing — someone earning money on token spending suggests we spend more tokens.
+
+This one showed up four separate times in the comments. It is worth taking seriously, even if you do not agree.
+
+[SCENE: architecture-stack]
+So where does this leave anyone trying to make a call?
+
+The consensus that earned the most agreements across both videos is not pick-one. It is a split.
+
+For agent-to-agent communication. Specs. Plans. Claude dot M D files. Sub-agent instructions. The lingua franca stays markdown. Smaller. Cheaper. Less brittle.
+
+For agent-to-human communication. Code review. Reports. Mockups. Dashboards. Anything a real person is going to actually look at and click through — H T M L makes a stronger case.
+
+The split is not a compromise. It is a workflow.
+
+The thesis that holds across both camps. Wherever a human looks, H T M L. Everywhere else, markdown.
+
+And one outlier insight worth flagging. From a reply that did not get the like-count it deserved.
+
+Multimodality, the argument goes, is a sycophancy multiplier. Look at the rosy prose. Built around what you love. Recommendation in one breath. I do not want to be talked to that way.
+
+The argument — richer formats may make agents nicer. And nicer is not always honest.
+
+That one is not in the documentation. It is something to watch.
+
+[SCENE: interview]
+And then today — eight days after the post that started it — Thariq sat down for a full interview. He did not back off. He doubled down.
+
+Here is how he framed it. When you say Claude can run for eight hours — what you are really saying is, Claude can spend five hundred bucks. All of us are becoming compute allocators now.
+
+And you have to decide what is worth spending the compute on.
+
+Then a new pattern. He calls it — micro software on top of micro software. The plan is in H T M L. A custom editor — also H T M L — to edit one section of the plan. Built once. Tossed when done.
+
+But the comments under the interview pushed back hard. Three replies. Same accusation. Anthropic invented this. To burn more tokens. To bump the bill.
+
+Whether you buy that or not — the question is now openly on the table.
+
+[SCENE: cta]
+So where does the debate actually stand. As of right now.
+
+Thariq, the original poster, doubled down four days ago. H T M L continues to be undefeated.
+
+The replies under that post are still split. Still arguing. Still posting receipts.
+
+The Markdown camp has not moved. Tokens still cost what they cost. Simplicity is still a feature. Markdown still renders to H T M L when needed.
+
+The H T M L camp has not moved either. Their artifacts get opened. Their reviews get clicks. Their plans land in workflows.
+
+What changed in the last week is that the conversation is no longer one engineer versus a thousand replies. It is a set of patterns the community is converging on. Slowly. Out loud. In public.
+
+So — which side are you on? Markdown for everything. H T M L for everything. Or the hybrid — markdown for the agent, H T M L for the human. Drop your pick below.
+
+If you missed the first video on the thesis itself, the link is in the description.
+
+And if you want to learn more about A I, check out the dynamous dot A I community.

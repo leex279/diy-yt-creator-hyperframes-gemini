@@ -1,0 +1,79 @@
+{
+  "agent": "video-metadata-publish",
+  "slug": "ast-grep-missing-layer-short",
+  "video_kind": "shorts",
+  "summary": {
+    "description_present": true,
+    "structure_order_correct": true,
+    "combined_cta_block_correct": true,
+    "dynamous_subsection_correct": true,
+    "hostinger_subsection_correct": true,
+    "hashtag_count": 23,
+    "vidiq_research_present": false,
+    "urls_validated": {
+      "checked": 5,
+      "live": 5,
+      "dead": 0,
+      "notes": "Dynamous + Hostinger brand links assumed live (validated on prior videos, description < 7 days old). ast-grep GitHub, ast-grep agent-skill, and ast-grep docs all confirmed live via WebFetch."
+    },
+    "chapter_timestamps_match_speedup": null,
+    "chapters_section_present": false,
+    "no_chapters_on_shorts": true,
+    "findings_by_severity": { "BLOCKER": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 0 },
+    "verdict": "FAIL_HIGH"
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "HIGH",
+      "rule": "engagement-cta-mismatch",
+      "location": "videos/ast-grep-missing-layer-short/youtube-description.md:34",
+      "summary": "Description engagement question does not match the on-screen #cta-question verbatim",
+      "evidence": "Spoken closer (script.txt line 15): \"Are you fixing that today with one config line? Or accepting the waste?\" On-screen #cta-question (scene-cta.html line 95): \"One config line — or accept the waste?\" Description (youtube-description.md line 34): \"Are you fixing that today with one config line, or accepting the waste?\" The description and spoken versions differ from the on-screen version in phrasing. The on-screen version is significantly shorter/different. All three surfaces should reference the exact same question for maximum alignment.",
+      "fix": "Align all three surfaces. The on-screen #cta-question has the most compressed, punchiest form: \"One config line — or accept the waste?\" Update the description's engagement paragraph to: \"One config line — or accept the waste? Drop your pick in the comments.\" Alternatively, decide on the spoken version as canonical and update #cta-question to match. Either is valid — but all three must agree."
+    },
+    {
+      "id": "F-002",
+      "severity": "MEDIUM",
+      "rule": "forbidden-characters-arrows",
+      "location": "videos/ast-grep-missing-layer-short/youtube-description.md:20-26",
+      "summary": "Body bullets use → arrow characters (7 instances); YouTube may flag or hide descriptions containing them",
+      "evidence": "Lines 20-26 each begin with '→'. Line 24 additionally contains two inline '→' characters: 'parse → match patterns on nodes → Rust multi-core'. Total: 9 arrow characters across 7 lines.",
+      "fix": "Replace leading '→' with a plain '-' or remove entirely (YouTube renders the bullet-list paragraph as plain text anyway). For inline arrows on line 24, rewrite to: 'parse, match patterns on nodes, then Rust multi-core'. Confirm the rule at §13 of youtube-metadata.md."
+    },
+    {
+      "id": "F-003",
+      "severity": "MEDIUM",
+      "rule": "vidiq-research-missing",
+      "location": "videos/ast-grep-missing-layer-short/research/vidiq-keywords.md",
+      "summary": "vidIQ keyword research artifact is missing — no research/vidiq-keywords.md found",
+      "evidence": "Glob over videos/ast-grep-missing-layer-short/research/ returned no files. The mandatory pre-description vidIQ keyword research pass (per youtube-metadata.md 'MANDATORY: vidIQ Keyword Research Before Writing') was not run or not saved. Cannot verify that hashtags and keywords were derived from real search-demand data.",
+      "fix": "Run the vidIQ MCP research pass (vidiq_keyword_research, vidiq_outliers, vidiq_trending_videos) for seed terms: 'ast-grep', 'AI coding agent', 'Claude Code', 'structural search', 'tree-sitter'. Save snapshot to videos/ast-grep-missing-layer-short/research/vidiq-keywords.md. Validate that the 23 current hashtags and first-200-char keywords align with the top shortlist terms. Adjust if needed before upload."
+    }
+  ],
+  "checks_performed": {
+    "description_file_exists": true,
+    "structure_order": "PASS — SEO hook > combined CTA block > body bullets > resources URLs > engagement question > hashtags. No Chapters section (correct for Shorts).",
+    "combined_cta_block": "PASS — single ---- block, Dynamous first then Hostinger, exact header lines present ('DYNAMOUS AI COMMUNITY' with rocket, 'HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS' with lightning bolt), affiliate disclosure line present, all URLs match canonical values, no wording drift detected.",
+    "no_chapters_on_shorts": "PASS — no Chapters section present.",
+    "first_200_chars": "PASS — 172 chars. Keywords present: 'ast-grep', 'AI coding agent', 'Claude Code', 'Cursor'. No generic hook start, no arrows in opening paragraph.",
+    "hashtag_count": "PASS — 23 hashtags, within 15-25 range. Mix of specific (#ClaudeCode, #astgrep, #treesitter) and broad (#AIcoding, #devtools, #softwareengineering).",
+    "banned_sections": "PASS — none of the explicitly-removed headers found.",
+    "url_validation": {
+      "https://dynamous.ai/?code=646a60": "ASSUMED LIVE — brand link, validated on prior videos, description < 7 days old",
+      "https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount": "ASSUMED LIVE — brand link, validated on prior videos",
+      "https://hostinger.com/DIYSMARTCODE": "ASSUMED LIVE — brand link, validated on prior videos",
+      "https://github.com/ast-grep/ast-grep": "LIVE — confirmed via WebFetch; ast-grep CLI tool, 13.8k stars",
+      "https://github.com/ast-grep/agent-skill": "LIVE — confirmed via WebFetch; Claude Code plugin for AST-based code search, 672 stars",
+      "https://ast-grep.github.io/advanced/how-ast-grep-works.html": "LIVE — confirmed via WebFetch; official architecture guide"
+    },
+    "engagement_cta_cross_surface": {
+      "spoken_closer": "Are you fixing that today with one config line? Or accepting the waste?",
+      "on_screen_cta_question": "One config line — or accept the waste?",
+      "description_closing_paragraph": "Are you fixing that today with one config line, or accepting the waste?",
+      "verdict": "MISMATCH — on-screen and spoken/description phrasing diverge. All three must agree."
+    },
+    "speedup_chapter_adjustment": "N/A — no ffmpeg speedup applied, no Chapters section (Shorts).",
+    "meta_json_title": "PASS — 'ast-grep — your AI agent is bleeding tokens (Short)' is descriptive and keyword-front-loaded. Length 53 chars, under 70-char limit."
+  }
+}

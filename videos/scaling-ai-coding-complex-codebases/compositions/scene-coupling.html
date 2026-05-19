@@ -1,5 +1,5 @@
-﻿<!--
-  scene-coupling.html â€” God component vs isolated component visualization.
+<!--
+  scene-coupling.html — God component vs isolated component visualization.
   Left: clean isolated node (loose & clear). Right: tangled web (god component).
   Below: the 3 coupling quality questions.
 -->
@@ -83,7 +83,7 @@
         position: relative;
         min-height: 180px;
       }
-      /* Good â€” single isolated node */
+      /* Good — single isolated node */
       .cp-card.good .viz svg {
         width: 100%; height: 100%;
       }
@@ -91,7 +91,7 @@
       .iso-link { stroke: rgba(96, 165, 250, 0.55); stroke-width: 2.5; fill: none; }
       .iso-edge { fill: rgba(96, 165, 250, 0.12); }
 
-      /* Bad â€” tangled web */
+      /* Bad — tangled web */
       .god-dot { fill: var(--accent-warn); }
       .god-link { stroke: rgba(249, 115, 22, 0.55); stroke-width: 2; fill: none; }
       .god-sat { fill: rgba(249, 115, 22, 0.7); }
@@ -115,7 +115,7 @@
         font-weight: 600;
         font-size: 20px;
         letter-spacing: 0.08em;
-        color: var(--accent);
+        color: var(--accent-2);
       }
       .cp-q .qt {
         font-family: 'Montserrat', system-ui, sans-serif;
@@ -220,18 +220,28 @@
       tl.to("#cp-q2", { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 12.0);
       tl.to("#cp-q3", { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 17.0);
 
-      // Mid-hold beats â€” pulse the bad card to highlight the danger
-      tl.to("#cp-bad", { boxShadow: "0 0 80px rgba(249, 115, 22, 0.35)", duration: 1.2,
-        ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
-      // Pulse each question card subtly to invite reading
-      tl.to(["#cp-q1","#cp-q2","#cp-q3"], { scale: 1.02, duration: 1.0, ease: "sine.inOut",
-        yoyo: true, repeat: 1, stagger: 0.18 }, 26.0);
-      // Good card glow finale
-      tl.to("#cp-good", { boxShadow: "0 0 80px rgba(59, 130, 246, 0.35)", duration: 1.2,
-        ease: "sine.inOut", yoyo: true, repeat: 1 }, 32.0);
+      // Mid-hold beats — each closes a 5s gap, paced to narration
+      // 21.0: bad card danger pulse — narration "if any answer is no, too coupled"
+      tl.to("#cp-bad", { boxShadow: "0 0 80px rgba(249, 115, 22, 0.45)", duration: 1.2,
+        ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.0);
+      // 24.5: sequential question highlight — re-emphasize the three tests
+      tl.to(["#cp-q1","#cp-q2","#cp-q3"], { scale: 1.025, duration: 0.7, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.5 }, 24.5);
+      // 28.5: good-card glow — narration "Regardless of how many lines"
+      tl.to("#cp-good", { boxShadow: "0 0 80px rgba(59, 130, 246, 0.45)", duration: 1.2,
+        ease: "sine.inOut", yoyo: true, repeat: 1 }, 28.5);
+      // 32.5: contrast pulse — both cards together — narration "the component is too coupled"
+      tl.to(["#cp-bad","#cp-good"], { scale: 1.015, duration: 0.9, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.2 }, 32.5);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 50);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#cp-good", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 36.50);
+      tl.to("#cp-bad", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 39.00);
+      tl.to("#cp-q1", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 41.50);
+      tl.to("#cp-q2", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 44.00);
+
+      tl.set({}, {}, 45.3);
       window.__timelines["scene-coupling"] = tl;
     </script>
   </div>

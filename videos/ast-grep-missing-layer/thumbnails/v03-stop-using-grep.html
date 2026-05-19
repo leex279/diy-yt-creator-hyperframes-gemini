@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v03 — Stop using grep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 1100px 700px at 50% 50%, rgba(255, 80, 60, 0.16), transparent 70%),
+      var(--bg-deep);
+  }
+  #stop-banner {
+    position: absolute; top: 64px; left: 56px;
+    font-family: var(--font-mono); font-weight: 800; font-size: 28px;
+    color: #ff4d4d; letter-spacing: 0.32em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 14px;
+    padding: 8px 18px; border: 2px solid #ff4d4d;
+    border-radius: 8px;
+    background: rgba(255,77,77,0.08);
+    z-index: 10;
+  }
+  #stop-banner .x { font-size: 30px; line-height: 1; }
+  .slam-wrap { position: absolute; top: 150px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 138px; line-height: 0.88; color: #fff; letter-spacing: -0.045em; }
+  .slam-2 {
+    display: inline-block; margin-top: 6px;
+    font-family: var(--font-mono); font-weight: 800; font-size: 184px; line-height: 0.85;
+    color: #fff;
+    background: linear-gradient(180deg, #ff4d4d, #c2272f);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    letter-spacing: -0.04em;
+  }
+  .slam-2::after {
+    content: ""; position: absolute;
+    top: 53%; left: -14px; right: -14px; height: 12px;
+    background: #fff; transform: rotate(-2deg);
+    border-radius: 4px;
+    box-shadow: 0 0 16px rgba(255,255,255,0.7);
+  }
+  #receipt {
+    position: absolute; bottom: 36px; left: 56px; right: 56px;
+    display: flex; gap: 22px; z-index: 5;
+  }
+  .receipt-card {
+    flex: 1;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .receipt-card .lbl { font-family: var(--font-mono); font-size: 16px; color: var(--fg-muted); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+  .receipt-card .val { font-family: var(--font-mono); font-weight: 800; font-size: 52px; line-height: 1; letter-spacing: -0.02em; }
+  .receipt-card .sub { font-family: var(--font-mono); font-size: 16px; color: var(--fg-dim); font-weight: 500; margin-top: 2px; }
+  .receipt-card.red { border-color: rgba(255,80,80,0.55); }
+  .receipt-card.red .val { color: #ff7676; }
+  .receipt-card.green { border-color: rgba(78,201,176,0.55); }
+  .receipt-card.green .val { color: var(--ok); }
+  .arrow-big {
+    align-self: center;
+    font-family: var(--font-mono);
+    font-size: 60px; color: var(--ast-yellow); font-weight: 800;
+    text-shadow: 0 0 18px rgba(220,220,170,0.4);
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="stop-banner"><span class="x">&#9587;</span>STOP USING GREP</div>
+  <div class="slam-wrap">
+    <span class="slam-1">GIVE YOUR AGENT</span>
+    <span class="slam-2">ast-grep</span>
+  </div>
+  <div id="receipt">
+    <div class="receipt-card red">
+      <div class="lbl">grep</div>
+      <div class="val">22 files</div>
+      <div class="sub">most are fake hits</div>
+    </div>
+    <div class="arrow-big">&rarr;</div>
+    <div class="receipt-card green">
+      <div class="lbl">ast-grep</div>
+      <div class="val">12 files</div>
+      <div class="sub">real call sites only</div>
+    </div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

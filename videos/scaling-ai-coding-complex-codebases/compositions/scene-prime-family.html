@@ -1,5 +1,5 @@
-﻿<!--
-  scene-prime-family.html â€” Focused prime command family list.
+<!--
+  scene-prime-family.html — Focused prime command family list.
   Terminal-style command rows. Each reveals on its own beat.
 -->
 <template id="scene-prime-family-template">
@@ -117,21 +117,45 @@
       tl.to("#pf-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
       tl.to("#pf-headline", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 0.5);
 
-      // Five rows reveal ~6s apart (paced for narration)
-      const rowTimes = [2.0, 5.0, 8.0, 11.0, 14.0];
+      // Rows reveal EARLY (1-10s) so the 5-row stack is visible while narration introduces
+      // the concept. Narrator names each Prime-X later — those moments trigger an emphasis pulse.
+      const rowTimes = [1.5, 3.5, 5.5, 7.5, 9.5];
       ["#pf-r1","#pf-r2","#pf-r3","#pf-r4","#pf-r5"].forEach((sel, i) => {
         tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)" }, rowTimes[i]);
         tl.to(sel + " .marker", { width: "100%", duration: 0.55, ease: "power2.out" }, rowTimes[i] + 0.3);
       });
 
-      // Mid-hold beats
-      tl.to("#pf-list", { scale: 1.01, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
-      tl.to(["#pf-r2 .cmd", "#pf-r3 .cmd", "#pf-r4 .cmd", "#pf-r5 .cmd"],
-        { textShadow: "0 0 30px rgba(59, 130, 246, 0.7)", duration: 0.7, ease: "sine.inOut",
-          yoyo: true, repeat: 1, stagger: { each: 0.18 } }, 28.0);
+      // Bridge beats — keep eye locked between row reveals and the narration name-call (~16s)
+      tl.to("#pf-list", { scale: 1.01, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.5);
+
+      // Narrator names each prime command — emphasis scale + cmd glow at the word anchor
+      const cmdBeats = [
+        { sel: "#pf-r1", t: 16.103 },  // "family of prime"
+        { sel: "#pf-r2", t: 19.655 },  // "Prime-server"
+        { sel: "#pf-r3", t: 21.188 },  // "Prime-client"
+        { sel: "#pf-r4", t: 23.695 },  // "Prime-components"
+        { sel: "#pf-r5", t: 25.785 },  // "Prime-endpoint"
+      ];
+      cmdBeats.forEach(b => {
+        tl.to(b.sel, { scale: 1.05, duration: 0.3, ease: "back.out(1.6)",
+          yoyo: true, repeat: 1, transformOrigin: "left center" }, b.t);
+        tl.to(b.sel + " .cmd", { textShadow: "0 0 30px rgba(59, 130, 246, 0.9)",
+          duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, b.t);
+      });
+
+      // Tail beats every ≤3s through scene end (44.8s)
+      tl.to("#pf-list", { scale: 1.015, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 29.0);
+      tl.to(["#pf-r1","#pf-r2","#pf-r3","#pf-r4","#pf-r5"],
+        { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1,
+          stagger: { each: 0.18 }, transformOrigin: "left center" }, 32.0);
+      tl.to("#pf-list", { boxShadow: "0 0 100px rgba(59, 130, 246, 0.30)",
+        duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 35.5);
+      tl.to(["#pf-r3","#pf-r4","#pf-r5"], { scale: 1.02, duration: 0.4, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.12, transformOrigin: "left center" }, 38.5);
+      tl.to("#pf-list", { scale: 1.012, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 41.5);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 50);
+      tl.set({}, {}, 44.8);
       window.__timelines["scene-prime-family"] = tl;
     </script>
   </div>

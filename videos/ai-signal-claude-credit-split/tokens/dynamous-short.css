@@ -1,0 +1,55 @@
+/* ──────────────────────────────────────────────────────────────────────
+   templates/shorts/dynamous-slides/tokens/dynamous-short.css
+   Dynamous-brand Shorts (1080x1920) palette + typography tokens.
+
+   Adapted from templates/long-form/dynamous-slides/tokens/dynamous.css
+   (Dynamous brand system — deep navy + Dynamous Blue, Montserrat display,
+   JetBrains Mono data, weight-contrast 300/800 signature) and resized for
+   vertical Shorts where mobile-render scale forces larger floors per
+   .claude/rules/shorts-typography.md.
+
+   USAGE:
+     - Linked once from index.html <head>:
+         <link rel="stylesheet" href="tokens/dynamous-short.css">
+     - Override per video by re-declaring any var in a tighter scope.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface ───────────────────────────────────────── */
+  --bg:             #07090F;
+  --bg-alt:         #080A13;
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-surface:     rgba(255, 255, 255, 0.06);
+  --border:         rgba(255, 255, 255, 0.08);
+  --border-bright:  rgba(255, 255, 255, 0.18);
+
+  /* ── Dynamous brand accents (NO PURPLE) ────────────── */
+  --accent:         #3B82F6;   /* Dynamous Blue — hero color */
+  --accent-1:       #3B82F6;
+  --accent-2:       #60A5FA;   /* Dynamous Light — highlights */
+  --accent-3:       #0EA5E9;   /* Dynamous Cyan — CTA glow */
+  --accent-dim:     #1E40AF;
+  --accent-pale:    #DBEAFE;
+  --accent-warn:    #F97316;
+  --accent-stat:    #60A5FA;
+
+  /* ── Text ──────────────────────────────────────────── */
+  --ink:            rgba(255, 255, 255, 0.98);
+  --ink-2:          rgba(255, 255, 255, 0.78);
+  --muted:          rgba(255, 255, 255, 0.58);
+  --muted-2:        rgba(255, 255, 255, 0.36);
+  --text:           rgba(255, 255, 255, 0.98);
+  --text-secondary: rgba(255, 255, 255, 0.62);
+  --text-muted:     rgba(255, 255, 255, 0.40);
+
+  /* ── Spacing (1080x1920 mobile safe-zone) ──────────── */
+  --pad-top:        240px;   /* 240px top — clear of mobile UI overlay */
+  --pad-x:          70px;
+  --pad-bottom:     200px;   /* leaves room for CTA chrome */
+
+  /* ── Type ──────────────────────────────────────────── */
+  --sans:           'Montserrat', system-ui, sans-serif;
+  --font-display:   'Montserrat', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', ui-monospace, monospace;
+  --font-data:      'JetBrains Mono', ui-monospace, monospace;
+}

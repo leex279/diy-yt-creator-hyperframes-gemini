@@ -1,0 +1,219 @@
+<!--
+  scene-compare.html — Emerging synthesis: MD for agents | HTML for humans.
+  (54.7–73.0s, scene-rel 0–18.3s).
+  Beats (transcript scene-rel = abs - 54.7):
+    0.00  — "For agents talking to agents"  → .md card frame + overline
+    2.37  — "Specs. Plans. Claude dot M D files." → 3 chips stagger
+    4.52  — "Markdown stays" → stamp on .md card
+    6.28  — "For anything a human actually looks at" → .html card frame
+    8.26  — "Reports. Reviews. Mockups." → 3 chips stagger
+   11.64  — "HTML wins" → stamp on .html card
+   13.06  — "The thesis that holds across both camps" → synthesis line skeleton
+   16.13  — "Wherever a human looks, HTML." → synthesis slam
+-->
+<template id="scene-compare-template">
+  <div data-composition-id="scene-compare"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Source Serif 4', 'Playfair Display', Georgia, serif; color:var(--text);">
+
+    <style>
+      #sc-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .sc-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sc-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 22px 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .sc-card.is-md   { border: 2px solid var(--accent-3); }
+      .sc-card.is-html { border: 3px solid var(--accent-1); box-shadow: 0 14px 32px rgba(199, 90, 63, 0.14); }
+      .sc-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .sc-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 3px;
+        padding: 6px 14px;
+        border-radius: 8px;
+      }
+      .sc-tag.is-md   { color: var(--accent-3); background: rgba(86, 111, 79, 0.10); border: 2px solid var(--accent-3); }
+      .sc-tag.is-html { color: var(--accent-1); background: rgba(199, 90, 63, 0.10); border: 2px solid var(--accent-1); }
+      .sc-head-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .sc-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .sc-chip {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 1px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .sc-chip.is-md   { color: var(--accent-3); border-color: rgba(86, 111, 79, 0.40); }
+      .sc-chip.is-html { color: var(--accent-1); border-color: rgba(199, 90, 63, 0.40); }
+      .sc-stamp {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 900;
+        font-size: 56px;
+        letter-spacing: -1px;
+        align-self: flex-end;
+        padding: 8px 0;
+      }
+      .sc-stamp.is-md   { color: var(--accent-3); }
+      .sc-stamp.is-html { color: var(--accent-1); }
+      .sc-synth-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-top: 4px;
+      }
+      .sc-synth {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-style: italic;
+        font-size: 76px;
+        line-height: 1.0;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      .sc-synth .sc-synth-em {
+        color: var(--accent-1);
+        font-style: italic;
+        font-weight: 900;
+      }
+    </style>
+
+    <div id="sc-content">
+      <div class="sc-overline" id="sc-overline">EMERGING SYNTHESIS</div>
+
+      <!-- ─── Card 1 — Markdown for agents ─── -->
+      <div class="sc-card is-md" id="sc-md-card">
+        <div class="sc-head">
+          <span class="sc-tag is-md">.md</span>
+          <span class="sc-head-label">for agents talking to agents</span>
+        </div>
+        <div class="sc-chips">
+          <span class="sc-chip is-md" id="sc-md-c1">Specs</span>
+          <span class="sc-chip is-md" id="sc-md-c2">Plans</span>
+          <span class="sc-chip is-md" id="sc-md-c3">CLAUDE.md</span>
+        </div>
+        <div class="sc-stamp is-md" id="sc-md-stamp">Markdown stays.</div>
+      </div>
+
+      <!-- ─── Card 2 — HTML for humans ─── -->
+      <div class="sc-card is-html" id="sc-html-card">
+        <div class="sc-head">
+          <span class="sc-tag is-html">.html</span>
+          <span class="sc-head-label">for anything a human looks at</span>
+        </div>
+        <div class="sc-chips">
+          <span class="sc-chip is-html" id="sc-html-c1">Reports</span>
+          <span class="sc-chip is-html" id="sc-html-c2">Reviews</span>
+          <span class="sc-chip is-html" id="sc-html-c3">Mockups</span>
+        </div>
+        <div class="sc-stamp is-html" id="sc-html-stamp">HTML wins.</div>
+      </div>
+
+      <!-- ─── Synthesis line ─── -->
+      <div class="sc-synth-overline" id="sc-synth-overline">THE THESIS THAT HOLDS</div>
+      <div class="sc-synth" id="sc-synth">
+        <span id="sc-synth-w1">Wherever a human looks,</span><br/><span class="sc-synth-em" id="sc-synth-em">HTML.</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sc-overline",      { y: -8, opacity: 0 }, 0);
+      tl.set("#sc-md-card",       { y: 16, opacity: 0 }, 0);
+      tl.set("#sc-md-c1",         { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sc-md-c2",         { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sc-md-c3",         { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sc-md-stamp",      { x: 16, opacity: 0 }, 0);
+      tl.set("#sc-html-card",     { y: 16, opacity: 0 }, 0);
+      tl.set("#sc-html-c1",       { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sc-html-c2",       { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sc-html-c3",       { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sc-html-stamp",    { x: 16, opacity: 0 }, 0);
+      tl.set("#sc-synth-overline",{ opacity: 0 }, 0);
+      tl.set("#sc-synth-w1",      { y: 16, opacity: 0 }, 0);
+      tl.set("#sc-synth-em",      { y: 24, opacity: 0, scale: 0.85, filter: "blur(15px)" }, 0);
+
+      tl.to("#sc-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.05);
+
+      // MD card enters at scene start with the narration "For agents..."
+      tl.to("#sc-md-card", { y: 0, opacity: 1, duration: 0.55 }, 0.10);
+
+      // MD chips: Specs / Plans / Claude.md (paced to spoken list)
+      tl.to("#sc-md-c1", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 2.37);
+      tl.to("#sc-md-c2", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 2.95);
+      tl.to("#sc-md-c3", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 3.55);
+
+      // "Markdown stays"
+      tl.to("#sc-md-stamp", { x: 0, opacity: 1, duration: 0.5 }, 4.52);
+
+      // HTML card enters at "For anything a human..."
+      tl.to("#sc-html-card", { y: 0, opacity: 1, duration: 0.55 }, 6.28);
+
+      // HTML chips: Reports / Reviews / Mockups
+      tl.to("#sc-html-c1", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 8.26);
+      tl.to("#sc-html-c2", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 9.45);
+      tl.to("#sc-html-c3", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 10.50);
+
+      // "HTML wins"
+      tl.to("#sc-html-stamp", { x: 0, opacity: 1, duration: 0.5 }, 11.64);
+
+      // Synthesis line build
+      tl.to("#sc-synth-overline", { opacity: 1, duration: 0.4 }, 13.06);
+      tl.to("#sc-synth-w1",       { y: 0, opacity: 1, duration: 0.55 }, 13.40);
+      tl.to("#sc-synth-em",       { y: 0, opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.65, ease: "back.out(1.6)" }, 16.13);
+      tl.to("#sc-synth-em",       { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 16.80);
+
+      window.__timelines["scene-compare"] = tl;
+    </script>
+  </div>
+</template>

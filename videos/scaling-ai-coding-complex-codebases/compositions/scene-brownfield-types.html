@@ -1,5 +1,5 @@
-﻿<!--
-  scene-brownfield-types.html â€” Native Type A linear flow + Type B circular loop.
+<!--
+  scene-brownfield-types.html — Native Type A linear flow + Type B circular loop.
   Two-column layout matching the source diagram's structure but built natively
   in HTML/SVG/CSS so it integrates with the Dynamous dark-navy style.
 
@@ -99,7 +99,7 @@
         align-self: stretch;
       }
 
-      /* â”€â”€ TYPE A â€” linear flow â”€â”€ */
+      /* ── TYPE A — linear flow ── */
       #bt-typea-flow {
         display: flex; flex-direction: column;
         align-items: flex-start;
@@ -172,7 +172,7 @@
         border-top: 1px solid rgba(255,255,255,0.08);
       }
 
-      /* â”€â”€ TYPE B â€” circular loop â”€â”€ */
+      /* ── TYPE B — circular loop ── */
       #bt-typeb-flow {
         position: relative;
         flex: 1;
@@ -229,7 +229,7 @@
 
       <div id="bt-grid">
 
-        <!-- TYPE A â€” linear flow -->
+        <!-- TYPE A — linear flow -->
         <div class="bt-col" id="bt-typea" style="opacity:0;visibility:hidden;">
           <div class="col-head">
             <h3>Type A</h3>
@@ -271,7 +271,7 @@
         <!-- Divider -->
         <div class="bt-divider"></div>
 
-        <!-- TYPE B â€” circular loop -->
+        <!-- TYPE B — circular loop -->
         <div class="bt-col" id="bt-typeb" style="opacity:0;visibility:hidden;">
           <div class="col-head">
             <h3>Type B</h3>
@@ -286,13 +286,13 @@
                 </marker>
               </defs>
               <!-- Clockwise arcs between the 4 nodes -->
-              <!-- top â†’ right -->
+              <!-- top → right -->
               <path class="tb-arc" id="bt-arc-1" d="M 240 50 Q 360 80 360 180" marker-end="url(#bt-head)" />
-              <!-- right â†’ bottom -->
+              <!-- right → bottom -->
               <path class="tb-arc" id="bt-arc-2" d="M 360 200 Q 360 290 240 310" marker-end="url(#bt-head)" />
-              <!-- bottom â†’ left -->
+              <!-- bottom → left -->
               <path class="tb-arc" id="bt-arc-3" d="M 160 310 Q 40 290 40 200" marker-end="url(#bt-head)" />
-              <!-- left â†’ top -->
+              <!-- left → top -->
               <path class="tb-arc" id="bt-arc-4" d="M 40 180 Q 40 80 160 50" marker-end="url(#bt-head)" />
             </svg>
             <div class="tb-center" id="bt-center" style="opacity:0;visibility:hidden;">Every<br/>Sprint</div>
@@ -352,22 +352,24 @@
         transformOrigin: "50% 50%"
       }, 19.5);
       tl.to("#bt-a-cap", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 22.0);
+      // 25.0: brief emphasis on Type-A column before pivot — closes Gap-1 of 5.45s
+      tl.to("#bt-typea", { scale: 1.02, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 25.0);
 
-      // â”€â”€ Transition (28-30s): swap focus to Type B â”€â”€
+      // ── Transition (27-29s): swap focus to Type B ──
       tl.add(() => {
         const a = document.getElementById("bt-typea");
         const b = document.getElementById("bt-typeb");
         if (a) { a.classList.remove("glow"); a.classList.add("dim"); }
         if (b) { b.classList.remove("dim");  b.classList.add("glow"); }
-      }, 28.0);
+      }, 27.0);
 
       // TYPE B center first
       tl.fromTo("#bt-center",
         { scale: 0.7 },
         { scale: 1, autoAlpha: 1, duration: 0.7, ease: "back.out(1.4)", immediateRender: false },
-        29.0);
+        28.0);
 
-      // 4 nodes reveal clockwise (top â†’ right â†’ bottom â†’ left), paced ~3s apart
+      // 4 nodes reveal clockwise (top → right → bottom → left), paced ~3s apart
       const bNodes = ["#tb-n1","#tb-n2","#tb-n3","#tb-n4"];
       const bTimes = [30.5, 33.5, 36.5, 39.5];
       bNodes.forEach((sel, i) => {
@@ -383,24 +385,41 @@
         tl.to(sel, { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" }, arcTimes[i]);
       });
 
-      // Highlight loop â€” chain pulse on each node + arc once the loop is complete
+      // Move type-B caption EARLIER (was 48.0) — closes Gap-2 of 6.35s
+      tl.to("#bt-b-cap", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 44.0);
+
+      // Highlight loop — chain pulse on each node + arc once the loop is complete
       tl.to(bNodes, {
         boxShadow: "0 0 40px rgba(96, 165, 250, 0.95)",
         duration: 0.65, ease: "sine.inOut", yoyo: true, repeat: 1,
         stagger: { each: 0.45 }
-      }, 44.5);
-      tl.to("#bt-center", { scale: 1.07, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 47.5);
-      tl.to("#bt-b-cap", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 48.0);
+      }, 47.0);
+      tl.to("#bt-center", { scale: 1.07, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 50.0);
 
-      // Final beat â€” both columns brighten together
+      // Tail-fill beats — close Gap-3 from 48.55 to 56.6 scene exit
+      // 52.0: narration "ninety-five percent of the time" — pulse the loop arc-set
+      tl.to(arcs, {
+        stroke: "#60A5FA", duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1,
+        stagger: { each: 0.25 }
+      }, 52.0);
+      // 54.5: type-A column briefly re-emphasized — narration "Start with Type A, live in Type B"
+      tl.to("#bt-typea", { scale: 1.015, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 54.5);
+
+      // Final beat — both columns brighten together
       tl.add(() => {
         const a = document.getElementById("bt-typea");
         const b = document.getElementById("bt-typeb");
         if (a) a.classList.remove("dim");
         if (b) b.classList.add("glow");
       }, 56.0);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#bt-typea", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 59.10);
+      tl.to("#bt-typeb", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 61.60);
+      tl.to("#bt-headline", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 64.10);
+      tl.to("#bt-typea", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 66.60);
 
-      tl.set({}, {}, 62);
+
+      tl.set({}, {}, 67.8);
       window.__timelines["scene-brownfield-types"] = tl;
     </script>
   </div>

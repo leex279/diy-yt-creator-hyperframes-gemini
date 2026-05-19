@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<!-- Variant 04 — Question-mark hook.
+     MARKDOWN vs HTML dominant topic at top. PART 2 chip top-right.
+     Hook: "STILL UNDEFEATED?" huge italic terracotta.
+     Sub: "Thariq says yes. The replies say no."
+     Theme: cream. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v04 — Topic + question-mark hook + PART 2 chip</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Part 2 chip — top right */
+  .part2-chip {
+    position: absolute;
+    top: 52px; right: 60px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent-terracotta);
+    padding: 8px 18px;
+    border-radius: 6px;
+    z-index: 10;
+  }
+
+  /* Topic header */
+  .topic-header {
+    position: absolute;
+    top: 108px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-term {
+    font-size: 96px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--accent-terracotta);
+    padding: 0 4px;
+  }
+  .topic-rule {
+    width: 80px;
+    height: 4px;
+    background: var(--accent-terracotta);
+    margin: 14px auto 0;
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+
+  /* Hook block */
+  .hook-block {
+    position: absolute;
+    top: 298px;
+    left: 60px;
+    width: 900px;
+    line-height: 1.0;
+  }
+  .hook-word {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 112px;
+    color: var(--text-cream);
+    letter-spacing: -4px;
+  }
+  .hook-accent {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 800;
+    font-style: italic;
+    font-size: 148px;
+    color: var(--accent-terracotta);
+    letter-spacing: -5px;
+    line-height: 0.9;
+  }
+  .hook-sub {
+    display: block;
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .hook-sub strong { color: var(--accent-deep-red); }
+
+  .receipt-bot {
+    position: absolute;
+    left: 60px;
+    bottom: 88px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-muted-cream);
+  }
+  .receipt-bot strong { color: var(--accent-deep-red); }
+</style></head>
+<body>
+  <div class="thumb theme-cream">
+    <div class="overline">The Debate — Part 2</div>
+    <div class="overline-divider"></div>
+
+    <!-- PART 2 chip top-right -->
+    <div class="part2-chip">PART 2</div>
+
+    <!-- Dominant topic header -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <div class="topic-rule"></div>
+    </div>
+
+    <!-- Hook -->
+    <div class="hook-block">
+      <span class="hook-word">STILL</span>
+      <span class="hook-accent">UNDEFEATED?</span>
+      <span class="hook-sub"><strong>Thariq says yes.</strong> &nbsp;The replies say no.</span>
+    </div>
+
+    <div class="receipt-bot"><strong>8 days. 1000 replies.</strong></div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

@@ -1,5 +1,5 @@
-﻿<!--
-  scene-quote-card.html â€” Single-quote display with author chip.
+<!--
+  scene-quote-card.html — Single-quote display with author chip.
 
   Multi-beat segmented reveal: opening punctuation, the quote body line-by-line
   (max 3 lines), then the author chip. A marker sweep highlights the
@@ -113,7 +113,7 @@
       tl.to("#qc-eyebrow", { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
       tl.to("#qc-open",    { y: 0, autoAlpha: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 0.4);
 
-      // Lines reveal sequentially â€” paced for spoken cadence
+      // Lines reveal sequentially — paced for spoken cadence
       tl.to("#qc-l1", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 1.0);
       tl.to("#qc-l2", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 2.6);
       tl.to("#qc-l3", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 4.2);
@@ -124,18 +124,26 @@
       // Marker sweep on the first hero phrase
       tl.to("#qc-mark1", { backgroundSize: "100% 22%", duration: 0.7, ease: "power2.out" }, 6.2);
 
-      // Second marker sweep on the closing phrase â€” fills the >5s pacing gap
+      // Second marker sweep on the closing phrase — fills the >5s pacing gap
       tl.to("#qc-mark2", { backgroundSize: "100% 22%", duration: 0.7, ease: "power2.out" }, 10.5);
 
-      // Mid-hold supplemental beats
+      // Mid-hold supplemental beats — close the 8s tail gap with paced emphasis
       tl.to("#qc-open", { rotate: -4, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.8);
       tl.to("#qc-author .dot", {
         boxShadow: "0 0 28px rgba(59,130,246,1.0)",
         duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 2
       }, 12.2);
+      // 14.5: scale-emphasis on quote line 3 — narration's punchline echo
+      tl.to("#qc-l3", { scale: 1.02, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 14.5);
+      // 17.0: author chip emphasis as scene closes
+      tl.to("#qc-author", { scale: 1.04, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 17.0);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 20);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#qc-l1", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.00);
+      tl.to("#qc-l2", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 23.50);
+
+      tl.set({}, {}, 24.6);
       window.__timelines["scene-quote-card"] = tl;
     </script>
   </div>

@@ -1,0 +1,202 @@
+/* ──────────────────────────────────────────────────────────────────────
+   videos/html-vs-markdown-claude-code/tokens/long-form.css
+
+   PROJECT-SPECIFIC OVERRIDE — editorial-light palette.
+
+   Replaces the default dark-navy long-form tokens with the cream / serif
+   editorial aesthetic of Thariq's "html-effectiveness" gallery
+   (https://thariqs.github.io/html-effectiveness/). Form mirrors content
+   for this video: it's about HTML's expressiveness, so the video itself
+   adopts the source page's design language.
+
+   Scoped to :root so every sub-composition wired via data-composition-src
+   inherits these vars without needing a wrapper.
+
+   Reference screenshots: assets/source-pages/gallery-hero.png +
+   assets/source-pages/gallery-grid.png (captured via agent-browser).
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surface (warm cream — lifted from gallery-hero.png) ─────── */
+  --bg:             #F4F1EA;     /* warm cream — page canvas */
+  --bg-card:        #FBF8F1;     /* card paper — ~3-step lift on cream */
+  --bg-surface:     #EFEBE0;     /* raised pill / nav background */
+  --border:         rgba(28, 26, 24, 0.10);
+  --border-bright:  rgba(199, 90, 63, 0.50);
+
+  /* ── Single-accent system (terracotta-led, NOT 4-rotation) ──── */
+  /* The source page uses a single warm accent — we mirror that. */
+  --accent-1:       #C75A3F;     /* terracotta — italic title accent + section numbers */
+  --accent-2:       #B14938;     /* deeper red — overline text "USING CLAUDE CODE" */
+  --accent-3:       #586F4F;     /* muted olive — for "win" callouts in side-by-side */
+  --accent-4:       #C75A3F;     /* alias #1 — single-accent system */
+  --accent-warn:    #B14938;     /* same as #2 */
+  --accent-stat:    #1A1815;     /* hero stats stay charcoal — let size carry weight */
+
+  /* ── Text (warm charcoal on cream) ───────────────────── */
+  --text:           #1A1815;     /* near-black warm charcoal — body + headlines */
+  --text-secondary: #5C544B;     /* warm gray — captions, sub-lines */
+  --text-muted:     #8A8175;     /* metadata — ≥18px only on cream */
+
+  /* ── Spacing (unchanged from default — 1920x1080 safe-zone) ── */
+  --pad-top:        80px;
+  --pad-x:          100px;
+  --pad-bottom:     80px;
+
+  /* ── Type ─────────────────────────────────────────────── */
+  /* Triple-family system mirroring the source page:
+     - serif for body + headlines (the editorial voice)
+     - sans for ui chrome only (small labels, pills)
+     - mono for overlines, file names, section numbers */
+  --serif:          'Source Serif 4', 'Source Serif Pro', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --sans:           'Inter', system-ui, sans-serif;
+  --mono:           'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Override the dark-only assumptions baked into the template.
+
+   The standard long-form template's index.html uses these utility classes
+   inside its inline <style>. They reference the variables above so once
+   we flip the variables, most chrome flips automatically. The overrides
+   below catch the cases where the default style hard-codes a dark-mode
+   value (e.g. ambient gradients, noise overlay opacity, drop-shadow
+   intensities tuned for dark surfaces).
+   ────────────────────────────────────────────────────────────────────── */
+
+/* Ambient wash — the dark template uses dark radial gradients. Cream
+   needs a much softer, warmer ambient or none at all. We tone it down
+   to a very subtle warm radial that lifts the corners without darkening. */
+#ambient {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(199, 90, 63, 0.06), transparent 55%),
+    radial-gradient(circle at 85% 90%, rgba(177, 73, 56, 0.04), transparent 60%) !important;
+}
+
+/* Shape backdrop — drop the opacity even further on cream (4.5% → 2.5%)
+   and tint via filter. The default template ships SVG shapes designed
+   for dark surfaces; on cream they read as ghosted brown smudges, which
+   is fine at low opacity. */
+#shape-backdrop img {
+  opacity: 0.025 !important;
+  filter: hue-rotate(-15deg) saturate(0.6);
+}
+
+/* Film-grain overlay — invert the blend mode for light surfaces.
+   `mix-blend-mode: overlay` over a cream surface produces muddy
+   patches. `multiply` at lower opacity keeps the analog warmth without
+   darkening the page. */
+#noise-overlay {
+  opacity: 0.018 !important;
+  mix-blend-mode: multiply !important;
+}
+
+/* Top banner — shift the drop shadow from "lifted off dark" to
+   "anchored on cream" — softer, warmer. */
+#top-banner {
+  filter: drop-shadow(0 2px 6px rgba(28, 26, 24, 0.12)) !important;
+}
+
+/* Progress bar — recolor to terracotta on cream */
+#progress-track {
+  background: rgba(28, 26, 24, 0.08) !important;
+}
+#progress-fill {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2)) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Editorial-light helper classes — referenced by per-scene HTML.
+
+   These don't exist in the default template (which is dark-only); we
+   add them here so every scene file can use the same vocabulary for
+   serif italic accents, numbered section chrome, mono badges, and the
+   3-column card grid that mirrors the source page.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* Serif italic accent — the "of HTML" treatment. Wrap a single word in
+   <em class="accent-italic">word</em> for the burnt-orange italic. */
+.accent-italic {
+  font-style: italic;
+  color: var(--accent-1);
+  font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+}
+
+/* Section number — large mono "01" / "02" left-margin chrome. Pair with
+   .section-overline-mono and .section-h2-serif. */
+.section-number {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 56px;
+  color: var(--accent-1);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* Overline mono — the small "USING CLAUDE CODE" red caps treatment. */
+.section-overline-mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+/* Section h2 serif — the big "Exploration & Planning" treatment. */
+.section-h2-serif {
+  font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+  font-weight: 800;
+  font-size: 72px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  line-height: 1.05;
+}
+
+/* Body serif — the source page's body copy. Slightly larger than the
+   default template's body sans (which is 22px). */
+.body-serif {
+  font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Mono badge — the ".html" / ".md" file-extension pill. */
+.mono-badge {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  letter-spacing: 1px;
+}
+
+/* Hand-drawn underline marker — for emphasis on a key word. The marker
+   is a child <span> sized to width:0 then animated to width:100%. */
+.marker-sweep {
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 4px;
+  background: var(--accent-1);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* 3-column card grid — used by image-hero (Scene 1) and source-cards
+   (Scene 4). The default template's source-cards uses a 3-col grid too,
+   but with dark cards. We override the surface, border, shadow. */
+.editorial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  /* No shadow — source page cards are flat. */
+  box-shadow: none;
+}

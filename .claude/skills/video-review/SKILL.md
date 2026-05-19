@@ -75,7 +75,7 @@ The 5 agents and the order priority for reporting (timing FIRST, per user emphas
 2. **`video-render-validator`** — lint/validate/inspect, font-var render blocker, sub-comp ID match, missing media sources, oversized images, backdrop-filter stacks, render filename.
 3. **`video-layout-typography`** — Shorts typography minimums, first/last frame thumbnail-grade (5 mandatory elements each), bar-chart marker anti-pattern, shape-backdrop rearrange, WCAG contrast, overflow. `--visual` mode adds screenshot QA.
 4. **`video-script-content`** — heteronym + tech-term audit, engagement CTA in 3 places, banned CTA phrases, source-grounded fact check, hook strength, narration speed sanity, Hostinger wording.
-5. **`video-metadata-publish`** — youtube-description.md structure, Dynamous + Hostinger blocks, hashtags, chapter timestamps post-speedup, vidIQ research, URL validation, CTA cross-reference, banned sections.
+5. **`video-metadata-publish`** — youtube-description.md structure, combined Dynamous+Hostinger CTA block (user-locked wording), hashtags, chapter timestamps post-speedup, vidIQ research, URL validation, CTA cross-reference, banned sections.
 
 Each agent returns a JSON object on stdout (schema in each `.claude/agents/video-*.md`). The orchestrator parses each.
 
@@ -120,11 +120,12 @@ d. Update the finding to `status: AUTO_FIXED`.
 | `sub-comp-id-mismatch` | rewrite parent mount's `data-composition-id` to match child file's `<div id="root" data-composition-id="...">` |
 | `render-filename-uses-short.mp4` | replace `short.mp4` references with `<slug>.mp4` |
 | `youtube-description-missing` | scaffold from canonical template; fill topic from `meta.json.name` |
-| `description-dynamous-block-missing` | insert canonical Dynamous block (BOTH URLs, `----` wrap) AFTER SEO hook, BEFORE Chapters/Resources — independent of `dynamousPromotion` flag |
-| `description-dynamous-block-malformed` | replace existing block with canonical verbatim block |
+| `description-combined-cta-block-missing` | insert canonical COMBINED Dynamous+Hostinger block (Dynamous first, Hostinger second, single `----` wrap) AFTER SEO hook, BEFORE Chapters / body bullets — independent of `dynamousPromotion` flag. Reference: `videos/vercel-zero-introducing/youtube-description.md` |
+| `description-combined-cta-block-split` | TWO separate `----` blocks (legacy) — merge into ONE combined block, Dynamous first then Hostinger, blank line between |
+| `description-combined-cta-block-malformed` | replace existing block with canonical verbatim block (header lines, disclosure line, URLs all required) |
+| `description-hostinger-disclosure-missing` | append `(Affiliate link — costs you nothing, supports the channel.)` to the Hostinger sub-section |
+| `description-hostinger-sponsored-wording` | restore affiliate framing (not "Sponsored") with disclosure line |
 | `description-banned-phrase` | replace last paragraph with the spoken closer's verbatim question |
-| `description-forbidden-arrow` | strip `→` / `->` characters |
-| `description-hostinger-sponsored-wording` | replace "Sponsored by Hostinger" with "Try Hostinger" |
 | `description-banned-section` | remove `Key Concepts` / `Key Stats` / similar headers and their bodies |
 | `chapter-timestamp-speedup-mismatch` | recompute `data-start / speed_factor` for every chapter |
 | `cta-question-element-missing` | scaffold `<div id="cta-question" ...>` in the final phase with the spoken closer's question |
@@ -242,9 +243,11 @@ Pulled from `.claude/rules/*.md` and memory:
 | 30 | Narration speed drift > 20% from script word count | script-content | LOW |
 | 31 | Hostinger banner reads as "Sponsored" (memory `hostinger_affiliate_not_sponsored`) | script-content | LOW |
 | 32 | YouTube description structure order wrong | metadata-publish | HIGH |
-| 33a | Dynamous block MISSING from description (mandatory on every video — independent of `dynamousPromotion` meta flag) | metadata-publish | BLOCKER |
-| 33b | Dynamous block format drift (missing URLs, missing emoji, missing `----`, wording change) | metadata-publish | HIGH |
-| 34 | Hostinger block missing or wrong format | metadata-publish | HIGH |
+| 33a | Combined Dynamous+Hostinger CTA block MISSING from description (mandatory on every video — independent of `dynamousPromotion` meta flag) | metadata-publish | BLOCKER |
+| 33b | Combined CTA block split into TWO separate `----` blocks (legacy structure) — must be merged into ONE | metadata-publish | HIGH |
+| 33c | Combined CTA block format drift (missing URLs, missing header lines `🚀 DYNAMOUS AI COMMUNITY` / `⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS`, missing affiliate disclosure, missing `----`, wording change) | metadata-publish | HIGH |
+| 33d | Hostinger sub-section placed before Dynamous sub-section (must be Dynamous first) | metadata-publish | HIGH |
+| 34 | Hostinger affiliate disclosure line `(Affiliate link — costs you nothing, supports the channel.)` missing | metadata-publish | HIGH |
 | 35 | Hashtags < 15 or > 25 | metadata-publish | HIGH |
 | 36 | Chapter timestamps not adjusted for ffmpeg speedup (memory `update_description_on_speedup`) | metadata-publish | HIGH |
 | 37 | Chapters section on a Shorts video | metadata-publish | HIGH |

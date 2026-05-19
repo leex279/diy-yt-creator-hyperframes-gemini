@@ -1,5 +1,5 @@
-﻿<!--
-  scene-workshop-intro.html â€” Friday workshop intro.
+<!--
+  scene-workshop-intro.html — Friday workshop intro.
   Shows the Luma event screenshot beside the workshop facts.
   Para 1 of the script lives in this scene.
 -->
@@ -23,7 +23,7 @@
         position:relative;
       }
 
-      /* LEFT â€” workshop facts */
+      /* LEFT — workshop facts */
       #wi-eyebrow {
         font-family: 'JetBrains Mono', ui-monospace, monospace;
         font-size: 24px;
@@ -50,6 +50,24 @@
         letter-spacing: -0.025em;
         color: var(--text);
         margin-bottom: 36px;
+        position: relative;
+        overflow: hidden;
+      }
+      #wi-headline-sweep {
+        position: absolute;
+        top: 0; bottom: 0;
+        left: -40%;
+        width: 30%;
+        background: linear-gradient(105deg,
+          transparent 0%,
+          rgba(96, 165, 250, 0.0) 25%,
+          rgba(96, 165, 250, 0.55) 50%,
+          rgba(96, 165, 250, 0.0) 75%,
+          transparent 100%);
+        filter: blur(8px);
+        mix-blend-mode: screen;
+        pointer-events: none;
+        opacity: 0;
       }
       #wi-headline .accent {
         color: var(--accent);
@@ -100,7 +118,7 @@
         font-weight: 600;
       }
 
-      /* RIGHT â€” Luma event card */
+      /* RIGHT — Luma event card */
       #wi-event-card {
         position: relative;
         width: 880px;
@@ -162,13 +180,14 @@
     </style>
 
     <div id="wi-content">
-      <!-- LEFT column â€” text -->
+      <!-- LEFT column — text -->
       <div>
-        <div id="wi-eyebrow" style="opacity:0;visibility:hidden;">FRIDAY Â· DYNAMOUS COMMUNITY</div>
+        <div id="wi-eyebrow" style="opacity:0;visibility:hidden;">FRIDAY · DYNAMOUS COMMUNITY</div>
         <div id="wi-headline" style="opacity:0;visibility:hidden;">
           <span class="accent">90 minutes</span><br>
           live with<br>
           <span class="accent-2">Cole Medin.</span>
+          <span id="wi-headline-sweep"></span>
         </div>
         <div id="wi-subline" style="opacity:0;visibility:hidden;">
           Six strategies to scale Claude Code into messy codebases.<br>
@@ -178,7 +197,7 @@
         <div class="wi-fact-row" id="wi-fact-1" style="opacity:0;visibility:hidden;">
           <div class="dot"></div>
           <div class="label">When</div>
-          <div class="val">Friday, May 15 â€” 18:00 CEST</div>
+          <div class="val">Friday, May 15 — 18:00 CEST</div>
         </div>
         <div class="wi-fact-row" id="wi-fact-2" style="opacity:0;visibility:hidden;">
           <div class="dot"></div>
@@ -188,15 +207,20 @@
         <div class="wi-fact-row" id="wi-fact-3" style="opacity:0;visibility:hidden;">
           <div class="dot"></div>
           <div class="label">Room</div>
-          <div class="val">97 engineers</div>
+          <div class="val">97 Dynamous Members</div>
+        </div>
+        <div class="wi-fact-row" id="wi-fact-4" style="opacity:0;visibility:hidden;">
+          <div class="dot"></div>
+          <div class="label">Format</div>
+          <div class="val">Live workshop &middot; replay available</div>
         </div>
       </div>
 
-      <!-- RIGHT column â€” event screenshot (with 3D perspective) -->
+      <!-- RIGHT column — event screenshot (with 3D perspective) -->
       <div style="position:relative; perspective:1600px; transform-style:preserve-3d;">
         <div id="wi-event-card" style="opacity:0;visibility:hidden; transform-style:preserve-3d; backface-visibility:hidden;">
           <img src="assets/screenshots/workshop-event.png" alt="Workshop event" crossorigin="anonymous" />
-          <div id="wi-badge">COMMUNITY Â· WORKSHOP</div>
+          <div id="wi-badge">COMMUNITY · WORKSHOP</div>
         </div>
         <div id="wi-ring" style="opacity:0;visibility:hidden;
              position:absolute; top:-18px; left:-18px; right:-18px; bottom:-18px;
@@ -211,36 +235,52 @@
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
 
-      // Initial states â€” 3D flipped-away pose for the card
+      // Cinematic intro — initial states pose the card for a dramatic reveal,
+      // then a slow zoom + parallax + light-sweep across the headline carry it.
+
       tl.set("#wi-event-card",
         { x: 120, y: 30, scale: 0.8, rotation: -10, rotationY: -85, rotationX: 8, transformOrigin: "50% 50%" }, 0);
+      tl.set("#wi-event-card img",
+        { scale: 1.18, transformOrigin: "50% 35%" }, 0);
       tl.set("#wi-ring", { scale: 1.12, rotationY: -60 }, 0);
 
       // Eyebrow
       tl.to("#wi-eyebrow",
         { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.3);
 
-      // Headline â€” three lines staggered
+      // Headline — hero reveal aligned with the impact-slam SFX in index.html
       tl.from("#wi-headline .accent",
         { autoAlpha: 0, y: 36, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.7);
       tl.fromTo("#wi-headline",
         { autoAlpha: 0, y: 24 },
         { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.7);
 
+      // Light-sweep across headline at SFX impact moment (1.0–2.2s)
+      tl.fromTo("#wi-headline-sweep",
+        { left: "-40%", opacity: 0 },
+        { left: "120%", opacity: 1, duration: 1.2, ease: "power2.inOut", overwrite: "auto" }, 1.0);
+      tl.to("#wi-headline-sweep",
+        { opacity: 0, duration: 0.3, ease: "power1.in", overwrite: "auto" }, 2.0);
+
       // Subline
       tl.to("#wi-subline",
         { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.4);
 
-      // Event card â€” 3D reveal: flips from edge into view, then settles
+      // Event card — 3D reveal: flips from edge into view, then settles
       tl.to("#wi-event-card",
         { autoAlpha: 1, duration: 0.2, ease: "power1.out" }, 0.8);
       tl.to("#wi-event-card",
         { rotationY: 0, rotationX: 0, duration: 1.1, ease: "power3.out" }, 0.8);
       tl.to("#wi-event-card",
         { x: 0, y: 0, scale: 1, rotation: 2.2, duration: 1.0, ease: "back.out(1.4)" }, 0.95);
-      // Subtle 3D parallax tilt after landing â€” adds depth, settles to flat
+
+      // Slow camera push-in on the screenshot — runs the full scene duration
+      tl.to("#wi-event-card img",
+        { scale: 1.0, duration: 12.5, ease: "sine.inOut" }, 1.0);
+
+      // Continuous parallax tilt — depth across the whole hold, not a settle yoyo
       tl.to("#wi-event-card",
-        { rotationY: -3, rotationX: 1.5, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.4);
+        { rotationY: 4, rotationX: -2, duration: 5.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.4);
 
       // Highlight ring after card lands
       tl.to("#wi-ring",
@@ -248,7 +288,7 @@
       tl.to("#wi-ring",
         { autoAlpha: 0.5, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.8);
 
-      // Fact rows â€” step by step (hidden-until-reveal pattern, no overlap)
+      // Fact rows — step by step (hidden-until-reveal pattern, no overlap)
       tl.set("#wi-fact-1", { x: -30 }, 0);
       tl.set("#wi-fact-2", { x: -30 }, 0);
       tl.set("#wi-fact-3", { x: -30 }, 0);
@@ -262,11 +302,18 @@
       tl.to("#wi-fact-3",
         { autoAlpha: 1, x: 0, duration: 0.45, ease: "power2.out" }, 7.2);
 
-      // Subtle card breath after last fact lands
-      tl.to("#wi-event-card",
-        { scale: 1.015, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 9.0);
+      // 4th fact row — adds new info AND closes the 6s tail gap to scene exit (13.7s)
+      tl.set("#wi-fact-4", { x: -30 }, 0);
+      tl.to("#wi-fact-4",
+        { autoAlpha: 1, x: 0, duration: 0.45, ease: "power2.out" }, 9.6);
 
-      tl.set({}, {}, 14);
+      // Final cinematic settle — gentle card breath after last fact
+      tl.to("#wi-event-card",
+        { scale: 1.015, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 11.5);
+      // Tail-pacing beat — fill the 4s gap before scene crossfade
+      tl.to("#wi-fact-4", { scale: 1.04, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 13.8);
+
+      tl.set({}, {}, 15.5);
       window.__timelines["scene-workshop-intro"] = tl;
     </script>
   </div>

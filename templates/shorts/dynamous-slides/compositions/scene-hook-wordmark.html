@@ -1,0 +1,149 @@
+<!--
+  scene-hook-wordmark.html — Hero hook (vertical Shorts adaptation).
+
+  Character-stagger wordmark hero on the deep-navy Dynamous stage.
+  Each glyph rises in from below with ~70ms stagger. Wordmark scale-pulses
+  subtly during the hold. Optional flame badge top-right (decorative).
+
+  Sized for 1080x1920 — wordmark caps at ~180px so a 4-letter or 9-char
+  word wraps onto two lines without overflowing.
+-->
+<template id="scene-hook-wordmark-template">
+  <div data-composition-id="scene-hook-wordmark"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #scene-hook-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:center;
+        gap: 40px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #scene-hook-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 20px;
+      }
+      #scene-hook-content .eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 70px; height: 2px;
+        background: var(--accent-2);
+      }
+      #scene-hook-content .wordmark {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 180px;
+        line-height: 0.92;
+        letter-spacing: -0.04em;
+        color: var(--ink);
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 940px;
+      }
+      #scene-hook-content .wordmark .char {
+        display: inline-block;
+        will-change: transform, opacity;
+        white-space: pre;
+      }
+      #scene-hook-content .wordmark .accent {
+        color: var(--accent);
+        text-shadow: 0 0 60px rgba(59, 130, 246, 0.5);
+      }
+      #scene-hook-content .subline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 44px;
+        line-height: 1.32;
+        color: var(--ink-2);
+        max-width: 940px;
+      }
+      #scene-hook-content .subline strong {
+        font-weight: 800;
+        color: var(--ink);
+      }
+      #scene-hook-flame {
+        position: absolute;
+        top: 200px; right: 100px;
+        filter: drop-shadow(0 0 40px rgba(59, 130, 246, 0.7));
+      }
+    </style>
+
+    <div id="scene-hook-content">
+      <div id="scene-hook-flame">
+        <svg width="120" height="150" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="flame-grad-hook-short" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#60A5FA"/>
+              <stop offset="100%" stop-color="#3B82F6"/>
+            </linearGradient>
+          </defs>
+          <path d="M40 6 C 24 30, 16 52, 16 70 C 16 87, 28 96, 40 96 C 52 96, 64 87, 64 70 C 64 52, 56 30, 40 6 Z"
+                fill="url(#flame-grad-hook-short)" stroke="#2563EB" stroke-width="1.5"/>
+        </svg>
+      </div>
+
+      <div class="eyebrow" id="hook-eyebrow">REPLACE: KICKER</div>
+
+      <div class="wordmark" id="hook-wordmark">
+        <span class="char">R</span><span class="char">E</span><span class="char">P</span><span class="char">L</span><span class="char">A</span><span class="char">C</span><span class="char">E</span>
+      </div>
+
+      <div class="subline" id="hook-subline">
+        REPLACE: one tight sentence framing the hook.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Hidden-until-reveal pattern (step-by-step-reveal rule)
+      tl.set("#hook-eyebrow",        { autoAlpha: 0 }, 0);
+      tl.set("#hook-wordmark .char", { autoAlpha: 0, y: 120 }, 0);
+      tl.set("#hook-subline",        { autoAlpha: 0, y: 20 }, 0);
+      tl.set("#scene-hook-flame",    { autoAlpha: 0, scale: 0, rotation: -18 }, 0);
+
+      // Entrance — eyebrow → character stagger → flame → subline
+      tl.to("#hook-eyebrow",
+        { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.2);
+
+      tl.to("#hook-wordmark .char",
+        { y: 0, autoAlpha: 1, duration: 0.55, ease: "power3.out",
+          stagger: { each: 0.06, from: "start" } }, 0.5);
+
+      tl.to("#scene-hook-flame",
+        { scale: 1, autoAlpha: 1, rotation: 0, duration: 0.8, ease: "back.out(1.6)" }, 1.4);
+
+      tl.to("#hook-subline",
+        { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 1.9);
+
+      // Mid-hold beats (visual-pacing-5s rule) — beat every <=5s
+      tl.to("#scene-hook-flame",
+        { y: -14, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.6);
+
+      tl.to("#hook-wordmark",
+        { scale: 1.02, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.8);
+
+      tl.to("#scene-hook-flame",
+        { rotation: 6, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.2);
+
+      tl.set({}, {}, 9);
+      window.__timelines["scene-hook-wordmark"] = tl;
+    </script>
+  </div>
+</template>

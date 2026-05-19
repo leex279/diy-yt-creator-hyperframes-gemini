@@ -1,0 +1,111 @@
+<!--
+  scene-tension-pivot.html — Weight-contrast 300/800 pivot moment.
+
+  The deck's hero pivot. A light-weight "this" line crosses out (strike line)
+  while an 800-weight "that" line slams in below. Use sparingly — once per
+  Short, at the moment the narrative turns.
+-->
+<template id="scene-tension-pivot-template">
+  <div data-composition-id="scene-tension-pivot"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #tp-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:center;
+        gap: 48px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #tp-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #tp-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      .tp-line {
+        position: relative;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        line-height: 1.0;
+        letter-spacing: -0.03em;
+        max-width: 940px;
+      }
+      #tp-light {
+        font-weight: 300;
+        font-size: 100px;
+        color: var(--muted);
+      }
+      #tp-strike {
+        position: absolute;
+        left: 0; top: 50%;
+        height: 6px;
+        width: 0%;
+        background: #ef4444;
+        box-shadow: 0 0 18px rgba(239, 68, 68, 0.6);
+        border-radius: 3px;
+        transform: translateY(-50%);
+      }
+      #tp-bold {
+        font-weight: 800;
+        font-size: 138px;
+        color: var(--ink);
+      }
+      #tp-bold .accent {
+        color: var(--accent);
+        text-shadow: 0 0 60px rgba(59, 130, 246, 0.5);
+      }
+    </style>
+
+    <div id="tp-content">
+      <div class="eyebrow" id="tp-eyebrow">THE PIVOT</div>
+      <div class="tp-line">
+        <div id="tp-light">File size.</div>
+        <div id="tp-strike"></div>
+      </div>
+      <div class="tp-line" id="tp-bold-wrap">
+        <div id="tp-bold"><span class="accent">COUPLING</span>.</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#tp-eyebrow", { y: 24, autoAlpha: 0 }, 0);
+      tl.set("#tp-light",   { y: 30, autoAlpha: 0 }, 0);
+      tl.set("#tp-strike",  { width: "0%" }, 0);
+      tl.set("#tp-bold",    { y: 60, autoAlpha: 0, scale: 0.95 }, 0);
+
+      tl.to("#tp-eyebrow", { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#tp-light",   { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.5);
+
+      // Strike across the light line
+      tl.to("#tp-strike", { width: "100%", duration: 0.5, ease: "power3.out" }, 1.5);
+
+      // Slam the bold line
+      tl.to("#tp-bold", { y: 0, scale: 1, autoAlpha: 1, duration: 0.65, ease: "back.out(1.5)" }, 2.1);
+
+      // Mid-hold beats
+      tl.to("#tp-bold", { scale: 1.03, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.2);
+      tl.to("#tp-strike", { boxShadow: "0 0 36px rgba(239, 68, 68, 0.95)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.4);
+
+      tl.set({}, {}, 8);
+      window.__timelines["scene-tension-pivot"] = tl;
+    </script>
+  </div>
+</template>

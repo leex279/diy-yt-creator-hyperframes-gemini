@@ -1,0 +1,295 @@
+<!--
+  scene-hook-wordmark.html — Hero hook (vertical Shorts adaptation).
+
+  Character-stagger wordmark hero on the deep-navy Dynamous stage.
+  Each glyph rises in from below with ~70ms stagger. Wordmark scale-pulses
+  subtly during the hold. Optional flame badge top-right (decorative).
+
+  Sized for 1080x1920 — wordmark caps at ~180px so a 4-letter or 9-char
+  word wraps onto two lines without overflowing.
+-->
+<template id="scene-hook-wordmark-template">
+  <div data-composition-id="scene-hook-wordmark"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #scene-hook-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:center;
+        gap: 40px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #scene-hook-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 20px;
+      }
+      #scene-hook-content .eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 70px; height: 2px;
+        background: var(--accent-2);
+      }
+      #scene-hook-content .wordmark {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 180px;
+        line-height: 0.92;
+        letter-spacing: -0.04em;
+        color: var(--ink);
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 940px;
+      }
+      #scene-hook-content .wordmark .char {
+        display: inline-block;
+        will-change: transform, opacity;
+        white-space: pre;
+      }
+      #scene-hook-content .wordmark .accent {
+        color: var(--accent);
+        text-shadow: 0 0 60px rgba(59, 130, 246, 0.5);
+      }
+      #scene-hook-content .subline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 44px;
+        line-height: 1.32;
+        color: var(--ink-2);
+        max-width: 940px;
+      }
+      #scene-hook-content .subline strong {
+        font-weight: 800;
+        color: var(--ink);
+      }
+      #scene-hook-flame {
+        position: absolute;
+        top: 200px; right: 80px;
+        width: 220px; height: auto;
+        filter: drop-shadow(0 0 48px rgba(59, 130, 246, 0.85))
+                drop-shadow(0 0 96px rgba(14, 165, 233, 0.45));
+      }
+      #scene-hook-flame img {
+        width: 100%; height: auto; display: block;
+      }
+      /* Cinematic letterbox bars (slide in at t=0, slide out at ~3.5s) */
+      #scene-hook-bar-top, #scene-hook-bar-bottom {
+        position: absolute;
+        left: 0; width: 100%;
+        height: 120px;
+        background: #000;
+        z-index: 5;
+        pointer-events: none;
+      }
+      #scene-hook-bar-top    { top: 0; }
+      #scene-hook-bar-bottom { bottom: 0; }
+      /* Radial light flash overlay — fires at t=0.05 + t=3.2 */
+      #scene-hook-flash {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+        background: radial-gradient(circle at 50% 50%,
+          rgba(255, 255, 255, 0.95) 0%,
+          rgba(96, 165, 250, 0.6) 25%,
+          rgba(59, 130, 246, 0.15) 55%,
+          transparent 80%);
+        opacity: 0;
+        mix-blend-mode: screen;
+      }
+      /* Anamorphic horizontal lens-flare streak — fires on hero slam */
+      #scene-hook-streak {
+        position: absolute;
+        left: -20%;
+        top: 50%;
+        width: 140%;
+        height: 8px;
+        z-index: 4;
+        pointer-events: none;
+        background: linear-gradient(90deg,
+          transparent 0%,
+          rgba(96, 165, 250, 0.0) 15%,
+          rgba(96, 165, 250, 0.95) 50%,
+          rgba(255, 255, 255, 1.0) 50%,
+          rgba(14, 165, 233, 0.95) 50%,
+          rgba(14, 165, 233, 0.0) 85%,
+          transparent 100%);
+        filter: blur(4px);
+        box-shadow: 0 0 60px rgba(96, 165, 250, 0.9);
+        opacity: 0;
+        transform: scaleX(0);
+        transform-origin: 50% 50%;
+      }
+    </style>
+
+    <!-- Cinematic letterbox bars (animate off-canvas — overflow expected) -->
+    <div id="scene-hook-bar-top"    data-layout-allow-overflow></div>
+    <div id="scene-hook-bar-bottom" data-layout-allow-overflow></div>
+    <!-- Radial light flash overlay -->
+    <div id="scene-hook-flash"></div>
+    <!-- Anamorphic lens streak -->
+    <div id="scene-hook-streak"></div>
+
+    <div id="scene-hook-content">
+      <div id="scene-hook-flame">
+        <img src="assets/dynamous-icon.png" alt="Dynamous" crossorigin="anonymous" />
+      </div>
+
+      <div class="eyebrow" id="hook-eyebrow">WEEKLY AI SIGNAL · 2026-05-19</div>
+
+      <div class="wordmark" id="hook-wordmark">
+        <span class="char">J</span><span class="char">U</span><span class="char">N</span><span class="char">E</span><span class="char"> </span><span class="char accent">1</span><span class="char accent">5</span>
+      </div>
+
+      <div class="subline" id="hook-subline">
+        Anthropic just split <strong>programmatic Claude</strong> into its own credit bucket.
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ─────────────────────────────────────────────────────────
+      // BLOCKBUSTER CINEMATIC INTRO
+      // First frame at t=0 is thumbnail-grade — topic + brand + receipt
+      // all visible. Camera punches in, letterbox bars cinema-crop,
+      // radial light flash + lens streak, layered SFX hits.
+      // ─────────────────────────────────────────────────────────
+
+      // FRAME 0 — title lockup fully visible, slightly punched-in.
+      // (NOT a fade-in: brightness + scale settle is a "camera focus" effect.)
+      tl.set("#scene-hook-content",  { autoAlpha: 1, scale: 1.06,
+                                       filter: "blur(5px) brightness(1.25)" }, 0);
+      tl.set("#hook-eyebrow",        { autoAlpha: 1, y: 0 }, 0);
+      tl.set("#hook-wordmark .char", { autoAlpha: 1, y: 0 }, 0);
+      tl.set("#hook-subline",        { autoAlpha: 1, y: 0 }, 0);
+      tl.set("#scene-hook-flame",    { autoAlpha: 1, scale: 1.5,
+                                       rotation: -28, x: 60, y: -40 }, 0);
+
+      // LETTERBOX BARS — cinematic 2.35:1 crop. Slide in at t=0, hold,
+      // slide out at hero-slam moment (~3.4s, just before "June 15").
+      tl.set("#scene-hook-bar-top",    { y: -120 }, 0);
+      tl.set("#scene-hook-bar-bottom", { y:  120 }, 0);
+      tl.to("#scene-hook-bar-top",    { y: 0, duration: 0.35, ease: "power3.out" }, 0);
+      tl.to("#scene-hook-bar-bottom", { y: 0, duration: 0.35, ease: "power3.out" }, 0);
+
+      // BEAT 1 — t=0.05  IMPACT PUNCH-IN
+      //   • content unblurs + scales 1.06 → 1.0
+      //   • radial light flash hits then decays
+      //   • flame icon rotates -28°→0 and scales 1.5→1.0 with elastic recoil
+      tl.to("#scene-hook-content",
+        { scale: 1.0, filter: "blur(0px) brightness(1.0)",
+          duration: 0.9, ease: "expo.out" }, 0.05);
+
+      tl.fromTo("#scene-hook-flash",
+        { opacity: 0, scale: 0.8 },
+        { opacity: 0.85, scale: 1.4, duration: 0.18, ease: "power2.out" }, 0.05);
+      tl.to("#scene-hook-flash",
+        { opacity: 0, duration: 0.55, ease: "power2.in", overwrite: "auto" }, 0.22);
+
+      tl.to("#scene-hook-flame",
+        { scale: 1.0, rotation: 0, x: 0, y: 0,
+          duration: 1.0, ease: "elastic.out(1.05, 0.55)" }, 0.05);
+
+      // Sub-frame screen-shake on the whole content (audio-design "screen-shake")
+      tl.to("#scene-hook-content",
+        { x: -6, duration: 0.05, ease: "power1.inOut", yoyo: true, repeat: 5 }, 0.05);
+      tl.set("#scene-hook-content", { x: 0 }, 0.4);
+
+      // BEAT 2 — t=0.70  ACCENT ON "split" narration word
+      //   • eyebrow glitch flicker
+      //   • flame quick rotation jolt
+      tl.to("#hook-eyebrow",  { autoAlpha: 0.25, duration: 0.06,
+                                ease: "power1.inOut", yoyo: true, repeat: 3 }, 0.7);
+      tl.to("#scene-hook-flame", { rotation: 8, duration: 0.15,
+                                   ease: "power2.out", yoyo: true, repeat: 1,
+                                   overwrite: "auto" }, 0.78);
+
+      // BEAT 3 — t=1.6  Wordmark character settle pulse
+      //   Subtle 80ms character bounce, riding the "Anthropic just split how..."
+      tl.fromTo("#hook-wordmark .char",
+        { y: -10 }, { y: 0, duration: 0.35, ease: "back.out(1.8)",
+                     stagger: { each: 0.025, from: "start" } }, 1.6);
+
+      // BEAT 4 — t=3.18  HERO SLAM on "June fifteen" narration word
+      //   • impact-slam + screen-shake SFX (wired in index.html)
+      //   • letterbox bars slide OUT (cinema crop releases)
+      //   • lens-streak sweeps horizontally across hero
+      //   • full radial flash second burst
+      //   • accent digits scale-pulse with chromatic glow
+      //   • content shake recoil
+      tl.to("#scene-hook-bar-top",    { y: -120, duration: 0.55,
+                                        ease: "power2.in" }, 3.15);
+      tl.to("#scene-hook-bar-bottom", { y:  120, duration: 0.55,
+                                        ease: "power2.in" }, 3.15);
+
+      tl.fromTo("#scene-hook-flash",
+        { opacity: 0, scale: 0.9 },
+        { opacity: 0.55, scale: 1.3, duration: 0.16, ease: "power2.out" }, 3.18);
+      tl.to("#scene-hook-flash",
+        { opacity: 0, duration: 0.45, ease: "power2.in", overwrite: "auto" }, 3.34);
+
+      tl.fromTo("#scene-hook-streak",
+        { opacity: 0, scaleX: 0 },
+        { opacity: 1.0, scaleX: 1, duration: 0.22, ease: "power3.out" }, 3.18);
+      tl.to("#scene-hook-streak",
+        { opacity: 0, scaleX: 1.3, duration: 0.35, ease: "power2.in", overwrite: "auto" }, 3.40);
+
+      tl.to("#hook-wordmark .accent",
+        { scale: 1.14,
+          textShadow: "0 0 90px rgba(96, 165, 250, 1), 0 0 36px rgba(255, 255, 255, 0.95), 4px 0 rgba(220, 38, 38, 0.55), -4px 0 rgba(14, 165, 233, 0.55)",
+          duration: 0.22, ease: "expo.out" }, 3.18);
+      tl.to("#hook-wordmark .accent",
+        { scale: 1.0,
+          textShadow: "0 0 60px rgba(59, 130, 246, 0.5)",
+          duration: 0.6, ease: "power2.in", overwrite: "auto" }, 3.40);
+
+      // Shake recoil on the whole content from the slam
+      tl.to("#scene-hook-content",
+        { x: -8, duration: 0.045, ease: "power1.inOut", yoyo: true, repeat: 7 }, 3.18);
+      tl.set("#scene-hook-content", { x: 0 }, 3.6);
+
+      // Flame orbit-pop on the slam
+      tl.to("#scene-hook-flame",
+        { scale: 1.18, rotation: -8, duration: 0.18,
+          ease: "back.out(1.8)" }, 3.18);
+      tl.to("#scene-hook-flame",
+        { scale: 1.0, rotation: 0, duration: 0.5,
+          ease: "elastic.out(1.1, 0.5)", overwrite: "auto" }, 3.40);
+
+      // BEAT 5 — t=4.9  Subline "If you run headless workflows" emphasis
+      //   Subline brightness flicker (no scale to keep readable)
+      tl.to("#hook-subline strong",
+        { textShadow: "0 0 24px rgba(96, 165, 250, 0.95)",
+          duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.86);
+
+      // BEAT 6 — t=6.2  Flame orbital pulse (continuous beat for pacing rule)
+      tl.to("#scene-hook-flame",
+        { y: -16, rotation: 4, duration: 0.7,
+          ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.2);
+
+      // Final settle pulse on wordmark (carries into the scene transition)
+      tl.to("#hook-wordmark",
+        { scale: 1.02, duration: 0.5,
+          ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.0);
+
+      tl.set({}, {}, 7.5);
+      window.__timelines["scene-hook-wordmark"] = tl;
+    </script>
+  </div>
+</template>

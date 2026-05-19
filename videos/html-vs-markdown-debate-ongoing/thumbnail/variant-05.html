@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!-- Variant 05 — Three camps split.
+     MARKDOWN vs HTML dominant topic at top (with pill-box treatment).
+     Three camp columns below: TEAM MARKDOWN / TEAM HYBRID / TEAM HTML.
+     ROUND 2 badge bottom-left corner. Receipt: "WHICH SIDE ARE YOU ON?"
+     Theme: white minimal. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v05 — Topic pills + three camps + ROUND 2 badge</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Topic header — pill-box style: [ MARKDOWN ] vs [ HTML ] */
+  .topic-header {
+    position: absolute;
+    top: 102px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-pill {
+    font-size: 76px;
+    color: var(--text-cream);
+    letter-spacing: -2px;
+    border: 3px solid rgba(28, 26, 24, 0.15);
+    border-radius: 12px;
+    padding: 6px 24px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 46px;
+    color: var(--accent-terracotta);
+    padding: 0 6px;
+  }
+  .topic-sub {
+    display: block;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--text-muted-cream);
+  }
+
+  /* Camps area */
+  .camps-wrapper {
+    position: absolute;
+    top: 268px;
+    left: 60px;
+    right: 60px;
+    bottom: 120px;
+    display: flex;
+    gap: 20px;
+  }
+  .camp {
+    flex: 1;
+    border: 3px solid var(--accent-terracotta);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    gap: 8px;
+  }
+  .camp-label {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent-deep-red);
+  }
+  .camp-name {
+    font-family: var(--sans-display);
+    font-weight: 900;
+    font-size: 58px;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: var(--text-cream);
+    text-align: center;
+  }
+  .camp-desc {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted-cream);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ROUND 2 badge — bottom-right */
+  .round2-badge {
+    position: absolute;
+    bottom: 54px; right: 60px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent-terracotta);
+    padding: 8px 20px;
+    border-radius: 8px;
+    z-index: 10;
+  }
+
+  /* Receipt */
+  .receipt-c {
+    position: absolute;
+    left: 60px;
+    bottom: 54px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent-deep-red);
+  }
+
+  .theme-white .brand {
+    left: auto; bottom: auto; top: 56px; right: 60px;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-white">
+    <div class="overline">Using Claude Code</div>
+    <div class="overline-divider"></div>
+
+    <!-- Dominant topic header — pill box style -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-pill">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-pill">HTML</span>
+      </div>
+      <span class="topic-sub">1000 replies · three camps</span>
+    </div>
+
+    <!-- Camps -->
+    <div class="camps-wrapper">
+      <div class="camp">
+        <span class="camp-label">Team</span>
+        <span class="camp-name">MARK<br>DOWN</span>
+        <span class="camp-desc">plain text<br>forever</span>
+      </div>
+      <div class="camp">
+        <span class="camp-label">Team</span>
+        <span class="camp-name">HYB<br>RID</span>
+        <span class="camp-desc">depends<br>on context</span>
+      </div>
+      <div class="camp">
+        <span class="camp-label">Team</span>
+        <span class="camp-name">HTML</span>
+        <span class="camp-desc">richer<br>output</span>
+      </div>
+    </div>
+
+    <div class="receipt-c">Which side are you on?</div>
+    <div class="round2-badge">ROUND 2</div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

@@ -1,0 +1,140 @@
+{
+  "agent": "video-timing-pacer",
+  "slug": "ast-grep-missing-layer-short",
+  "summary": {
+    "phases_audited": 8,
+    "scenes_audited": 8,
+    "findings_by_severity": {
+      "BLOCKER": 2,
+      "HIGH": 8,
+      "MEDIUM": 3,
+      "LOW": 0
+    },
+    "verdict": "FAIL_BLOCKER"
+  },
+  "findings": [
+    {
+      "id": "T-001",
+      "severity": "BLOCKER",
+      "rule": "required-clip-attributes",
+      "location": "videos/ast-grep-missing-layer-short/index.html:198-244",
+      "phase": "all 8 scene wrappers",
+      "summary": "All 8 scene-wrapper divs missing class=clip and data-duration. Sub-comp durations 0.6-1.6s vs correct 11-22s. Renderer truncates every scene mid-narration.",
+      "evidence": "hyperframes compositions: scene-marker=0.7s, scene-string-literal=0.6s, scene-chart=1.0s, scene-stat=1.6s, scene-compare=0.6s, scene-process-flow=0.6s, scene-code-block=0.6s, scene-cta=0.7s. CLAUDE.md Key Rules require class=clip data-duration data-width data-height on sub-comp mounts.",
+      "fix": "Add class=clip data-duration data-width=1080 data-height=1920 to every scene-wrapper. Durations: scene-marker=11.0, scene-string-literal=15.3, scene-chart=16.7, scene-stat=14.9, scene-compare=13.4, scene-process-flow=19.3, scene-code-block=17.0, scene-cta=22.4. Re-run npx hyperframes compositions to confirm."
+    },
+    {
+      "id": "T-002",
+      "severity": "BLOCKER",
+      "rule": "composition-duration-ge-narration",
+      "location": "videos/ast-grep-missing-layer-short/index.html:433",
+      "phase": "root timeline",
+      "summary": "Structural consequence of T-001: all sub-comp durations 0.6-1.6s so every scene blacks out within 1-2s. Root correctly runs to 130s, narration.wav=127.7s.",
+      "evidence": "ffprobe narration.wav=127.704s. Root tl.set at 129.99 correct. Sub-comp durations 0.6-1.6s due to missing data-duration.",
+      "fix": "Apply T-001 fix first. Resolves automatically."
+    },
+    {
+      "id": "T-003",
+      "severity": "HIGH",
+      "rule": "hook-static-phrase-boundary",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-marker.html:98-111",
+      "phase": "scene-marker (0-11.0s)",
+      "summary": "Hook 4 entrances complete by t=2.2s. Phrase boundaries at 3.14 Right-now, 3.88 flagged, 6.68 In-quotes, 7.62 test-fixture have zero new foreground elements. Gap t=2.2 to re-sweep t=8.5 = 6.3s exceeds 5s cap.",
+      "evidence": "Entrances: pretitle(0-0.5), headline(0.3-1.0), marker-band(1.1-1.7), subline(1.7-2.2). Beat A at 4.5=opacity yoyo NOT content. Beat B at 6.5=scale yoyo NOT content. Re-sweep at 8.5 IS geometry. 5 phrase boundaries, only 1 with content beat within 1s.",
+      "fix": "Insert 3 new DOM elements: (1) t=3.14 token-cost chip via tl.set+tl.to. (2) t=3.88 mini code-string pill showing console.log(hi). (3) t=6.68 quote-mark badge. Retime re-sweep from 8.5 to 7.62."
+    },
+    {
+      "id": "T-004",
+      "severity": "HIGH",
+      "rule": "visual-pacing-5s",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-compare.html:119-130",
+      "phase": "scene-compare (57.9-71.3s internal 13.4s)",
+      "summary": "All 4 entrances complete by t=1.8s. Gap from last entrance to phase exit = 11.6s. All 5 mid-beats are yoyo pulses with no new information.",
+      "evidence": "header(0-0.6), before(0.4-1.0), vs(0.9-1.4), after(1.2-1.8). Beats A-E at t=4,5,7.5,9.5,12: all yoyo:true repeat:1. No new element after t=1.8s. Gap=11.6s.",
+      "fix": "3 content beats via tl.set()+tl.to(): (1) t=3.0 false-positives badge on compare-before. (2) t=6.5 sub-stat line on compare-after (92pct fewer matches). (3) t=9.5 bottom pill: Strings cannot match a call pattern."
+    },
+    {
+      "id": "T-005",
+      "severity": "HIGH",
+      "rule": "visual-pacing-5s",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-stat.html:103-109",
+      "phase": "scene-stat (43.0-57.9s internal 14.9s)",
+      "summary": "Counter completes at t=2.4s, caption at t=2.9s. Gap from last entrance (2.9s) to phase exit (14.9s) = 12.0s. All 4 mid-beats are yoyo pulses.",
+      "evidence": "Entrances complete by t=2.9. Beats at 5.0,7.5,10.0,12.5 are scale/color yoyos. Gap=12.0s.",
+      "fix": "3 content elements via tl.set()+tl.to(): (1) t=4.5 breakdown label 11K tokens x 50/day. (2) t=8.0 comparison pill zero-cost with ast-grep. (3) t=11.0 callout chip Happens silently on every refactor."
+    },
+    {
+      "id": "T-006",
+      "severity": "HIGH",
+      "rule": "visual-pacing-5s",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-cta.html:111-127",
+      "phase": "scene-cta (107.6-130s internal 22.4s)",
+      "summary": "All 5 entrances complete by t=2.8s. Gap from cta-question end (2.8s) to phase end (22.4s) = 19.6s - longest static gap. All 7 mid-beats (A-G) are yoyo/nudge pulses.",
+      "evidence": "Entrances: kicker(0-0.5), lede(0.3-0.9), url(0.7-1.4), subscribe(1.5-2.0), cta-question(2.2-2.8). Beats A-G at t=4,6.5,9,11,13.5,16,18.5: yoyo or x-nudge. No new element. Gap=19.6s.",
+      "fix": "4 real content beats: (1) t=4.5 chapter-list chip. (2) t=8.0 3-line long-form preview as separate fading lines. (3) t=12.0 secondary URL label. (4) t=16.0 debate question echo in accent color. All via tl.set(target,{opacity:0},0)+tl.to()."
+    },
+    {
+      "id": "T-007",
+      "severity": "HIGH",
+      "rule": "visual-pacing-5s",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-process-flow.html:148-156",
+      "phase": "scene-process-flow (71.3-90.6s internal 19.3s)",
+      "summary": "Two gaps exceed 5s: (1) pf-n2 end (5.95s) to pf-a2 entrance (11.4s) = 5.45s. (2) pf-n3 end (12.35s) to phase exit (19.3s) = 6.95s with only yoyo all-pulse at 18.0s.",
+      "evidence": "pf-n2 enters 5.4 ends 5.95. Next pf-a2 at 11.4 gap=5.45s. pf-n3 enters 11.8 ends 12.35. Phase exit 19.3. All-pulse at 18.0 = yoyo not content. Gap=6.95s.",
+      "fix": "(1) Add content beat t=8.5: sub-stat badge on pf-n2 (164 vs 12 matches) via tl.set()+tl.to(). (2) Add content beat t=15.0 after pf-n3: speed-benchmark chip (200K files in 0.8s) as new DOM element."
+    },
+    {
+      "id": "T-008",
+      "severity": "HIGH",
+      "rule": "sfx-not-wired",
+      "location": "videos/ast-grep-missing-layer-short/index.html",
+      "phase": "all scenes",
+      "summary": "sfx-cues.txt lists 5 cues (impact-slam, scale-slam, cinematic-whoosh, spring-pop, pop) but zero audio sfx-* elements exist in index.html. All 7 scene transitions play silently.",
+      "evidence": "sfx-cues.txt: impact-slam, scale-slam, cinematic-whoosh, spring-pop, pop. Only audio element: id=narration. No sfx-* elements found.",
+      "fix": "Run: bash scripts/sync-video-sfx.sh videos/ast-grep-missing-layer-short impact-slam scale-slam cinematic-whoosh spring-pop pop. Add cinematic-whoosh per transition at times 11.0,26.3,43.0,57.9,71.3,90.6,107.6 with data-duration=1.5, data-volume=0.11, data-track-index=3. Per audio-design.md: whoosh fires AT visual transition time not sceneT-0.4."
+    },
+    {
+      "id": "T-009",
+      "severity": "MEDIUM",
+      "rule": "immediateRender-false-on-long-compositions",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-string-literal.html:154-155",
+      "phase": "scene-string-literal",
+      "summary": "tl.from sl-verdict at t=8.5 and tl.from sl-tail at t=9.2 fire at t>5 without immediateRender:false. Both flash visible at t=0.",
+      "evidence": "Lines 154-155: two tl.from() at t=8.5 and 9.2. No immediateRender:false, no tl.set() at t=0.",
+      "fix": "Replace with tl.set(sl-verdict,{y:24,opacity:0},0)+tl.to(sl-verdict,{y:0,opacity:1,duration:0.5},8.5) and same pattern for sl-tail at t=9.2."
+    },
+    {
+      "id": "T-010",
+      "severity": "MEDIUM",
+      "rule": "immediateRender-false-on-long-compositions",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-process-flow.html:146-149",
+      "phase": "scene-process-flow",
+      "summary": "tl.from at t=5.0 (pf-a1), 5.4 (pf-n2), 11.4 (pf-a2), 11.8 (pf-n3) lack immediateRender:false. All four flash visible at t=0.",
+      "evidence": "Lines 146-149: four tl.from() at 5.0, 5.4, 11.4, 11.8. No immediateRender:false.",
+      "fix": "For each: tl.set(target,fromState,0)+tl.to(target,toState,T). Example for pf-a2: tl.set(pf-a2,{scaleY:0,opacity:0},0)+tl.to(pf-a2,{scaleY:1,opacity:1,duration:0.35},11.4)."
+    },
+    {
+      "id": "T-011",
+      "severity": "MEDIUM",
+      "rule": "immediateRender-false-on-long-compositions",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-code-block.html:126-129",
+      "phase": "scene-code-block",
+      "summary": "tl.from at t=5.8 (cb-l3), 6.2 (cb-l4), 11.5 (cb-l5), 12.0 (cb-footnote) lack immediateRender:false. All four flash visible at t=0.",
+      "evidence": "Lines 126-129: four tl.from() at 5.8, 6.2, 11.5, 12.0. No immediateRender:false, no tl.set() guards.",
+      "fix": "Batch tl.set(cb-l3,cb-l4,cb-l5,cb-footnote,{x:-20,opacity:0},0); then change each tl.from() to tl.to() with x:0,opacity:1 at same trigger times."
+    }
+  ],
+  "stats": {
+    "longest_static_gap_seconds": 19.6,
+    "scenes_with_gap_over_5s": 5,
+    "hook_phrase_boundaries_without_content_beat": 4,
+    "lists_without_step_by_step": 0,
+    "sfx_wired": 0,
+    "sfx_cues_listed": 5,
+    "scene_wrappers_missing_clip_class": 8,
+    "scene_wrappers_missing_data_duration": 8,
+    "narration_wav_seconds": 127.7,
+    "root_composition_seconds": 130.0,
+    "sub_comp_duration_discrepancy": true
+  }
+}

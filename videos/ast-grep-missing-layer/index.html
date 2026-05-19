@@ -328,12 +328,67 @@
   #scene-hook-wrap         { z-index: 5; opacity: 1; }
   #scene-arch-stack-wrap   { z-index: 5; opacity: 0; visibility: hidden; }
   #scene-image-hero-wrap   { z-index: 5; opacity: 0; visibility: hidden; }
+  #scene-how-works-wrap    { z-index: 5; opacity: 0; visibility: hidden; }
   #scene-video-embed-wrap  { z-index: 5; opacity: 0; visibility: hidden; }
   #scene-stat-pill-row-wrap{ z-index: 5; opacity: 0; visibility: hidden; }
   #scene-side-by-side-wrap { z-index: 5; opacity: 0; visibility: hidden; }
+  #scene-vs-tools-wrap     { z-index: 5; opacity: 0; visibility: hidden; }
   #scene-source-cards-wrap { z-index: 5; opacity: 0; visibility: hidden; }
   #scene-install-wrap      { z-index: 5; opacity: 0; visibility: hidden; }
   #scene-cta-wrap          { z-index: 5; opacity: 0; visibility: hidden; }
+
+  /* Support-the-channel banner — bottom-center mid-video accent */
+  #support-banner {
+    position: absolute;
+    bottom: 56px;
+    left: 60px;
+    right: 60px;
+    height: 80px;
+    z-index: 45;
+    opacity: 0;
+    visibility: hidden;
+    background: linear-gradient(180deg, rgba(13, 17, 23, 0.96) 0%, rgba(13, 17, 23, 0.99) 100%);
+    border: 2px solid var(--brand-orange);
+    border-radius: 12px;
+    box-shadow: 0 0 32px rgba(247, 129, 102, 0.30);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    pointer-events: none;
+  }
+  #support-banner .left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+  }
+  #support-banner .play {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 32px;
+    color: var(--brand-orange);
+    line-height: 1;
+  }
+  #support-banner .label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--fg-bright);
+    letter-spacing: 0.3px;
+  }
+  #support-banner .divider {
+    width: 1px;
+    height: 38px;
+    background: var(--border-strong);
+    margin: 0 20px;
+  }
+  #support-banner .right {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--brand-orange);
+    letter-spacing: 1px;
+  }
 
   /* Hostinger midroll overlays everything — full-bleed */
   #hostinger-midroll-mount {
@@ -360,7 +415,7 @@
 <div id="root"
      data-composition-id="ast-grep-missing-layer"
      data-start="0"
-     data-duration="245"
+     data-duration="386.13"
      data-width="1920"
      data-height="1080">
 
@@ -385,25 +440,28 @@
   <div id="editor-body">
 
     <!-- ═══════════════════════════════════════════════════════
-         SCENE WRAPPERS (retimed to 241.16s narration, 245s total)
-         Scene boundaries anchored to transcript word starts:
-           0       → hook            (17.39s)   "Your AI agent" 0.07
-           17.39   → arch-stack      (20.54s)   "Every AI coding" 17.39
-           37.93   → image-hero      (24.4s)    "Meet ast-grep" 37.93
-           62.33   → video-embed     (33.96s)   "Watch your agent" 62.33
-           96.29   → stat-pill-row   (40.67s)   "One example" 96.29 (extended to bridge hostinger end → side-by-side new start)
-           122.56  → hostinger       (14.40s)   "Quick word" 122.56 (extended to bridge to 136.96)
-           136.96  → side-by-side    (32.46s)   "Let's" 136.96 (was 135.24; "Now back to ast-grep" trailing audio belongs to scene 06)
-           169.42  → source-cards    (30.15s)   "But my agent" 169.42
-           199.57  → install         (17.53s)   "How do you" 199.57
-           217.10  → cta             (27.90s)   "So here's" 217.10
+         SCENE WRAPPERS — RE-ANCHORED to transcript.json (audio = 381.73s, total = 386.13s w/ 4.4s tail)
+         Scene boundaries (sequential, anchored to first word of each scene):
+           0.000   → hook              (16.277s)  "Your" 0.070
+          16.277   → arch-stack        (18.006s)  "Every" 16.277
+          34.283   → image-hero        (25.031s)  "Meet" 34.283
+          59.314   → how-it-works      (67.127s)  "But" 59.314
+         126.441   → video-embed       (32.472s)  "Watch" 126.441
+         158.913   → stat-pill-row     (27.283s)  "One" 158.913
+         186.196   → hostinger         (14.024s)  "Quick" 186.196
+         200.220   → side-by-side      (32.415s)  "Let's" 200.220
+         232.635   → vs-other-tools    (60.590s)  "But" 232.635
+         293.225   → source-cards      (29.558s)  "But" 293.225
+         322.783   → install           (34.853s)  "Giving" 322.783
+         357.636   → cta               (28.494s)  "So" 357.636
+         386.130   → end of composition (4.4s buffer past last word 381.73)
          ═══════════════════════════════════════════════════════ -->
 
     <div id="scene-hook-wrap" class="scene-wrapper clip"
          data-composition-id="scene-hook"
          data-composition-src="compositions/scene-hook.html"
          data-start="0"
-         data-duration="17.39"
+         data-duration="16.277"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -411,8 +469,8 @@
     <div id="scene-arch-stack-wrap" class="scene-wrapper clip"
          data-composition-id="scene-architecture-stack"
          data-composition-src="compositions/scene-architecture-stack.html"
-         data-start="17.39"
-         data-duration="20.54"
+         data-start="16.277"
+         data-duration="18.006"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -420,8 +478,17 @@
     <div id="scene-image-hero-wrap" class="scene-wrapper clip"
          data-composition-id="scene-image-hero"
          data-composition-src="compositions/scene-image-hero.html"
-         data-start="37.93"
-         data-duration="24.40"
+         data-start="34.283"
+         data-duration="25.031"
+         data-track-index="1"
+         data-width="1556"
+         data-height="998"></div>
+
+    <div id="scene-how-works-wrap" class="scene-wrapper clip"
+         data-composition-id="scene-how-it-works"
+         data-composition-src="compositions/scene-how-it-works.html"
+         data-start="59.314"
+         data-duration="67.127"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -429,8 +496,8 @@
     <div id="scene-video-embed-wrap" class="scene-wrapper clip"
          data-composition-id="scene-video-embed"
          data-composition-src="compositions/scene-video-embed.html"
-         data-start="62.33"
-         data-duration="33.96"
+         data-start="126.441"
+         data-duration="32.472"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -438,8 +505,8 @@
     <div id="scene-stat-pill-row-wrap" class="scene-wrapper clip"
          data-composition-id="scene-stat-pill-row"
          data-composition-src="compositions/scene-stat-pill-row.html"
-         data-start="96.29"
-         data-duration="40.67"
+         data-start="158.913"
+         data-duration="27.283"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -447,8 +514,17 @@
     <div id="scene-side-by-side-wrap" class="scene-wrapper clip"
          data-composition-id="scene-side-by-side"
          data-composition-src="compositions/scene-side-by-side.html"
-         data-start="136.96"
-         data-duration="32.45"
+         data-start="200.220"
+         data-duration="32.415"
+         data-track-index="1"
+         data-width="1556"
+         data-height="998"></div>
+
+    <div id="scene-vs-tools-wrap" class="scene-wrapper clip"
+         data-composition-id="scene-vs-other-tools"
+         data-composition-src="compositions/scene-vs-other-tools.html"
+         data-start="232.635"
+         data-duration="60.590"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -456,8 +532,8 @@
     <div id="scene-source-cards-wrap" class="scene-wrapper clip"
          data-composition-id="scene-source-cards"
          data-composition-src="compositions/scene-source-cards.html"
-         data-start="169.42"
-         data-duration="30.15"
+         data-start="293.225"
+         data-duration="29.558"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -465,8 +541,8 @@
     <div id="scene-install-wrap" class="scene-wrapper clip"
          data-composition-id="scene-install"
          data-composition-src="compositions/scene-install.html"
-         data-start="199.57"
-         data-duration="17.53"
+         data-start="322.783"
+         data-duration="34.853"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -474,8 +550,8 @@
     <div id="scene-cta-wrap" class="scene-wrapper clip"
          data-composition-id="scene-cta"
          data-composition-src="compositions/scene-cta.html"
-         data-start="217.10"
-         data-duration="27.90"
+         data-start="357.636"
+         data-duration="28.494"
          data-track-index="1"
          data-width="1556"
          data-height="998"></div>
@@ -486,7 +562,7 @@
   <div id="agent-sidebar">
     <div id="sidebar-header">
       <span class="lbl-dot"></span>
-      <span>AGENT · sonnet-4</span>
+      <span>AGENT · sonnet-4.7</span>
     </div>
 
     <div id="sidebar-user-task">
@@ -529,15 +605,25 @@
     </div>
     <div class="agent-top-spacer"></div>
     <div id="agent-top-meta">
-      <span id="agent-meta-model">model: claude-sonnet-4</span>
+      <span id="agent-meta-model">model: claude-sonnet-4.7</span>
       <span class="sep">·</span>
       <span id="agent-meta-tool">tool: grep</span>
     </div>
   </div>
 
+  <!-- SUPPORT-THE-CHANNEL banner — fires once mid-video at ~241s for 5s, after the steelman opens -->
+  <div id="support-banner">
+    <div class="left">
+      <span class="play">►</span>
+      <span class="label">SUBSCRIBE for more AI coding deep-dives</span>
+    </div>
+    <div class="divider"></div>
+    <div class="right">smartcode.diy</div>
+  </div>
+
   <!-- STATUS BAR -->
   <div id="agent-status-bar">
-    <div class="sb-seg"><span id="sb-model">claude-sonnet-4</span></div>
+    <div class="sb-seg"><span id="sb-model">claude-sonnet-4.7</span></div>
     <div class="sb-seg"><span id="sb-tokens">tokens: 0</span></div>
     <div class="sb-seg"><span id="sb-cost">cost: $0.00</span></div>
     <div class="sb-seg"><span id="sb-files">files read: 0</span></div>
@@ -548,12 +634,12 @@
   <!-- Progress fill -->
   <div id="progress-track"><div id="progress-fill"></div></div>
 
-  <!-- HOSTINGER MIDROLL — full-bleed overlay starting at 122.56 (extended to 14.40s to bridge to scene-side-by-side new start at 136.96) -->
+  <!-- HOSTINGER MIDROLL — full-bleed overlay starting at 186.196 ("Quick word from our affiliate, Hostinger.") -->
   <div id="hostinger-midroll-mount"
        data-composition-id="hostinger-midroll"
        data-composition-src="compositions/hostinger-midroll.html"
-       data-start="122.56"
-       data-duration="14.40"
+       data-start="186.196"
+       data-duration="14.024"
        data-track-index="20"
        data-width="1920"
        data-height="1080"></div>
@@ -564,7 +650,7 @@
        data-composition-id="captions"
        data-composition-src="compositions/captions.html"
        data-start="0"
-       data-duration="245"
+       data-duration="386.13"
        data-track-index="9"
        data-width="1920"
        data-height="1080"></div>
@@ -575,76 +661,104 @@
   <audio id="narration"
          src="audio/narration.wav"
          data-start="0"
-         data-duration="245"
+         data-duration="386.13"
          data-track-index="2"
          data-volume="1.0"></audio>
 
   <!-- bg-music removed per user request 2026-05-17 — narration + SFX only -->
 
-  <!-- SFX cues — re-anchored to new transcript word starts -->
+  <!-- SFX cues — RE-ANCHORED to transcript.json word starts.
+       Volume conventions (from .claude/rules/audio-design.md):
+         · impact-slam=0.15, scale-slam=0.15, spring-pop=0.11, pop=0.10, whoosh=0.11, glitch-zap=0.09
+         · Percussive cues fire word_start - 0.05; whooshes fire at scene boundary; non-percussive at word_start. -->
 
-  <!-- Scene 01 Hook SFX -->
+  <!-- Scene 01 Hook SFX (0 - 17.391) -->
   <audio id="sfx-s01-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="0.0" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s01-impact-bleeding" src="assets/sfx/impact-slam.mp3" data-start="1.09" data-duration="0.6" data-track-index="4" data-volume="0.18"></audio>
-  <audio id="sfx-s01-impact-now" src="assets/sfx/impact-slam.mp3" data-start="2.55" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
-  <audio id="sfx-s01-glitch-flagged" src="assets/sfx/glitch-zap.mp3" data-start="4.40" data-duration="0.6" data-track-index="3" data-volume="0.09"></audio>
-  <audio id="sfx-s01-spring-counter" src="assets/sfx/spring-pop.mp3" data-start="8.50" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
-  <audio id="sfx-s01-impact-billed" src="assets/sfx/impact-slam.mp3" data-start="11.20" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
-  <audio id="sfx-s01-whoosh-pivot" src="assets/sfx/cinematic-whoosh.mp3" data-start="13.20" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s01-impact-bleeding" src="assets/sfx/impact-slam.mp3" data-start="1.041" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s01-glitch-flagged" src="assets/sfx/glitch-zap.mp3" data-start="5.499" data-duration="0.6" data-track-index="3" data-volume="0.09"></audio>
+  <audio id="sfx-s01-spring-counter" src="assets/sfx/spring-pop.mp3" data-start="3.599" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-s01-whoosh-pivot" src="assets/sfx/cinematic-whoosh.mp3" data-start="13.665" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
 
-  <!-- Scene 02 Blind Spot SFX -->
-  <audio id="sfx-s02-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="17.39" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s02-pop-claude" src="assets/sfx/spring-pop.mp3" data-start="21.10" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
-  <audio id="sfx-s02-pop-cursor" src="assets/sfx/spring-pop.mp3" data-start="22.00" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
-  <audio id="sfx-s02-pop-copilot" src="assets/sfx/spring-pop.mp3" data-start="22.58" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s02-impact-blind" src="assets/sfx/impact-slam.mp3" data-start="33.05" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <!-- Scene 02 Blind Spot SFX (16.277 - 34.283) -->
+  <audio id="sfx-s02-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="16.277" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s02-impact-blind" src="assets/sfx/impact-slam.mp3" data-start="18.340" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s02-pop-claude" src="assets/sfx/spring-pop.mp3" data-start="19.992" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-s02-pop-cursor" src="assets/sfx/spring-pop.mp3" data-start="20.839" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s02-pop-copilot" src="assets/sfx/spring-pop.mp3" data-start="21.478" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
 
-  <!-- Scene 03 Meet ast-grep SFX -->
-  <audio id="sfx-s03-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="37.93" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s03-impact-astgrep" src="assets/sfx/impact-slam.mp3" data-start="37.93" data-duration="0.6" data-track-index="4" data-volume="0.18"></audio>
-  <audio id="sfx-s03-spring-tool" src="assets/sfx/spring-pop.mp3" data-start="55.67" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
+  <!-- Scene 03 Meet ast-grep SFX (34.283 - 59.314) -->
+  <audio id="sfx-s03-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="34.283" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s03-impact-astgrep" src="assets/sfx/impact-slam.mp3" data-start="34.488" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s03-spring-tool" src="assets/sfx/spring-pop.mp3" data-start="52.197" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
 
-  <!-- Scene 04 Demo 1 SFX -->
-  <audio id="sfx-s04-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="62.33" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s04-scale-164" src="assets/sfx/scale-slam.mp3" data-start="69.20" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
-  <audio id="sfx-s04-scale-22" src="assets/sfx/scale-slam.mp3" data-start="71.05" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
-  <audio id="sfx-s04-impact-2813" src="assets/sfx/impact-slam.mp3" data-start="80.35" data-duration="0.6" data-track-index="4" data-volume="0.18"></audio>
-  <audio id="sfx-s04-glitch-string" src="assets/sfx/glitch-zap.mp3" data-start="83.83" data-duration="0.6" data-track-index="3" data-volume="0.09"></audio>
-  <audio id="sfx-s04-scale-12" src="assets/sfx/scale-slam.mp3" data-start="94.10" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
+  <!-- Scene 03b — How ast-grep Works SFX (59.314 - 126.441) -->
+  <audio id="sfx-s03b-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="59.314" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-pop-step1" src="assets/sfx/spring-pop.mp3" data-start="62.286" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-pop-ts" src="assets/sfx/spring-pop.mp3" data-start="64.631" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-impact-ast" src="assets/sfx/impact-slam.mp3" data-start="76.308" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s03b-pop-step2" src="assets/sfx/spring-pop.mp3" data-start="77.275" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-pop-meta1" src="assets/sfx/spring-pop.mp3" data-start="88.663" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-pop-meta2" src="assets/sfx/spring-pop.mp3" data-start="91.728" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-glitch-falsematch" src="assets/sfx/glitch-zap.mp3" data-start="107.424" data-duration="0.6" data-track-index="3" data-volume="0.09"></audio>
+  <audio id="sfx-s03b-pop-step3" src="assets/sfx/spring-pop.mp3" data-start="112.858" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-s03b-impact-outcome" src="assets/sfx/impact-slam.mp3" data-start="125.312" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
 
-  <!-- Scene 05 Numbers Wall SFX -->
-  <audio id="sfx-s05-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="96.29" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s05-pop-r1" src="assets/sfx/pop.mp3" data-start="102.94" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
-  <audio id="sfx-s05-pop-r2" src="assets/sfx/pop.mp3" data-start="106.54" data-duration="0.5" data-track-index="5" data-volume="0.10"></audio>
-  <audio id="sfx-s05-impact-122" src="assets/sfx/impact-slam.mp3" data-start="109.79" data-duration="0.6" data-track-index="4" data-volume="0.18"></audio>
-  <audio id="sfx-s05-impact-half" src="assets/sfx/impact-slam.mp3" data-start="120.69" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
+  <!-- Scene 04 Demo (126.441 - 158.913) — RE-ANCHORED to rewritten narration -->
+  <audio id="sfx-s04-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="126.441" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s04-scale-164" src="assets/sfx/scale-slam.mp3" data-start="133.333" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s04-scale-22" src="assets/sfx/scale-slam.mp3" data-start="135.005" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
+  <audio id="sfx-s04-impact-2813" src="assets/sfx/impact-slam.mp3" data-start="143.829" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s04-glitch-string" src="assets/sfx/glitch-zap.mp3" data-start="149.436" data-duration="0.6" data-track-index="3" data-volume="0.09"></audio>
+  <audio id="sfx-s04-scale-12" src="assets/sfx/scale-slam.mp3" data-start="157.156" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
 
-  <!-- Scene 06 Hostinger Midroll — block silent, no host-side SFX -->
-  <audio id="sfx-s06-whoosh-host" src="assets/sfx/cinematic-whoosh.mp3" data-start="122.56" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Scene 05 Numbers Wall (158.913 - 186.196) — RE-ANCHORED to rewritten narration -->
+  <audio id="sfx-s05-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="158.913" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s05-pop-r1" src="assets/sfx/pop.mp3" data-start="165.805" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
+  <audio id="sfx-s05-pop-r2" src="assets/sfx/pop.mp3" data-start="169.416" data-duration="0.5" data-track-index="5" data-volume="0.10"></audio>
+  <audio id="sfx-s05-impact-122" src="assets/sfx/impact-slam.mp3" data-start="173.990" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s05-impact-half" src="assets/sfx/impact-slam.mp3" data-start="184.857" data-duration="0.6" data-track-index="3" data-volume="0.15"></audio>
 
-  <!-- Scene 07 Token Economics SFX — re-anchored to new transcript word starts -->
-  <audio id="sfx-s07-whoosh-return" src="assets/sfx/cinematic-whoosh.mp3" data-start="136.96" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s07-scale-11k" src="assets/sfx/scale-slam.mp3" data-start="144.35" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
-  <audio id="sfx-s07-impact-15" src="assets/sfx/impact-slam.mp3" data-start="156.08" data-duration="0.6" data-track-index="5" data-volume="0.20"></audio>
-  <audio id="sfx-s07-spring-cheaper" src="assets/sfx/spring-pop.mp3" data-start="164.82" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Scene 06 Hostinger Midroll (186.196 - 200.220) -->
+  <audio id="sfx-s06-whoosh-host" src="assets/sfx/cinematic-whoosh.mp3" data-start="186.196" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
 
-  <!-- Scene 08 Steelman SFX — shifted +1.09s for new scene-source-cards start -->
-  <audio id="sfx-s08-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="169.42" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s08-pop-c1" src="assets/sfx/pop.mp3" data-start="171.59" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
-  <audio id="sfx-s08-pop-c2" src="assets/sfx/pop.mp3" data-start="177.83" data-duration="0.5" data-track-index="5" data-volume="0.10"></audio>
-  <audio id="sfx-s08-pop-c3" src="assets/sfx/pop.mp3" data-start="187.30" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
+  <!-- Scene 07 Token Economics (200.220 - 232.635) -->
+  <audio id="sfx-s07-whoosh-return" src="assets/sfx/cinematic-whoosh.mp3" data-start="200.220" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s07-scale-11k" src="assets/sfx/scale-slam.mp3" data-start="207.693" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s07-impact-15" src="assets/sfx/impact-slam.mp3" data-start="219.338" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
+  <audio id="sfx-s07-spring-cheaper" src="assets/sfx/spring-pop.mp3" data-start="228.071" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
 
-  <!-- Scene 09 Install SFX — shifted +1.45s for new scene-install start -->
-  <audio id="sfx-s09-whoosh-install" src="assets/sfx/cinematic-whoosh.mp3" data-start="199.57" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s09-spring-cc" src="assets/sfx/spring-pop.mp3" data-start="202.83" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
-  <audio id="sfx-s09-spring-cursor" src="assets/sfx/spring-pop.mp3" data-start="206.64" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
-  <audio id="sfx-s09-impact-done" src="assets/sfx/impact-slam.mp3" data-start="210.60" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <!-- Scene 07b — vs Other Tools (232.635 - 293.225) — RE-ANCHORED to rewritten narration -->
+  <audio id="sfx-s07b-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="232.635" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s07b-pop-row1" src="assets/sfx/pop.mp3" data-start="239.724" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
+  <audio id="sfx-s07b-pop-row2" src="assets/sfx/pop.mp3" data-start="248.885" data-duration="0.5" data-track-index="5" data-volume="0.10"></audio>
+  <audio id="sfx-s07b-pop-row3" src="assets/sfx/pop.mp3" data-start="256.442" data-duration="0.5" data-track-index="3" data-volume="0.10"></audio>
+  <audio id="sfx-s07b-pop-row4" src="assets/sfx/pop.mp3" data-start="265.207" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
+  <audio id="sfx-s07b-impact-winner" src="assets/sfx/impact-slam.mp3" data-start="271.210" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
+  <audio id="sfx-s07b-spring-langs" src="assets/sfx/spring-pop.mp3" data-start="275.993" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s07b-impact-tagline" src="assets/sfx/impact-slam.mp3" data-start="290.679" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
 
-  <!-- Scene 10 CTA + Dynamous SFX — shifted +1.17s for new scene-cta start -->
-  <audio id="sfx-s10-whoosh-cta" src="assets/sfx/cinematic-whoosh.mp3" data-start="217.10" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
-  <audio id="sfx-s10-impact-122" src="assets/sfx/impact-slam.mp3" data-start="222.70" data-duration="0.6" data-track-index="4" data-volume="0.18"></audio>
-  <audio id="sfx-s10-spring-comment" src="assets/sfx/spring-pop.mp3" data-start="232.09" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
-  <audio id="sfx-s10-spring-dynamous" src="assets/sfx/spring-pop.mp3" data-start="237.97" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+  <!-- Scene 08 Steelman (293.225 - 322.783) -->
+  <audio id="sfx-s08-whoosh-entry" src="assets/sfx/cinematic-whoosh.mp3" data-start="293.225" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s08-pop-c1" src="assets/sfx/pop.mp3" data-start="298.623" data-duration="0.5" data-track-index="4" data-volume="0.10"></audio>
+  <audio id="sfx-s08-pop-c2" src="assets/sfx/pop.mp3" data-start="298.925" data-duration="0.5" data-track-index="5" data-volume="0.10"></audio>
+  <audio id="sfx-s08-pop-c3" src="assets/sfx/pop.mp3" data-start="308.375" data-duration="0.5" data-track-index="3" data-volume="0.10"></audio>
+
+  <!-- Scene 09 Install — agent-skill install path (322.783 - 357.636) -->
+  <audio id="sfx-s09-whoosh-install" src="assets/sfx/cinematic-whoosh.mp3" data-start="322.783" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s09-spring-cmd1" src="assets/sfx/spring-pop.mp3" data-start="328.355" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
+  <audio id="sfx-s09-spring-cmd2" src="assets/sfx/spring-pop.mp3" data-start="335.345" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-s09-pop-prompt" src="assets/sfx/spring-pop.mp3" data-start="342.148" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s09-glitch-gotcha" src="assets/sfx/glitch-zap.mp3" data-start="344.400" data-duration="0.6" data-track-index="4" data-volume="0.09"></audio>
+  <audio id="sfx-s09-impact-done" src="assets/sfx/impact-slam.mp3" data-start="352.802" data-duration="0.6" data-track-index="5" data-volume="0.15"></audio>
+
+  <!-- Scene 10 CTA + Dynamous (357.636 - 386.130) -->
+  <audio id="sfx-s10-whoosh-cta" src="assets/sfx/cinematic-whoosh.mp3" data-start="357.636" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-s10-impact-122" src="assets/sfx/impact-slam.mp3" data-start="362.381" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+  <audio id="sfx-s10-spring-comment" src="assets/sfx/spring-pop.mp3" data-start="372.984" data-duration="0.5" data-track-index="5" data-volume="0.11"></audio>
+  <audio id="sfx-s10-spring-dynamous" src="assets/sfx/spring-pop.mp3" data-start="379.810" data-duration="0.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Support-banner accent SFX — fires when the banner enters at t=295.962 (in Scene 08). -->
+  <audio id="sfx-banner-pop" src="assets/sfx/spring-pop.mp3" data-start="295.962" data-duration="0.5" data-track-index="4" data-volume="0.11"></audio>
 </div>
 
 <script>
@@ -684,7 +798,7 @@
         { lbl: "BILLED", cls: "warn", txt: "Triaged false positive. Tokens spent." }
       ]
     },
-    { t: 17.39,
+    { t: 16.277,
       activity: "searching code",
       tool: "grep",
       task: "Same task — but watch every agent fall for the same blind spot.",
@@ -695,7 +809,7 @@
         { lbl: "BLIND SPOT",  cls: "warn", txt: "All three can't tell code from quoted text." }
       ]
     },
-    { t: 37.93,
+    { t: 34.283,
       activity: "tool loaded: ast-grep",
       tool: "ast-grep",
       task: "Meet ast-grep — a smarter search tool. The agent gets a new toolbox item.",
@@ -706,7 +820,18 @@
         { lbl: "READY",        cls: "ok", txt: "Agent stops getting fooled." }
       ]
     },
-    { t: 62.33,
+    { t: 59.314,
+      activity: "learning internals",
+      tool: "ast-grep",
+      task: "How does this 'smarter search' actually work?",
+      thoughts: [
+        { lbl: "TREE-SITTER", cls: "ok", txt: "Parses code into an AST — typed tree of nodes." },
+        { lbl: "PATTERN",     cls: "ok", txt: "Matches pattern against nodes, not text." },
+        { lbl: "META-VARS",   cls: "ok", txt: "$VAR = one node. $$$BODY = list of nodes." },
+        { lbl: "RUST · CORES",cls: "ok", txt: "Runs in Rust on every CPU core." }
+      ]
+    },
+    { t: 126.441,
       activity: "running query: console.log",
       tool: "grep",
       task: "Clean up debug logs. Compare grep vs ast-grep on this codebase.",
@@ -717,7 +842,7 @@
         { lbl: "AST-GREP", cls: "ok",   txt: "Twelve files, not twenty-two. Done." }
       ]
     },
-    { t: 96.29,
+    { t: 158.913,
       activity: "running 5 queries",
       tool: "ast-grep",
       task: "Run five common refactor queries. Compare the count from each tool.",
@@ -728,7 +853,7 @@
         { lbl: "Q4 useState",    cls: "warn", txt: "grep over-counted by 122%." }
       ]
     },
-    { t: 122.56,
+    { t: 186.196,
       activity: "ad break",
       tool: "ad",
       task: "Quick word from our affiliate — Hostinger.",
@@ -739,7 +864,7 @@
         { lbl: "—",      cls: "", txt: "" }
       ]
     },
-    { t: 136.96,
+    { t: 200.220,
       activity: "calculating cost",
       tool: "agent-meter",
       task: "How much money does grep vs ast-grep actually cost the agent?",
@@ -750,7 +875,18 @@
         { lbl: "AST-GREP",  cls: "ok",   txt: "One structured query. 10x cheaper." }
       ]
     },
-    { t: 169.42,
+    { t: 232.635,
+      activity: "comparing tools",
+      tool: "comparison",
+      task: "What about semgrep / comby / my IDE — aren't those the same?",
+      thoughts: [
+        { lbl: "SEMGREP",  cls: "warn", txt: "Heavier — taint, dataflow, slow CLI." },
+        { lbl: "COMBY",    cls: "warn", txt: "No language awareness. Generic text + brackets." },
+        { lbl: "GRITQL",   cls: "warn", txt: "Multi-paradigm DSL. Steep learning curve." },
+        { lbl: "AST-GREP", cls: "ok",   txt: "Pipeable CLI · 20+ langs · daily hammer." }
+      ]
+    },
+    { t: 293.225,
       activity: "answering objections",
       tool: "steelman",
       task: "But my agent already has Read and Glob. Aren't those enough?",
@@ -761,24 +897,24 @@
         { lbl: "ADDS",  cls: "ok",   txt: "ast-grep adds structural understanding." }
       ]
     },
-    { t: 199.57,
+    { t: 322.783,
       activity: "installing tool",
       tool: "install",
-      task: "Give your agent the new tool. Two minutes, no terminal.",
+      task: "Give your agent ast-grep — two commands.",
       thoughts: [
-        { lbl: "CLAUDE CODE", cls: "ok", txt: "Add one line to your config file." },
-        { lbl: "CURSOR",      cls: "ok", txt: "Install the extension. Restart agent." },
-        { lbl: "RESTART",     cls: "ok", txt: "Agent picks up the new tool." },
-        { lbl: "UPGRADE",     cls: "ok", txt: "Searches by structure, not by text." }
+        { lbl: "STEP 1",   cls: "ok",   txt: "npm install -g @ast-grep/cli" },
+        { lbl: "STEP 2",   cls: "ok",   txt: "npx skills add ast-grep/agent-skill" },
+        { lbl: "PROMPT",   cls: "warn", txt: 'Tell it explicitly: "Use ast-grep to find..."' },
+        { lbl: "UPGRADE",  cls: "ok",   txt: "Agent searches by structure, not text." }
       ]
     },
-    { t: 217.10,
+    { t: 357.636,
       activity: "session complete",
       tool: "ast-grep",
       task: "Are you fixing the waste today — or accepting it?",
       thoughts: [
         { lbl: "WASTE",   cls: "warn", txt: "122% more work per real refactor." },
-        { lbl: "FIX",     cls: "ok",   txt: "One config line. 30 seconds." },
+        { lbl: "FIX",     cls: "ok",   txt: "Two commands. Sixty seconds." },
         { lbl: "DEBATE",  cls: "",     txt: "Drop your pick in the comments." },
         { lbl: "DYNAMOUS",cls: "ok",   txt: "Learn more at dynamous.ai." }
       ]
@@ -797,26 +933,34 @@
 
     const ramps = [
       // [startT, endT, tokensStart, tokensEnd, costStart, costEnd, filesStart, filesEnd, mode]
-      // Scene 1 hook — quick ramp to 11k tokens
-      [0.5,   12.0, 0,     11043, 0,     0.03, 0,  22, "bad"],
-      // Scene 2 — held at 11k, three agents same blind spot
-      [17.5,  36.0, 11043, 11043, 0.03,  0.03, 22, 22, "bad"],
-      // Scene 3 — ast-grep tool added, drop to 1089
-      [38.5,  61.0, 11043, 1089,  0.03,  0.003,22, 5,  "good"],
-      // Scene 4 demo — bad mode again as we show the grep replay; lands at 22 files
-      [63.0,  82.0, 1089,  11043, 0.003, 0.03, 5,  22, "bad"],
-      // Scene 4 — ast-grep replay drops to 12
-      [86.0,  95.0, 11043, 1089,  0.03,  0.003,22, 12, "good"],
-      // Scene 5 — five queries, counter spikes up briefly per query
-      [97.0,  114.0, 1089,  18500, 0.003, 0.045,12, 80, "bad"],
-      [114.0, 122.0, 18500, 9000,  0.045, 0.012,80, 40, "good"],
-      // Scene 7 token economics — pure narrative tween (shifted +1.72s)
-      [137.72, 156.72, 9000,  330000,0.012, 0.99, 40, 660,"bad"],
-      [156.72, 169.22, 330000,33000, 0.99,  0.099,660,66, "good"],
-      // Scene 8/9/10 — held low, ast-grep mode
-      [169.62, 198.97, 33000, 33000, 0.099, 0.099,66, 66, "good"],
-      [199.97, 216.50, 33000, 1100,  0.099, 0.003,66, 5,  "good"],
-      [217.20, 244.50, 1100,  1100,  0.003, 0.003,5,  5,  "good"]
+      // Scene 1 hook (0 - 16.277) — quick ramp to 11k tokens
+      [0.5,   12.5,  0,     11043, 0,     0.030, 0,  22, "bad"],
+      // Scene 2 arch-stack (16.277 - 34.283) — held at 11k, three agents same blind spot
+      [16.5,  34.0,  11043, 11043, 0.030, 0.030, 22, 22, "bad"],
+      // Scene 3 image-hero (34.283 - 59.314) — ast-grep tool added, drop to 1089
+      [35.0,  58.5,  11043, 1089,  0.030, 0.003, 22, 5,  "good"],
+      // Scene 3b how-it-works (59.314 - 126.441) — counter stays LOW/GREEN per brief
+      [59.8,  126.0, 1089,  1089,  0.003, 0.003, 5,  5,  "good"],
+      // Scene 4 video-embed (126.441 - 158.913) — bad mode again, grep replay lands at 22 files
+      [126.8, 145.5, 1089,  11043, 0.003, 0.030, 5,  22, "bad"],
+      [145.5, 158.5, 11043, 1089,  0.030, 0.003, 22, 12, "good"],
+      // Scene 5 stat-pill-row (158.913 - 186.196) — five queries spike up, then drop
+      [159.2, 178.0, 1089,  18500, 0.003, 0.045, 12, 80, "bad"],
+      [178.0, 186.0, 18500, 9000,  0.045, 0.012, 80, 40, "good"],
+      // Scene 6 hostinger (186.196 - 200.220) — hold values
+      [186.5, 200.0, 9000,  9000,  0.012, 0.012, 40, 40, "good"],
+      // Scene 7 side-by-side (200.220 - 232.635) — token economics, spike then drop
+      [200.5, 220.0, 9000,  330000,0.012, 0.99,  40, 660,"bad"],
+      [220.0, 232.0, 330000,33000, 0.99,  0.099, 660,66, "good"],
+      // Scene 7b vs-other-tools (232.635 - 293.225) — trends GREEN at end per brief
+      [232.9, 273.0, 33000, 33000, 0.099, 0.099, 66, 66, "bad"],
+      [273.0, 292.5, 33000, 3300,  0.099, 0.010, 66, 8,  "good"],
+      // Scene 8 source-cards (293.225 - 322.783) — stable GREEN
+      [293.4, 322.5, 3300,  3300,  0.010, 0.010, 8,  8,  "good"],
+      // Scene 9 install (322.783 - 357.636) — deeper GREEN
+      [323.0, 357.0, 3300,  1100,  0.010, 0.003, 8,  5,  "good"],
+      // Scene 10 cta (357.636 - 386.130) — hold final values
+      [357.8, 385.0, 1100,  1100,  0.003, 0.003, 5,  5,  "good"]
     ];
 
     ramps.forEach(([a, b, t0, t1, c0, c1, f0, f1, mode]) => {
@@ -879,21 +1023,22 @@
       }, [], a);
     });
 
-    // CAMERA-ABUSE: token counter shake at scene 01 reveal of "bleeding tokens"
+    // CAMERA-ABUSE: token counter shake at scene 01 reveal of "bleeding tokens" — "bleeding" at 1.091
     tl.to("#counter-tokens", {
       scale: 1.15, duration: 0.18, ease: "power3.out",
       yoyo: true, repeat: 1
-    }, 1.10);
+    }, 1.091);
     tl.to("#counter-tokens", {
       backgroundColor: "rgba(247, 129, 102, 0.25)",
       duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 1
-    }, 1.10);
+    }, 1.091);
 
     // CAMERA-ABUSE: $15 reveal in scene 7 — counter rolls explosively + container scale-pulse
+    // Anchored to "fifteen" word_start at 219.388
     tl.to("#counter-money", {
       scale: 1.18, duration: 0.20, ease: "power3.out",
       yoyo: true, repeat: 1
-    }, 159.40);
+    }, 219.388);
   }
 
   // Ambient drift
@@ -903,7 +1048,7 @@
       const driftPeriod = 70 + (i % 4) * 8;
       const yDelta = ((i % 3) - 1) * 18;
       const xDelta = ((i % 2) - 0.5) * -40;
-      const repeats = Math.max(0, Math.floor(245 / driftPeriod) - 1);
+      const repeats = Math.max(0, Math.floor(TOTAL_DURATION / driftPeriod) - 1);
       tl.to(el, {
         x: xDelta, y: yDelta,
         duration: driftPeriod,
@@ -913,14 +1058,25 @@
     });
   }
 
+  // Support-the-channel banner — fires at t=302.0 (in Scene 08, after Scene 07b ends 299.263), 5s hold
+  function animateSupportBanner(tl) {
+    const BANNER_IN = 302.0;
+    const BANNER_HOLD = 5.0;
+    tl.set("#support-banner", { visibility: "visible", opacity: 0, y: 20, overwrite: "auto" }, BANNER_IN - 0.1);
+    tl.to("#support-banner", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)", overwrite: "auto" }, BANNER_IN);
+    tl.to("#support-banner", { opacity: 0, y: 10, duration: 0.6, ease: "power2.in", overwrite: "auto" }, BANNER_IN + BANNER_HOLD - 0.6);
+    tl.set("#support-banner", { visibility: "hidden" }, BANNER_IN + BANNER_HOLD);
+  }
+
   // ─────────────────────────────────────────────────────
   // Root timeline construction
   // ─────────────────────────────────────────────────────
   window.__timelines = window.__timelines || {};
-  const TOTAL_DURATION = 245;
+  const TOTAL_DURATION = 386.13;
   const tl = gsap.timeline({ paused: true });
 
   animateAmbientCode(tl);
+  animateSupportBanner(tl);
 
   tl.fromTo("#progress-fill",
     { width: 0 },
@@ -958,30 +1114,34 @@
     }, [], cfg.t);
   });
 
-  // Scene labels
+  // Scene labels — RE-ANCHORED to new transcript (audio = 381.73s)
   tl.addLabel("hook",          0)
-    .addLabel("arch-stack",    17.39)
-    .addLabel("image-hero",    37.93)
-    .addLabel("video-embed",   62.33)
-    .addLabel("stat-pills",    96.29)
-    .addLabel("hostinger",     122.56)
-    .addLabel("side-by-side",  136.96)
-    .addLabel("source-cards",  169.42)
-    .addLabel("install",       199.57)
-    .addLabel("cta",           217.10);
+    .addLabel("arch-stack",    16.277)
+    .addLabel("image-hero",    34.283)
+    .addLabel("how-works",     59.314)
+    .addLabel("video-embed",   126.441)
+    .addLabel("stat-pills",    158.913)
+    .addLabel("hostinger",     186.196)
+    .addLabel("side-by-side",  200.220)
+    .addLabel("vs-tools",      232.635)
+    .addLabel("source-cards",  293.225)
+    .addLabel("install",       322.783)
+    .addLabel("cta",           357.636);
 
   // Crossfades between adjacent scenes (the hostinger midroll overlays on top — no scene crossfade needed for it)
   crossfadeScenes(tl, "#scene-hook-wrap",          "#scene-arch-stack-wrap",   "arch-stack-=0.4");
   crossfadeScenes(tl, "#scene-arch-stack-wrap",    "#scene-image-hero-wrap",   "image-hero-=0.4");
-  crossfadeScenes(tl, "#scene-image-hero-wrap",    "#scene-video-embed-wrap",  "video-embed-=0.4");
+  crossfadeScenes(tl, "#scene-image-hero-wrap",    "#scene-how-works-wrap",    "how-works-=0.4");
+  crossfadeScenes(tl, "#scene-how-works-wrap",     "#scene-video-embed-wrap",  "video-embed-=0.4");
   crossfadeScenes(tl, "#scene-video-embed-wrap",   "#scene-stat-pill-row-wrap","stat-pills-=0.4");
   crossfadeScenes(tl, "#scene-stat-pill-row-wrap", "#scene-side-by-side-wrap", "side-by-side-=0.4");
-  crossfadeScenes(tl, "#scene-side-by-side-wrap",  "#scene-source-cards-wrap", "source-cards-=0.4");
+  crossfadeScenes(tl, "#scene-side-by-side-wrap",  "#scene-vs-tools-wrap",     "vs-tools-=0.4");
+  crossfadeScenes(tl, "#scene-vs-tools-wrap",      "#scene-source-cards-wrap", "source-cards-=0.4");
   crossfadeScenes(tl, "#scene-source-cards-wrap",  "#scene-install-wrap",      "install-=0.4");
   crossfadeScenes(tl, "#scene-install-wrap",       "#scene-cta-wrap",          "cta-=0.4");
 
-  // Hostinger midroll overlay (extended to bridge to scene-side-by-side new start at 136.96)
-  showHostingerMidroll(tl, 122.56, 14.40);
+  // Hostinger midroll overlay — anchored to "Quick word from our affiliate, Hostinger." at 190.283
+  showHostingerMidroll(tl, 190.283, 14.024);
 
   // Pad timeline to full duration
   tl.set({}, {}, TOTAL_DURATION);

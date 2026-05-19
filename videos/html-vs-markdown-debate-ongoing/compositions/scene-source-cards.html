@@ -1,0 +1,365 @@
+<!--
+  scene-source-cards.html — Six community patterns the replies converged on.
+  Scene-relative duration: 114.67s. Parent data-start: 288.83.
+
+  3-column × 2-row card grid. Cards revealed step-by-step paced to narration
+  word-level transcript anchors. Card 6 (conspiracy take) gets terracotta border
+  emphasis + "× 4" occurrence badge.
+
+  Beat schedule (scene-relative):
+    0.0    — overline + headline enter
+    8.68   — Card 1 (Markdown for agents / HTML for humans)
+    31.84  — Card 2 (Data viz in HTML / everything else in markdown)
+    47.10  — Card 3 (Markdown for input / HTML for customer output)
+    63.23  — Card 4 (MDX — Markdown plus React)
+    81.18  — Card 5 (Mermaid stays in markdown)
+    98.51  — Card 6 (The conspiracy take)
+   107.57  — × 4 badge emphasis ("showed up four separate times")
+   110.57  — closing emphasis ("worth taking seriously")
+   114.67  — scene end / crossfade
+-->
+<template id="scene-source-cards-template">
+  <div id="root"
+       data-composition-id="scene-source-cards"
+       data-start="0"
+       data-duration="114.67"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+              color: #1A1815;">
+
+    <style>
+      /* ── Root reset ────────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      /* ── Page chrome ───────────────────────────────────────────── */
+      #cp-wrap {
+        width: 100%;
+        height: 100%;
+        padding: 44px 100px 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+      }
+
+      /* ── Section header ────────────────────────────────────────── */
+      #cp-header {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #cp-overline {
+        font-family: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #B14938;
+      }
+      #cp-h2 {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 80px;
+        color: #1A1815;
+        letter-spacing: -0.5px;
+        line-height: 1.05;
+      }
+      #cp-h2 .cp-italic {
+        font-style: italic;
+        color: #C75A3F;
+      }
+      #cp-divider {
+        height: 1px;
+        background: rgba(28, 26, 24, 0.10);
+        transform-origin: left center;
+        margin-top: 8px;
+      }
+
+      /* ── Card grid ─────────────────────────────────────────────── */
+      #cp-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 20px;
+        min-height: 0;
+      }
+
+      /* ── Card base ─────────────────────────────────────────────── */
+      .cp-card {
+        background: #FBF8F1;
+        border: 1px solid rgba(28, 26, 24, 0.10);
+        border-radius: 28px;
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* Card 6 terracotta border emphasis */
+      #cp-card-6 {
+        border: 2px solid #C75A3F;
+        background: #FBF8F1;
+      }
+
+      /* ── Card inner elements ───────────────────────────────────── */
+      .cp-card-overline {
+        font-family: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #C75A3F;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .cp-card-title {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 40px;
+        color: #1A1815;
+        line-height: 1.15;
+        letter-spacing: -0.2px;
+      }
+      .cp-card-quote {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+        font-size: 26px;
+        color: #5C544B;
+        line-height: 1.4;
+        flex: 1 1 0;
+        min-height: 0;
+        overflow: hidden;
+        position: relative;
+        padding: 4px 8px 4px 14px;
+        border-left: 3px solid transparent;
+        border-radius: 0 6px 6px 0;
+        transition: none;
+      }
+      .cp-card-quote::before { content: '\201C'; }
+      .cp-card-quote::after  { content: '\201D'; }
+      /* When narration reads this card's quote, the GSAP timeline toggles
+         these props for a subtle "look here" hint — no harsh flash. */
+      .cp-card-quote.cp-q-lit {
+        border-left-color: #C75A3F;
+        background: rgba(199, 90, 63, 0.06);
+        color: #2A2620;
+      }
+      .cp-card-source {
+        font-family: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+        font-weight: 400;
+        font-size: 22px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #8A8175;
+        flex-shrink: 0;
+        margin-top: 4px;
+      }
+
+      /* Conspiracy badge */
+      .cp-badge-x4 {
+        font-family: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 2px;
+        color: #FBF8F1;
+        background: #C75A3F;
+        border-radius: 6px;
+        padding: 3px 9px;
+        display: inline-block;
+        line-height: 1.4;
+      }
+
+      /* Icon decorations (CSS-drawn) */
+      .cp-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
+      .cp-icon-1 { background: rgba(199, 90, 63, 0.15); border: 1.5px solid rgba(199, 90, 63, 0.35); }
+      .cp-icon-2 { background: rgba(88, 111, 79, 0.15); border: 1.5px solid rgba(88, 111, 79, 0.35); }
+      .cp-icon-3 { background: rgba(199, 90, 63, 0.12); border: 1.5px solid rgba(177, 73, 56, 0.30); }
+      .cp-icon-4 { background: rgba(28, 26, 24, 0.07);  border: 1.5px solid rgba(28, 26, 24, 0.18); }
+      .cp-icon-5 { background: rgba(88, 111, 79, 0.12); border: 1.5px solid rgba(88, 111, 79, 0.30); }
+      .cp-icon-6 { background: rgba(199, 90, 63, 0.20); border: 1.5px solid #C75A3F; }
+    </style>
+
+    <div id="cp-wrap">
+
+      <!-- ── Section header ──────────────────────────────────────── -->
+      <div id="cp-header" class="clip" data-start="0" data-duration="114.67" data-track-index="1">
+        <div id="cp-overline">04 &mdash; COMMUNITY PATTERNS</div>
+        <div id="cp-h2">Six patterns the replies <span class="cp-italic">converged</span> on.</div>
+        <div id="cp-divider"></div>
+      </div>
+
+      <!-- ── Card grid ────────────────────────────────────────────── -->
+      <div id="cp-grid">
+
+        <!-- Card 1 -->
+        <div id="cp-card-1" class="cp-card clip" data-start="0" data-duration="114.67" data-track-index="2">
+          <div class="cp-card-overline">
+            <div class="cp-icon cp-icon-1"></div>
+            PATTERN 01
+          </div>
+          <div class="cp-card-title">Markdown for agents only.<br>HTML for agents <em style="font-style:italic; color:#C75A3F;">and</em> humans.</div>
+          <div class="cp-card-quote">Reviewing ideas, drafts, and a whole workspace end-to-end in markdown is terrible UX.</div>
+          <div class="cp-card-source">youtube</div>
+        </div>
+
+        <!-- Card 2 -->
+        <div id="cp-card-2" class="cp-card clip" data-start="0" data-duration="114.67" data-track-index="3">
+          <div class="cp-card-overline">
+            <div class="cp-icon cp-icon-2"></div>
+            PATTERN 02
+          </div>
+          <div class="cp-card-title">Data viz in HTML.<br>Everything else in markdown.</div>
+          <div class="cp-card-quote">No comparison for data viz. But for hierarchical text, a clean markdown viewer is just as legible. And saves tokens.</div>
+          <div class="cp-card-source">youtube</div>
+        </div>
+
+        <!-- Card 3 -->
+        <div id="cp-card-3" class="cp-card clip" data-start="0" data-duration="114.67" data-track-index="4">
+          <div class="cp-card-overline">
+            <div class="cp-icon cp-icon-3"></div>
+            PATTERN 03
+          </div>
+          <div class="cp-card-title">Markdown for input.<br>HTML for output to the customer.</div>
+          <div class="cp-card-quote">It depends. HTML is great for output to the customer. MD is better for input.</div>
+          <div class="cp-card-source">x.com</div>
+        </div>
+
+        <!-- Card 4 -->
+        <div id="cp-card-4" class="cp-card clip" data-start="0" data-duration="114.67" data-track-index="5">
+          <div class="cp-card-overline">
+            <div class="cp-icon cp-icon-4"></div>
+            PATTERN 04
+          </div>
+          <div class="cp-card-title">MDX.<br>Markdown plus React.</div>
+          <div class="cp-card-quote">HTML is triple the size and harder to read. The solution is MDX.</div>
+          <div class="cp-card-source">youtube</div>
+        </div>
+
+        <!-- Card 5 -->
+        <div id="cp-card-5" class="cp-card clip" data-start="0" data-duration="114.67" data-track-index="6">
+          <div class="cp-card-overline">
+            <div class="cp-icon cp-icon-5"></div>
+            PATTERN 05
+          </div>
+          <div class="cp-card-title">Mermaid stays in markdown.</div>
+          <div class="cp-card-quote">A markdown viewer with Mermaid support is way better than HTML for diagrams.</div>
+          <div class="cp-card-source">youtube</div>
+        </div>
+
+        <!-- Card 6 — conspiracy take, terracotta border + ×4 badge -->
+        <div id="cp-card-6" class="cp-card clip" data-start="0" data-duration="114.67" data-track-index="7">
+          <div class="cp-card-overline">
+            <div class="cp-icon cp-icon-6"></div>
+            PATTERN 06&nbsp;&nbsp;<span class="cp-badge-x4">&times; 4</span>
+          </div>
+          <div class="cp-card-title" style="color:#C75A3F;">The conspiracy take.</div>
+          <div class="cp-card-quote" style="color:#5C544B;">Someone earning money on token spending suggests we spend more tokens.</div>
+          <div class="cp-card-source">youtube</div>
+        </div>
+
+      </div><!-- /cp-grid -->
+    </div><!-- /cp-wrap -->
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // ── Hidden-until-reveal: explicit set at t=0 ─────────────────
+      // Header elements
+      tl.set("#cp-overline", { y: 12, opacity: 0 }, 0);
+      tl.set("#cp-h2",       { y: 18, opacity: 0 }, 0);
+      tl.set("#cp-divider",  { scaleX: 0 }, 0);
+
+      // All 6 cards hidden at t=0
+      tl.set("#cp-card-1", { y: 24, opacity: 0 }, 0);
+      tl.set("#cp-card-2", { y: 24, opacity: 0 }, 0);
+      tl.set("#cp-card-3", { y: 24, opacity: 0 }, 0);
+      tl.set("#cp-card-4", { y: 24, opacity: 0 }, 0);
+      tl.set("#cp-card-5", { y: 24, opacity: 0 }, 0);
+      tl.set("#cp-card-6", { y: 24, opacity: 0 }, 0);
+
+      // ── Header entrance (t=0 → 2.0s) ────────────────────────────
+      tl.to("#cp-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#cp-h2",       { y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.5);
+      tl.to("#cp-divider",  { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.1);
+
+      // Helper — subtle "narrator is reading this card's quote" highlight.
+      // Toggles border-left accent + background tint + slight darker text,
+      // holds ~1.6s, then releases. Eye-catch without being a flash.
+      function lightQuote(sel, t) {
+        tl.to(sel, {
+          borderLeftColor: "#C75A3F",
+          backgroundColor: "rgba(199, 90, 63, 0.06)",
+          color: "#2A2620",
+          duration: 0.35, ease: "power2.out"
+        }, t);
+        tl.to(sel, {
+          borderLeftColor: "rgba(199, 90, 63, 0)",
+          backgroundColor: "rgba(199, 90, 63, 0)",
+          color: "#5C544B",
+          duration: 0.7, ease: "power2.inOut"
+        }, t + 1.9);
+      }
+
+      // ── Card 1 (t=8.68) — "Markdown for agents only. HTML for agents and humans." ──
+      tl.to("#cp-card-1", { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 8.68);
+      // Mid-beat ~14.2s: title pulse
+      tl.to("#cp-card-1 .cp-card-title", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 14.2);
+      // Mid-beat ~18.0s: quote read-along highlight
+      lightQuote("#cp-card-1 .cp-card-quote", 18.0);
+
+      // ── Card 2 (t=31.84) — "Data viz in HTML. Everything else in markdown." ──
+      tl.to("#cp-card-2", { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 31.84);
+      tl.to("#cp-card-2 .cp-card-title", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 37.3);
+      lightQuote("#cp-card-2 .cp-card-quote", 41.0);
+
+      // ── Card 3 (t=47.10) — "Markdown for input. HTML for output to the customer." ──
+      tl.to("#cp-card-3", { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 47.10);
+      tl.to("#cp-card-3 .cp-card-title", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 52.6);
+      lightQuote("#cp-card-3 .cp-card-quote", 56.0);
+
+      // ── Card 4 (t=63.23) — "MDX. Markdown plus React." ─────────
+      tl.to("#cp-card-4", { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 63.23);
+      tl.to("#cp-card-4 .cp-card-title", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 68.7);
+      lightQuote("#cp-card-4 .cp-card-quote", 72.5);
+
+      // ── Card 5 (t=81.18) — "Mermaid stays in markdown." ────────
+      tl.to("#cp-card-5", { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 81.18);
+      tl.to("#cp-card-5 .cp-card-title", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 86.7);
+      lightQuote("#cp-card-5 .cp-card-quote", 90.0);
+
+      // ── Card 6 (t=98.51) — The conspiracy take ─────────────────
+      // Extra emphasis: card itself gets a border glow on entrance, title pulses
+      tl.to("#cp-card-6", { y: 0, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 98.51);
+      tl.to("#cp-card-6", { boxShadow: "0 0 0 3px #C75A3F, 0 0 28px rgba(199,90,63,0.20)", duration: 0.5, ease: "power2.out" }, 99.3);
+      tl.to("#cp-card-6 .cp-card-title", { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 104.0);
+      // Pulse the ×4 badge at t=107.57 ("showed up four separate times")
+      tl.to("#cp-card-6 .cp-badge-x4", { scale: 1.15, duration: 0.3, yoyo: true, repeat: 1, ease: "back.out(2)" }, 107.57);
+      // Closing emphasis at t=110.0 ("worth taking seriously") — full read-along highlight
+      lightQuote("#cp-card-6 .cp-card-quote", 110.0);
+
+      // ── Timeline extender — ensures GSAP length matches full duration ──
+      tl.set({}, {}, 114.67);
+
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

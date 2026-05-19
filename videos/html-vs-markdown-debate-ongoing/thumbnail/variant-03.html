@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!-- Variant 03 — Days-later receipts.
+     MARKDOWN vs HTML dominant topic at top. PART 2 pill top-right corner.
+     Hook: 3 big lines "8 DAYS. / 1000 REPLIES. / ZERO CONSENSUS."
+     Theme: white minimal. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v03 — Topic + days-later receipts + PART 2 pill</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* PART 2 pill — top right */
+  .part2-pill {
+    position: absolute;
+    top: 52px; right: 60px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent-deep-red);
+    background: rgba(199, 90, 63, 0.10);
+    border: 2px solid var(--accent-terracotta);
+    padding: 8px 20px;
+    border-radius: 999px;
+    z-index: 10;
+  }
+
+  /* Topic header — dominant MARKDOWN vs HTML */
+  .topic-header {
+    position: absolute;
+    top: 108px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-term {
+    font-size: 96px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--text-dim-cream);
+    padding: 0 4px;
+  }
+  .topic-rule {
+    width: 60px;
+    height: 4px;
+    background: var(--accent-terracotta);
+    margin: 14px auto 0;
+    border-radius: 2px;
+  }
+
+  /* 3-line stat block */
+  .stat-block {
+    position: absolute;
+    top: 338px;
+    left: 60px;
+    right: 60px;
+    text-align: left;
+  }
+  .stat-line {
+    display: block;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    color: var(--text-cream);
+  }
+  .stat-line-1 { font-size: 86px; color: var(--accent-terracotta); }
+  .stat-line-2 { font-size: 80px; }
+  .stat-line-3 { font-size: 74px; color: var(--text-dim-cream); }
+
+  /* Receipt */
+  .receipt-c {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 52px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .receipt-c strong { color: var(--accent-deep-red); }
+
+  .theme-white .brand {
+    left: 60px; bottom: auto; top: 56px; right: auto;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-white">
+
+    <!-- PART 2 pill top-right -->
+    <div class="part2-pill">PART 2</div>
+
+    <!-- Brand top-left -->
+    <div class="brand" style="top:56px; left:60px; bottom:auto; right:auto;"><span class="dot"></span><span>diy-yt-creator</span></div>
+
+    <!-- Dominant topic header -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <div class="topic-rule"></div>
+    </div>
+
+    <!-- 3-line stats -->
+    <div class="stat-block">
+      <span class="stat-line stat-line-1">8 DAYS.</span>
+      <span class="stat-line stat-line-2">1000 REPLIES.</span>
+      <span class="stat-line stat-line-3">ZERO CONSENSUS.</span>
+    </div>
+
+    <div class="receipt-c"><strong>750K read the original.</strong> &nbsp;·&nbsp; Nobody won.</div>
+  </div>
+</body></html>

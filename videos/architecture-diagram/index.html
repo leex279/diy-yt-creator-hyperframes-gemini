@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>System Architecture — Animated Infographic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at top, #11182c 0%, #0a0e1a 55%, #050811 100%);
+    color: #e6edf7;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient color wash */
+  #ambient {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  #ambient .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    animation: drift 18s ease-in-out infinite;
+  }
+  #ambient .b1 { width: 600px; height: 600px; background: #61dafb; top: -100px;  left: -100px; }
+  #ambient .b2 { width: 700px; height: 700px; background: #4ade80; top: 20%;     right: -150px; animation-delay: -6s; }
+  #ambient .b3 { width: 500px; height: 500px; background: #c084fc; bottom: -120px; left: 35%;   animation-delay: -12s; }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33%      { transform: translate(50px,-40px) scale(1.1); }
+    66%      { transform: translate(-40px,50px) scale(0.95); }
+  }
+
+  /* ───────────── STAGE ───────────── */
+  #stage {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    padding: 30px 80px 30px 80px;
+    z-index: 1;
+  }
+
+  /* Title */
+  .title {
+    text-align: center;
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #ffffff 0%, #8b97b3 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8b97b3;
+    font-size: 17px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.2em;
+    margin-bottom: 24px;
+  }
+
+  /* Top row */
+  .row-top {
+    display: grid;
+    grid-template-columns: 520px 300px 1fr;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 26px;
+    height: 360px;
+  }
+
+  /* Generic card */
+  .card {
+    position: relative;
+    background: linear-gradient(180deg, #161e33 0%, #0f1525 100%);
+    border: 1px solid #2a3550;
+    border-radius: 20px;
+    padding: 32px;
+    overflow: hidden;
+    isolation: isolate;
+    height: 100%;
+  }
+  .card::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--accent, #ffffff) 0%, transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 18px;
+    position: relative; z-index: 1;
+  }
+  .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 14px var(--accent);
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+  @keyframes dot-pulse {
+    0%, 100% { transform: scale(1);   opacity: 1;   }
+    50%      { transform: scale(1.3); opacity: 0.7; }
+  }
+  .card-title {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.01em;
+    color: #e6edf7;
+  }
+  .card-meta {
+    margin-left: auto;
+    color: #5d6a8a;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 18px;
+  }
+
+  /* Frontend card */
+  #frontend-card { --accent: #61dafb; }
+  #frontend-card .stack {
+    position: relative; z-index: 1;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px;
+    color: #b8e8ff;
+    line-height: 1.85;
+  }
+  #frontend-card .stack-divider {
+    height: 1px;
+    background: linear-gradient(90deg, #2a3550 0%, transparent 100%);
+    margin: 18px 0;
+  }
+  #frontend-card .stack-foot {
+    color: #5d6a8a; font-size: 15px;
+  }
+  .react-icon {
+    position: absolute;
+    top: 28px; right: 28px;
+    width: 60px; height: 60px;
+  }
+  .react-icon .nucleus {
+    fill: #61dafb;
+  }
+  .react-icon .orbit {
+    fill: none;
+    stroke: #61dafb;
+    stroke-width: 1.8;
+    opacity: 0.6;
+    transform-origin: 30px 30px;
+  }
+  .react-icon .o1 { animation: spin 6s linear infinite; }
+  .react-icon .o2 { animation: spin 6s linear infinite reverse; }
+  .react-icon .o3 { animation: spin 9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* HTTP+SSE Connector */
+  #connector {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #http-label {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #b8c5db;
+    letter-spacing: 0.18em;
+    background: #0a0e1a;
+    padding: 8px 18px;
+    border: 1px solid #2a3550;
+    border-radius: 999px;
+    z-index: 3;
+  }
+  #http-line {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #3d4d75 12%, #3d4d75 88%, transparent 100%);
+    position: relative;
+    transform-origin: center center;
+  }
+  /* Arrow heads */
+  #http-line::before, #http-line::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    width: 14px; height: 14px;
+    border-top: 2px solid #3d4d75;
+    border-right: 2px solid #3d4d75;
+  }
+  #http-line::before { left: 12px;  transform: rotate(-135deg); }
+  #http-line::after  { right: 12px; transform: rotate(45deg); }
+
+  .particle {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .req {
+    background: #61dafb;
+    box-shadow: 0 0 14px #61dafb, 0 0 28px #61dafb;
+  }
+  .res {
+    background: #4ade80;
+    box-shadow: 0 0 14px #4ade80, 0 0 28px #4ade80;
+  }
+
+  /* Backend card */
+  #backend-card { --accent: #4ade80; }
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 4px;
+    position: relative; z-index: 1;
+  }
+  .module {
+    background: rgba(74, 222, 128, 0.05);
+    border: 1px solid rgba(74, 222, 128, 0.18);
+    border-radius: 12px;
+    padding: 24px 14px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 24px;
+    font-weight: 600;
+    color: #b6f4cb;
+    text-align: center;
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+
+  /* Vertical bus */
+  #bus {
+    position: relative;
+    width: 100%;
+    height: 70px;
+    margin-bottom: 18px;
+  }
+  #bus svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .bus-line {
+    stroke: #3d4d75;
+    stroke-width: 1.8;
+    fill: none;
+    opacity: 0.85;
+    stroke-dasharray: 70;
+    stroke-dashoffset: 70;
+  }
+  .bus-arrow {
+    fill: #3d4d75;
+    opacity: 0.95;
+  }
+  .bus-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px;
+    font-weight: 600;
+    fill: #5d6a8a;
+    letter-spacing: 0.15em;
+  }
+  .bus-dot { will-change: transform, opacity; }
+  .bd-sql { fill: #f59e0b; filter: drop-shadow(0 0 8px #f59e0b); }
+  .bd-qdr { fill: #c084fc; filter: drop-shadow(0 0 8px #c084fc); }
+  .bd-llm { fill: #f472b6; filter: drop-shadow(0 0 8px #f472b6); }
+  .bd-git { fill: #94a3b8; filter: drop-shadow(0 0 8px #94a3b8); }
+
+  /* Bottom row */
+  .row-bottom {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    height: 360px;
+  }
+  .data-card { padding: 28px; }
+  .data-card .card-title { font-size: 28px; }
+  .data-card .meta-line {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 15px;
+    color: #5d6a8a;
+    margin-top: -8px;
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+  .data-card ul {
+    list-style: none;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 19px;
+    color: #8b97b3;
+    line-height: 1.7;
+    position: relative; z-index: 1;
+  }
+  .data-card ul li::before {
+    content: "▸ ";
+    color: var(--accent);
+    opacity: 0.8;
+    margin-right: 4px;
+  }
+  #card-sqlite { --accent: #f59e0b; }
+  #card-qdrant { --accent: #c084fc; }
+  #card-llm    { --accent: #f472b6; }
+  #card-github { --accent: #94a3b8; }
+
+  .https-tag {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #5d6a8a;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #2a3550;
+    border-radius: 6px;
+    padding: 3px 10px;
+    letter-spacing: 0.15em;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 18px;
+    color: #5d6a8a;
+    font-size: 15px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<div id="root" class="clip"
+     data-composition-id="architecture-diagram"
+     data-start="0"
+     data-duration="14"
+     data-track-index="0"
+     data-width="1920"
+     data-height="1080">
+
+  <div id="ambient">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div id="stage">
+
+    <h1 class="title">System Architecture</h1>
+    <p class="subtitle">FRONTEND  ·  BACKEND  ·  DATA LAYER</p>
+
+    <!-- TOP ROW: Frontend ↔ Backend -->
+    <div class="row-top">
+
+      <!-- Frontend card -->
+      <div id="frontend-card" class="card">
+        <svg class="react-icon" viewBox="0 0 60 60" aria-hidden="true" data-layout-allow-overflow style="overflow:visible">
+          <ellipse class="orbit o1" cx="30" cy="30" rx="25" ry="10" data-layout-allow-overflow/>
+          <ellipse class="orbit o2" cx="30" cy="30" rx="25" ry="10" transform="rotate(60 30 30)" data-layout-allow-overflow/>
+          <ellipse class="orbit o3" cx="30" cy="30" rx="25" ry="10" transform="rotate(120 30 30)" data-layout-allow-overflow/>
+          <circle class="nucleus" cx="30" cy="30" r="4"/>
+        </svg>
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">Frontend</span>
+        </div>
+        <div class="stack">
+          <div>React + Vite + TypeScript</div>
+          <div>Tailwind CSS</div>
+          <div class="stack-divider"></div>
+          <div class="stack-foot">SPA · client-side routing</div>
+        </div>
+      </div>
+
+      <!-- HTTP+SSE Connector -->
+      <div id="connector">
+        <div id="http-label">HTTP + SSE</div>
+        <div id="http-line">
+          <div class="particle req" id="req-1" style="left:8%"></div>
+          <div class="particle req" id="req-2" style="left:8%"></div>
+          <div class="particle req" id="req-3" style="left:8%"></div>
+          <div class="particle req" id="req-4" style="left:8%"></div>
+          <div class="particle res" id="res-1" style="left:92%"></div>
+          <div class="particle res" id="res-2" style="left:92%"></div>
+          <div class="particle res" id="res-3" style="left:92%"></div>
+          <div class="particle res" id="res-4" style="left:92%"></div>
+        </div>
+      </div>
+
+      <!-- Backend card -->
+      <div id="backend-card" class="card">
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">Backend</span>
+          <span class="card-meta">FastAPI</span>
+        </div>
+        <div class="module-grid">
+          <div class="module" id="mod-0">routes/</div>
+          <div class="module" id="mod-1">rag/</div>
+          <div class="module" id="mod-2">ingest/</div>
+          <div class="module" id="mod-3">llm/</div>
+          <div class="module" id="mod-4">db/</div>
+          <div class="module" id="mod-5">services/</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERTICAL BUS: Backend → Data Layer -->
+    <div id="bus">
+      <svg viewBox="0 0 1760 70" preserveAspectRatio="none">
+        <!-- 4 drop lines, evenly distributed across the 4 data-layer column centers -->
+        <!-- Columns @ 12.5%, 37.5%, 62.5%, 87.5% of 1760 = 220, 660, 1100, 1540 -->
+        <line class="bus-line" x1="220"  y1="0" x2="220"  y2="58"/>
+        <line class="bus-line" x1="660"  y1="0" x2="660"  y2="58"/>
+        <line class="bus-line" x1="1100" y1="0" x2="1100" y2="58"/>
+        <line class="bus-line" x1="1540" y1="0" x2="1540" y2="58"/>
+
+        <text class="bus-label" x="1110" y="14">HTTPS</text>
+        <text class="bus-label" x="1550" y="14">HTTPS</text>
+
+        <polygon class="bus-arrow" points="212,56 228,56 220,68"/>
+        <polygon class="bus-arrow" points="652,56 668,56 660,68"/>
+        <polygon class="bus-arrow" points="1092,56 1108,56 1100,68"/>
+        <polygon class="bus-arrow" points="1532,56 1548,56 1540,68"/>
+
+        <!-- Flowing dots — initial y=0, GSAP moves them down -->
+        <circle class="bus-dot bd-sql" id="bd-sql-1" cx="220"  cy="0" r="5"/>
+        <circle class="bus-dot bd-sql" id="bd-sql-2" cx="220"  cy="0" r="5"/>
+        <circle class="bus-dot bd-qdr" id="bd-qdr-1" cx="660"  cy="0" r="5"/>
+        <circle class="bus-dot bd-qdr" id="bd-qdr-2" cx="660"  cy="0" r="5"/>
+        <circle class="bus-dot bd-llm" id="bd-llm-1" cx="1100" cy="0" r="5"/>
+        <circle class="bus-dot bd-llm" id="bd-llm-2" cx="1100" cy="0" r="5"/>
+        <circle class="bus-dot bd-git" id="bd-git-1" cx="1540" cy="0" r="5"/>
+        <circle class="bus-dot bd-git" id="bd-git-2" cx="1540" cy="0" r="5"/>
+      </svg>
+    </div>
+
+    <!-- BOTTOM ROW: Data Layer -->
+    <div class="row-bottom">
+
+      <div id="card-sqlite" class="card data-card">
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">SQLite</span>
+        </div>
+        <div class="meta-line">aiosqlite</div>
+        <ul>
+          <li>documents</li>
+          <li>chunks</li>
+          <li>conversations</li>
+          <li>messages</li>
+          <li>sync runs</li>
+          <li>feedback</li>
+        </ul>
+      </div>
+
+      <div id="card-qdrant" class="card data-card">
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">Qdrant</span>
+        </div>
+        <div class="meta-line">bundled local · or · Cloud</div>
+        <ul>
+          <li>dense vectors</li>
+          <li>BM25 sparse</li>
+          <li>payload index</li>
+          <li>hybrid search</li>
+        </ul>
+      </div>
+
+      <div id="card-llm" class="card data-card">
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">LLM Provider</span>
+          <span class="https-tag">HTTPS</span>
+        </div>
+        <div class="meta-line">OpenRouter · or · OpenAI</div>
+        <ul>
+          <li>chat completions</li>
+          <li>embeddings</li>
+          <li>streaming (SSE)</li>
+        </ul>
+      </div>
+
+      <div id="card-github" class="card data-card">
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">GitHub</span>
+          <span class="https-tag">HTTPS</span>
+        </div>
+        <div class="meta-line">Issues API</div>
+        <ul>
+          <li>feedback submissions</li>
+          <li>posted as GH issues</li>
+          <li>label + assignee sync</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">Live data flow · all systems nominal</div>
+  </div>
+</div>
+
+<script>
+  // ────────────────────────────────────────────────────────────
+  // HyperFrames timeline — paused + registered on window.__timelines
+  // ────────────────────────────────────────────────────────────
+  const TOTAL_DURATION = 12;
+  const COMP_ID = "architecture-diagram";
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  window.__timelines[COMP_ID] = tl;
+
+  // ── INITIAL STATES (t=0) — EVERYTHING VISIBLE INSTANTLY ─────
+  gsap.set("#http-label",  { xPercent: -50 });
+  gsap.set(".particle",    { opacity: 0 });
+  gsap.set(".bus-dot",     { opacity: 0 });
+
+  // ── SUSTAINED ANIMATIONS (0 → 12s) ───────────────────────────
+  const ANIM_START = 0;
+
+  // ----- HTTP particles (request: L→R, response: R→L) ----------
+  const PARTICLE_CYCLE = 1.6;          // seconds per traversal
+  const PARTICLE_STAGGER = 0.4;        // gap between successive particles in same direction
+
+  function spawnParticleRun(selector, fromPct, toPct, baseT, cycleDur) {
+    // One full cycle: set start position invisibly, fade in, traverse, fade out
+    tl.set(selector, { left: fromPct + "%", opacity: 0 }, baseT);
+    tl.to(selector,  { opacity: 1, duration: 0.18, ease: "power1.out" }, baseT);
+    tl.to(selector,  { left: toPct + "%", duration: cycleDur, ease: "none" }, baseT);
+    tl.to(selector,  { opacity: 0, duration: 0.18, ease: "power1.in" }, baseT + cycleDur - 0.18);
+  }
+
+  for (let i = 1; i <= 4; i++) {
+    let t = ANIM_START + (i - 1) * PARTICLE_STAGGER;
+    while (t + PARTICLE_CYCLE <= TOTAL_DURATION) {
+      spawnParticleRun(`#req-${i}`, 8, 92, t, PARTICLE_CYCLE);
+      t += PARTICLE_CYCLE;
+    }
+  }
+  for (let i = 1; i <= 4; i++) {
+    let t = ANIM_START + 0.2 + (i - 1) * PARTICLE_STAGGER;
+    while (t + PARTICLE_CYCLE <= TOTAL_DURATION) {
+      spawnParticleRun(`#res-${i}`, 92, 8, t, PARTICLE_CYCLE);
+      t += PARTICLE_CYCLE;
+    }
+  }
+
+  // ----- Vertical bus dots (flowing down each lane) ------------
+  const BUS_CYCLE = 1.4;       // seconds for a dot to traverse the bus
+  const BUS_STAGGER = 0.7;     // between paired dots in same lane
+
+  function spawnBusDotRun(selector, baseT, cycleDur) {
+    tl.set(selector, { y: -8, opacity: 0 }, baseT);
+    tl.to(selector,  { opacity: 1, duration: 0.18 }, baseT);
+    tl.to(selector,  { y: 60, duration: cycleDur, ease: "none" }, baseT);
+    tl.to(selector,  { opacity: 0, duration: 0.18 }, baseT + cycleDur - 0.18);
+  }
+
+  const busLanes = [
+    ["#bd-sql-1", "#bd-sql-2"],
+    ["#bd-qdr-1", "#bd-qdr-2"],
+    ["#bd-llm-1", "#bd-llm-2"],
+    ["#bd-git-1", "#bd-git-2"],
+  ];
+
+  busLanes.forEach((lane, laneIdx) => {
+    lane.forEach((sel, dotIdx) => {
+      let t = ANIM_START + laneIdx * 0.15 + dotIdx * BUS_STAGGER;
+      while (t + BUS_CYCLE <= TOTAL_DURATION) {
+        spawnBusDotRun(sel, t, BUS_CYCLE);
+        t += BUS_CYCLE;
+      }
+    });
+  });
+
+  // ----- Backend module cycling highlight ----------------------
+  const MOD_HOLD = 0.75;       // seconds each module stays "active"
+  const MOD_COUNT = 6;
+
+  let modT = ANIM_START;
+  while (modT + MOD_HOLD * MOD_COUNT <= TOTAL_DURATION) {
+    for (let m = 0; m < MOD_COUNT; m++) {
+      const sel = `#mod-${m}`;
+      const local = modT + m * MOD_HOLD;
+      tl.to(sel, {
+        backgroundColor: "rgba(74, 222, 128, 0.18)",
+        borderColor:     "rgba(74, 222, 128, 0.75)",
+        color:           "#ecfdf5",
+        boxShadow:       "0 0 22px rgba(74, 222, 128, 0.55)",
+        duration: 0.28,
+        ease: "power2.out"
+      }, local);
+      tl.to(sel, {
+        backgroundColor: "rgba(74, 222, 128, 0.05)",
+        borderColor:     "rgba(74, 222, 128, 0.18)",
+        color:           "#b6f4cb",
+        boxShadow:       "0 0 0 rgba(74, 222, 128, 0)",
+        duration: 0.40,
+        ease: "power2.in"
+      }, local + 0.35);
+    }
+    modT += MOD_HOLD * MOD_COUNT;
+  }
+
+  // ── PIN TIMELINE TO TOTAL_DURATION ───────────────────────────
+  // No-op tween at TOTAL_DURATION so composition length matches.
+  tl.set({}, {}, TOTAL_DURATION);
+</script>
+
+</body>
+</html>

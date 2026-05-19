@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v15 — The missing layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 900px 700px at 70% 50%, rgba(220,220,170,0.18), transparent 65%),
+      radial-gradient(ellipse 700px 500px at 20% 80%, rgba(78,201,176,0.10), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--ast-yellow); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--ast-yellow); }
+  .slam-wrap { position: absolute; top: 116px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 102px; line-height: 0.9; color: #fff; letter-spacing: -0.04em; }
+  .slam-1 .yo { color: var(--ast-yellow); }
+  .slam-2 {
+    display: block; font-family: var(--font-sans); font-weight: 900;
+    font-size: 188px; line-height: 0.85; color: #fff;
+    letter-spacing: -0.05em; margin-top: 4px;
+  }
+  .slam-2 .miss {
+    background: linear-gradient(180deg, var(--ast-yellow), #b8a04a);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  #stack {
+    position: absolute; bottom: 40px; left: 56px;
+    width: 580px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 5;
+  }
+  .stack-row {
+    display: flex; align-items: center;
+    padding: 14px 20px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 10px;
+    font-family: var(--font-mono); font-size: 24px; font-weight: 700;
+    color: var(--fg-default);
+    gap: 14px;
+  }
+  .stack-row .num {
+    font-family: var(--font-mono); font-size: 14px;
+    color: var(--fg-muted); width: 28px; font-weight: 800;
+  }
+  .stack-row .name { color: var(--fg-bright); font-weight: 700; flex: 1; }
+  .stack-row .role { font-family: var(--font-mono); font-size: 16px; color: var(--fg-muted); font-weight: 500; }
+  .stack-row.missing {
+    border: 2px dashed rgba(220,220,170,0.7);
+    background: rgba(220,220,170,0.10);
+    box-shadow: 0 0 24px rgba(220,220,170,0.25);
+  }
+  .stack-row.missing .name { color: var(--ast-yellow); }
+  .stack-row.missing .role { color: var(--ast-yellow); }
+  .stack-row.missing .num { color: var(--ast-yellow); }
+  .stack-row.missing::after {
+    content: "MISSING";
+    margin-left: auto;
+    background: var(--ast-yellow); color: #000;
+    padding: 4px 10px; border-radius: 6px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+  #arrow-pointer {
+    position: absolute; bottom: 138px; left: 660px;
+    z-index: 7;
+    font-family: var(--font-mono); font-weight: 800; font-size: 42px;
+    color: var(--ast-yellow);
+    display: flex; align-items: center; gap: 12px;
+    text-shadow: 0 0 20px rgba(220,220,170,0.5);
+  }
+  #arrow-pointer .arr { font-size: 60px; }
+  #fix-pill {
+    position: absolute; bottom: 50px; right: 56px;
+    background: linear-gradient(160deg, rgba(220,220,170,0.18), rgba(120,100,40,0.10));
+    border: 2px solid rgba(220,220,170,0.55);
+    border-radius: 16px;
+    padding: 22px 28px;
+    z-index: 6;
+    width: 380px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  #fix-pill .lbl { font-family: var(--font-mono); font-size: 16px; color: #ddd6a0; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+  #fix-pill .name { font-family: var(--font-mono); font-weight: 800; font-size: 54px; color: var(--ast-yellow); letter-spacing: -0.02em; }
+  #fix-pill .sub { font-family: var(--font-mono); font-size: 18px; color: #ddd6a0; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">claude code · the search stack</div>
+  <div class="slam-wrap">
+    <span class="slam-1"><span class="yo">YOUR AGENT'S</span></span>
+    <span class="slam-2"><span class="miss">MISSING LAYER.</span></span>
+  </div>
+  <div id="stack">
+    <div class="stack-row"><span class="num">1.</span><span class="name">Read</span><span class="role">open a file</span></div>
+    <div class="stack-row"><span class="num">2.</span><span class="name">Glob</span><span class="role">list files by name</span></div>
+    <div class="stack-row"><span class="num">3.</span><span class="name">Grep</span><span class="role">match text</span></div>
+    <div class="stack-row missing"><span class="num">4.</span><span class="name">ast-grep</span><span class="role">match code structure</span></div>
+  </div>
+  <div id="fix-pill">
+    <div class="lbl">add it</div>
+    <div class="name">▶ today</div>
+    <div class="sub">N P M install &middot; 1 line</div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

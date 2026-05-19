@@ -127,24 +127,61 @@
       }
 
       #dynamous-outro {
-        display: flex; flex-direction: column;
-        align-items: center; gap: 12px;
-        margin-top: 12px;
+        margin-top: 14px;
+        padding: 18px 36px;
+        background: linear-gradient(135deg, rgba(103, 61, 230, 0.18), rgba(103, 61, 230, 0.06));
+        border: 2px solid rgba(103, 61, 230, 0.65);
+        border-radius: 18px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 28px;
+        box-shadow: 0 0 40px rgba(103, 61, 230, 0.25);
       }
       #dynamous-wordmark {
-        height: 70px;
+        height: 56px;
         width: auto;
+        flex-shrink: 0;
+      }
+      #dynamous-discount-badge {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 18px;
+        background: var(--ok);
+        color: #0a1a16;
+        border-radius: 12px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      #dynamous-discount-badge .pct {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 36px;
+        letter-spacing: -1px;
+      }
+      #dynamous-discount-badge .sub {
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 2px;
+        margin-top: 3px;
       }
       #dynamous-url-pill {
-        padding: 12px 26px;
+        padding: 10px 22px;
         border-radius: 999px;
-        background: rgba(103, 61, 230, 0.20);
+        background: rgba(103, 61, 230, 0.25);
         border: 1.5px solid rgba(103, 61, 230, 0.65);
         font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
         font-weight: 800;
-        font-size: 26px;
-        letter-spacing: 1.5px;
-        color: #b6a5f5;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #d4c8ff;
+        white-space: nowrap;
+      }
+      #dynamous-url-pill .arrow {
+        color: var(--ok);
+        margin-right: 8px;
       }
     </style>
 
@@ -173,7 +210,11 @@
 
       <div id="dynamous-outro">
         <img id="dynamous-wordmark" src="assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" />
-        <div id="dynamous-url-pill">dynamous.ai</div>
+        <div id="dynamous-discount-badge">
+          <span class="pct">10% OFF</span>
+          <span class="sub">MEMBERSHIP</span>
+        </div>
+        <div id="dynamous-url-pill"><span class="arrow">→</span>link in description</div>
       </div>
     </div>
 
@@ -191,8 +232,10 @@
       tl.set("#choice-waste",      { opacity: 0, x: 24 }, 0);
       tl.set("#cta-comment-pill",  { opacity: 0, y: 16 }, 0);
       tl.set("#cta-subscribe-pill",{ opacity: 0, y: 16 }, 0);
-      tl.set("#dynamous-wordmark", { opacity: 0 }, 0);
-      tl.set("#dynamous-url-pill", { opacity: 0, scale: 0.85 }, 0);
+      tl.set("#dynamous-outro",         { opacity: 0, y: 20 }, 0);
+      tl.set("#dynamous-wordmark",      { opacity: 0 }, 0);
+      tl.set("#dynamous-discount-badge",{ opacity: 0, scale: 0.7 }, 0);
+      tl.set("#dynamous-url-pill",      { opacity: 0, scale: 0.85 }, 0);
 
       // Overline — local 0
       tl.to("#s10-overline", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.0);
@@ -220,8 +263,13 @@
         duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 4
       }, 17.7);
 
-      // Dynamous wordmark — "learn more about AI" (local 20.87)
-      tl.to("#dynamous-wordmark", { opacity: 1, duration: 0.6, ease: "expo.out" }, 20.87);
+      // Dynamous wordmark — "learn more about AI" (local 20.87) — banner enters as a unit
+      tl.to("#dynamous-outro", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 20.87);
+      tl.to("#dynamous-wordmark", { opacity: 1, duration: 0.5, ease: "expo.out" }, 20.87);
+
+      // Discount badge slam — drives the eye to "10% OFF" (local 21.4)
+      tl.to("#dynamous-discount-badge", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 21.4);
+      tl.to("#dynamous-discount-badge", { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
 
       // URL pill — "dynamous dot AI" (local 22.59)
       tl.to("#dynamous-url-pill", { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 22.59);

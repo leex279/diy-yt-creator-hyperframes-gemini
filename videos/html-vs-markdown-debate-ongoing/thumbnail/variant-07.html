@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<!-- Variant 07 — Bracket-debate framing.
+     MARKDOWN vs HTML dominant at top.
+     Below: [ MARKDOWN ] vs [ HTML ] in terracotta-bordered bracket boxes.
+     ROUND 2 stamp diagonal in corner. Sub-receipt: "THE COMMUNITY IS STILL ARGUING."
+     Theme: white minimal. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v07 — Topic + bracket framing + ROUND 2 stamp</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Diagonal ROUND 2 stamp — top-right corner */
+  .round2-stamp {
+    position: absolute;
+    top: 56px; right: 56px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent-terracotta);
+    padding: 8px 18px;
+    border-radius: 6px;
+    transform: rotate(4deg);
+    box-shadow: 0 6px 18px rgba(199, 90, 63, 0.35);
+    z-index: 10;
+  }
+
+  /* Topic header — dominant, stacked layout */
+  .topic-header {
+    position: absolute;
+    top: 106px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-term {
+    font-size: 96px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--text-dim-cream);
+    padding: 0 4px;
+  }
+  .topic-rule {
+    width: 70px; height: 3px;
+    background: var(--accent-terracotta);
+    margin: 12px auto 0;
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+
+  /* Bracket stage — below topic header */
+  .bracket-stage {
+    position: absolute;
+    top: 295px;
+    left: 60px;
+    right: 60px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 24px;
+  }
+  .bracket-box {
+    flex: 1;
+    border: 4px solid var(--accent-terracotta);
+    border-radius: 12px;
+    padding: 20px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 380px;
+  }
+  .bracket-tag {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent-deep-red);
+  }
+  .bracket-term {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 68px;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: var(--text-cream);
+    white-space: nowrap;
+  }
+  .vs-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 4px;
+    padding: 0 4px;
+  }
+  .vs-text {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 50px;
+    color: var(--text-dim-cream);
+    letter-spacing: -1px;
+  }
+  .vs-sub {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted-cream);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* Receipt */
+  .receipt-c {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 50px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .receipt-c strong { color: var(--accent-deep-red); }
+
+  .theme-white .brand {
+    left: 60px; bottom: 50px; top: auto; right: auto;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-white">
+    <div class="overline">Using Claude Code</div>
+    <div class="overline-divider"></div>
+
+    <!-- ROUND 2 stamp — diagonal top right -->
+    <div class="round2-stamp">ROUND 2</div>
+
+    <!-- Dominant topic header -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <div class="topic-rule"></div>
+    </div>
+
+    <!-- Bracket stage -->
+    <div class="bracket-stage">
+      <div class="bracket-box">
+        <span class="bracket-tag">Format A</span>
+        <span class="bracket-term">MARKDOWN</span>
+      </div>
+      <div class="vs-center">
+        <span class="vs-text">vs</span>
+        <span class="vs-sub">8 days<br>no winner</span>
+      </div>
+      <div class="bracket-box">
+        <span class="bracket-tag">Format B</span>
+        <span class="bracket-term">HTML</span>
+      </div>
+    </div>
+
+    <div class="receipt-c"><strong>The community is still arguing.</strong></div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<!-- contact-sheet.html — preview of all 10 thumbnail variants in a 5-column × 2-row grid.
+     Each cell contains an iframe rendering the live variant HTML at scaled-down size,
+     labeled with variant number and angle. Mirrors the structure of the archived contact-sheet.
+     Viewport for screenshot: 1800px wide. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>Contact sheet — html-vs-markdown-debate-ongoing thumbnails</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@800&family=Inter:wght@400;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #16171a;
+    --card: #1f2125;
+    --border: rgba(255,255,255,0.08);
+    --accent: #ffd60a;
+    --terracotta: #C75A3F;
+    --text: #FFFFFF;
+    --text-dim: #9aa0a6;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    width: 1800px;
+    color: var(--text);
+    font-family: var(--sans);
+    padding: 48px 60px 60px;
+    box-sizing: border-box;
+  }
+  .header {
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 22px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 14px; letter-spacing: 5px; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .title {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 44px; line-height: 1.1; letter-spacing: -1px;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    font-family: var(--sans); font-weight: 400;
+    font-size: 18px; line-height: 1.45;
+    color: var(--text-dim);
+    margin: 0;
+    max-width: 1400px;
+  }
+  .subtitle code {
+    font-family: var(--mono); font-size: 16px;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px; border-radius: 4px;
+    color: var(--accent);
+  }
+
+  /* 5-column × 2-row grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+  .cell {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  /* iframe wrapper: aspect-ratio 16/9, scaled to fit cell */
+  .cell-iframe-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0a0a0a;
+    overflow: hidden;
+    position: relative;
+  }
+  .cell-iframe-wrap iframe {
+    /* Render at 1280×720, then scale down to fit container */
+    width: 1280px;
+    height: 720px;
+    border: none;
+    display: block;
+    transform-origin: top left;
+    /* scale is set inline per cell; approximate: container ~320px → scale 0.25 */
+    transform: scale(var(--thumb-scale, 0.25));
+  }
+  .cell-meta {
+    padding: 12px 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cell-num {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 16px; letter-spacing: 2px;
+    color: #0a0a0a;
+    background: var(--accent);
+    padding: 5px 10px;
+    border-radius: 5px;
+    min-width: 42px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .cell-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .cell-angle {
+    font-family: var(--sans); font-weight: 700;
+    font-size: 13px; line-height: 1.2;
+    color: var(--text);
+  }
+  .cell-headline {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .theme-tag {
+    font-family: var(--mono); font-weight: 700;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .tag-white  { background: rgba(255,255,255,0.12); color: #fff; }
+  .tag-cream  { background: rgba(199,90,63,0.18); color: var(--terracotta); }
+
+  .footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-weight: 700;
+    font-size: 13px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer span.accent { color: var(--accent); }
+</style>
+<script>
+  /* After load, measure each iframe wrapper and set the CSS scale so
+     the 1280×720 iframe fills the container exactly. */
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.cell-iframe-wrap').forEach(wrap => {
+      const w = wrap.getBoundingClientRect().width;
+      const scale = w / 1280;
+      wrap.style.setProperty('--thumb-scale', scale);
+      /* Also set the wrapper height to match scaled iframe height */
+      wrap.style.height = (720 * scale) + 'px';
+    });
+  });
+</script>
+</head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Thumbnail picker · 10 variants · Part 2 · Refined</div>
+    <h1 class="title">Pick a thumbnail for <em style="font-style:italic; color:var(--terracotta);">html-vs-markdown-debate-ongoing</em></h1>
+    <p class="subtitle">Every variant leads with dominant <strong>MARKDOWN VS HTML</strong> topic header + visible <strong>ROUND 2 / PART 2</strong> marker. Ten different hook angles below the topic. 750K read the original. The replies still haven't agreed. Pick one and upload to YouTube Studio.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Row 1 -->
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-01.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">01</div>
+        <div class="cell-info">
+          <div class="cell-angle">Strike-swap + ROUND 2 stamp</div>
+          <div class="cell-headline">MARKDOWN ~~vs~~ HTML — BOTH STILL HERE. · 8 DAYS LATER</div>
+        </div>
+        <span class="theme-tag tag-white">white</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-02.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">02</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + huge ROUND 2 numeric</div>
+          <div class="cell-headline">MARKDOWN vs HTML → ROUND 2. (200px serif italic)</div>
+        </div>
+        <span class="theme-tag tag-cream">cream</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-03.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">03</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + days-later receipts + PART 2 pill</div>
+          <div class="cell-headline">8 DAYS. 1000 REPLIES. ZERO CONSENSUS.</div>
+        </div>
+        <span class="theme-tag tag-white">white</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-04.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">04</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + question-mark hook + PART 2 chip</div>
+          <div class="cell-headline">STILL UNDEFEATED? — Thariq says yes.</div>
+        </div>
+        <span class="theme-tag tag-cream">cream</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-05.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">05</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic pills + three camps + ROUND 2 badge</div>
+          <div class="cell-headline">TEAM MARKDOWN / HYBRID / HTML — WHICH SIDE?</div>
+        </div>
+        <span class="theme-tag tag-white">white</span>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-06.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">06</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + X-post follow-up + PART 2 overline</div>
+          <div class="cell-headline">"HTML continues to be undefeated." — Thariq, 4d</div>
+        </div>
+        <span class="theme-tag tag-cream">cream</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-07.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">07</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + bracket framing + ROUND 2 stamp</div>
+          <div class="cell-headline">[ MARKDOWN ] vs [ HTML ] — STILL ARGUING</div>
+        </div>
+        <span class="theme-tag tag-white">white</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-08.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">08</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + conspiracy-take quote + ROUND 2 chip</div>
+          <div class="cell-headline">"Someone earning money on token spending..."</div>
+        </div>
+        <span class="theme-tag tag-cream">cream</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-09.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">09</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + WHO WON? + three pills + PART 2</div>
+          <div class="cell-headline">WHO WON? MARKDOWN / HYBRID / HTML</div>
+        </div>
+        <span class="theme-tag tag-white">white</span>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-iframe-wrap"><iframe src="variant-10.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="cell-meta">
+        <div class="cell-num">10</div>
+        <div class="cell-info">
+          <div class="cell-angle">Topic + THE DEBATE IS NOT OVER + ROUND 2 stamp</div>
+          <div class="cell-headline">THE DEBATE IS NOT OVER. · 8 days. 1000 replies.</div>
+        </div>
+        <span class="theme-tag tag-white">white</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>10 variants · MARKDOWN VS HTML dominant · ROUND 2 / PART 2 in every variant</span>
+    <span class="accent">diy-yt-creator · shorts-final-frame-thumbnail skill</span>
+  </div>
+</body></html>

@@ -1,0 +1,278 @@
+<!--
+  scene-mvp-stage.html — Chapter 4 MVP Stage (75s). 13 narration-anchored beats.
+-->
+<template id="scene-mvp-stage-template">
+  <div data-composition-id="scene-mvp-stage"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      #mvp-content {
+        width: 100%; height: 100%;
+        padding: 130px 60px 100px;
+        display: grid;
+        grid-template-columns: 0.78fr 1.2fr;
+        gap: 40px;
+        align-items: stretch;
+        box-sizing: border-box;
+      }
+      #mvp-left {
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 20px;
+      }
+      #mvp-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        text-transform: uppercase; color: #A78BFA;
+        opacity: 0;
+      }
+      #mvp-headline {
+        font-weight: 900; font-size: 130px; line-height: 0.9;
+        letter-spacing: -5px; color: #F5F1EB;
+        opacity: 0;
+      }
+      #mvp-headline .em { color: #A78BFA; }
+      #mvp-graphic {
+        width: 100%; max-width: 560px;
+        border-radius: 16px;
+        border: 2px solid rgba(167,139,250,0.45);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.55), 0 0 60px rgba(167,139,250,0.18);
+        display: block; object-fit: cover; aspect-ratio: 4/3;
+        opacity: 0;
+      }
+      #mvp-progress {
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+      }
+      .mvp-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(245,241,235,0.18); }
+      .mvp-dot.active { background: #A78BFA; box-shadow: 0 0 10px rgba(167,139,250,0.6); }
+      .mvp-prog-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 14px; letter-spacing: 3px;
+        color: #9A958D; margin-left: 8px;
+      }
+
+      #mvp-right {
+        position: relative;
+        display: flex; flex-direction: column;
+        gap: 14px;
+        align-self: stretch;
+        justify-content: center;
+      }
+      .mvp-card {
+        opacity: 0;
+        padding: 18px 22px;
+        border-radius: 14px;
+        background: rgba(14,18,26,0.85);
+        border: 1.5px solid rgba(167,139,250,0.45);
+        display: flex; align-items: center; gap: 18px;
+        position: relative;
+      }
+      .mvp-card.danger { border-color: rgba(209,67,67,0.50); background: rgba(40,18,18,0.85); }
+      .mvp-card.exit   { border-color: rgba(125,211,166,0.50); }
+      .mvp-card-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 14px; letter-spacing: 3px;
+        padding: 6px 12px; border-radius: 6px;
+        background: rgba(167,139,250,0.18); color: #A78BFA;
+        white-space: nowrap; flex-shrink: 0;
+      }
+      .mvp-card.danger .mvp-card-tag { background: rgba(209,67,67,0.20); color: #FF7C7C; }
+      .mvp-card.exit   .mvp-card-tag { background: rgba(125,211,166,0.18); color: #7DD3A6; }
+      .mvp-card-text {
+        font-weight: 700; font-size: 22px;
+        line-height: 1.25; color: #F5F1EB;
+      }
+
+      /* Signups counter + strike */
+      #mvp-signups {
+        margin-left: auto;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 2px;
+        padding: 8px 14px; border-radius: 8px;
+        background: rgba(20,12,12,0.7); position: relative;
+      }
+      #mvp-signups-num {
+        font-weight: 900; font-size: 38px; line-height: 1;
+        color: #FF7C7C; font-variant-numeric: tabular-nums;
+      }
+      #mvp-signups-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 11px; letter-spacing: 2px;
+        color: #9A958D; text-transform: uppercase;
+      }
+      #mvp-signups-strike {
+        position: absolute; left: 8px; right: 8px;
+        top: 50%; height: 4px; width: 0;
+        background: #D14343; opacity: 0;
+      }
+
+      /* Sean Ellis 40% mega slam */
+      #mvp-mega {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 0; opacity: 0; pointer-events: none;
+        background: rgba(11,15,24,0.65); backdrop-filter: blur(8px);
+        border-radius: 18px; z-index: 5;
+      }
+      #mvp-mega-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        color: #A78BFA; margin-bottom: 8px;
+      }
+      #mvp-mega-num {
+        font-weight: 900; font-size: 320px; line-height: 0.9;
+        letter-spacing: -14px; color: #A78BFA;
+        text-shadow: 0 0 80px rgba(167,139,250,0.55), 0 12px 30px rgba(0,0,0,0.7);
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      #mvp-mega-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 24px; letter-spacing: 3px;
+        color: #F5F1EB; max-width: 540px; text-align: center;
+        margin-top: 8px;
+      }
+
+      /* CLAUDE.md file mini-card */
+      #mvp-claudemd {
+        margin-left: auto;
+        padding: 10px 14px; border-radius: 8px;
+        background: rgba(125,211,166,0.10);
+        border: 1.5px solid rgba(125,211,166,0.40);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 16px; letter-spacing: 1px;
+        color: #7DD3A6;
+        opacity: 0;
+      }
+      #mvp-claudemd .icon { margin-right: 8px; }
+    </style>
+
+    <div id="mvp-content">
+      <div id="mvp-left">
+        <div id="mvp-overline">CHAPTER 4 &middot; PDF p.15</div>
+        <div id="mvp-headline"><span class="em">MVP</span>.</div>
+        <img id="mvp-graphic" src="assets/chapter-icons/chapter-4-mvp.png" alt="Chapter 4 — MVP Stage" />
+        <div id="mvp-progress">
+          <div class="mvp-dot"></div><div class="mvp-dot"></div><div class="mvp-dot"></div>
+          <div class="mvp-dot active"></div>
+          <div class="mvp-dot"></div><div class="mvp-dot"></div><div class="mvp-dot"></div>
+          <span class="mvp-prog-label">4 / 7</span>
+        </div>
+      </div>
+
+      <div id="mvp-right">
+        <div class="mvp-card" id="mvp-goal">
+          <div class="mvp-card-tag">GOAL</div>
+          <div class="mvp-card-text">Prove people will actually <span style="color:#A78BFA;font-weight:900">pay.</span></div>
+        </div>
+
+        <div class="mvp-card danger" id="mvp-false-pmf">
+          <div class="mvp-card-tag">FAILURE MODE</div>
+          <div class="mvp-card-text">False <span style="color:#FF7C7C;font-weight:900">product-market fit.</span></div>
+          <div id="mvp-signups">
+            <div id="mvp-signups-num">0</div>
+            <div id="mvp-signups-cap">SIGNUPS</div>
+            <div id="mvp-signups-strike"></div>
+          </div>
+        </div>
+
+        <div class="mvp-card exit" id="mvp-exit">
+          <div class="mvp-card-tag">EXIT &middot; SEAN ELLIS TEST</div>
+          <div class="mvp-card-text"><span style="color:#7DD3A6;font-weight:900">40%</span> of active users would be very disappointed.</div>
+        </div>
+
+        <div class="mvp-card danger" id="mvp-agentic-debt" style="border-color: rgba(209,67,67,0.40); background: rgba(30,18,18,0.85);">
+          <div class="mvp-card-tag">SECOND KILLER</div>
+          <div class="mvp-card-text">Agentic <span style="color:#FF7C7C;font-weight:900">technical debt.</span></div>
+          <div id="mvp-claudemd"><span class="icon">&#x1F4C4;</span>CLAUDE dot M D</div>
+        </div>
+
+        <!-- Sean Ellis 40% mega slam -->
+        <div id="mvp-mega">
+          <div id="mvp-mega-overline">SEAN ELLIS PMF GATE</div>
+          <div id="mvp-mega-num">0</div>
+          <div id="mvp-mega-cap">"Very disappointed" if your product<br/>disappeared tomorrow.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 75;
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.5 } });
+
+      // Local time = global - 173.23
+      // BEAT 1: 0.0 "Chapter four" — overline + progress
+      tl.to("#mvp-overline", { opacity: 1, x: 0, duration: 0.4 }, 0);
+      tl.to("#mvp-progress", { opacity: 1, duration: 0.4 }, 0.2);
+
+      // BEAT 2: 1.33 "M V P stage" — headline slam
+      tl.fromTo("#mvp-headline", { y: 40, scale: 0.85, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 1.33);
+
+      // BEAT 3: 2.88 "goal" — GOAL pill enters
+      tl.to("#mvp-goal", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 2.88);
+
+      // BEAT 4: 4.0 "pay" — chapter graphic 3D rotate-in
+      tl.fromTo("#mvp-graphic",
+        { rotationY: -25, scale: 0.85, opacity: 0, transformPerspective: 2000 },
+        { rotationY: 0, scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)" },
+        4.0);
+
+      // BEAT 5: 11.21 "False product-market fit" — FAILURE card enters
+      tl.to("#mvp-false-pmf", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 11.21);
+      tl.to("#mvp-false-pmf", {
+        boxShadow: "0 0 0 6px rgba(209,67,67,0.30)", duration: 0.4,
+        yoyo: true, repeat: 2, ease: "sine.inOut"
+      }, 11.51);
+
+      // BEAT 6: 15.89 "signups" — signups counter rolls 0→847 then strikes
+      tl.fromTo("#mvp-signups-num", { textContent: 0 }, {
+        textContent: 847, duration: 1.0, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)).toLocaleString(); }
+      }, 15.89);
+      // BEAT 7: 17.5 — strike through signups (looks impressive then false)
+      tl.to("#mvp-signups-strike", { width: "calc(100% - 16px)", opacity: 1, duration: 0.4 }, 17.5);
+
+      // BEAT 8: 25.31 "Sean Ellis" — MEGA 40% Sean Ellis slam
+      tl.to("#mvp-mega", { opacity: 1, duration: 0.5, ease: "power2.out" }, 25.31);
+      tl.fromTo("#mvp-mega-num", { textContent: 0 }, {
+        textContent: 40, duration: 0.9, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)) + "%"; }
+      }, 25.31);
+      // BEAT 9: 33.0 — mega slam fades, EXIT pill enters
+      tl.to("#mvp-mega", { opacity: 0, duration: 0.5, ease: "power2.in" }, 33.0);
+      tl.to("#mvp-exit", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 33.5);
+
+      // BEAT 10: 44.01 "Agentic technical debt" — second-killer card
+      tl.to("#mvp-agentic-debt", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 44.01);
+      tl.to("#mvp-agentic-debt", {
+        boxShadow: "0 0 0 6px rgba(209,67,67,0.30)", duration: 0.4,
+        yoyo: true, repeat: 2, ease: "sine.inOut"
+      }, 44.61);
+
+      // BEAT 11: 59.71 "documentation" — CLAUDE.md card chip appears
+      tl.to("#mvp-claudemd", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 59.71);
+      tl.to("#mvp-claudemd", { scale: 1.06, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 60.2);
+
+      // BEAT 12: 64.13 "collapses" — danger glow pulse on agentic debt card
+      tl.to("#mvp-agentic-debt", {
+        boxShadow: "0 0 0 8px rgba(209,67,67,0.35), inset 0 0 40px rgba(209,67,67,0.15)",
+        duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut"
+      }, 64.13);
+
+      // BEAT 13: 66.76 "MVP exits" — EXIT pulse
+      tl.to("#mvp-exit", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 66.76);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-mvp-stage"] = tl;
+    </script>
+  </div>
+</template>

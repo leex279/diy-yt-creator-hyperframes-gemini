@@ -1,0 +1,706 @@
+<!--
+  scene-image-hero.html — Information Density (8 things HTML can carry, with examples)
+  Scene-relative duration: 67.25s. Parent data-start = 53.04.
+
+  Beats (scene-relative, synced to narration word anchors):
+    0.0   — section "01" + overline + h2 enter
+    4.08  — h2 italic emphasis pulse on "density" ("Information density.")
+    5.37  — .md comparison sub-line reveals ("Markdown can carry headings…")
+    11.89 — "8 things in one .html" count callout pulse ("HTML can carry eight things")
+    13.98 — card 1 Tables ("Tables.")
+    14.41 — card 2 CSS design ("CSS design.")
+    15.36 — card 3 SVG art ("SVG illustrations.")
+    17.62 — card 4 Code snippets ("Code snippets inside script tags.")
+    19.97 — card 5 Interactions ("Interactions wired with JavaScript.")
+    23.04 — card 6 Workflows ("Workflows drawn side by side.")
+    24.86 — card 7 Spatial ("Spatial data on a canvas.")
+    27.30 — card 8 Images ("And actual images.")
+    29.93 — Thariq attribution badge ("there is almost nothing Claude can read…")
+    34.0  — CLEAR: cards + header + attr fade out → second-engineer gets clean canvas
+    35.05 — new overline "THE SECOND VOICE — 02" + stamp ("A second engineer, on X, put it this way.")
+    40.01 — fail-1: richer canvas quote ("HTML gives agents a richer canvas than Markdown.")
+    48.23 — fail-2: human in the loop ("And the human in the loop.")
+    61.76 — fail-caption: "Information goes in. A working interface comes out."
+    65.75 — caption subtle pulse ("The viewer is back in the loop.")
+    67.25 — scene end / crossfade
+-->
+<template id="scene-image-hero-template">
+  <div data-composition-id="scene-image-hero"
+       data-start="0"
+       data-duration="67.25"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Source Serif 4','Playfair Display',Georgia,serif; color:var(--text);">
+
+    <style>
+      #scene-image-hero-content {
+        width: 100%; height: 100%;
+        padding: 60px var(--pad-x) 40px;
+        position: relative;
+        box-sizing: border-box;
+      }
+
+      /* ── Phase-A: header (overline, h2, divider, sublines) ── */
+      .ih-header {
+        position: relative;
+        margin-bottom: 24px;
+        padding-left: 88px;
+      }
+      .ih-section-number {
+        position: absolute;
+        left: 0;
+        top: 6px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-1);
+        line-height: 1;
+      }
+      .ih-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 14px;
+      }
+      .ih-h2 {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 80px;
+        color: var(--text);
+        letter-spacing: -1px;
+        line-height: 1.04;
+      }
+      .ih-divider {
+        height: 1px;
+        background: var(--border);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      .ih-sublines {
+        display: flex;
+        align-items: center;
+        gap: 56px;
+        padding-left: 88px;
+        margin-bottom: 22px;
+      }
+      .ih-md-line {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 400;
+        font-size: 28px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        max-width: 900px;
+      }
+      .ih-md-line .md-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 20px;
+        color: var(--accent-2);
+        background: var(--bg-surface);
+        border-radius: 4px;
+        padding: 4px 12px;
+        margin-right: 10px;
+        letter-spacing: 1px;
+      }
+
+      .ih-count-callout {
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        padding: 10px 26px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--accent-1);
+        border-radius: 999px;
+      }
+      .ih-count-num {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 52px;
+        color: var(--accent-1);
+        line-height: 1;
+      }
+      .ih-count-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .ih-grid {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        top: 420px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+      }
+      .ih-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px 24px;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ih-card-num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 3px;
+        color: var(--accent-1);
+        text-transform: uppercase;
+      }
+      .ih-card-title {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 30px;
+        color: var(--text);
+        line-height: 1.05;
+      }
+      .ih-card-vis {
+        flex: 1 1 auto;
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .ih-card-vis svg, .ih-card-vis > div {
+        max-width: 100%;
+      }
+      .ih-card-meta {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 20px;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+      }
+
+      /* Card-1 visual: mini table grid */
+      .vis-table {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        width: 100%;
+      }
+      .vis-table div {
+        height: 22px;
+        border: 1px solid var(--text-muted);
+        border-radius: 2px;
+      }
+      .vis-table div:nth-child(-n+3) {
+        background: var(--bg-surface);
+      }
+
+      /* Card-2 visual: 4 swatches */
+      .vis-swatches {
+        display: flex; gap: 8px;
+      }
+      .vis-swatches div {
+        width: 48px; height: 48px; border-radius: 8px;
+      }
+
+      /* Card-4 visual: code lines */
+      .vis-code {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 15px;
+        line-height: 1.4;
+        color: var(--text);
+        padding-left: 4px;
+      }
+      .vis-code .kw { color: var(--accent-1); }
+      .vis-code .str { color: var(--accent-3); }
+
+      /* Card-5 visual: button + cursor */
+      .vis-button {
+        display: flex; align-items: center; gap: 10px;
+      }
+      .vis-button .btn {
+        background: var(--accent-1);
+        color: #FBF8F1;
+        padding: 10px 22px;
+        border-radius: 8px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .vis-button .arrow {
+        font-size: 22px; color: var(--accent-2);
+      }
+      .vis-button .label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      /* Original small badge — now hidden in favor of cinematic overlay */
+      .ih-attr-badge { display: none; }
+
+      /* Cinematic Thariq attribution overlay — typewriter + SFX */
+      .ih-attr-cinema {
+        position: absolute;
+        left: 120px;
+        right: 120px;
+        top: 380px;
+        z-index: 12;
+        padding: 44px 64px 50px;
+        background: rgba(244, 241, 234, 0.985);
+        border: 2.5px solid var(--accent-1);
+        border-radius: 22px;
+        box-shadow: 0 24px 64px rgba(28,26,24,0.22);
+        text-align: center;
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        opacity: 0;
+      }
+      .ih-attr-chip {
+        display: inline-block;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        color: var(--accent-1);
+        background: var(--bg-card);
+        padding: 8px 22px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+      }
+      .ih-attr-quote {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-size: 64px;
+        font-style: italic;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.18;
+        max-width: 1450px;
+        margin: 0 auto;
+      }
+      .ih-attr-quote-mark {
+        color: var(--accent-1);
+        font-size: 84px;
+        margin-right: 8px;
+      }
+      .ih-attr-quote em {
+        color: var(--accent-1);
+        font-style: italic;
+        font-weight: 800;
+      }
+      #ih-attr-cursor {
+        display: inline-block;
+        width: 4px;
+        height: 0.85em;
+        background: var(--accent-1);
+        vertical-align: -4px;
+        margin-left: 5px;
+        opacity: 0;
+      }
+
+      /* ── Phase-B: second-engineer beat — full canvas ── */
+      #ih-phase-b {
+        position: absolute;
+        inset: 0;
+        padding: 70px 120px 60px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      /* Phase-B overline */
+      #ih-b-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 28px;
+      }
+
+      /* Stamp: "A second engineer, on X:" */
+      #ih-fail-stamp {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-style: italic;
+        font-size: 72px;
+        color: var(--accent-1);
+        line-height: 1.0;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+      }
+
+      /* PRO-HTML pill beside stamp */
+      #ih-fail-pill {
+        display: inline-block;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 5px;
+        color: var(--accent-1);
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 6px;
+        padding: 10px 22px;
+        margin-bottom: 44px;
+      }
+
+      /* Quote cards: side-by-side, tall, generous */
+      #ih-fail-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        flex: 1 1 auto;
+        max-height: 500px;
+      }
+
+      .ih-fail-card {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 16px;
+        padding: 36px 40px;
+        font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+        font-style: italic;
+        font-size: 36px;
+        color: var(--text);
+        line-height: 1.45;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        justify-content: center;
+      }
+      .ih-fail-card-attr {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-style: normal;
+        font-size: 18px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        opacity: 0.85;
+      }
+
+      /* Caption: "Information goes in. A working interface comes out." */
+      #ih-fail-caption {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-size: 44px;
+        color: var(--text-muted);
+        margin-top: 36px;
+        line-height: 1.3;
+      }
+    </style>
+
+    <div id="scene-image-hero-content">
+
+      <!-- ══ PHASE A: 8-card grid (clears at t=34) ══════════════════════════ -->
+      <div id="ih-phase-a" style="position:absolute; inset:0; pointer-events:none;">
+        <div class="ih-header" style="position:absolute; top:60px; left:var(--pad-x); right:var(--pad-x);">
+          <div class="ih-section-number" id="ih-num">01</div>
+          <div class="ih-overline" id="ih-overline">THE PRO-HTML CASE — 01</div>
+          <div class="ih-h2" id="ih-h2">Information <em class="accent-italic" id="ih-h2-em">density</em>.</div>
+          <div class="ih-divider" id="ih-divider"></div>
+        </div>
+
+        <div class="ih-sublines" style="position:absolute; top:285px; left:var(--pad-x); right:var(--pad-x);">
+          <div class="ih-md-line" id="ih-md-line">
+            <span class="md-tag">.md</span>
+            headings, bold, a bullet list, a table if you squint.
+          </div>
+          <div class="ih-count-callout" id="ih-count">
+            <div class="ih-count-num">8</div>
+            <div class="ih-count-label">things in one .html</div>
+          </div>
+        </div>
+
+        <div class="ih-grid">
+          <!-- 1: Tables -->
+          <div class="ih-card" id="ih-card-1">
+            <div class="ih-card-num">01 / 08</div>
+            <div class="ih-card-title">Tables</div>
+            <div class="ih-card-vis">
+              <div class="vis-table"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+            </div>
+            <div class="ih-card-meta">&lt;table&gt;</div>
+          </div>
+
+          <!-- 2: CSS-driven design -->
+          <div class="ih-card" id="ih-card-2">
+            <div class="ih-card-num">02 / 08</div>
+            <div class="ih-card-title">CSS design</div>
+            <div class="ih-card-vis">
+              <div class="vis-swatches">
+                <div style="background:#C75A3F"></div>
+                <div style="background:#586F4F"></div>
+                <div style="background:#1A1815"></div>
+                <div style="background:#FBF8F1; border:1px solid var(--border);"></div>
+              </div>
+            </div>
+            <div class="ih-card-meta">&lt;style&gt;</div>
+          </div>
+
+          <!-- 3: SVG illustrations -->
+          <div class="ih-card" id="ih-card-3">
+            <div class="ih-card-num">03 / 08</div>
+            <div class="ih-card-title">SVG art</div>
+            <div class="ih-card-vis">
+              <svg viewBox="0 0 220 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+                <circle cx="40" cy="35" r="22" stroke="#C75A3F" stroke-width="2" fill="none"/>
+                <path d="M 80 58 Q 110 12 150 38 T 220 22" stroke="#586F4F" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <rect x="100" y="10" width="14" height="14" fill="#C75A3F" transform="rotate(20 107 17)"/>
+              </svg>
+            </div>
+            <div class="ih-card-meta">&lt;svg&gt;</div>
+          </div>
+
+          <!-- 4: Code snippets -->
+          <div class="ih-card" id="ih-card-4">
+            <div class="ih-card-num">04 / 08</div>
+            <div class="ih-card-title">Code</div>
+            <div class="ih-card-vis">
+              <div class="vis-code">
+                <div><span class="kw">function</span> render() {</div>
+                <div>&nbsp;&nbsp;<span class="kw">return</span> <span class="str">'hi'</span>;</div>
+                <div>}</div>
+              </div>
+            </div>
+            <div class="ih-card-meta">&lt;script&gt;</div>
+          </div>
+
+          <!-- 5: Live interactions -->
+          <div class="ih-card" id="ih-card-5">
+            <div class="ih-card-num">05 / 08</div>
+            <div class="ih-card-title">Interactions</div>
+            <div class="ih-card-vis">
+              <div class="vis-button">
+                <div class="btn">Click</div>
+                <span class="arrow">→</span>
+                <span class="label">onClick()</span>
+              </div>
+            </div>
+            <div class="ih-card-meta">js + css</div>
+          </div>
+
+          <!-- 6: Workflows -->
+          <div class="ih-card" id="ih-card-6">
+            <div class="ih-card-num">06 / 08</div>
+            <div class="ih-card-title">Workflows</div>
+            <div class="ih-card-vis">
+              <svg viewBox="0 0 240 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+                <defs><marker id="arr-flow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M 0 0 L 5 3 L 0 6 Z" fill="#C75A3F"/></marker></defs>
+                <rect x="2" y="25" width="58" height="24" rx="4" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)"/>
+                <rect x="91" y="25" width="58" height="24" rx="4" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)"/>
+                <rect x="180" y="25" width="58" height="24" rx="4" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)"/>
+                <line x1="60" y1="37" x2="86" y2="37" stroke="#C75A3F" stroke-width="2" marker-end="url(#arr-flow)"/>
+                <line x1="149" y1="37" x2="175" y2="37" stroke="#C75A3F" stroke-width="2" marker-end="url(#arr-flow)"/>
+              </svg>
+            </div>
+            <div class="ih-card-meta">svg + html</div>
+          </div>
+
+          <!-- 7: Spatial canvas -->
+          <div class="ih-card" id="ih-card-7">
+            <div class="ih-card-num">07 / 08</div>
+            <div class="ih-card-title">Spatial</div>
+            <div class="ih-card-vis">
+              <svg viewBox="0 0 220 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+                <g fill="#1A1815">
+                  <circle cx="20" cy="15" r="2"/><circle cx="60" cy="15" r="2"/><circle cx="100" cy="15" r="2"/><circle cx="140" cy="15" r="2"/><circle cx="180" cy="15" r="2"/>
+                  <circle cx="20" cy="35" r="2"/><circle cx="60" cy="35" r="2"/><circle cx="100" cy="35" r="2"/><circle cx="140" cy="35" r="2"/><circle cx="180" cy="35" r="2"/>
+                  <circle cx="20" cy="55" r="2"/><circle cx="60" cy="55" r="2"/><circle cx="100" cy="55" r="2"/><circle cx="140" cy="55" r="2"/><circle cx="180" cy="55" r="2"/>
+                </g>
+                <rect x="48" y="22" width="26" height="20" fill="#C75A3F" rx="3"/>
+                <circle cx="130" cy="44" r="9" fill="#586F4F"/>
+              </svg>
+            </div>
+            <div class="ih-card-meta">absolute pos</div>
+          </div>
+
+          <!-- 8: Images -->
+          <div class="ih-card" id="ih-card-8">
+            <div class="ih-card-num">08 / 08</div>
+            <div class="ih-card-title">Images</div>
+            <div class="ih-card-vis">
+              <svg viewBox="0 0 220 70" width="100%" height="70" preserveAspectRatio="xMidYMid meet">
+                <rect x="2" y="2" width="216" height="66" stroke="#1A1815" stroke-width="1" fill="var(--bg-surface)" rx="6"/>
+                <path d="M 12 60 L 70 22 L 100 42 L 140 26 L 210 60 Z" fill="#586F4F" opacity="0.65"/>
+                <circle cx="170" cy="22" r="8" fill="#C75A3F"/>
+              </svg>
+            </div>
+            <div class="ih-card-meta">&lt;img&gt;</div>
+          </div>
+        </div>
+
+        <div class="ih-attr-badge" id="ih-attr">
+          Thariq: <em>almost nothing</em> Claude can read that you cannot represent in HTML.
+        </div>
+
+        <!-- Cinematic Thariq pull-quote overlay — typewriter reveal at 29.93 -->
+        <div class="ih-attr-cinema" id="ih-attr-cinema">
+          <div class="ih-attr-chip">THARIQ — ANTHROPIC</div>
+          <div class="ih-attr-quote">
+            <span class="ih-attr-quote-mark">&ldquo;</span><span id="ih-attr-type"></span><span id="ih-attr-cursor"></span>
+          </div>
+        </div>
+      </div>
+      <!-- ══ END PHASE A ══════════════════════════════════════════════════════ -->
+
+
+      <!-- ══ PHASE B: second-engineer beat — full canvas ════════════════════ -->
+      <div id="ih-phase-b">
+        <div id="ih-b-overline">THE SECOND VOICE — 02</div>
+        <div id="ih-fail-stamp">A second engineer, <em>on X</em>:</div>
+        <div id="ih-fail-pill">PRO-HTML</div>
+
+        <div id="ih-fail-cards">
+          <div class="ih-fail-card" id="ih-fail-1">
+            <div class="ih-fail-card-attr">Engineer on X —</div>
+            <div>"HTML gives agents a richer canvas than Markdown.<br>Diagrams. Styling. Layout. SVGs."</div>
+          </div>
+          <div class="ih-fail-card" id="ih-fail-2">
+            <div class="ih-fail-card-attr">On the human side —</div>
+            <div>"The human in the loop can inspect, tweak, and copy it back."</div>
+          </div>
+        </div>
+
+        <div id="ih-fail-caption">Information goes in. A working interface comes out.</div>
+      </div>
+      <!-- ══ END PHASE B ══════════════════════════════════════════════════════ -->
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      const cardSels = ["#ih-card-1","#ih-card-2","#ih-card-3","#ih-card-4",
+                        "#ih-card-5","#ih-card-6","#ih-card-7","#ih-card-8"];
+
+      // ── Hidden-until-reveal: Phase A elements start invisible ────────────────
+      cardSels.forEach(sel => tl.set(sel, { y: 18, opacity: 0, scale: 0.96 }, 0));
+      tl.set("#ih-md-line",     { y: 14, opacity: 0 }, 0);
+      tl.set("#ih-count",       { y: 14, opacity: 0 }, 0);
+      tl.set("#ih-attr",        { y: 10, opacity: 0 }, 0);
+
+      // ── Hidden-until-reveal: Phase B elements start invisible ────────────────
+      tl.set("#ih-phase-b",      { opacity: 0, visibility: "hidden" }, 0);
+      tl.set("#ih-b-overline",   { y: 16, opacity: 0 }, 0);
+      tl.set("#ih-fail-stamp",   { y: 30, opacity: 0, scale: 0.9 }, 0);
+      tl.set("#ih-fail-pill",    { opacity: 0, scale: 0.85 }, 0);
+      tl.set("#ih-fail-1",       { opacity: 0, x: -40 }, 0);
+      tl.set("#ih-fail-2",       { opacity: 0, x: 40 }, 0);
+      tl.set("#ih-fail-caption", { opacity: 0, y: 14 }, 0);
+      tl.set("#ih-divider",      { scaleX: 0 }, 0);
+
+      // ── Header enters at scene-rel 0 ─────────────────────────────────────────
+      tl.from("#ih-num",      { y: 14, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.2);
+      tl.from("#ih-overline", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.4);
+      tl.from("#ih-h2",       { y: 20, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.6);
+      tl.to("#ih-divider",    { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.1);
+
+      // ── 4.08 — h2 emphasis pulse: "Information density." ────────────────────
+      tl.to("#ih-h2-em", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 4.08);
+
+      // ── 5.37 — .md comparison sub-line: "Markdown can carry headings…" ──────
+      tl.to("#ih-md-line", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 5.37);
+
+      // ── 11.89 — "8 things in one .html" count callout: enters + pulses ──────
+      tl.to("#ih-count", { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 11.3);
+      tl.to("#ih-count", { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 11.89);
+
+      // ── 8 cards — one per named thing, exact narration anchors ───────────────
+      tl.to("#ih-card-1", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 13.98);
+      tl.to("#ih-card-2", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 14.41);
+      tl.to("#ih-card-3", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 15.36);
+      tl.to("#ih-card-4", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 17.62);
+      tl.to("#ih-card-5", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 19.97);
+      tl.to("#ih-card-6", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 23.04);
+      tl.to("#ih-card-7", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 24.86);
+      tl.to("#ih-card-8", { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 27.30);
+
+      // ── 29.93 — Cinematic Thariq attribution: typewriter pull-quote ─────────
+      // Hidden state at t=0
+      tl.set("#ih-attr-cinema", { y: 32, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#ih-attr-type",   { textContent: "" }, 0);
+
+      // Dim the 8 cards so the quote owns the canvas
+      cardSels.forEach(sel =>
+        tl.to(sel, { opacity: 0.22, duration: 0.5, ease: "power2.inOut" }, 29.80)
+      );
+
+      // Overlay slides up + scales in
+      tl.to("#ih-attr-cinema",  { y: 0, opacity: 1, scale: 1.0, duration: 0.55, ease: "back.out(1.3)" }, 29.93);
+
+      // Cursor blinks in just before typewriter starts
+      tl.to("#ih-attr-cursor",  { opacity: 1, duration: 0.15 }, 30.00);
+
+      // Typewriter — type the quote
+      const ihQuoteText = "almost nothing Claude can read that you cannot represent in H T M L.";
+      const ihProxy = { progress: 0 };
+      const ihTypeEl = document.querySelector('#ih-attr-type');
+      tl.set(ihProxy, { progress: 0 }, 30.10);
+      tl.to(ihProxy, {
+        progress: 1,
+        duration: 2.8,
+        ease: "none",
+        onUpdate: function() {
+          if (!ihTypeEl) return;
+          const n = Math.round(ihQuoteText.length * ihProxy.progress);
+          ihTypeEl.textContent = ihQuoteText.slice(0, n);
+        }
+      }, 30.10);
+
+      // Cursor fades after typing completes
+      tl.to("#ih-attr-cursor",  { opacity: 0, duration: 0.4, ease: "power1.in" }, 33.10);
+
+      // Phase A exit at 34.0 — overlay also fades
+      tl.to("#ih-attr-cinema",  { opacity: 0, y: -14, duration: 0.45, ease: "power2.in" }, 33.70);
+
+      // ══════════════════════════════════════════════════════════════════════════
+      // ── t=34.0 — CLEAR Phase A: cards + header + attr fade out ───────────────
+      // ══════════════════════════════════════════════════════════════════════════
+      // Fade entire Phase-A wrapper to zero and hard-hide it at 34.5
+      tl.to("#ih-phase-a", { opacity: 0, duration: 0.5, ease: "power2.in" }, 34.0);
+      tl.set("#ih-phase-a", { visibility: "hidden" }, 34.5);
+
+      // ══════════════════════════════════════════════════════════════════════════
+      // ── t=34.9 — Phase B reveals: second-engineer clean canvas ───────────────
+      // ══════════════════════════════════════════════════════════════════════════
+      tl.set("#ih-phase-b",  { visibility: "visible" }, 34.9);
+      tl.to("#ih-phase-b",   { opacity: 1, duration: 0.4, ease: "power2.out" }, 34.9);
+
+      // Overline slides in
+      tl.to("#ih-b-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 35.0);
+
+      // ── 35.05 — Stamp + pill enter: "A second engineer, on X, put it this way."
+      tl.to("#ih-fail-stamp", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 35.05);
+      tl.to("#ih-fail-pill",  { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 35.5);
+
+      // ── 40.01 — fail-1: "HTML gives agents a richer canvas than Markdown." ──
+      tl.to("#ih-fail-1", { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 40.01);
+      tl.to("#ih-fail-1", { scale: 1.02, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 41.0);
+
+      // ── 48.23 — fail-2: "And the human in the loop." ────────────────────────
+      tl.to("#ih-fail-2", { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 48.23);
+
+      // ── 61.76 — fail-caption: "Information goes in. A working interface comes out."
+      tl.to("#ih-fail-caption", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 61.76);
+
+      // ── 65.75 — caption subtle pulse ─────────────────────────────────────────
+      tl.to("#ih-fail-caption", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 65.75);
+
+      // ── Pad timeline to full scene duration ──────────────────────────────────
+      tl.set({}, {}, 67.25);
+
+      window.__timelines["scene-image-hero"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,9 +1,9 @@
-﻿<!--
-  scene-pillars-3.html â€” Three-pillar grid (Plan / Implement / Validate archetype).
+<!--
+  scene-pillars-3.html — Three-pillar grid (Plan / Implement / Validate archetype).
 
   STEP-BY-STEP REVEAL (per .claude/rules/step-by-step-reveal.md): each pillar
   enters on its own beat ~4-5s apart, paced for narration. Bottom rule
-  fills (scaleX 0 â†’ 1) AFTER each card is in place. Never reveal all at once.
+  fills (scaleX 0 → 1) AFTER each card is in place. Never reveal all at once.
 
   Default duration: 15s. With 3 pillars at ~4s spacing + 2s eyebrow tail-hold,
   this leaves room for narration to introduce each pillar by name.
@@ -145,7 +145,7 @@
       tl.to("#pl-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
       tl.to("#pl-headline", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 0.5);
 
-      // Step-by-step pillar reveal â€” paced ~4s apart
+      // Step-by-step pillar reveal — paced ~4s apart
       tl.to("#pl-p1", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 2.0);
       tl.to("#pl-p1 .pillar-rule", { scaleX: 1, duration: 0.55, ease: "power2.out" }, 2.5);
 
@@ -155,14 +155,28 @@
       tl.to("#pl-p3", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 10.0);
       tl.to("#pl-p3 .pillar-rule", { scaleX: 1, duration: 0.55, ease: "power2.out" }, 10.5);
 
-      // Tail-hold beat â€” subtle scale pulse on all three at the end
+      // Mid-hold beats — close the 14s gap from t=10.6 (last pillar) to t=24.7 (scene exit)
+      // 13.5: sequential rule glow on each pillar in turn — narration "Five steps. Not eight."
+      tl.to(["#pl-p1 .pillar-rule", "#pl-p2 .pillar-rule", "#pl-p3 .pillar-rule"], {
+        backgroundColor: "rgba(96, 165, 250, 0.85)", duration: 0.5, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.6
+      }, 13.5);
+      // 17.5: pillar numbers shimmer — narration emphasizes the loop ordinality
+      tl.to(["#pl-p1 .pillar-num", "#pl-p2 .pillar-num", "#pl-p3 .pillar-num"], {
+        scale: 1.08, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1,
+        stagger: 0.35
+      }, 17.5);
+      // 21.0: tail-hold pulse on all three — emphasize "Not twelve. Five is the ceiling."
       tl.to(["#pl-p1", "#pl-p2", "#pl-p3"], {
-        scale: 1.015, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1,
-        stagger: 0.08
-      }, 12.5);
+        scale: 1.02, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1,
+        stagger: 0.1
+      }, 21.0);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 25);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#pl-p1", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.50);
+
+      tl.set({}, {}, 27.6);
       window.__timelines["scene-pillars-3"] = tl;
     </script>
   </div>

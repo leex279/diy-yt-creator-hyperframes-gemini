@@ -1,26 +1,27 @@
 <!--
-  scene-video-embed.html — Scene 04: Demo 1 — The String-Literal Lie (62.33 - 96.29, 33.96s)
+  scene-video-embed.html — Scene 04: Demo 1 — The String-Literal Lie (126.441 - 158.913, 32.472s)
   THE HERO PROOF SCENE. The dag-executor.test.ts:2813 receipt — what your AGENT
   is being lied to about. Agent reading-cursor visible on file. String highlighted.
   Tooltip: agent treats string as bug. Side panel: grep ✗ 22 files vs ast-grep ✓ 12 files.
 
-  Scene-local anchors (local = root - 62.33):
-    0.00   "Watch your agent waste"     → title
-    2.42   "clean up debug logs"        → task strip
-    4.76   "dumb text search"           → grep query strip
-    6.87   "164 matches"                → 164 counter
-    8.72   "22 files"                   → 22 files counter pop
-    10.74  "opens every one"            → file-list cascade
-    13.23  "hiding inside"              → file panel slides in
-    14.00  "dag-executor.test.ts"       → filename + line badge
-    18.02  "test fixture"               → "FIXTURE" tag
-    19.61  "literal string"             → red underline + tooltip
-    20.35  "console-dot-log-hi"         → SMASH ZOOM
-    24.19  "quoted text"                → tooltip pulse
-    26.77  "whole file, triages it"     → BILLED stamp
-    29.79  "skips it instantly"         → green ast-grep marker
-    31.76  "Twelve files"               → counter rolls 22→12
-    32.60  "not twenty-two"             → comparison receipt
+  RE-ANCHORED to new transcript (audio = 381.73s). Scene root = 126.441.
+  Scene-local anchors (local = root - 126.441):
+    0.000  "Watch your agent waste"     → title
+    3.238  "clean up debug logs"        → task strip ("clean")
+    4.945  "dumb text search"           → grep query strip
+    6.942  "164 matches"                → 164 counter
+    8.614  "22 files"                   → 22 files counter pop
+   10.623  "opens every one"            → file-list cascade
+   13.642  "hiding inside"              → file panel slides in
+   14.466  "dag-executor"               → filename + line badge
+   17.438  "test fixture"               → "FIXTURE" tag
+   18.460  "literal string"             → red underline + tooltip
+   19.191  "console-dot-log-hi"         → SMASH ZOOM
+   23.045  "quoted text"                → tooltip pulse
+   25.494  "whole file, triages it"     → BILLED stamp
+   29.128  "skips it instantly"         → green ast-grep marker
+   30.765  "Twelve files"               → counter rolls 22→12
+   31.694  "not twenty-two"             → comparison receipt
 -->
 <template id="scene-video-embed-template">
   <div data-composition-id="scene-video-embed"
@@ -187,21 +188,22 @@
       .syn-com { color: var(--syn-comment); }
       .syn-punct { color: var(--fg-muted); }
 
-      /* Agent cursor on the file */
+      /* Agent cursor on the file — positioned in right margin to NOT overlap code text */
       #agent-cursor {
         position: absolute;
-        left: 70px;
+        right: 22px;
         top: 0;
         font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 800;
         color: var(--brand-orange);
         background: rgba(247, 129, 102, 0.15);
         border: 1px solid var(--brand-orange);
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 3px;
         letter-spacing: 1px;
         z-index: 10;
+        white-space: nowrap;
       }
 
       /* Tooltip */
@@ -309,7 +311,7 @@
           <div class="fp-row"><span class="gutter">2815</span><span class="syn-punct">};</span></div>
         </div>
 
-        <div id="agent-cursor">▼ agent reading line 2813</div>
+        <div id="agent-cursor">▼ reading :2813</div>
         <div id="fp-tooltip">YOUR AGENT TREATS THIS STRING AS A BUG</div>
         <div id="fp-billed">+$0.03 BILLED</div>
 
@@ -342,80 +344,80 @@
 
       // Head — "Watch your agent waste" (local 0)
       tl.to("#s04-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
-      // Task strip — "clean up debug logs" (local 2.42)
-      tl.to("#s04-task-strip", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.42);
+      // Task strip — "clean up debug logs" (local 3.238)
+      tl.to("#s04-task-strip", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 3.238);
 
-      // grep card slides in — "dumb text search" (local 4.76)
-      tl.to("#grep-bad", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 4.76);
-      // 164 counter — "164 matches" (local 6.87)
+      // grep card slides in — "dumb text search" (local 4.945)
+      tl.to("#grep-bad", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 4.945);
+      // 164 counter — "164 matches" (local 6.942)
       const c164 = { v: 0 };
       tl.to(c164, {
         v: 164, duration: 0.75, ease: "power2.out",
         onUpdate() { const el = document.getElementById('grep-bad-count'); if (el) el.textContent = Math.round(c164.v); }
-      }, 6.87);
-      // 22 files counter — "22 files" (local 8.72)
+      }, 6.942);
+      // 22 files counter — "22 files" (local 8.614)
       const c22 = { v: 0 };
       tl.to(c22, {
         v: 22, duration: 0.55, ease: "power2.out",
         onUpdate() { const el = document.getElementById('grep-bad-files'); if (el) el.textContent = Math.round(c22.v); }
-      }, 8.72);
-      tl.to("#grep-bad", { scale: 1.04, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.72);
+      }, 8.614);
+      tl.to("#grep-bad", { scale: 1.04, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.614);
 
-      // ast-grep card enters too (local 9.5)
+      // ast-grep card enters too (local 9.50)
       tl.to("#grep-good", { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 9.50);
 
-      // File panel slides in — "hiding inside" (local 13.23)
-      tl.to("#file-panel", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 13.23);
+      // File panel slides in — "hiding inside" (local 13.642)
+      tl.to("#file-panel", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 13.642);
 
-      // Agent cursor descends onto line 2813 — "opens every one" cascade
+      // Agent cursor descends onto line 2813 — "dag-executor.test.ts" cascade (local 14.466)
       tl.fromTo("#agent-cursor",
         { opacity: 0, top: 80 },
         { opacity: 1, top: 158, duration: 0.7, ease: "power2.inOut" },
-        14.30);
+        14.466);
 
-      // FIXTURE tag (local 18.02 "test fixture")
-      tl.to("#fp-fixture-tag", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.0)" }, 18.02);
+      // FIXTURE tag — "test fixture" (local 17.438)
+      tl.to("#fp-fixture-tag", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.0)" }, 17.438);
 
-      // Red bg + marker — "literal string" (local 19.61)
-      tl.to("#fp-row-bg", { background: "rgba(247, 129, 102, 0.22)", duration: 0.4 }, 19.61);
-      tl.to("#fp-row-mark", { width: "calc(100% - 100px)", duration: 0.55, ease: "power2.out" }, 19.61);
+      // Red bg + marker — "literal string" (local 18.460)
+      tl.to("#fp-row-bg", { background: "rgba(247, 129, 102, 0.22)", duration: 0.4 }, 18.460);
+      tl.to("#fp-row-mark", { width: "calc(100% - 100px)", duration: 0.55, ease: "power2.out" }, 18.460);
 
-      // CAMERA-ABUSE: SMASH ZOOM on console.log string (local 20.35)
-      tl.to("#file-panel", { scale: 1.08, filter: "blur(1.5px)", duration: 0.20, ease: "power3.out" }, 20.35);
-      tl.to("#file-panel", { scale: 1.0, filter: "blur(0px)", duration: 0.25, ease: "power3.in" }, 20.55);
-      tl.to("#fp-target-str", { scale: 1.2, color: "#ff5f56", duration: 0.30, ease: "back.out(2.0)" }, 20.35);
-      tl.to("#fp-target-str", { scale: 1.0, duration: 0.30, ease: "power2.in" }, 20.95);
+      // CAMERA-ABUSE: SMASH ZOOM on console.log string — "console-dot-log-hi" (local 19.191)
+      tl.to("#file-panel", { scale: 1.08, filter: "blur(1.5px)", duration: 0.20, ease: "power3.out" }, 19.191);
+      tl.to("#file-panel", { scale: 1.0, filter: "blur(0px)", duration: 0.25, ease: "power3.in" }, 19.391);
+      tl.to("#fp-target-str", { scale: 1.2, color: "#ff5f56", duration: 0.30, ease: "back.out(2.0)" }, 19.191);
+      tl.to("#fp-target-str", { scale: 1.0, duration: 0.30, ease: "power2.in" }, 19.791);
 
-      // Tooltip (local 21.5)
-      tl.to("#fp-tooltip", { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, 21.5);
-      // Pulse — "quoted text" (local 24.19)
-      tl.to("#fp-tooltip", { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.19);
+      // Tooltip — "It's not a real call" (local 21.501 -> "real" at root 148.348)
+      tl.to("#fp-tooltip", { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, 21.501);
+      // Pulse — "quoted text" (local 23.045)
+      tl.to("#fp-tooltip", { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 23.045);
 
-      // BILLED stamp — "whole file, triages it, bills you" (local 26.77)
-      tl.to("#fp-billed", { opacity: 1, scale: 1, rotate: -4, duration: 0.45, ease: "back.out(2.2)" }, 26.77);
+      // BILLED stamp — "whole file, triages it, bills you" (local 25.494)
+      tl.to("#fp-billed", { opacity: 1, scale: 1, rotate: -4, duration: 0.45, ease: "back.out(2.2)" }, 25.494);
 
-      // ast-grep skips it — green marker (local 29.79)
-      tl.to("#fp-row-bg", { background: "rgba(78, 201, 176, 0.20)", duration: 0.4 }, 29.79);
-      tl.to("#fp-row-mark", { background: "var(--ok)", boxShadow: "0 0 18px rgba(78, 201, 176, 0.7)", duration: 0.4 }, 29.79);
+      // ast-grep skips it — green marker (local 29.128 "skips")
+      tl.to("#fp-row-bg", { background: "rgba(78, 201, 176, 0.20)", duration: 0.4 }, 29.128);
+      tl.to("#fp-row-mark", { background: "var(--ok)", boxShadow: "0 0 18px rgba(78, 201, 176, 0.7)", duration: 0.4 }, 29.128);
 
-      // Counter 22 → 12 — "Twelve files" (local 31.76)
+      // Counter 22 → 12 — "Twelve files" (local 30.765)
       const cTo12 = { v: 22 };
       tl.to(cTo12, {
         v: 12, duration: 0.7, ease: "power2.out",
         onUpdate() { const el = document.getElementById('grep-good-files'); if (el) el.textContent = Math.round(cTo12.v); }
-      }, 31.76);
+      }, 30.765);
       // grep-good also gets real-call count
       const cGood = { v: 0 };
       tl.to(cGood, {
         v: 130, duration: 0.7, ease: "power2.out",
         onUpdate() { const el = document.getElementById('grep-good-count'); if (el) el.textContent = Math.round(cGood.v); }
-      }, 31.76);
+      }, 30.765);
 
-      // Result chips — comparison receipt (local 32.20)
-      tl.to("#result-bad",  { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 32.20);
-      tl.to("#result-good", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 32.60);
+      // Result chips — comparison receipt — "not twenty-two" (local 31.694)
+      tl.to("#result-bad",  { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 31.300);
+      tl.to("#result-good", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 31.694);
 
-      tl.set({}, {}, 33.96);
+      tl.set({}, {}, 32.472);
       window.__timelines["scene-video-embed"] = tl;
     </script>
   </div>

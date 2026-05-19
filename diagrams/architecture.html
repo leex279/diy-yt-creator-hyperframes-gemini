@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>System Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0a0e1a;
+    --bg-1: #0f1525;
+    --bg-2: #161e33;
+    --border: #2a3550;
+    --border-bright: #3d4d75;
+    --fg: #e6edf7;
+    --fg-dim: #8b97b3;
+    --fg-mute: #5d6a8a;
+
+    --c-frontend: #61dafb;     /* React cyan */
+    --c-backend:  #4ade80;     /* FastAPI green */
+    --c-sqlite:   #f59e0b;     /* SQLite amber */
+    --c-qdrant:   #c084fc;     /* Qdrant purple */
+    --c-llm:      #f472b6;     /* LLM pink */
+    --c-github:   #94a3b8;     /* GitHub slate */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: radial-gradient(ellipse at top, #11182c 0%, var(--bg-0) 55%, #050811 100%);
+    color: var(--fg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .stage {
+    position: relative;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 60px 60px 80px;
+  }
+
+  .title {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #fff 0%, #8b97b3 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    margin-bottom: 50px;
+    color: var(--fg-dim);
+    font-size: 14px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- Grid layout ---- */
+  .row-top {
+    display: grid;
+    grid-template-columns: 1fr 280px 1.6fr;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 70px;
+  }
+  .row-bottom {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-top: 70px;
+  }
+
+  /* ---- Generic card ---- */
+  .card {
+    position: relative;
+    background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .card::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--accent, #fff) 0%, transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    box-shadow: 0 0 0 0 var(--accent, #fff);
+    pointer-events: none;
+    z-index: -1;
+    animation: pulse-glow 3.4s ease-in-out infinite;
+  }
+  .card.delay-1::after { animation-delay: 0.5s; }
+  .card.delay-2::after { animation-delay: 1.0s; }
+  .card.delay-3::after { animation-delay: 1.5s; }
+  .card.delay-4::after { animation-delay: 2.0s; }
+  .card.delay-5::after { animation-delay: 2.5s; }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 transparent, 0 0 24px -8px var(--accent, transparent); }
+    50%      { box-shadow: 0 0 0 0 transparent, 0 0 56px -4px var(--accent, transparent); }
+  }
+
+  .card-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+    position: relative; z-index: 1;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+  @keyframes dot-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.3); opacity: 0.7; }
+  }
+  .card-title {
+    font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .card-stack {
+    font-size: 13px; color: var(--fg-dim);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    line-height: 1.7;
+    position: relative; z-index: 1;
+  }
+  .card-stack .line { display: block; }
+
+  /* ---- Frontend (left) ---- */
+  .card-frontend { --accent: var(--c-frontend); }
+  .card-frontend .card-stack { color: #b8e8ff; }
+
+  /* React atom icon */
+  .react-icon {
+    position: absolute;
+    top: 22px; right: 22px;
+    width: 48px; height: 48px;
+    opacity: 0.9;
+  }
+  .react-icon .nucleus {
+    fill: var(--c-frontend);
+    animation: dot-pulse 2s ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  .react-icon .orbit {
+    fill: none;
+    stroke: var(--c-frontend);
+    stroke-width: 1.5;
+    opacity: 0.6;
+    transform-origin: 24px 24px;
+  }
+  .react-icon .o1 { animation: spin 6s linear infinite; }
+  .react-icon .o2 { animation: spin 6s linear infinite reverse; }
+  .react-icon .o3 { animation: spin 9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- Backend (right of top row) ---- */
+  .card-backend { --accent: var(--c-backend); }
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 4px;
+    position: relative; z-index: 1;
+  }
+  .module {
+    background: rgba(74, 222, 128, 0.05);
+    border: 1px solid rgba(74, 222, 128, 0.18);
+    border-radius: 10px;
+    padding: 14px 12px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: #b6f4cb;
+    text-align: center;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .module::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(74, 222, 128, 0.18) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .module.active {
+    border-color: rgba(74, 222, 128, 0.7);
+    color: #ecfdf5;
+    background: rgba(74, 222, 128, 0.12);
+    box-shadow: 0 0 18px -4px rgba(74, 222, 128, 0.5);
+  }
+  .module.active::after { opacity: 1; }
+
+  /* ---- HTTP + SSE connector (center of top row) ---- */
+  .connector {
+    position: relative;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .connector-label {
+    position: absolute;
+    top: -2px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg-dim);
+    letter-spacing: 0.1em;
+    background: var(--bg-0);
+    padding: 2px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+  }
+  .connector-line {
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--border-bright) 15%,
+      var(--border-bright) 85%,
+      transparent 100%);
+    position: relative;
+  }
+  .connector-line::before, .connector-line::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 12px; height: 12px;
+    border-top: 2px solid var(--border-bright);
+    border-right: 2px solid var(--border-bright);
+  }
+  .connector-line::before {
+    left: 10px;
+    transform: rotate(-135deg);
+  }
+  .connector-line::after {
+    right: 10px;
+    transform: rotate(45deg);
+  }
+
+  /* Flowing particles on HTTP+SSE line */
+  .particle {
+    position: absolute;
+    top: 50%; left: 0;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .particle.req {
+    background: var(--c-frontend);
+    box-shadow: 0 0 12px var(--c-frontend), 0 0 24px var(--c-frontend);
+    animation: flow-right 2.4s linear infinite;
+  }
+  .particle.req.d1 { animation-delay: 0.6s; }
+  .particle.req.d2 { animation-delay: 1.2s; }
+  .particle.req.d3 { animation-delay: 1.8s; }
+
+  .particle.res {
+    background: var(--c-backend);
+    box-shadow: 0 0 12px var(--c-backend), 0 0 24px var(--c-backend);
+    animation: flow-left 2.4s linear infinite;
+  }
+  .particle.res.d1 { animation-delay: 0.4s; }
+  .particle.res.d2 { animation-delay: 1.0s; }
+  .particle.res.d3 { animation-delay: 1.6s; }
+  .particle.res.d4 { animation-delay: 2.2s; }
+
+  @keyframes flow-right {
+    0%   { left: 4%;  opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { left: 96%; opacity: 0; }
+  }
+  @keyframes flow-left {
+    0%   { left: 96%; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { left: 4%;  opacity: 0; }
+  }
+
+  /* ---- Vertical connectors (backend → data layer) ---- */
+  .vertical-bus {
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    height: 70px;
+    pointer-events: none;
+  }
+  .vertical-bus svg {
+    width: 100%; height: 100%;
+    overflow: visible;
+  }
+  .bus-line {
+    stroke: var(--border-bright);
+    stroke-width: 1.5;
+    fill: none;
+    opacity: 0.7;
+  }
+  .bus-arrow {
+    fill: var(--border-bright);
+    opacity: 0.85;
+  }
+  .bus-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--fg-mute);
+    letter-spacing: 0.1em;
+  }
+
+  /* Flowing dots down each bus line */
+  .bus-dot {
+    r: 4;
+  }
+  .bus-dot.sql    { fill: var(--c-sqlite);  filter: drop-shadow(0 0 6px var(--c-sqlite)); }
+  .bus-dot.qdr    { fill: var(--c-qdrant);  filter: drop-shadow(0 0 6px var(--c-qdrant)); }
+  .bus-dot.llm    { fill: var(--c-llm);     filter: drop-shadow(0 0 6px var(--c-llm)); }
+  .bus-dot.git    { fill: var(--c-github);  filter: drop-shadow(0 0 6px var(--c-github)); }
+
+  @keyframes flow-down {
+    0%   { transform: translateY(-8px); opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { transform: translateY(80px); opacity: 0; }
+  }
+  .bus-dot { animation: flow-down 2.2s linear infinite; }
+  .bus-dot.b1 { animation-delay: 0s; }
+  .bus-dot.b2 { animation-delay: 0.55s; }
+  .bus-dot.b3 { animation-delay: 1.1s; }
+  .bus-dot.b4 { animation-delay: 1.65s; }
+
+  /* ---- Data layer cards ---- */
+  .data-card { padding: 20px; }
+  .data-card .card-title { font-size: 16px; }
+  .data-card .meta {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--fg-mute);
+    margin-top: -8px;
+    margin-bottom: 14px;
+    position: relative; z-index: 1;
+  }
+  .data-card ul {
+    list-style: none;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    line-height: 1.8;
+    position: relative; z-index: 1;
+  }
+  .data-card ul li::before {
+    content: "▸ ";
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .card-sqlite { --accent: var(--c-sqlite); }
+  .card-qdrant { --accent: var(--c-qdrant); }
+  .card-llm    { --accent: var(--c-llm); }
+  .card-github { --accent: var(--c-github); }
+
+  /* badge for HTTPS label on right-side buses */
+  .https-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--fg-mute);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 50px;
+    color: var(--fg-mute);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- Backdrop ambient ---- */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .ambient .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    animation: drift 18s ease-in-out infinite;
+  }
+  .ambient .b1 { width: 500px; height: 500px; background: var(--c-frontend); top: -100px; left: -100px; }
+  .ambient .b2 { width: 600px; height: 600px; background: var(--c-backend); top: 20%; right: -150px; animation-delay: -6s; }
+  .ambient .b3 { width: 400px; height: 400px; background: var(--c-qdrant); bottom: -100px; left: 30%; animation-delay: -12s; }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33%      { transform: translate(40px,-30px) scale(1.1); }
+    66%      { transform: translate(-30px,40px) scale(0.95); }
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<div class="stage">
+
+  <h1 class="title">System Architecture</h1>
+  <p class="subtitle">FRONTEND ↔ BACKEND ↔ DATA LAYER</p>
+
+  <!-- TOP ROW: Frontend ↔ Backend -->
+  <div class="row-top">
+
+    <!-- Frontend -->
+    <div class="card card-frontend delay-1">
+      <svg class="react-icon" viewBox="0 0 48 48" aria-hidden="true">
+        <circle class="nucleus" cx="24" cy="24" r="3.5"/>
+        <ellipse class="orbit o1" cx="24" cy="24" rx="20" ry="8"/>
+        <ellipse class="orbit o2" cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/>
+        <ellipse class="orbit o3" cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/>
+      </svg>
+      <div class="card-head">
+        <span class="dot"></span>
+        <span class="card-title">Frontend</span>
+      </div>
+      <div class="card-stack">
+        <span class="line">React + Vite + TypeScript</span>
+        <span class="line">Tailwind CSS</span>
+        <span class="line" style="opacity:0.5">─────────────────────</span>
+        <span class="line" style="color:var(--fg-mute);font-size:11px">SPA · client-side routing</span>
+      </div>
+    </div>
+
+    <!-- Connector -->
+    <div class="connector">
+      <div class="connector-label">HTTP + SSE</div>
+      <div class="connector-line">
+        <div class="particle req"></div>
+        <div class="particle req d1"></div>
+        <div class="particle req d2"></div>
+        <div class="particle req d3"></div>
+        <div class="particle res"></div>
+        <div class="particle res d1"></div>
+        <div class="particle res d2"></div>
+        <div class="particle res d3"></div>
+        <div class="particle res d4"></div>
+      </div>
+    </div>
+
+    <!-- Backend -->
+    <div class="card card-backend delay-2">
+      <div class="card-head">
+        <span class="dot"></span>
+        <span class="card-title">Backend</span>
+        <span style="color:var(--fg-mute);font-family:'JetBrains Mono',monospace;font-size:13px;margin-left:auto">FastAPI</span>
+      </div>
+      <div class="module-grid">
+        <div class="module" data-mod="0">routes/</div>
+        <div class="module" data-mod="1">rag/</div>
+        <div class="module" data-mod="2">ingest/</div>
+        <div class="module" data-mod="3">llm/</div>
+        <div class="module" data-mod="4">db/</div>
+        <div class="module" data-mod="5">services/</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERTICAL BUS: Backend down to 4 data layers -->
+  <div class="vertical-bus">
+    <svg viewBox="0 0 1000 70" preserveAspectRatio="none">
+      <!-- 4 vertical drop lines, spaced over data-layer column centers -->
+      <!-- Approx X positions: 12.5%, 37.5%, 62.5%, 87.5% -->
+      <line class="bus-line" x1="125" y1="0"  x2="125" y2="60"/>
+      <line class="bus-line" x1="375" y1="0"  x2="375" y2="60"/>
+      <line class="bus-line" x1="625" y1="0"  x2="625" y2="60"/>
+      <line class="bus-line" x1="875" y1="0"  x2="875" y2="60"/>
+
+      <!-- HTTPS labels on outermost buses -->
+      <text class="bus-label" x="635" y="14">HTTPS</text>
+      <text class="bus-label" x="885" y="14">HTTPS</text>
+
+      <!-- Arrow heads -->
+      <polygon class="bus-arrow" points="120,58 130,58 125,68"/>
+      <polygon class="bus-arrow" points="370,58 380,58 375,68"/>
+      <polygon class="bus-arrow" points="620,58 630,58 625,68"/>
+      <polygon class="bus-arrow" points="870,58 880,58 875,68"/>
+
+      <!-- Flowing dots -->
+      <g transform="translate(125 0)">
+        <circle class="bus-dot sql b1" cx="0" cy="0"/>
+        <circle class="bus-dot sql b3" cx="0" cy="0"/>
+      </g>
+      <g transform="translate(375 0)">
+        <circle class="bus-dot qdr b2" cx="0" cy="0"/>
+        <circle class="bus-dot qdr b4" cx="0" cy="0"/>
+      </g>
+      <g transform="translate(625 0)">
+        <circle class="bus-dot llm b1" cx="0" cy="0"/>
+        <circle class="bus-dot llm b3" cx="0" cy="0"/>
+      </g>
+      <g transform="translate(875 0)">
+        <circle class="bus-dot git b2" cx="0" cy="0"/>
+        <circle class="bus-dot git b4" cx="0" cy="0"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- BOTTOM ROW: 4 data layer boxes -->
+  <div class="row-bottom">
+
+    <!-- SQLite -->
+    <div class="card data-card card-sqlite delay-1">
+      <div class="card-head">
+        <span class="dot"></span>
+        <span class="card-title">SQLite</span>
+      </div>
+      <div class="meta">aiosqlite</div>
+      <ul>
+        <li>documents</li>
+        <li>chunks</li>
+        <li>conversations</li>
+        <li>messages</li>
+        <li>sync runs</li>
+        <li>feedback</li>
+      </ul>
+    </div>
+
+    <!-- Qdrant -->
+    <div class="card data-card card-qdrant delay-2">
+      <div class="card-head">
+        <span class="dot"></span>
+        <span class="card-title">Qdrant</span>
+      </div>
+      <div class="meta">bundled local · or · Cloud</div>
+      <ul>
+        <li>dense vectors</li>
+        <li>BM25 sparse</li>
+        <li>payload index</li>
+        <li>hybrid search</li>
+      </ul>
+    </div>
+
+    <!-- LLM -->
+    <div class="card data-card card-llm delay-3">
+      <div class="card-head">
+        <span class="dot"></span>
+        <span class="card-title">LLM Provider</span>
+        <span class="https-tag" style="margin-left:auto">HTTPS</span>
+      </div>
+      <div class="meta">OpenRouter · or · OpenAI</div>
+      <ul>
+        <li>chat completions</li>
+        <li>embeddings</li>
+        <li>streaming (SSE)</li>
+      </ul>
+    </div>
+
+    <!-- GitHub -->
+    <div class="card data-card card-github delay-4">
+      <div class="card-head">
+        <span class="dot"></span>
+        <span class="card-title">GitHub</span>
+        <span class="https-tag" style="margin-left:auto">HTTPS</span>
+      </div>
+      <div class="meta">Issues API</div>
+      <ul>
+        <li>feedback submissions</li>
+        <li>posted as GH issues</li>
+        <li>label + assignee sync</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">Live data flow · components pulse with traffic · all systems nominal</div>
+</div>
+
+<script>
+  // Rotating module highlight inside Backend card
+  (function () {
+    const modules = document.querySelectorAll('.module');
+    if (!modules.length) return;
+    let i = 0;
+    setInterval(() => {
+      modules.forEach(m => m.classList.remove('active'));
+      modules[i].classList.add('active');
+      i = (i + 1) % modules.length;
+    }, 850);
+  })();
+</script>
+
+</body>
+</html>

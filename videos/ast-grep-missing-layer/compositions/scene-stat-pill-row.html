@@ -1,17 +1,19 @@
 <!--
-  scene-stat-pill-row.html — Scene 05: Numbers Wall (96.29 - 122.56, 26.27s)
-  Reduced to 3-row impact display: 30% / 122% / "could not even do this".
+  scene-stat-pill-row.html — Scene 05: Numbers Wall (158.913 - 186.196, 27.283s)
+  Reduced to 3-row impact display: 26% / 122% / "every false hit is a file".
   Token counter spikes on each entry as the agent re-reads files.
 
-  Scene-local anchors (local = root - 96.29):
-    0.00   "One example isn't pattern"   → title
-    2.50   "we tested five common"       → "5 QUERIES" pill
-    6.65   "over-counted by 26%"         → "26% debug" row
-    8.85   "19% on setTimeout"           → continuation strip (shown briefly)
-    10.25  "30% on promise chains"       → "30% MORE WORK" row
-    13.50  "122% on useState"            → "122% MORE WORK" row + SLAM
-    20.14  "false hit is a file"         → caption beneath
-    24.40  "cuts it in half"             → green "HALF" stamp
+  Scene-local anchors (local = root - 158.913) — RE-ANCHORED to rewritten narration:
+    0.00   "One example isn't a pattern"     → title
+    2.60   "So we tested five common"        → "5 QUERIES" pill
+    6.94   "over-counted by twenty-six %"    → "26% debug" row
+    10.55  "Nineteen % on setTimeout"        → continuation strip (shown briefly)
+    12.50  "Thirty % on promise chains"      → row-2 placeholder counts to 30%
+    15.13  "One-hundred-and-twenty-two %"    → row-2 slams to 122% + pulse
+    18.86  "That's pure billed waste"        → "could not even do this" row enters
+    20.49  "Every false hit is a file"       → caption beneath
+    24.99  "ast-grep cuts it in half"        → green "HALF" stamp
+    25.99  "half" word slam                  → stamp pulse
 -->
 <template id="scene-stat-pill-row-template">
   <div data-composition-id="scene-stat-pill-row"
@@ -186,12 +188,12 @@
         </div>
 
         <div class="stat-row" id="stat-row-3">
-          <div class="pct" id="stat-3-pct">∅</div>
+          <div class="pct" id="stat-3-pct">415</div>
           <div class="label">
-            structural refactors grep can't even attempt
-            <span class="sm">try-catch around async, conditional return, etc.</span>
+            try-catch blocks ast-grep matched structurally
+            <span class="sm">naive grep misses real blocks — ast-grep matches the actual try/catch structure</span>
           </div>
-          <div class="verdict" id="stat-3-verdict">could not do this</div>
+          <div class="verdict" id="stat-3-verdict">grep: imprecise</div>
         </div>
       </div>
 
@@ -220,53 +222,53 @@
       tl.set("#s05-caption",    { opacity: 0, y: 12 }, 0);
       tl.set("#s05-half-stamp", { opacity: 0, scale: 0.5, rotate: -10 }, 0);
 
-      // Head — local 0
+      // Head — local 0  ("One example isn't a pattern")
       tl.to("#s05-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
       tl.to("#s05-sub", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.5);
 
-      // Querypill — "we tested five common" (local 2.50)
-      tl.to("#s05-querypill", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, 2.50);
+      // Querypill — "So we tested five common searches" (local 2.60)
+      tl.to("#s05-querypill", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, 2.60);
 
-      // Row 1 — 26% — "over-counted by 26%" (local 6.65)
-      tl.to("#stat-row-1", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 6.65);
+      // Row 1 — 26% — "over-counted by twenty-six percent on debug logs" (local 6.94)
+      tl.to("#stat-row-1", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 6.94);
       const r1 = { v: 0 };
       tl.to(r1, {
         v: 26, duration: 0.6, ease: "power2.out",
         onUpdate() { const el = document.getElementById('stat-1-pct'); if (el) el.textContent = Math.round(r1.v) + '%'; }
-      }, 7.10);
-      tl.to("#stat-1-pct", { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.70);
+      }, 7.55);
+      tl.to("#stat-1-pct", { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.15);
 
-      // Row 2 — 122% — "122% on useState" (local 13.50)
-      // First show row 2 placeholder at local 10.25 (the 30% / promise mention) with quick numerical step
-      tl.to("#stat-row-2", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 10.25);
-      // Brief 30% display then jumps to 122% on slam
+      // Row 2 — 122% — "One-hundred-and-twenty-two percent on useState hooks" (local 15.13)
+      // First show row 2 placeholder at local 10.55 ("Nineteen percent on setTimeout") with quick numerical step
+      tl.to("#stat-row-2", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 10.55);
+      // Brief 30% display ("Thirty percent on promise chains" @ 12.50) then jumps to 122% on slam
       const r2 = { v: 0 };
       tl.to(r2, {
         v: 30, duration: 0.45, ease: "power2.out",
         onUpdate() { const el = document.getElementById('stat-2-pct'); if (el) el.textContent = Math.round(r2.v) + '%'; }
-      }, 10.55);
+      }, 12.50);
       const r2v = document.createElement('span');
-      // Slam to 122 at 13.50
+      // Slam to 122 at 15.13 ("One-hundred-and-twenty-two")
       tl.to(r2, {
         v: 122, duration: 0.55, ease: "power3.out",
         onUpdate() { const el = document.getElementById('stat-2-pct'); if (el) el.textContent = Math.round(r2.v) + '%'; }
-      }, 13.50);
+      }, 15.13);
       // CAMERA-ABUSE: row 2 slam pulse
-      tl.to("#stat-row-2", { scale: 1.05, duration: 0.25, ease: "power3.out", yoyo: true, repeat: 1 }, 13.50);
+      tl.to("#stat-row-2", { scale: 1.05, duration: 0.25, ease: "power3.out", yoyo: true, repeat: 1 }, 15.13);
       // Verdict swap
-      tl.set("#stat-2-verdict", { textContent: "122% MORE WORK" }, 13.50);
+      tl.set("#stat-2-verdict", { textContent: "122% MORE WORK" }, 15.13);
 
-      // Row 3 — "could not even do this" (local 17.0)
-      tl.to("#stat-row-3", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 17.0);
+      // Row 3 — "That's pure billed waste" (local 18.86)
+      tl.to("#stat-row-3", { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 18.86);
 
-      // Caption — "every false hit is a file" (local 20.14)
-      tl.to("#s05-caption", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 20.14);
+      // Caption — "Every false hit is a file..." (local 20.49)
+      tl.to("#s05-caption", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 20.49);
 
-      // ½ HALF stamp — "cuts it in half" (local 24.40)
-      tl.to("#s05-half-stamp", { opacity: 1, scale: 1, rotate: -4, duration: 0.55, ease: "back.out(2.5)" }, 24.40);
-      tl.to("#s05-half-stamp", { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 25.10);
+      // ½ HALF stamp — "ast-grep cuts it in half" (local 24.99 / "half" @ 25.99)
+      tl.to("#s05-half-stamp", { opacity: 1, scale: 1, rotate: -4, duration: 0.55, ease: "back.out(2.5)" }, 24.99);
+      tl.to("#s05-half-stamp", { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 25.99);
 
-      tl.set({}, {}, 26.27);
+      tl.set({}, {}, 27.283);
       window.__timelines["scene-stat-pill-row"] = tl;
     </script>
   </div>

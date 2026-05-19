@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!-- Variant 02 — Big ROUND 2 numeric below the topic header.
+     MARKDOWN vs HTML dominant at top, then huge italic serif "ROUND 2." below.
+     Sub-receipt: 750K READ IT. THE REPLIES DIDN'T AGREE. Theme: cream. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v02 — Topic + huge ROUND 2 numeric</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Topic header — MARKDOWN vs HTML — top section */
+  .topic-header {
+    position: absolute;
+    top: 128px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  .topic-term {
+    font-size: 96px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--accent-terracotta);
+    letter-spacing: 0;
+    padding: 0 4px;
+  }
+
+  /* Horizontal rule separator */
+  .topic-rule {
+    width: 200px;
+    height: 3px;
+    background: var(--accent-terracotta);
+    margin: 18px auto 0;
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+
+  /* Huge ROUND 2. block */
+  .round-block {
+    position: absolute;
+    top: 316px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+    line-height: 0.9;
+  }
+  .round-word {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 186px;
+    color: var(--text-cream);
+    letter-spacing: -5px;
+  }
+  .round-num {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-style: italic;
+    font-size: 186px;
+    color: var(--accent-terracotta);
+    letter-spacing: -5px;
+  }
+
+  /* Receipt */
+  .receipt-c {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 52px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-muted-cream);
+  }
+  .receipt-c strong { color: var(--accent-deep-red); }
+</style></head>
+<body>
+  <div class="thumb theme-cream">
+    <div class="overline">The Debate Continues &nbsp;·&nbsp; Part 2</div>
+    <div class="overline-divider"></div>
+
+    <!-- Dominant topic -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <div class="topic-rule"></div>
+    </div>
+
+    <!-- Huge ROUND 2 -->
+    <div class="round-block">
+      <span class="round-word">ROUND&nbsp;</span><span class="round-num">2.</span>
+    </div>
+
+    <div class="receipt-c"><strong>750K read it.</strong> &nbsp;·&nbsp; The replies didn't agree.</div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

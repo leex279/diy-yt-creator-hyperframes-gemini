@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v09 — 122% waste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 1100px 700px at 30% 50%, rgba(255,60,60,0.20), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: #ff7676; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: #ff7676; }
+  #stat-area {
+    position: absolute; top: 90px; left: 56px;
+    width: 720px;
+    z-index: 10;
+  }
+  #big-stat {
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: 360px; line-height: 0.86;
+    color: #fff;
+    letter-spacing: -0.06em;
+    text-shadow: 0 8px 36px rgba(255,80,80,0.35);
+    background: linear-gradient(180deg, #ff8a8a 0%, #ff3030 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    display: block;
+  }
+  #big-stat .pct { font-size: 180px; vertical-align: top; margin-left: 4px; color: #fff; -webkit-text-fill-color: #fff; }
+  #stat-label {
+    margin-top: 4px;
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: 56px; line-height: 1;
+    color: #fff; letter-spacing: -0.03em;
+  }
+  #stat-sub {
+    margin-top: 12px;
+    font-family: var(--font-mono); font-size: 22px; line-height: 1.4;
+    color: var(--fg-muted); font-weight: 600;
+  }
+  #stat-sub .target { color: var(--syn-variable); font-weight: 700; }
+  #right-panel {
+    position: absolute; top: 70px; right: 56px;
+    width: 430px; height: 580px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 16px; padding: 24px 26px;
+    z-index: 5; display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .panel-title {
+    font-family: var(--font-mono); font-size: 16px;
+    color: var(--fg-muted); letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .panel-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 10px 0; border-bottom: 1px solid var(--border-soft);
+  }
+  .panel-row:last-child { border-bottom: none; }
+  .panel-row .name { font-family: var(--font-mono); font-weight: 700; font-size: 22px; color: var(--fg-bright); }
+  .panel-row .pct { font-family: var(--font-mono); font-weight: 800; font-size: 32px; color: #ff7676; letter-spacing: -0.02em; }
+  .panel-row.win .pct { color: var(--ok); }
+  .panel-footer {
+    margin-top: auto;
+    padding: 14px 16px;
+    background: rgba(78,201,176,0.10);
+    border: 1.5px solid rgba(78,201,176,0.5);
+    border-radius: 10px;
+    text-align: center;
+  }
+  .panel-footer .lbl { font-family: var(--font-mono); font-size: 14px; color: #b3ead9; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+  .panel-footer .fix { font-family: var(--font-mono); font-weight: 800; font-size: 28px; color: var(--ast-yellow); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">measured · same codebase · same query</div>
+  <div id="stat-area">
+    <span id="big-stat">122<span class="pct">%</span></span>
+    <div id="stat-label">OVER-COUNTED.</div>
+    <div id="stat-sub">grep finds <span class="target">useState</span> hits<br/>that aren't even calls.</div>
+  </div>
+  <div id="right-panel">
+    <div class="panel-title">false-hit rate · grep</div>
+    <div class="panel-row"><span class="name">useState</span><span class="pct">+122%</span></div>
+    <div class="panel-row"><span class="name">promise chains</span><span class="pct">+30%</span></div>
+    <div class="panel-row"><span class="name">console.log</span><span class="pct">+26%</span></div>
+    <div class="panel-row"><span class="name">setTimeout</span><span class="pct">+19%</span></div>
+    <div class="panel-footer">
+      <div class="lbl">fix</div>
+      <div class="fix">▶ ast-grep</div>
+    </div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

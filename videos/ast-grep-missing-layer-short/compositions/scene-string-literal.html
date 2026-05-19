@@ -1,0 +1,170 @@
+<!--
+  scene-string-literal.html — Test fixture exposing the string-literal lie (~15s).
+  Cloned from scene-code-block.html; unique IDs + content for ast-grep narrative.
+-->
+<template id="scene-string-literal-template">
+  <div data-composition-id="scene-string-literal"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-string-literal-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:28px;
+        box-sizing:border-box;
+      }
+      #scene-string-literal-content .kicker {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-string-literal-content .window {
+        width: 940px;
+        background: #1e1e1e;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-warm);
+        border: 1px solid #2a2d31;
+        text-align: left;
+      }
+      #scene-string-literal-content .titlebar {
+        display: flex; align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        background: rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      #scene-string-literal-content .dot {
+        width: 14px; height: 14px; border-radius: 50%;
+      }
+      #scene-string-literal-content .dot.r { background: #FF5F57; }
+      #scene-string-literal-content .dot.y { background: #FEBC2E; }
+      #scene-string-literal-content .dot.g { background: #28C840; }
+      #scene-string-literal-content .filename {
+        margin-left: 18px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.60);
+      }
+      #scene-string-literal-content .body {
+        padding: 26px 32px;
+      }
+      #scene-string-literal-content .line {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 500;
+        font-size: 28px;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.90);
+        white-space: pre;
+      }
+      #scene-string-literal-content .kw  { color: var(--accent-rose); }
+      #scene-string-literal-content .fn  { color: var(--accent-gold); }
+      #scene-string-literal-content .str { color: var(--accent-sage); }
+      #scene-string-literal-content .num { color: var(--accent-warm); }
+      #scene-string-literal-content .com { color: rgba(255, 255, 255, 0.40); font-style: italic; }
+      #scene-string-literal-content .hot {
+        background: rgba(247, 129, 102, 0.22);
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+      #scene-string-literal-content .verdict {
+        display:flex; align-items:center; gap:14px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 38px;
+        color: var(--accent-ink);
+      }
+      #scene-string-literal-content .verdict .num {
+        font-variant-numeric: tabular-nums lining-nums;
+        font-size: 64px;
+        color: var(--accent-warm);
+        line-height: 1;
+      }
+      #scene-string-literal-content .verdict .arrow {
+        font-size: 44px;
+        color: var(--text-secondary);
+      }
+      #scene-string-literal-content .verdict .after {
+        font-variant-numeric: tabular-nums lining-nums;
+        font-size: 64px;
+        color: var(--accent-sage);
+        line-height: 1;
+      }
+      #scene-string-literal-content .verdict-tail {
+        font-family: 'Source Serif 4', serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 28px;
+        color: var(--text-secondary);
+        margin-top: -6px;
+      }
+    </style>
+
+    <div id="scene-string-literal-content">
+      <div class="kicker" id="sl-kicker">THE STRING-LITERAL LIE</div>
+      <div class="window" id="sl-window">
+        <div class="titlebar">
+          <span class="dot r"></span>
+          <span class="dot y"></span>
+          <span class="dot g"></span>
+          <span class="filename">dag-executor.test.ts</span>
+        </div>
+        <div class="body">
+          <div class="line" id="sl-l1"><span class="com">// line 2813 — test fixture</span></div>
+          <div class="line" id="sl-l2"><span class="kw">test</span>(<span class="str">&quot;dag run&quot;</span>, () =&gt; {</div>
+          <div class="line" id="sl-l3">  fixture.<span class="fn">emit</span>(<span class="str"><span class="hot">&quot;console.log(hi)&quot;</span></span>);</div>
+          <div class="line" id="sl-l4">});</div>
+          <div class="line" id="sl-l5"><span class="com">// agent: &quot;found a debug log!&quot; — bills you</span></div>
+        </div>
+      </div>
+      <div class="verdict" id="sl-verdict">
+        <span class="num" id="sl-num-before">164</span>
+        <span class="arrow">&rarr;</span>
+        <span class="after" id="sl-num-after">12</span>
+        <span>matches</span>
+      </div>
+      <div class="verdict-tail" id="sl-tail">String literal. Not a call. Your agent doesn&rsquo;t know.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#sl-kicker",  { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#sl-window",  { y: 30, scale: 0.96, opacity: 0, duration: 0.6, ease: "back.out(1.4)" }, 0.3);
+      tl.from("#sl-l1, #sl-l2, #sl-l3, #sl-l4, #sl-l5", { x: -20, opacity: 0, duration: 0.4, ease: "power2.out", stagger: 0.55 }, 1.0);
+
+      // Highlight the lie (the quoted string) at ~5.5s
+      tl.fromTo("#sl-l3 .hot",
+        { backgroundColor: "rgba(247, 129, 102,0)" },
+        { backgroundColor: "rgba(247, 129, 102,0.42)", duration: 0.5, ease: "power2.out" }, 5.2);
+      tl.to("#sl-l3 .hot", { scale: 1.08, duration: 0.45, ease: "back.out(2)", yoyo: true, repeat: 1, transformOrigin: "center" }, 5.6);
+
+      // The verdict — 164 → 12 reveal at ~8.5s
+      tl.from("#sl-verdict", { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, 8.5);
+      tl.from("#sl-tail",    { y: 14, opacity: 0, duration: 0.5, ease: "power2.out" }, 9.2);
+
+      // Pulse 164 → strikethrough effect
+      tl.to("#sl-num-before", { color: "var(--text-secondary)", duration: 0.5, ease: "power2.inOut" }, 11.0);
+      tl.to("#sl-num-after",  { scale: 1.12, duration: 0.5, ease: "back.out(1.8)", yoyo: true, repeat: 1 }, 11.4);
+
+      // Final window breath
+      tl.to("#sl-window",  { scale: 1.012, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 13);
+      // Tail-extend so the sub-comp timeline duration matches the visible window in the root
+      tl.set({}, {}, 17.0);
+
+
+      window.__timelines["scene-string-literal"] = tl;
+    </script>
+  </div>
+</template>

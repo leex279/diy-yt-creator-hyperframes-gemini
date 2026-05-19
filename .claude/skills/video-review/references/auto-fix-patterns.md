@@ -128,8 +128,8 @@ Hostinger banner reads as "Sponsored by Hostinger" instead of "Try Hostinger" / 
 2. Replace with the canonical Hostinger block from `.claude/rules/youtube-metadata.md`:
    ```
    ----
-   🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
-   👉 https://hostinger.com/DIYSMARTCODE
+   ⚡ Host your portfolio, side projects, n8n flows, or AI agents on Hostinger (10% OFF):
+   Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE
    ----
    ```
 3. Re-run.

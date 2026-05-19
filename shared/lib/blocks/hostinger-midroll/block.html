@@ -65,6 +65,17 @@
       <img class="hm-brand-logo" src="../assets/hostinger-horizontal-white.svg" alt="Hostinger" crossorigin="anonymous" />
     </div>
 
+    <!-- Persistent promo badge — 10% OFF + DIYSMARTCODE visible across all 20s.
+         Mirrors Werbung (top-left) and brand (top-right): fades in at 0.30s,
+         stays until the global root fade-out. Bottom-right corner so it doesn't
+         collide with the Phase 5 centered CTA card or the Phase 2-4 left-aligned
+         product copy. Reinforces the affiliate offer even while a viewer scrubs
+         to the middle of the midroll. -->
+    <div class="hm-promo-persistent" id="hm-promo-persistent">
+      <span class="hm-promo-discount">10% OFF</span>
+      <span class="hm-promo-code">DIYSMARTCODE</span>
+    </div>
+
     <!-- Phase-transition flash overlay (white glitch flash at hard cuts) -->
     <div class="hm-flash" id="hm-flash"></div>
 
@@ -419,6 +430,45 @@
         opacity: 0;
         pointer-events: none;
         mix-blend-mode: screen;
+      }
+
+      /* ─── Persistent promo badge ─── */
+      .hm-promo-persistent {
+        position: absolute;
+        bottom: 40px;
+        right: 40px;
+        display: flex;
+        align-items: stretch;
+        border-radius: 12px;
+        overflow: hidden;
+        z-index: 100;
+        opacity: 0;
+        box-shadow:
+          0 6px 22px rgba(0, 0, 0, 0.45),
+          0 0 38px rgba(0, 200, 150, 0.20);
+        border: 1px solid rgba(139, 92, 246, 0.40);
+      }
+      .hm-promo-discount {
+        padding: 11px 18px;
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 24px;
+        font-weight: 900;
+        color: #ffffff;
+        background: linear-gradient(135deg, #00c896, #00a878);
+        letter-spacing: 1.4px;
+        display: flex;
+        align-items: center;
+      }
+      .hm-promo-code {
+        padding: 11px 18px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 700;
+        color: #ffffff;
+        background: linear-gradient(135deg, #673de6, #8b5cf6);
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
       }
 
       /* ─── Phase wrappers ─── */
@@ -930,8 +980,9 @@
 
         // Persistent chrome — Werbung + brand label fade in after the
         // container settles, stay on screen for the full midroll.
-        tl.to('.hm-werbung', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
-        tl.to('.hm-brand',   { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
+        tl.to('.hm-werbung',         { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
+        tl.to('.hm-brand',           { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
+        tl.to('.hm-promo-persistent',{ opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.30);
 
         // ══════════════════════════════════════════════════════════
         // PHASE 1 — Hostinger intro  (0.0 → 1.65s)

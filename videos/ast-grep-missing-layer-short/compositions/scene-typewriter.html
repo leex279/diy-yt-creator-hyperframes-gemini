@@ -1,0 +1,126 @@
+<!--
+  scene-typewriter.html — Typing-on text effect (~13s).
+
+  Pattern: kicker → mono "prompt" line that types itself character-by-
+           character via deterministic stagger of pre-split <span>s →
+           cursor that blinks → response line types after.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-typewriter"].
+-->
+<template id="scene-typewriter-template">
+  <div data-composition-id="scene-typewriter"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-typewriter-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:36px;
+        box-sizing:border-box;
+      }
+      #scene-typewriter-content .kicker {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-typewriter-content .terminal {
+        width: 920px;
+        background: var(--accent-ink);
+        border-radius: 18px;
+        padding: 36px 40px;
+        text-align: left;
+        box-shadow: var(--shadow-warm);
+      }
+      #scene-typewriter-content .line {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 38px;
+        line-height: 1.4;
+        color: var(--bg);
+        letter-spacing: 0;
+        white-space: pre-wrap;
+      }
+      #scene-typewriter-content .prompt-mark { color: var(--accent-warm); margin-right: 14px; }
+      #scene-typewriter-content .response { color: var(--accent-sage); margin-top: 10px; }
+      #scene-typewriter-content .ch { display: inline-block; }
+      #scene-typewriter-content .cursor {
+        display: inline-block;
+        width: 14px;
+        height: 38px;
+        background: var(--bg);
+        margin-left: 2px;
+        vertical-align: -6px;
+      }
+      #scene-typewriter-content .footnote {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+        font-size: 32px;
+        color: var(--text-secondary);
+      }
+    </style>
+
+    <div id="scene-typewriter-content">
+      <div class="kicker" id="tw-kicker">Live typing</div>
+      <div class="terminal" id="tw-terminal">
+        <div class="line"><span class="prompt-mark">$</span><span id="tw-cmd-wrap"></span><span class="cursor" id="tw-cursor"></span></div>
+        <div class="line response" id="tw-resp-wrap"></div>
+      </div>
+      <div class="footnote" id="tw-footnote">Deterministic. Frame-perfect on render.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      // Build per-character spans for both lines (deterministic — no Date.now).
+      const cmdText = "hyperframes preview ./video";
+      const respText = "Studio running on http://localhost:3001";
+      const cmdWrap = document.getElementById('tw-cmd-wrap');
+      const respWrap = document.getElementById('tw-resp-wrap');
+      for (const ch of cmdText) {
+        const s = document.createElement('span');
+        s.className = 'ch';
+        s.textContent = ch === ' ' ? ' ' : ch;
+        cmdWrap.appendChild(s);
+      }
+      for (const ch of respText) {
+        const s = document.createElement('span');
+        s.className = 'ch';
+        s.textContent = ch === ' ' ? ' ' : ch;
+        respWrap.appendChild(s);
+      }
+
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Entrance
+      tl.from("#tw-kicker",   { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#tw-terminal", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+      tl.from("#tw-footnote", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.9);
+
+      // Hide all chars initially, then type-on (stagger reveal each char)
+      gsap.set("#tw-cmd-wrap .ch",  { opacity: 0 });
+      gsap.set("#tw-resp-wrap .ch", { opacity: 0 });
+
+      // Type the command (~2.5s for 27 chars at 90ms each)
+      tl.to("#tw-cmd-wrap .ch", { opacity: 1, duration: 0.01, stagger: 0.085 }, 1.2);
+      // Cursor blink (3 cycles) while waiting
+      tl.to("#tw-cursor", { opacity: 0, duration: 0.4, ease: "steps(1)", yoyo: true, repeat: 5 }, 4.0);
+      // Type the response (~3s for 39 chars at 75ms)
+      tl.to("#tw-resp-wrap .ch", { opacity: 1, duration: 0.01, stagger: 0.075 }, 6.5);
+      // Mid-beats — keep alive after response completes
+      tl.to("#tw-terminal", { scale: 1.02, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 10.0);
+      tl.to("#tw-footnote", { scale: 1.05, color: "var(--accent-warm)", duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 11.5);
+      tl.to("#tw-cursor",   { opacity: 0, duration: 0.4, ease: "steps(1)", yoyo: true, repeat: 1 }, 12.5);
+
+      window.__timelines["scene-typewriter"] = tl;
+    </script>
+  </div>
+</template>

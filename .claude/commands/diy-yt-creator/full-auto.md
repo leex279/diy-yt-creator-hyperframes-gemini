@@ -552,8 +552,8 @@ Task(
      - Hostinger affiliate block in `----` separators (MANDATORY on every video — Shorts AND long-form):
        ```
        ----
-       🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
-       👉 https://hostinger.com/DIYSMARTCODE
+       ⚡ Host your portfolio, side projects, n8n flows, or AI agents on Hostinger (10% OFF):
+       Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE
        ----
        ```
      - Engagement debate question (must match script's final spoken CTA line)

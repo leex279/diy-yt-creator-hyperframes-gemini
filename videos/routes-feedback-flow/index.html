@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Flow — routes/feedback.py</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: radial-gradient(ellipse at top, #11182c 0%, #0a0e1a 55%, #050811 100%);
+    color: #e6edf7;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  #ambient .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); opacity: 0.12;
+    animation: drift 18s ease-in-out infinite;
+  }
+  #ambient .b1 { width: 600px; height: 600px; background: #94a3b8; top: -100px;  left: -100px; }
+  #ambient .b2 { width: 700px; height: 700px; background: #f472b6; top: 20%;     right: -150px; animation-delay: -6s; }
+  #ambient .b3 { width: 500px; height: 500px; background: #f59e0b; bottom: -120px; left: 35%;   animation-delay: -12s; }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33%      { transform: translate(50px,-40px) scale(1.1); }
+    66%      { transform: translate(-40px,50px) scale(0.95); }
+  }
+
+  #stage { position: relative; width: 1920px; height: 1080px; padding: 28px 60px; z-index: 1; }
+
+  .title {
+    text-align: center; font-size: 50px; font-weight: 800;
+    letter-spacing: -0.02em;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: linear-gradient(90deg, #ffffff 0%, #8b97b3 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center; color: #8b97b3;
+    font-size: 16px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.22em; margin-bottom: 24px;
+  }
+
+  .card {
+    position: relative;
+    background: linear-gradient(180deg, #161e33 0%, #0f1525 100%);
+    border: 1px solid #2a3550;
+    border-radius: 16px;
+    padding: 22px;
+    overflow: hidden; isolation: isolate;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; padding: 1px;
+    background: linear-gradient(135deg, var(--accent, #ffffff) 0%, transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0.45; pointer-events: none; z-index: 0;
+  }
+  .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: dot-pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes dot-pulse {
+    0%, 100% { transform: scale(1);   opacity: 1;   }
+    50%      { transform: scale(1.3); opacity: 0.7; }
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 30px;
+    height: 768px;
+  }
+
+  #root-card { --accent: #61dafb; height: 100%; padding: 30px; display: flex; flex-direction: column; }
+  #root-card .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; position: relative; z-index: 1; }
+  #root-card .card-title {
+    font-size: 26px; font-weight: 800;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    color: #e6edf7;
+  }
+  #root-card .meta {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 15px; color: #5d6a8a;
+    margin-bottom: 24px; position: relative; z-index: 1;
+  }
+  #root-card .root-stack {
+    position: relative; z-index: 1;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 18px; color: #b8e8ff;
+    line-height: 1.95; flex: 1;
+  }
+  #root-card .root-arrow { color: #61dafb; opacity: 0.5; font-size: 16px; }
+  #root-card .root-divider {
+    height: 1px; margin: 18px 0;
+    background: linear-gradient(90deg, #2a3550 0%, transparent 100%);
+  }
+  #root-card .root-foot {
+    color: #5d6a8a; font-size: 14px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    line-height: 1.6;
+  }
+
+  .branches {
+    display: flex; flex-direction: column;
+    gap: 22px; height: 100%;
+  }
+  .branch {
+    display: grid;
+    grid-template-columns: 1fr 90px 340px;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .branch-content {
+    position: relative;
+    background: linear-gradient(180deg, #161e33 0%, #0f1525 100%);
+    border: 1px solid #2a3550;
+    border-radius: 14px;
+    padding: 22px 26px;
+    overflow: hidden; isolation: isolate;
+    height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .branch-content::before {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; padding: 1px;
+    background: linear-gradient(135deg, var(--accent) 0%, transparent 55%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0.4; pointer-events: none; z-index: 0;
+  }
+  .branch-head { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+  .branch-title {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px; font-weight: 700;
+    color: var(--accent);
+  }
+  .branch-desc {
+    margin-top: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 17px; color: #b8c5db;
+    line-height: 1.55;
+    position: relative; z-index: 1;
+  }
+  .branch-desc .mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    color: #e6edf7;
+    background: rgba(255,255,255,0.05);
+    padding: 2px 7px; border-radius: 4px;
+    font-size: 15px;
+  }
+  .branch-note {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    color: #5d6a8a;
+    font-style: italic;
+    position: relative; z-index: 1;
+  }
+
+  .branch-arrow {
+    position: relative; height: 28px;
+    display: flex; align-items: center;
+  }
+  .branch-arrow.empty { visibility: hidden; }
+  .arrow-line {
+    width: 100%; height: 2px;
+    background: var(--accent, #3d4d75);
+    opacity: 0.6;
+    position: relative;
+  }
+  .arrow-line::after {
+    content: "";
+    position: absolute;
+    right: -1px; top: -5px;
+    width: 14px; height: 14px;
+    border-top: 2px solid var(--accent, #3d4d75);
+    border-right: 2px solid var(--accent, #3d4d75);
+    transform: rotate(45deg);
+    opacity: 0.9;
+  }
+  .flow-particle {
+    position: absolute;
+    top: 50%; left: 0;
+    transform: translateY(-50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent), 0 0 22px var(--accent);
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
+  .external {
+    position: relative;
+    background: linear-gradient(180deg, #1a1f33 0%, #131826 100%);
+    border: 1px solid #2a3550;
+    border-radius: 14px;
+    padding: 18px 22px;
+    overflow: hidden; isolation: isolate;
+    height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .external::before {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; padding: 1px;
+    background: linear-gradient(135deg, var(--accent) 0%, transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0.6; pointer-events: none; z-index: 0;
+  }
+  .external.empty { visibility: hidden; }
+  .ext-head { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
+  .ext-title {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 20px; font-weight: 700;
+    color: var(--accent);
+  }
+  .ext-meta {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; color: #8b97b3;
+    position: relative; z-index: 1;
+  }
+
+  .acc-db        { --accent: #f59e0b; }
+  .acc-services  { --accent: #14b8a6; }
+  .acc-github    { --accent: #94a3b8; }
+  .acc-sqlite    { --accent: #f59e0b; }
+
+  .output-box {
+    margin-top: 16px;
+    background: linear-gradient(90deg, rgba(148,163,184,0.07) 0%, transparent 100%);
+    border: 1px solid #2a3550;
+    border-left: 3px solid #94a3b8;
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 22px;
+    min-height: 64px;
+  }
+  .output-label {
+    color: #94a3b8; font-weight: 700;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.12em; font-size: 13px;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .output-content {
+    color: #e6edf7;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .output-content .sep { color: #5d6a8a; margin: 0 12px; }
+  .output-content .key { color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div id="root" class="clip"
+     data-composition-id="routes-feedback-flow"
+     data-start="0" data-duration="12"
+     data-track-index="0"
+     data-width="1920" data-height="1080">
+
+  <div id="ambient">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div id="stage">
+
+    <h1 class="title">routes/feedback.py</h1>
+    <p class="subtitle">SNAPSHOT  ·  GITHUB ISSUE  ·  PERSIST</p>
+
+    <div class="main-grid">
+
+      <div id="root-card" class="card">
+        <div class="card-head">
+          <span class="dot"></span>
+          <span class="card-title">feedback.py</span>
+        </div>
+        <div class="meta">POST /feedback</div>
+        <div class="root-stack">
+          <div>feedback submission</div>
+          <div class="root-arrow">↓</div>
+          <div>server-side snapshot</div>
+          <div class="root-arrow">↓</div>
+          <div>create GH issue</div>
+          <div class="root-arrow">↓</div>
+          <div>persist record</div>
+          <div class="root-divider"></div>
+          <div class="root-foot">server-trusted only<br/>(client cannot forge)</div>
+        </div>
+      </div>
+
+      <div class="branches">
+
+        <div class="branch acc-db">
+          <div class="branch-content">
+            <div class="branch-head">
+              <span class="dot"></span>
+              <span class="branch-title">db/repository  (read)</span>
+            </div>
+            <div class="branch-desc">reconstruct <span class="mono">{ question, answer, citations }</span> snapshot from <span class="mono">message_id</span></div>
+            <div class="branch-note">the server never trusts the client for these fields</div>
+          </div>
+          <div class="branch-arrow empty"><div class="arrow-line"></div></div>
+          <div class="external empty"></div>
+        </div>
+
+        <div class="branch acc-services">
+          <div class="branch-content">
+            <div class="branch-head">
+              <span class="dot"></span>
+              <span class="branch-title">services/github</span>
+            </div>
+            <div class="branch-desc"><span class="mono">POST /repos/&lt;repo&gt;/issues</span> · label <span class="mono">"feedback"</span> · suggested correction wrapped in fenced code block</div>
+          </div>
+          <div class="branch-arrow acc-github"><div class="arrow-line"></div><div class="flow-particle"></div></div>
+          <div class="external acc-github">
+            <div class="ext-head"><span class="dot"></span><span class="ext-title">GitHub Issues</span></div>
+            <div class="ext-meta">REST API · issue created</div>
+          </div>
+        </div>
+
+        <div class="branch acc-db">
+          <div class="branch-content">
+            <div class="branch-head">
+              <span class="dot"></span>
+              <span class="branch-title">db/repository.insert_feedback_submission</span>
+            </div>
+            <div class="branch-desc">persist feedback row with <span class="mono">github_issue_url</span> · linked to <span class="mono">message_id</span></div>
+          </div>
+          <div class="branch-arrow acc-sqlite"><div class="arrow-line"></div><div class="flow-particle"></div></div>
+          <div class="external acc-sqlite">
+            <div class="ext-head"><span class="dot"></span><span class="ext-title">SQLite</span></div>
+            <div class="ext-meta">feedback_submissions</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Response →  Client</div>
+      <div class="output-content">
+        persisted feedback record
+        <span class="sep">·</span>
+        includes <span class="key">github_issue_url</span>
+        <span class="sep">·</span>
+        round-trip ack
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TOTAL_DURATION = 12;
+  const COMP_ID = "routes-feedback-flow";
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  window.__timelines[COMP_ID] = tl;
+
+  gsap.set(".flow-particle", { opacity: 0 });
+
+  const particles = Array.from(document.querySelectorAll(".flow-particle"));
+  const PARTICLE_CYCLE = 1.5;
+  const PARTICLE_STAGGER = 0.5;
+
+  particles.forEach((p, i) => {
+    let t = (i * PARTICLE_STAGGER) % PARTICLE_CYCLE;
+    while (t + PARTICLE_CYCLE <= TOTAL_DURATION) {
+      tl.set(p, { left: "0%", opacity: 0 }, t);
+      tl.to(p,  { opacity: 1, duration: 0.15 }, t);
+      tl.to(p,  { left: "100%", duration: PARTICLE_CYCLE, ease: "none" }, t);
+      tl.to(p,  { opacity: 0, duration: 0.18 }, t + PARTICLE_CYCLE - 0.18);
+      t += PARTICLE_CYCLE;
+    }
+  });
+
+  let yoyoT = 0.4;
+  while (yoyoT + 1.2 <= TOTAL_DURATION) {
+    tl.to("#root-card", {
+      scale: 1.015, duration: 0.55, ease: "power2.inOut",
+      yoyo: true, repeat: 1, transformOrigin: "center center"
+    }, yoyoT);
+    yoyoT += 3.0;
+  }
+
+  const externals = document.querySelectorAll(".external:not(.empty)");
+  externals.forEach((ext, i) => {
+    const baseOffset = (i * PARTICLE_STAGGER) % PARTICLE_CYCLE;
+    let t = baseOffset + PARTICLE_CYCLE - 0.2;
+    while (t + 0.5 <= TOTAL_DURATION) {
+      tl.to(ext, {
+        scale: 1.025, duration: 0.22, ease: "power2.out",
+        yoyo: true, repeat: 1, transformOrigin: "center center"
+      }, t);
+      t += PARTICLE_CYCLE;
+    }
+  });
+
+  tl.set({}, {}, TOTAL_DURATION);
+</script>
+
+</body>
+</html>

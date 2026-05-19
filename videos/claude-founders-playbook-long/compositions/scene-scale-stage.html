@@ -1,0 +1,264 @@
+<!--
+  scene-scale-stage.html — Chapter 6 Scale Stage (62s). 12 narration-anchored beats.
+-->
+<template id="scene-scale-stage-template">
+  <div data-composition-id="scene-scale-stage"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      #sst-content {
+        width: 100%; height: 100%;
+        padding: 130px 60px 100px;
+        display: grid;
+        grid-template-columns: 0.78fr 1.2fr;
+        gap: 40px;
+        align-items: stretch;
+        box-sizing: border-box;
+      }
+      #sst-left {
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 20px;
+      }
+      #sst-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        text-transform: uppercase; color: #7DD3A6;
+        opacity: 0;
+      }
+      #sst-headline {
+        font-weight: 900; font-size: 130px; line-height: 0.9;
+        letter-spacing: -5px; color: #F5F1EB;
+        opacity: 0;
+      }
+      #sst-headline .em { color: #7DD3A6; }
+      #sst-graphic {
+        width: 100%; max-width: 560px;
+        border-radius: 16px;
+        border: 2px solid rgba(125,211,166,0.45);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.55), 0 0 60px rgba(125,211,166,0.18);
+        display: block; object-fit: cover; aspect-ratio: 4/3;
+        opacity: 0;
+      }
+      #sst-progress {
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+      }
+      .sst-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(245,241,235,0.18); }
+      .sst-dot.active { background: #7DD3A6; box-shadow: 0 0 10px rgba(125,211,166,0.6); }
+      .sst-prog-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 14px; letter-spacing: 3px;
+        color: #9A958D; margin-left: 8px;
+      }
+
+      #sst-right {
+        position: relative;
+        display: flex; flex-direction: column;
+        gap: 14px;
+        align-self: stretch;
+        justify-content: center;
+      }
+      .sst-card {
+        opacity: 0;
+        padding: 18px 22px;
+        border-radius: 14px;
+        background: rgba(14,18,26,0.85);
+        border: 1.5px solid rgba(125,211,166,0.45);
+        display: flex; align-items: center; gap: 18px;
+        position: relative;
+      }
+      .sst-card.danger { border-color: rgba(209,67,67,0.50); background: rgba(40,18,18,0.85); }
+      .sst-card.exit   { border-color: rgba(125,211,166,0.55); background: rgba(15,30,22,0.85); }
+      .sst-card-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 14px; letter-spacing: 3px;
+        padding: 6px 12px; border-radius: 6px;
+        background: rgba(125,211,166,0.18); color: #7DD3A6;
+        white-space: nowrap; flex-shrink: 0;
+      }
+      .sst-card.danger .sst-card-tag { background: rgba(209,67,67,0.20); color: #FF7C7C; }
+      .sst-card.exit   .sst-card-tag { background: rgba(125,211,166,0.22); color: #7DD3A6; }
+      .sst-card-text {
+        font-weight: 700; font-size: 22px;
+        line-height: 1.25; color: #F5F1EB;
+      }
+
+      /* Builder → Publisher badge swap */
+      #sst-roleswap {
+        margin-left: auto;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .sst-role {
+        padding: 8px 14px; border-radius: 8px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 16px; letter-spacing: 1px;
+      }
+      .sst-role.builder {
+        background: rgba(154,149,141,0.15);
+        color: #9A958D;
+        position: relative;
+      }
+      .sst-role.builder::after {
+        content: ""; position: absolute;
+        left: 8px; right: 8px; top: 50%;
+        height: 3px; background: #FF7C7C; width: 0; opacity: 0;
+      }
+      .sst-role.publisher {
+        background: rgba(125,211,166,0.18);
+        color: #7DD3A6;
+        opacity: 0;
+      }
+      .sst-arrow { color: #7DD3A6; font-weight: 900; opacity: 0; }
+
+      /* Concentric moat rings */
+      #sst-moat-rings {
+        margin-left: auto;
+        position: relative;
+        width: 100px; height: 100px;
+        flex-shrink: 0;
+        opacity: 0;
+      }
+      .sst-ring {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 2px solid rgba(125,211,166,0.55);
+        opacity: 0;
+      }
+      .sst-ring.r1 { width: 24px; height: 24px; background: rgba(125,211,166,0.30); border-width: 0; }
+      .sst-ring.r2 { width: 48px; height: 48px; }
+      .sst-ring.r3 { width: 72px; height: 72px; }
+      .sst-ring.r4 { width: 100px; height: 100px; border-color: rgba(125,211,166,0.30); }
+    </style>
+
+    <div id="sst-content">
+      <div id="sst-left">
+        <div id="sst-overline">CHAPTER 6 &middot; PDF p.25</div>
+        <div id="sst-headline"><span class="em">Scale</span>.</div>
+        <img id="sst-graphic" src="assets/chapter-icons/chapter-6-scale.png" alt="Chapter 6 — Scale Stage" />
+        <div id="sst-progress">
+          <div class="sst-dot"></div><div class="sst-dot"></div><div class="sst-dot"></div><div class="sst-dot"></div><div class="sst-dot"></div>
+          <div class="sst-dot active"></div>
+          <div class="sst-dot"></div>
+          <span class="sst-prog-label">6 / 7</span>
+        </div>
+      </div>
+
+      <div id="sst-right">
+        <div class="sst-card" id="sst-role-card">
+          <div class="sst-card-tag">ROLE RECENTERS</div>
+          <div class="sst-card-text">Founder shifts:</div>
+          <div id="sst-roleswap">
+            <div class="sst-role builder" id="sst-role-builder">BUILDER</div>
+            <div class="sst-arrow" id="sst-role-arrow">&rarr;</div>
+            <div class="sst-role publisher" id="sst-role-publisher">PUBLISHER</div>
+          </div>
+        </div>
+
+        <div class="sst-card" id="sst-goal">
+          <div class="sst-card-tag">GOAL</div>
+          <div class="sst-card-text"><span style="color:#7DD3A6;font-weight:900">Enterprise-grade</span> infrastructure &middot; sustainable company.</div>
+        </div>
+
+        <div class="sst-card danger" id="sst-danger">
+          <div class="sst-card-tag">FAILURE MODE</div>
+          <div class="sst-card-text">Delegating <span style="color:#FF7C7C;font-weight:900">before the systems exist.</span></div>
+        </div>
+
+        <div class="sst-card" id="sst-moat">
+          <div class="sst-card-tag">CLAUDE SURFACE</div>
+          <div class="sst-card-text"><span style="color:#7DD3A6;font-weight:900">Workflow lock-in.</span> Data network effects.</div>
+          <div id="sst-moat-rings">
+            <div class="sst-ring r4"></div>
+            <div class="sst-ring r3"></div>
+            <div class="sst-ring r2"></div>
+            <div class="sst-ring r1"></div>
+          </div>
+        </div>
+
+        <div class="sst-card exit" id="sst-exit">
+          <div class="sst-card-tag">EXIT CRITERIA</div>
+          <div class="sst-card-text">Company is <span style="color:#7DD3A6;font-weight:900">sustainable</span> even when you are not in the work.</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 62;
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.5 } });
+
+      // Local time = global - 338.36
+      // BEAT 1: 0.0 "Chapter six" — overline + progress
+      tl.to("#sst-overline", { opacity: 1, x: 0, duration: 0.4 }, 0);
+      tl.to("#sst-progress", { opacity: 1, duration: 0.4 }, 0.2);
+
+      // BEAT 2: 0.98 "Scale stage" — headline slam
+      tl.fromTo("#sst-headline", { y: 40, scale: 0.85, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 0.98);
+
+      // BEAT 3: 3.0 — chapter graphic enters
+      tl.fromTo("#sst-graphic",
+        { rotationY: -25, scale: 0.85, opacity: 0, transformPerspective: 2000 },
+        { rotationY: 0, scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)" },
+        3.0);
+
+      // BEAT 4: 3.64 "recenters" — ROLE card enters
+      tl.to("#sst-role-card", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 3.64);
+
+      // BEAT 5: 6.08 "builder" — BUILDER badge highlights then strikes
+      tl.to("#sst-role-builder", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 6.08);
+
+      // BEAT 6: 6.52 "publisher" — strikethrough builder + reveal publisher
+      tl.to("#sst-role-builder::after", { width: "calc(100% - 16px)", opacity: 1, duration: 0.4 }, 6.52);
+      tl.to("#sst-role-arrow",     { opacity: 1, x: 0, duration: 0.3 }, 6.7);
+      tl.to("#sst-role-publisher", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, 6.9);
+
+      // BEAT 7: 9.5 "enterprise-grade" — GOAL pill enters
+      tl.to("#sst-goal", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 9.5);
+      tl.to("#sst-goal", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 9.8);
+
+      // BEAT 8: 14.2 "company-wide" — graphic pulse
+      tl.to("#sst-graphic", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 14.2);
+
+      // BEAT 9: 19.25 "inverse" — DANGER card enters
+      tl.to("#sst-danger", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 19.25);
+      tl.to("#sst-danger", {
+        boxShadow: "0 0 0 6px rgba(209,67,67,0.30)", duration: 0.4,
+        yoyo: true, repeat: 2, ease: "sine.inOut"
+      }, 19.55);
+
+      // BEAT 10: 22.43 "trust" — emphasis pulse on danger
+      tl.to("#sst-danger .sst-card-text", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 22.43);
+
+      // BEAT 11: 30.78 "moat" — Claude Surface MOAT card + rings
+      tl.to("#sst-moat", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 30.78);
+      tl.to("#sst-moat-rings", { opacity: 1, duration: 0.3 }, 31.0);
+      tl.fromTo(".sst-ring.r1", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.5)" }, 31.2);
+
+      // BEAT 12: 32.05 "Workflow lock-in" + 34.47 "data network effects" — concentric rings expand
+      tl.fromTo(".sst-ring.r2", { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.8, duration: 0.4, ease: "back.out(1.5)" }, 32.05);
+      tl.fromTo(".sst-ring.r3", { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.6, duration: 0.4, ease: "back.out(1.5)" }, 33.26);
+      tl.fromTo(".sst-ring.r4", { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.4, duration: 0.4, ease: "back.out(1.5)" }, 34.47);
+
+      // BEAT 13: 42.54 "whole company" — moat card glow + EXIT enters
+      tl.to("#sst-moat", {
+        boxShadow: "0 0 0 6px rgba(125,211,166,0.25)", duration: 0.4,
+        yoyo: true, repeat: 1, ease: "sine.inOut"
+      }, 42.54);
+      tl.to("#sst-exit", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 45.0);
+
+      // BEAT 14: 56.25 "exits" — EXIT pulse
+      tl.to("#sst-exit", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 56.25);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-scale-stage"] = tl;
+    </script>
+  </div>
+</template>

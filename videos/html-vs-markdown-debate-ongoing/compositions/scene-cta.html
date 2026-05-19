@@ -1,0 +1,656 @@
+<!--
+  scene-cta.html — WHERE IT STANDS: debate-sparking close + Dynamous handoff
+  Scene-relative duration: 72.26s. data-start in root = 483.06.
+
+  Beats (scene-relative):
+    0     — overline + serif headline enter            (Beat A)
+    5.39  — Thariq pull-quote card slides up           (Beat B)
+    7.91  — "HTML continues to be undefeated" reveals  (Beat B2)
+    12.01 — "still split / still arguing" sub-line     (Beat B3)
+    15.5  — quote card dims
+    16.49 — MARKDOWN CAMP card slides in (left)        (Beat C)
+    17.2  — md bullets stagger in (0.4s apart)         (Beat C)
+    26.07 — HTML CAMP card slides in (right)           (Beat C)
+    26.8  — html bullets stagger in (0.4s apart)       (Beat C)
+    35.0  — both camp cards fade out                   (Beat C→D)
+    35.63 — Bridge serif headline enters               (Beat D)
+    40.0  — "In public" italic pulse                   (Beat D pacing)
+    48.6  — bridge dims
+    49.62 — THE QUESTION enters (#cta-question)        (Beat E)
+    51.0  — answer-pill 1 slides in
+    52.5  — answer-pill 2 slides in
+    54.0  — answer-pill 3 slides in
+    57.5  — cta-q-text "you" pulse                     (Beat E pacing)
+    60.46 — "Drop your pick below" caption enters
+    62.79 — First-video callback card enters           (Beat F)
+    68.04 — Dynamous outro hold; right half clear      (Beat G)
+    70.0  — cta-q-text pacing pulse
+    72.26 — scene end (timeline extender)
+
+  YouTube end-screen safe-zone markers appear at scene-rel t=51.99
+  (parent t=535.05), covering the last ~20s of the scene.
+
+  Track assignments:
+    Track 1 — persistent bg canvas
+    Track 2 — overline (persistent header)
+    Track 3 — h2 headline (persistent)
+    Track 4 — divider (persistent)
+    Track 5 — quote-card wrap (Beat B)
+    Track 6 — camps-wrap (Beat C)
+    Track 7 — bridge-h3 wrap (Beat D)
+    Track 8 — cta-question wrap (Beat E, persists to end)
+    Track 9 — callback-card wrap (Beat F)
+    Track 10 — yt-safe-tr marker
+    Track 11 — yt-safe-br marker
+
+  Note: visibility toggling on clip elements is forbidden by the framework.
+  Inner content divs (non-clip) are used as the GSAP toggle targets instead.
+  Each outer clip wrapper has a single data-start/data-duration covering the
+  full scene; the inner div starts at opacity:0 and is shown/hidden by GSAP.
+-->
+<template id="scene-cta-template">
+  <div id="root"
+       data-composition-id="scene-cta"
+       data-start="0"
+       data-duration="72.26"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+              color: #1A1815;">
+
+    <style>
+      /* ── Layout shell ───────────────────────────────── */
+      #cta-wrap {
+        position: absolute;
+        inset: 0;
+        padding: 72px 100px 80px;
+        box-sizing: border-box;
+      }
+
+      /* ── Beat A — section header ────────────────────── */
+      #cta-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #B14938;
+        margin-bottom: 14px;
+      }
+      #cta-h2 {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 68px;
+        color: #1A1815;
+        letter-spacing: -1.5px;
+        line-height: 1.05;
+        margin-bottom: 0;
+      }
+      #cta-h2 em {
+        font-style: italic;
+        color: #C75A3F;
+      }
+      #cta-divider {
+        height: 1px;
+        background: rgba(28, 26, 24, 0.10);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      /* ── Beat B — Thariq pull-quote card ─────────────── */
+      /* .quote-inner is the GSAP target (non-clip child) */
+      .quote-inner {
+        position: absolute;
+        left: 100px;
+        right: 800px;          /* stay in left 55% */
+        top: 260px;
+        background: #FBF8F1;
+        border: 1px solid rgba(28, 26, 24, 0.10);
+        border-left: 4px solid #C75A3F;
+        border-radius: 12px;
+        padding: 32px 36px;
+        box-shadow: 0 2px 16px rgba(28, 26, 24, 0.06);
+      }
+      #quote-text {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 700;
+        font-size: 44px;
+        color: #1A1815;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin-bottom: 18px;
+      }
+      #quote-attr {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #8A8175;
+      }
+      #quote-attr .handle {
+        color: #C75A3F;
+      }
+      #still-split {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: #8A8175;
+        margin-top: 14px;
+        line-height: 1.5;
+      }
+
+      /* ── Beat C — camp position CARDS (two full-width columns) ───── */
+      /* .camps-inner is the GSAP visibility container (non-clip child) */
+      .camps-inner {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+      }
+      .camp-card {
+        position: absolute;
+        top: 280px;
+        width: 800px;
+        height: 560px;
+        background: rgba(28, 26, 24, 0.04);
+        border: 1px solid rgba(28, 26, 24, 0.15);
+        border-radius: 18px;
+        padding: 48px;
+        box-sizing: border-box;
+      }
+      #md-camp-card   { left: 120px;  border-top: 3px solid #586F4F; }
+      #html-camp-card { left: 1000px; border-top: 3px solid #C75A3F; }
+      .camp-card-title {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 44px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+      #md-camp-card   .camp-card-title { color: #586F4F; }
+      #html-camp-card .camp-card-title { color: #C75A3F; }
+      .camp-card-subtitle {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 600;
+        font-size: 36px;
+        color: #3A342E;
+        margin-bottom: 22px;
+        letter-spacing: -0.3px;
+      }
+      .camp-card-divider {
+        height: 1px;
+        background: rgba(28, 26, 24, 0.12);
+        margin-bottom: 28px;
+      }
+      .camp-card-bullet {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-size: 30px;
+        color: #3A342E;
+        line-height: 1.4;
+        padding-left: 28px;
+        position: relative;
+        margin-bottom: 14px;
+      }
+      .camp-card-bullet::before {
+        content: '\2014';
+        position: absolute;
+        left: 0;
+        color: #8A8175;
+        font-style: normal;
+      }
+      .camp-card-badge {
+        position: absolute;
+        bottom: 36px;
+        right: 44px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 1px;
+        padding: 6px 18px;
+        border-radius: 8px;
+        border: 1px solid;
+      }
+      #md-badge   { color: #586F4F; border-color: #586F4F; }
+      #html-badge { color: #C75A3F; border-color: #C75A3F; }
+
+      /* ── Beat D — bridge headline (3 lines step-revealed) ── */
+      .bridge-inner {
+        position: absolute;
+        left: 120px;
+        right: 120px;
+        top: 280px;
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 96px;
+        color: #1A1815;
+        letter-spacing: -1.5px;
+        line-height: 1.05;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      #bridge-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #C75A3F;
+        margin-bottom: 18px;
+        text-align: center;
+      }
+      .bridge-line {
+        display: inline-block;
+        white-space: nowrap;
+      }
+      .bridge-line .bridge-num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        color: #C75A3F;
+        vertical-align: super;
+        margin-right: 18px;
+      }
+      .bridge-line em {
+        font-style: italic;
+        color: #C75A3F;
+      }
+      .bridge-line-3 {
+        font-size: 132px;
+        font-weight: 900;
+        letter-spacing: -2.5px;
+      }
+
+      /* ── Beat E — THE QUESTION ────────────────────────── */
+      /* .cta-q-inner is the GSAP target (non-clip child of #cta-question) */
+      .cta-q-inner {
+        position: absolute;
+        left: 100px;
+        right: 820px;          /* left ~55% of frame */
+        top: 260px;
+      }
+      #cta-q-text {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 64px;
+        color: #1A1815;
+        letter-spacing: -1px;
+        line-height: 1.05;
+        margin-bottom: 32px;
+      }
+      #cta-q-text em {
+        font-style: italic;
+        color: #C75A3F;
+      }
+      .answer-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: #FBF8F1;
+        border: 1px solid rgba(28, 26, 24, 0.12);
+        border-radius: 999px;
+        padding: 14px 28px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        color: #1A1815;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+      }
+      #pills-col {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 22px;
+      }
+      #drop-caption {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #8A8175;
+      }
+
+      /* ── Beat F — First-video callback card ───────────── */
+      /* .callback-inner is the GSAP target (non-clip child) */
+      .callback-inner {
+        position: absolute;
+        left: 100px;
+        bottom: 80px;
+        width: 760px;
+        background: #FBF8F1;
+        border: 1px solid rgba(28, 26, 24, 0.10);
+        border-radius: 12px;
+        padding: 20px 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #callback-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #B14938;
+      }
+      #callback-title {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 700;
+        font-size: 28px;
+        color: #1A1815;
+        line-height: 1.25;
+      }
+      #callback-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        color: #C75A3F;
+        letter-spacing: 0.5px;
+      }
+
+      /* ── End-screen safe-zone markers ─────────────────── */
+      .yt-safe {
+        position: absolute;
+        border: 2px dashed rgba(199, 90, 63, 0.28);
+        border-radius: 10px;
+        pointer-events: none;
+      }
+      .yt-safe::after {
+        content: attr(data-label);
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: rgba(199, 90, 63, 0.45);
+      }
+      #yt-safe-tr {
+        top: 60px;
+        right: 60px;
+        width: 540px;
+        height: 300px;
+      }
+      #yt-safe-br {
+        bottom: 80px;
+        right: 60px;
+        width: 540px;
+        height: 300px;
+      }
+    </style>
+
+    <div id="cta-wrap">
+
+      <!-- Beat A — section overline (persistent) -->
+      <div id="cta-overline-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="2">
+        <div id="cta-overline">06 &mdash; WHERE IT STANDS</div>
+      </div>
+
+      <!-- Beat A — main headline (persistent) -->
+      <div id="cta-h2-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="3">
+        <div id="cta-h2">Still arguing. Still posting <em>receipts</em>.</div>
+        <div id="cta-divider"></div>
+      </div>
+
+      <!-- Beat B — Thariq pull-quote card (full-scene clip; inner shown/hidden by GSAP) -->
+      <div id="quote-card-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="5">
+        <div id="quote-card" class="quote-inner">
+          <div id="quote-text">
+            &ldquo;HTML continues to be undefeated.&rdquo;
+          </div>
+          <div id="quote-attr">
+            &mdash; Thariq &middot;
+            <span class="handle">@trq212</span>
+            &middot; 4 days ago
+          </div>
+          <div id="still-split">The replies are still split. Still arguing. Still posting receipts.</div>
+        </div>
+      </div>
+
+      <!-- Beat C — camp position CARDS (full-scene clip; inner shown/hidden by GSAP) -->
+      <div id="camps-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="6">
+        <div id="camps-wrap" class="camps-inner">
+
+          <!-- LEFT: Markdown Camp card -->
+          <div id="md-camp-card" class="camp-card">
+            <div class="camp-card-title">Markdown Camp</div>
+            <div class="camp-card-subtitle">&hellip;has not moved.</div>
+            <div class="camp-card-divider"></div>
+            <div id="md-bullet-1" class="camp-card-bullet">Tokens still cost what they cost.</div>
+            <div id="md-bullet-2" class="camp-card-bullet">Simplicity is still a feature.</div>
+            <div id="md-bullet-3" class="camp-card-bullet">Markdown renders to HTML when needed.</div>
+            <div id="md-badge" class="camp-card-badge">.md</div>
+          </div>
+
+          <!-- RIGHT: HTML Camp card -->
+          <div id="html-camp-card" class="camp-card">
+            <div class="camp-card-title">HTML Camp</div>
+            <div class="camp-card-subtitle">&hellip;has not moved either.</div>
+            <div class="camp-card-divider"></div>
+            <div id="html-bullet-1" class="camp-card-bullet">Their artifacts get opened.</div>
+            <div id="html-bullet-2" class="camp-card-bullet">Their reviews get clicks.</div>
+            <div id="html-bullet-3" class="camp-card-bullet">Their plans land in workflows.</div>
+            <div id="html-badge" class="camp-card-badge">.html</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Beat D — bridge headline, overline + 3 lines step-revealed at narration anchors -->
+      <div id="bridge-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="7">
+        <div id="bridge-h3" class="bridge-inner">
+          <div id="bridge-overline">WHAT CHANGED THIS WEEK · CONVERGENCE</div>
+          <span id="bridge-l1" class="bridge-line"><span class="bridge-num">01</span>A thousand replies.</span>
+          <span id="bridge-l2" class="bridge-line"><span class="bridge-num">02</span>A set of patterns.</span>
+          <span id="bridge-l3" class="bridge-line bridge-line-3"><em>In public.</em></span>
+        </div>
+      </div>
+
+      <!-- Beat E — THE QUESTION
+           id="cta-question" is REQUIRED by engagement-cta.md — this outer clip
+           wrapper carries the id; the inner .cta-q-inner is the GSAP target.
+           Persists from entry at t=49.62s through scene end (72.26s). -->
+      <div id="cta-question" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="8">
+        <div id="cta-q-inner" class="cta-q-inner">
+          <div id="cta-q-text">Which side are <em>you</em> on?</div>
+          <div id="pills-col">
+            <div id="pill-1" class="answer-pill">&#x1F7E6; Markdown for everything</div>
+            <div id="pill-2" class="answer-pill">&#x1F7E8; HTML for everything</div>
+            <div id="pill-3" class="answer-pill">&#x1F7E9; Hybrid &mdash; MD for agent, HTML for human</div>
+          </div>
+          <div id="drop-caption">Drop your pick below &darr;</div>
+        </div>
+      </div>
+
+      <!-- Beat F — first-video callback card (full-scene clip; inner shown/hidden by GSAP) -->
+      <div id="callback-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="9">
+        <div id="callback-card" class="callback-inner">
+          <div id="callback-label">Watch the first video</div>
+          <div id="callback-title">Why Claude Code Switched From Markdown to HTML</div>
+          <div id="callback-url">youtu.be/-iSLQe_imrE</div>
+        </div>
+      </div>
+
+      <!-- YouTube end-screen safe-zone markers (right half, last ~20s) -->
+      <div id="yt-safe-tr-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="10">
+        <div id="yt-safe-tr" class="yt-safe" data-label="NEXT VIDEO &middot; SLOT 1"></div>
+      </div>
+      <div id="yt-safe-br-clip" class="clip"
+           data-start="0" data-duration="72.26" data-track-index="11">
+        <div id="yt-safe-br" class="yt-safe" data-label="NEXT VIDEO &middot; SLOT 2"></div>
+      </div>
+
+    </div><!-- end #cta-wrap -->
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // ── HIDDEN-UNTIL-REVEAL ───────────────────────────────────────────
+      // All inner content divs (non-clip) start hidden. Clip wrappers stay
+      // opacity:1 / visible at all times — framework manages clip visibility.
+
+      // Beat A
+      tl.set("#cta-overline",  { y: -10, opacity: 0 }, 0);
+      tl.set("#cta-h2",        { y: -10, opacity: 0 }, 0);
+      tl.set("#cta-divider",   { scaleX: 0 }, 0);
+
+      // Beat B — inner card div + its sub-children (not the clip wrapper)
+      tl.set("#quote-card",    { y: 30, opacity: 0 }, 0);
+      tl.set("#quote-text",    { y: 10, opacity: 0 }, 0);
+      tl.set("#quote-attr",    { opacity: 0 }, 0);
+      tl.set("#still-split",   { y: 8, opacity: 0 }, 0);
+
+      // Beat C — camps-wrap container; both cards + bullets + badges hidden at t=0
+      tl.set("#camps-wrap",      { opacity: 0 }, 0);
+      tl.set("#md-camp-card",    { y: 40, opacity: 0 }, 0);
+      tl.set("#html-camp-card",  { y: 40, opacity: 0 }, 0);
+      tl.set("#md-bullet-1",     { x: -20, opacity: 0 }, 0);
+      tl.set("#md-bullet-2",     { x: -20, opacity: 0 }, 0);
+      tl.set("#md-bullet-3",     { x: -20, opacity: 0 }, 0);
+      tl.set("#md-badge",        { opacity: 0 }, 0);
+      tl.set("#html-bullet-1",   { x: -20, opacity: 0 }, 0);
+      tl.set("#html-bullet-2",   { x: -20, opacity: 0 }, 0);
+      tl.set("#html-bullet-3",   { x: -20, opacity: 0 }, 0);
+      tl.set("#html-badge",      { opacity: 0 }, 0);
+
+      // Beat D — inner bridge div + per-line hidden state
+      tl.set("#bridge-h3",     { opacity: 1 }, 0);
+      tl.set("#bridge-overline", { y: 12, opacity: 0 }, 0);
+      tl.set("#bridge-l1",     { y: 24, opacity: 0 }, 0);
+      tl.set("#bridge-l2",     { y: 24, opacity: 0 }, 0);
+      tl.set("#bridge-l3",     { y: 28, opacity: 0, scale: 0.92 }, 0);
+
+      // Beat E — inner question div + pills + caption
+      tl.set("#cta-q-inner",   { y: 20, opacity: 0 }, 0);
+      tl.set("#pill-1",        { x: -20, opacity: 0 }, 0);
+      tl.set("#pill-2",        { x: -20, opacity: 0 }, 0);
+      tl.set("#pill-3",        { x: -20, opacity: 0 }, 0);
+      tl.set("#drop-caption",  { opacity: 0 }, 0);
+
+      // Beat F — inner callback div
+      tl.set("#callback-card", { y: 20, opacity: 0 }, 0);
+
+      // End-screen markers — inner divs
+      tl.set("#yt-safe-tr",    { opacity: 0 }, 0);
+      tl.set("#yt-safe-br",    { opacity: 0 }, 0);
+
+      // ── BEAT A — overline + headline (0–5s) ──────────────────────────
+      tl.to("#cta-overline", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.3);
+      tl.to("#cta-h2",       { y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.6);
+      tl.to("#cta-divider",  { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.1);
+
+      // ── BEAT B — Thariq pull-quote card (5.39–16s) ───────────────────
+      // Card shell slides in at 5.39 (narration: "Thariq…doubled down four days ago")
+      tl.to("#quote-card", { y: 0, opacity: 1, duration: 0.7, ease: "back.out(1.3)" }, 5.39);
+      // Quote text reveals at 7.91 (narration: "HTML continues to be undefeated")
+      tl.to("#quote-text", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 7.91);
+      tl.to("#quote-attr", { opacity: 1, duration: 0.4, ease: "power2.out" }, 8.4);
+      // "still split" sub-line at 12.01 (narration: "replies…still split")
+      tl.to("#still-split", { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, 12.01);
+
+      // ── BEAT C — two camp cards, step-by-step (16.49–35s) ────────────
+      // Quote card dims before camp cards enter
+      tl.to("#quote-card", { opacity: 0, y: -24, duration: 0.5, ease: "power2.in" }, 15.5);
+
+      // Enable camps-wrap container visibility
+      tl.to("#camps-wrap", { opacity: 1, duration: 0.3 }, 16.49);
+
+      // LEFT — Markdown Camp card enters at 16.49
+      tl.to("#md-camp-card", { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 16.49);
+      // Markdown bullets stagger 0.4s apart starting at 17.2
+      tl.to("#md-bullet-1", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.3)" }, 17.2);
+      tl.to("#md-bullet-2", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.3)" }, 17.6);
+      tl.to("#md-bullet-3", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.3)" }, 18.0);
+      tl.to("#md-badge",    { opacity: 1, duration: 0.4, ease: "power2.out" }, 18.5);
+
+      // RIGHT — HTML Camp card enters at 26.07
+      tl.to("#html-camp-card", { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 26.07);
+      // HTML bullets stagger 0.4s apart starting at 26.8
+      tl.to("#html-bullet-1", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.3)" }, 26.8);
+      tl.to("#html-bullet-2", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.3)" }, 27.2);
+      tl.to("#html-bullet-3", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.3)" }, 27.6);
+      tl.to("#html-badge",    { opacity: 1, duration: 0.4, ease: "power2.out" }, 28.1);
+
+      // Both cards fade out at t=35.0 before bridge enters at 35.63
+      tl.to("#camps-wrap", { opacity: 0, y: -20, duration: 0.5, ease: "power2.in" }, 35.0);
+
+      // ── BEAT D — bridge headline, step-revealed at narration anchors ──
+      // Overline enters at 35.63 ('changed') — fills the gap from camp-cards exit
+      tl.to("#bridge-overline", { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, 35.63);
+      tl.to("#bridge-overline", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center center" }, 38.5);
+      // Line 1 "A thousand replies." — narration anchor 41.36
+      tl.to("#bridge-l1", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 41.36);
+      // Line 2 "A set of patterns." — narration anchor 43.46
+      tl.to("#bridge-l2", { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 43.46);
+      // Line 3 "In public." — narration anchor 48.22, hero-sized cinematic scale-in
+      tl.to("#bridge-l3", { y: 0, opacity: 1, scale: 1.0, duration: 0.65, ease: "back.out(1.4)" }, 48.22);
+      tl.to("#bridge-l3 em", { color: "#8C3D2C", duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 48.85);
+
+      // ── BEAT E — THE QUESTION (49.62s → scene end) ───────────────────
+      // Bridge dims after "In public" hero moment lands
+      tl.to("#bridge-h3", { opacity: 0, y: -18, duration: 0.55, ease: "power2.in" }, 49.80);
+
+      // cta-q-inner slides in at 49.62; clip wrapper (track 8) always visible
+      // #cta-question PERSISTS to scene end (engagement-cta.md)
+      tl.to("#cta-q-inner", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 49.62);
+      // Answer pills — step-by-step ~1.5s apart (51 → 52.5 → 54)
+      tl.to("#pill-1", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 51.0);
+      tl.to("#pill-2", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 52.5);
+      tl.to("#pill-3", { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 54.0);
+      // Visual-pacing beat at 57.5s: subtle pulse on "you" italic
+      tl.to("#cta-q-text em", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 57.5);
+      // "Drop your pick below" caption at 60.46
+      tl.to("#drop-caption", { opacity: 1, duration: 0.5, ease: "power2.out" }, 60.46);
+      // cta-q-inner STAYS VISIBLE — persists to scene end (engagement-cta.md)
+
+      // ── YouTube end-screen safe-zone markers ─────────────────────────
+      // Last-~20s window opens at scene-rel t=51.99 (parent t≈535.05)
+      tl.to("#yt-safe-tr", { opacity: 0.45, duration: 0.6, ease: "power1.out" }, 51.99);
+      tl.to("#yt-safe-br", { opacity: 0.45, duration: 0.6, ease: "power1.out" }, 52.6);
+
+      // ── BEAT F — first-video callback card (62.79–68s) ───────────────
+      // cta-question remains; callback slides in from bottom
+      tl.to("#callback-card", { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.3)" }, 62.79);
+
+      // ── BEAT G — Dynamous outro hold (68.04–72.26s) ──────────────────
+      // At t=68.04 narration says "check out dynamous.ai". Scene holds with
+      // cta-q-inner + callback-card visible. Right half fully clear for
+      // root-level dynamous-discount-bubble (managed by index.html).
+      // Visual-pacing beat at ~70s to keep screen alive:
+      tl.to("#cta-q-text", { scale: 1.02, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center center" }, 70.0);
+
+      // ── Timeline extender ─────────────────────────────────────────────
+      tl.set({}, {}, 72.26);
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

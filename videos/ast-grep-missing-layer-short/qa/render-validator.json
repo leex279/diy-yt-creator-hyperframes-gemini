@@ -1,0 +1,69 @@
+{
+  "agent": "video-render-validator",
+  "slug": "ast-grep-missing-layer-short",
+  "summary": {
+    "lint_errors": 0,
+    "lint_warnings": 0,
+    "validate_aa_failures": 2,
+    "inspect_overflow_count": 0,
+    "findings_by_severity": { "BLOCKER": 2, "HIGH": 2, "MEDIUM": 0, "LOW": 0 },
+    "verdict": "FAIL_BLOCKER"
+  },
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "BLOCKER",
+      "rule": "sub-composition-wiring-missing-clip-and-dimensions",
+      "location": "videos/ast-grep-missing-layer-short/index.html:198-244",
+      "summary": "All 8 sub-composition mounts are missing class=\"clip\", data-width, and data-height — studio will silently load nothing (duration shows 0:00/0:00)",
+      "evidence": "Lines 198-244: scene-marker-wrap, scene-string-literal-wrap, scene-chart-wrap, scene-stat-wrap, scene-compare-wrap, scene-process-flow-wrap, scene-code-block-wrap, scene-cta-wrap all have data-composition-src and data-composition-id but lack class=\"clip\", data-width=\"1080\", and data-height=\"1920\". Each child file's html body is 1080x1920 (confirmed via grep). data-duration is also absent on all 8 mounts (the child timelines use tl.set({},{},N) to own their lengths, ranging 11.0s to 22.5s — but the parent mounts must still declare class=\"clip\" and dimensions for the studio to wire the slot).",
+      "fix": "Add class=\"clip\" data-width=\"1080\" data-height=\"1920\" to each of the 8 scene-*-wrap divs. Do NOT add data-duration (the child's internal timeline owns its length per sub-composition-wiring.md). Example for scene-marker-wrap:\n  <div id=\"scene-marker-wrap\" class=\"scene-wrapper clip\"\n       data-composition-id=\"scene-marker\"\n       data-composition-src=\"compositions/scene-marker.html\"\n       data-start=\"0\"\n       data-track-index=\"1\"\n       data-width=\"1080\"\n       data-height=\"1920\"></div>",
+      "auto_fixable": true
+    },
+    {
+      "id": "R-002",
+      "severity": "BLOCKER",
+      "rule": "composition-duration-lt-narration",
+      "location": "videos/ast-grep-missing-layer-short/index.html:163",
+      "summary": "Root composition duration (127.5s) is shorter than narration.wav (127.7s) by 0.2s — MP4 will cut off mid-sentence",
+      "evidence": "npx hyperframes compositions reports main = 127.5s. ffprobe reports narration.wav = 127.704014s. Delta = 0.204s which exceeds the 0.0s safety margin (rule threshold is 0.5s but composition must be >= narration). The tl.to({},{duration:0.01},129.99) extender sets TOTAL_DURATION=130 for the root timeline but the audio element has data-duration=\"127.5\" which is what hyperframes compositions reads as the clip boundary.",
+      "fix": "The TOTAL_DURATION constant in index.html is already 130 and tl.to({},{duration:0.01},129.99) pads to 130s. The issue is the audio element: <audio data-duration=\"127.5\"> should be data-duration=\"128\" (round up to cover 127.704s). Alternatively keep 127.5 but confirm hyperframes compositions is reading the audio clip boundary not the tl extender — if the render uses the tl.to() extender at 130s this may be a display artifact only. Safest fix: bump data-duration on the audio to 128 and verify with npx hyperframes compositions after change.",
+      "auto_fixable": false
+    },
+    {
+      "id": "R-003",
+      "severity": "HIGH",
+      "rule": "wcag-aa-contrast-failure-ui-element",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-cta.html (rendered at t=117s)",
+      "summary": "#cta-url \"Long-form: ast-grep deep-dive →\" — 1.3:1 contrast ratio, needs 3:1 for AA",
+      "evidence": "npx hyperframes validate reported: #cta-url \"Long-form: ast-grep deep-dive →\" — 1.3:1 (need 3:1, t=117s). This is a UI link element (not decorative text), so AA applies. Current color likely near-white text on a light cream background or vice versa.",
+      "fix": "Darken the text color of #cta-url to achieve at least 3:1 against its background. For the editorial cream palette (--bg ≈ #F5F0E8), use the terracotta accent (--accent ≈ #C4502A) or near-black (--text ≈ #1C1A18) which both clear 4.5:1 AA. Run npx hyperframes validate to confirm after change.",
+      "auto_fixable": false
+    },
+    {
+      "id": "R-004",
+      "severity": "HIGH",
+      "rule": "wcag-aa-contrast-failure-ui-element",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-marker.html or scene-cta.html (rendered at t=65s)",
+      "summary": "span.ribbon \"ast-grep\" — 1.17:1 contrast ratio, needs 3:1 for AA",
+      "evidence": "npx hyperframes validate reported: span.ribbon \"ast-grep\" — 1.17:1 (need 3:1, t=65s). The ribbon marker highlight element has near-identical foreground and background colors, making the text inside it illegible.",
+      "fix": "The .ribbon span text color needs to contrast at least 3:1 against the ribbon background color. If the ribbon background is terracotta (--accent), use white (#FFFFFF) or the cream bg (#F5F0E8) for the text — both clear 3.5:1+ against typical terracotta. If the ribbon is cream-on-cream, switch text to --text (near-black). Run npx hyperframes validate to confirm after change.",
+      "auto_fixable": false
+    }
+  ],
+  "raw": {
+    "lint_json_path": "stdout (ran npx hyperframes lint --json, 0 errors, 0 warnings, 0 findings, 23 info items)",
+    "validate_summary": "2 AA failures: span.ribbon 1.17:1 at t=65s; #cta-url 1.3:1 at t=117s",
+    "inspect_summary": "0 layout overflow across 9 timeline samples",
+    "font_family_var_grep": "no matches — font-family: var(--sans|--mono|--serif) not present in any HTML file",
+    "sub_composition_id_check": "all 8 parent data-composition-id values match child file data-composition-id values exactly (scene-marker, scene-string-literal, scene-chart, scene-stat, scene-compare, scene-process-flow, scene-code-block, scene-cta)",
+    "sub_composition_missing_attrs": "ALL 8 mounts missing class=\"clip\", data-width, data-height",
+    "video_sources_check": "no <video> elements found — not applicable",
+    "audio_sources_check": "audio/narration.wav exists (127.7s, ~11MB) — src present and resolvable",
+    "composition_duration_s": 127.5,
+    "narration_duration_s": 127.704,
+    "backdrop_filter_check": "1 occurrence only: index.html:140 blur(6px) on #source-url — single layer, radius well under 64px limit — PASS",
+    "image_check": "no PNG/JPG/WEBP/GIF images in assets/ — only SVG shape files and no oversized bitmaps",
+    "render_filename_check": "README.md line 112 uses 'out/$SLUG.mp4' — correct slug-based naming"
+  }
+}

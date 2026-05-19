@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v12 — Token counter split</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 800px 600px at 25% 50%, rgba(255,80,60,0.16), transparent 70%),
+      radial-gradient(ellipse 800px 600px at 75% 50%, rgba(78,201,176,0.16), transparent 70%),
+      var(--bg-deep);
+  }
+  #top-banner {
+    position: absolute; top: 50px; left: 0; right: 0;
+    text-align: center; z-index: 10;
+  }
+  #banner-overline {
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--fg-muted); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 10px;
+  }
+  #banner-slam {
+    font-family: var(--font-sans); font-weight: 900; font-size: 128px;
+    line-height: 0.88; color: #fff; letter-spacing: -0.045em;
+    text-shadow: 0 6px 24px rgba(0,0,0,0.65);
+  }
+  #banner-slam .ast { color: var(--ast-yellow); }
+  #counters {
+    position: absolute; bottom: 50px; left: 56px; right: 56px;
+    display: flex; gap: 24px; align-items: stretch;
+    z-index: 10;
+  }
+  .counter-card {
+    flex: 1; min-height: 320px;
+    border-radius: 18px;
+    padding: 28px 32px;
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+  .counter-card.red {
+    background: linear-gradient(160deg, rgba(255,60,60,0.20), rgba(120,15,15,0.10));
+    border: 2px solid rgba(255,80,80,0.6);
+  }
+  .counter-card.green {
+    background: linear-gradient(160deg, rgba(78,201,176,0.20), rgba(0,80,60,0.10));
+    border: 2px solid rgba(78,201,176,0.6);
+  }
+  .counter-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .counter-tool {
+    font-family: var(--font-mono); font-weight: 800; font-size: 38px;
+    letter-spacing: -0.02em;
+  }
+  .red .counter-tool { color: #ff7676; }
+  .green .counter-tool { color: var(--ok); }
+  .counter-badge {
+    font-family: var(--font-mono); font-size: 14px;
+    padding: 5px 10px; border-radius: 6px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .red .counter-badge { background: rgba(255,77,77,0.25); color: #ff8a8a; border: 1px solid rgba(255,80,80,0.55); }
+  .green .counter-badge { background: rgba(78,201,176,0.25); color: var(--ok); border: 1px solid rgba(78,201,176,0.55); }
+  .counter-val {
+    font-family: var(--font-mono); font-weight: 800;
+    font-size: 130px; line-height: 0.9; letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  .red .counter-val { color: #ff6666; text-shadow: 0 4px 24px rgba(255,80,80,0.4); }
+  .green .counter-val { color: var(--ok); text-shadow: 0 4px 24px rgba(78,201,176,0.4); }
+  .counter-tokens-sub {
+    font-family: var(--font-mono); font-size: 19px;
+    font-weight: 600; opacity: 0.85;
+  }
+  .red .counter-tokens-sub { color: #ffb0b0; }
+  .green .counter-tokens-sub { color: #b3ead9; }
+  .counter-arrow {
+    margin-top: auto;
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 26px; font-weight: 800;
+  }
+  .red .counter-arrow { color: #ff6666; }
+  .green .counter-arrow { color: var(--ok); }
+  .center-divider {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 12;
+    width: 78px; height: 78px;
+    border-radius: 50%;
+    background: var(--bg-deep);
+    border: 2px solid var(--fg-bright);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 800; font-size: 26px;
+    color: var(--fg-bright);
+    box-shadow: 0 0 24px rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="top-banner">
+    <div id="banner-overline">same refactor · same codebase</div>
+    <div id="banner-slam">grep <span style="opacity:0.5;font-weight:700;">vs</span> <span class="ast">ast-grep</span></div>
+  </div>
+  <div id="counters">
+    <div class="counter-card red">
+      <div class="counter-head">
+        <div class="counter-tool">grep</div>
+        <div class="counter-badge">tokens</div>
+      </div>
+      <div class="counter-val">11,200</div>
+      <div class="counter-tokens-sub">22 files opened · 10 are fakes</div>
+      <div class="counter-arrow">&uarr; rising</div>
+    </div>
+    <div class="counter-card green">
+      <div class="counter-head">
+        <div class="counter-tool">ast-grep</div>
+        <div class="counter-badge">tokens</div>
+      </div>
+      <div class="counter-val">5,600</div>
+      <div class="counter-tokens-sub">12 files opened · all real calls</div>
+      <div class="counter-arrow">&darr; ~half</div>
+    </div>
+    <div class="center-divider">VS</div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

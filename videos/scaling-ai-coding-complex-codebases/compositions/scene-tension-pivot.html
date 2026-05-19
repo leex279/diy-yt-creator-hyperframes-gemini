@@ -1,5 +1,5 @@
-﻿<!--
-  scene-tension-pivot.html â€” Tension headline + side comparison card.
+<!--
+  scene-tension-pivot.html — Tension headline + side comparison card.
   Left: weight-contrast headline (300 / 800). Right: A vs B card comparing
   a "2,000-line file with 3 imports" vs "500-line file imported by 20".
 -->
@@ -201,7 +201,10 @@
       tl.to("#tn-pivot", { textShadow: "0 0 50px rgba(59, 130, 246, 0.7)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 15.0);
 
       // Extend timeline
-      tl.set({}, {}, 20);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#tn-card-good", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 12.50);
+
+      tl.set({}, {}, 13.4);
       window.__timelines["scene-tension-pivot"] = tl;
     </script>
   </div>

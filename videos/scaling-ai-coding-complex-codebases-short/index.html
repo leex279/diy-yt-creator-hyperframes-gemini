@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Dynamous-Slides Shorts Template</title>
+<link rel="stylesheet" href="tokens/dynamous-short.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1080x1920 deep-navy Dynamous stage.
+     Mirrors templates/long-form/dynamous-slides/index.html
+     scaled to vertical. Sub-composition architecture:
+     each scene is a self-contained .html under compositions/
+     with its own paused timeline registered on
+     window.__timelines[<scene-id>]. The root orchestrates
+     ambient + chrome + scene crossfades.
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Montserrat', system-ui, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient triple-radial breath (blue + cyan + deep halo) */
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 22% 14%, rgba(59, 130, 246, 0.18), transparent 55%),
+      radial-gradient(circle at 80% 86%, rgba(14, 165, 233, 0.12), transparent 60%),
+      radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.06), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Hairline grid, radial-masked — anchors the stage */
+  #grid-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(96, 165, 250, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(96, 165, 250, 0.07) 1px, transparent 1px);
+    background-size: 96px 96px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 30%, transparent 100%);
+            mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 30%, transparent 100%);
+  }
+
+  /* Shape backdrop — real Dynamous icon scattered, very low opacity */
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.05;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 24px rgba(59, 130, 246, 0.18));
+  }
+
+  /* Two large blue/cyan halo orbs */
+  #bg-halo {
+    position: absolute;
+    top: -340px; right: -340px;
+    width: 1100px; height: 1100px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.32;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
+    filter: blur(40px);
+  }
+  #bg-halo-2 {
+    position: absolute;
+    bottom: -400px; left: -300px;
+    width: 1000px; height: 1000px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+    background: radial-gradient(circle, var(--accent-3) 0%, transparent 60%);
+    filter: blur(40px);
+  }
+
+  /* Cinematic edge-darkening */
+  #vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 7;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+
+  /* SVG film-grain overlay */
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+  }
+
+  /* Top-center Dynamous wordmark (mobile-safe — 240px top safe zone) */
+  #top-banner {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1080px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  #top-banner-logo {
+    height: 56px;
+    width: auto;
+    display: block;
+    opacity: 0.95;
+  }
+
+  /* Slim Dynamous-Blue progress bar */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1080px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.75);
+  }
+
+  /* Scene wrappers — first visible, rest hidden until crossfade */
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: 1;
+  }
+  #scene-hook-wrap            { z-index: 1; opacity: 1; }
+  #scene-headline-accent-wrap { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-big-stat-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-tension-pivot-wrap   { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-list-reveal-wrap     { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-quote-card-wrap      { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap             { z-index: 1; opacity: 0; visibility: hidden; }
+
+  /* Flash overlay — GSAP-driven only on hero pivot + CTA landing */
+  #flash-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.9) 0%, rgba(59, 130, 246, 0.4) 30%, transparent 70%);
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="68"
+     data-width="1080"
+     data-height="1920">
+
+  <!-- Background stack -->
+  <div id="ambient"></div>
+  <div id="grid-bg"></div>
+  <div id="shape-backdrop"></div>
+  <div id="bg-halo"></div>
+  <div id="bg-halo-2"></div>
+
+  <!-- Top-center Dynamous wordmark -->
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/dynamous-logo-light.svg" alt="Dynamous AI Mastery" />
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCENE WRAPPERS — seven archetypes adapted from the
+       Dynamous long-form scene catalog. Default 80s total.
+       data-start values cover a 1-2min Short layout; operators
+       retime per video (transcript word-anchors).
+
+       Sub-composition wrapper rules
+       (.claude/rules/sub-composition-wiring.md):
+         - parent data-composition-id MUST match child's internal id
+         - parent needs class="clip" + data-start + data-duration +
+           data-track-index + data-width + data-height
+       ═══════════════════════════════════════════════════════ -->
+
+  <div id="scene-hook-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-hook-wordmark"
+       data-composition-src="compositions/scene-hook-wordmark.html"
+       data-start="0"
+       data-duration="6.52"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-headline-accent-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-headline-accent"
+       data-composition-src="compositions/scene-headline-accent.html"
+       data-start="6.52"
+       data-duration="8.10"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-big-stat-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-big-stat"
+       data-composition-src="compositions/scene-big-stat.html"
+       data-start="14.62"
+       data-duration="6.56"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-tension-pivot-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-tension-pivot"
+       data-composition-src="compositions/scene-tension-pivot.html"
+       data-start="21.18"
+       data-duration="6.02"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-list-reveal-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-list-reveal"
+       data-composition-src="compositions/scene-list-reveal.html"
+       data-start="27.20"
+       data-duration="23.27"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-quote-card-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-quote-card"
+       data-composition-src="compositions/scene-quote-card.html"
+       data-start="50.48"
+       data-duration="5.99"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper clip"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="56.47"
+       data-duration="11.53"
+       data-track-index="1"
+       data-width="1080"
+       data-height="1920"></div>
+
+  <!-- Flash overlay (z-index 6, under captions+chrome) -->
+  <div id="flash-overlay"></div>
+
+  <!-- Narration (ElevenLabs Cole voice, pcm_24000, 66.50s) -->
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="66.50"
+         data-track-index="2"
+         data-volume="0.9"></audio>
+
+  <!-- Cinematic whoosh — fires at every scene transition (audio-design.md) -->
+  <audio id="sfx-whoosh-t1" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="6.52"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t2" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="14.62" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t3" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="21.18" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t4" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="27.20" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t5" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="50.48" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-t6" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="56.47" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <!-- Strike-cross SFX — fires with the visual strikethrough on "File size."
+       Tension-pivot starts at 21.18; strike GSAP tween at scene-rel 1.5s = abs 22.68s.
+       Track 4 to avoid overlap with whoosh-t3 (ends 22.68 exactly). -->
+  <audio id="sfx-strike-cross" class="clip" src="assets/sfx/strike-cross.mp3" data-start="22.68" data-duration="0.6" data-track-index="4" data-volume="0.11"></audio>
+
+  <!-- Film-grain overlay -->
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+
+  <div id="vignette"></div>
+</div>
+
+<script>
+  // Deterministic seeded scatter for shape backdrop (no Math.random)
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function computeScatter(seedPrefix, count) {
+    const w = 1080, h = 1920, minSize = 180, sizeRange = 160;
+    const minDist = 320, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+    }
+    return placed;
+  }
+
+  function spawnShapes(seedPrefix, container, count) {
+    const scatter = computeScatter(seedPrefix, count);
+    const imgs = [];
+    for (let i = 0; i < count; i++) {
+      const s = scatter[i];
+      const img = document.createElement('img');
+      img.src = 'assets/dynamous-icon.png';
+      img.crossOrigin = 'anonymous';
+      img.style.cssText =
+        'left:' + (s.cx - s.size / 2) + 'px;' +
+        'top:' + (s.cy - s.size / 2) + 'px;' +
+        'width:' + s.size + 'px;' +
+        'height:' + s.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: s.rot });
+      imgs.push(img);
+    }
+    return imgs;
+  }
+
+  // Rearrange shape scatter on every scene boundary —
+  // per feedback_shape_rearrange_on_whoosh_default.md
+  function rearrangeShapes(tl, imgs, seedPrefix, atTime) {
+    const scatter = computeScatter(seedPrefix, imgs.length);
+    imgs.forEach((img, i) => {
+      const s = scatter[i];
+      tl.to(img, {
+        left:   s.cx - s.size / 2,
+        top:    s.cy - s.size / 2,
+        width:  s.size,
+        height: s.size,
+        rotation: s.rot,
+        x: 0, y: 0,
+        duration: 0.9,
+        ease: "power2.inOut"
+      }, atTime + i * 0.04);
+    });
+  }
+
+  // Scene-wrapper crossfade with optional flash flag
+  function crossfadeScenes(tl, fromSel, toSel, atTime, flash) {
+    tl.to(fromSel, { filter: "blur(18px)", scale: 1.03, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(18px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+
+    if (flash) {
+      tl.to("#flash-overlay", { opacity: 0.55, duration: 0.18, ease: "power2.out", overwrite: "auto" }, atTime + 0.35);
+      tl.to("#flash-overlay", { opacity: 0,    duration: 0.45, ease: "power2.in",  overwrite: "auto" }, atTime + 0.55);
+    }
+  }
+
+  // Root timeline construction
+  const SHAPE_COUNT = 11;
+  const shapeImgs = spawnShapes('scene-0', document.getElementById('shape-backdrop'), SHAPE_COUNT);
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 68;
+  const tl = gsap.timeline({ paused: true });
+
+  // Ambient breath — slow yoyo cycles across composition
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 17, ease: "sine.inOut", yoyo: true, repeat: 3 },
+    0);
+
+  tl.to("#bg-halo",
+    { opacity: 0.48, scale: 1.06, duration: 18, ease: "sine.inOut",
+      yoyo: true, repeat: 2, transformOrigin: "50% 50%" },
+    0);
+  tl.to("#bg-halo-2",
+    { opacity: 0.34, scale: 1.05, duration: 22, ease: "sine.inOut",
+      yoyo: true, repeat: 2, transformOrigin: "50% 50%" },
+    0);
+
+  // Linear progress fill
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1080, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top banner fade-in
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  // Scene labels — anchored to transcript word-times (see transcript.json)
+  tl.addLabel("hook",              0)
+    .addLabel("headline-accent",   6.52)
+    .addLabel("big-stat",         14.62)
+    .addLabel("tension-pivot",    21.18)
+    .addLabel("list-reveal",      27.20)
+    .addLabel("quote-card",       50.48)
+    .addLabel("cta",              56.47);
+
+  // Shape rearrange on every scene boundary
+  const SCENE_TIMES = [6.52, 14.62, 21.18, 27.20, 50.48, 56.47];
+  SCENE_TIMES.forEach((t, idx) => {
+    rearrangeShapes(tl, shapeImgs, 'scene-' + (idx + 1), t - 0.05);
+  });
+
+  // Crossfades — flash:true on hero pivot + CTA landing
+  crossfadeScenes(tl, "#scene-hook-wrap",            "#scene-headline-accent-wrap", "headline-accent-=0.4", false);
+  crossfadeScenes(tl, "#scene-headline-accent-wrap", "#scene-big-stat-wrap",        "big-stat-=0.4",        false);
+  crossfadeScenes(tl, "#scene-big-stat-wrap",        "#scene-tension-pivot-wrap",   "tension-pivot-=0.4",   true);
+  crossfadeScenes(tl, "#scene-tension-pivot-wrap",   "#scene-list-reveal-wrap",     "list-reveal-=0.4",     false);
+  crossfadeScenes(tl, "#scene-list-reveal-wrap",     "#scene-quote-card-wrap",      "quote-card-=0.4",      false);
+  crossfadeScenes(tl, "#scene-quote-card-wrap",      "#scene-cta-wrap",             "cta-=0.4",             true);
+
+  // Pin timeline to TOTAL_DURATION so renderer captures the closing tail
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

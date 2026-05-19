@@ -52,6 +52,8 @@ These are NOT heteronyms but consistent TTS failures on our content.
 | `CI/CD` | see-eye-stroke-see-dee | C I C D | Spell as `C I C D` |
 | `OK` | oh-kay (sometimes oh-kuh) | okay | Spell as `okay` |
 | `dynamous.ai` | dynamous-AY-EYE | dynamous-dot-AY-EYE | Spell as `dynamous dot AI` (already enforced by phase 2a) |
+| `debug` | DEH-bug (rhymes with "dead-bug") | DEE-bug (long-e + bug) | Spell as `dee-bug` in TTS scripts. Confirmed consistent failure on `eleven_multilingual_v2` across multiple chunks (incl. `ast-grep-missing-layer` "debug logs"). Visual labels in the HTML can keep the normal spelling — only the spoken script needs the respell. |
+| `CLAUDE.md` | C-L-A-U-D-E dot M D (if spelled as caps) | claude-dot-M-D | Spell as `Claude dot M D` in TTS scripts. NEVER spell out the letters of "Claude" — it's a brand word, pronounced as one syllable (/klɔːd/). The `.md` extension is fine to letter-spell. Visual labels in HTML keep the canonical `CLAUDE.md` spelling. Same pattern applies to other brand-word-plus-extension constructs (`README.md` → `readme dot M D`, `AGENTS.md` → `agents dot M D`). |
 
 These are NOT exhaustive. Every new tech term encountered should be probe-tested with a single-chunk TTS before committing the whole script.
 

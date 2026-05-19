@@ -1,0 +1,250 @@
+<!--
+  scene-cta.html — Debate question + dynamous endcard.
+  (73.0–92.5s, scene-rel 0–19.5s).
+  Beats (transcript scene-rel = abs - 73.0):
+    0.00  — "So which side are you on?" → headline slam
+    2.09  — "Markdown for everything." → option pill 1
+    3.36  — "HTML for everything."     → option pill 2
+    5.70  — "Or the hybrid."           → option pill 3
+    7.02  — "Drop your pick below."    → comments pull-strip
+    8.52  — "Full video has all the receipts. Link in description." → watch card
+   13.31  — "And if you want to learn more about A I, check out the dynamous dot A I community." → dynamous endcard
+   16.0+  — final frame held static ≥1.5s (thumbnail-grade per
+            .claude/rules/shorts-thumbnail-frames.md)
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Source Serif 4', 'Playfair Display', Georgia, serif; color:var(--text);">
+
+    <style>
+      #cta-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .cta-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .cta-question {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-style: italic;
+        font-size: 140px;
+        line-height: 0.92;
+        letter-spacing: -2px;
+        color: var(--text);
+        margin-top: 4px;
+      }
+      .cta-question .cta-em {
+        color: var(--accent-1);
+        font-style: italic;
+      }
+      .cta-options {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 6px;
+      }
+      .cta-option {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 34px;
+        letter-spacing: 2px;
+        padding: 18px 24px;
+        border-radius: 18px;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .cta-option.is-md   { border-color: var(--accent-3); }
+      .cta-option.is-html { border-color: var(--accent-1); }
+      .cta-option.is-hyb  { border-color: var(--accent-2); }
+      .cta-option-marker {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 900;
+        font-size: 28px;
+        letter-spacing: 0;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: var(--bg-surface);
+        color: var(--accent-1);
+        border: 1px solid var(--border);
+      }
+      .cta-prompt {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 700;
+        font-size: 40px;
+        line-height: 1.15;
+        color: var(--accent-1);
+        margin-top: 4px;
+      }
+      .cta-watch {
+        background: #C75A3F;
+        color: #FBF8F1;
+        border: 3px solid #C75A3F;
+        border-radius: 22px;
+        padding: 22px 28px;
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-style: italic;
+        font-size: 56px;
+        line-height: 1.0;
+        letter-spacing: -1px;
+        text-align: center;
+        margin-top: 6px;
+        box-shadow: 0 14px 40px rgba(199, 90, 63, 0.30);
+      }
+      .cta-watch-arrow {
+        display: inline-block;
+        margin-left: 10px;
+      }
+      .cta-endcard {
+        position: relative;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px 20px;
+      }
+      /* Werbung disclosure badge — German UWG / RStV ad-disclosure
+         compliance. Required for every on-screen promo (Dynamous,
+         Hostinger, any affiliate / sponsored partner). See
+         .claude/rules/werbung-disclosure.md. */
+      .cta-werbung {
+        position: absolute;
+        top: -22px;
+        right: -8px;
+        background: #dc2626;
+        color: #ffffff;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 800;
+        padding: 8px 16px;
+        border-radius: 8px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.30);
+      }
+      .cta-endcard-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .cta-endcard-name {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 800;
+        font-size: 32px;
+        color: var(--text);
+      }
+      .cta-endcard-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 1px;
+        color: var(--accent-1);
+        margin-left: auto;
+      }
+    </style>
+
+    <div id="cta-content">
+      <div class="cta-overline" id="cta-overline">YOUR PICK BELOW</div>
+
+      <div class="cta-question" id="cta-question">
+        <span id="cta-q1">Which side </span><br/><span class="cta-em" id="cta-q-em">are you on?</span>
+      </div>
+
+      <div class="cta-options">
+        <div class="cta-option is-md" id="cta-opt-1">
+          <span class="cta-option-marker">A</span> Markdown for everything
+        </div>
+        <div class="cta-option is-html" id="cta-opt-2">
+          <span class="cta-option-marker">B</span> HTML for everything
+        </div>
+        <div class="cta-option is-hyb" id="cta-opt-3">
+          <span class="cta-option-marker">C</span> The hybrid &mdash; MD for agents, HTML for humans
+        </div>
+      </div>
+
+      <div class="cta-prompt" id="cta-prompt">&darr; Drop your pick below.</div>
+
+      <div class="cta-watch" id="cta-watch" style="color:#FBF8F1; background:#C75A3F;">
+        <span style="color:#FBF8F1;">Watch the full video</span><span class="cta-watch-arrow" style="color:#FBF8F1;">&rarr;</span>
+      </div>
+
+      <div class="cta-endcard" id="cta-endcard">
+        <!-- Werbung disclosure — mandatory for German UWG/RStV compliance.
+             Rule: .claude/rules/werbung-disclosure.md. -->
+        <span class="cta-werbung" id="cta-werbung" style="color:#ffffff; background:#dc2626;">Werbung</span>
+        <span class="cta-endcard-label">Learn more</span>
+        <span class="cta-endcard-name">dynamous.ai</span>
+        <span class="cta-endcard-url">community</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      const opts = ["#cta-opt-1","#cta-opt-2","#cta-opt-3"];
+
+      tl.set("#cta-overline", { y: -8, opacity: 0 }, 0);
+      tl.set("#cta-q1",       { y: 16, opacity: 0 }, 0);
+      tl.set("#cta-q-em",     { y: 24, opacity: 0, scale: 0.85, filter: "blur(15px)" }, 0);
+      opts.forEach(s => tl.set(s, { y: 12, opacity: 0, scale: 0.85 }, 0));
+      tl.set("#cta-prompt",   { y: 12, opacity: 0 }, 0);
+      tl.set("#cta-watch",    { y: 24, opacity: 0, scale: 0.92 }, 0);
+      tl.set("#cta-endcard",  { y: 16, opacity: 0 }, 0);
+
+      tl.to("#cta-overline", { y: 0, opacity: 1, duration: 0.4 }, 0.04);
+      tl.to("#cta-q1",       { y: 0, opacity: 1, duration: 0.55 }, 0.04);
+      tl.to("#cta-q-em",     { y: 0, opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "back.out(1.6)" }, 0.45);
+
+      // Options paced to spoken list "Markdown for everything / HTML / hybrid"
+      tl.to("#cta-opt-1", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 2.09);
+      tl.to("#cta-opt-2", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 3.36);
+      tl.to("#cta-opt-3", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 5.70);
+
+      tl.to("#cta-prompt", { y: 0, opacity: 1, duration: 0.45 }, 7.02);
+
+      // Watch card lands at "Full video has all the receipts"
+      tl.to("#cta-watch", { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, 8.52);
+      tl.to("#cta-watch", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 9.20);
+
+      // Dynamous endcard lands at "And if you want to learn more about AI..."
+      tl.to("#cta-endcard", { y: 0, opacity: 1, duration: 0.55 }, 13.31);
+      tl.to("#cta-endcard", { scale: 1.02, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 13.95);
+
+      // Final frame: every element settles by ~14.3s, then static hold.
+      // Last entrance at 13.31 + 0.55 = 13.86. Static hold from 14.3 to 19.5s
+      // = ~5.2s — gives YouTube a long thumbnail-grade window.
+
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

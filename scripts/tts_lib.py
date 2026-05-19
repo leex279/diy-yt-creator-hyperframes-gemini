@@ -159,6 +159,29 @@ def clean_sync_data(words_data: list[dict]) -> list[dict]:
 # Calibrated against single-call ElevenLabs output — see module docstring.
 DEFAULT_INTER_CHUNK_SILENCE_MS = 650
 
+# ElevenLabs output format → PCM sample rate mapping. The Pro-tier-only
+# pcm_44100 default stays backwards-compatible; per-creator .env files can opt
+# down to pcm_24000 / pcm_22050 / pcm_16000 (Creator tier) by setting
+# ELEVENLABS_OUTPUT_FORMAT.
+DEFAULT_OUTPUT_FORMAT = "pcm_44100"
+SUPPORTED_OUTPUT_FORMATS: dict[str, int] = {
+    "pcm_44100": 44100,  # Pro tier
+    "pcm_24000": 24000,  # Creator tier
+    "pcm_22050": 22050,  # Creator tier
+    "pcm_16000": 16000,  # Creator tier
+}
+
+
+def output_format_to_rate(output_format: str) -> int:
+    """Resolve a supported ``output_format`` string to its sample rate in Hz."""
+    try:
+        return SUPPORTED_OUTPUT_FORMATS[output_format]
+    except KeyError:
+        raise ValueError(
+            f"Unsupported ELEVENLABS_OUTPUT_FORMAT={output_format!r}. "
+            f"Supported PCM formats: {sorted(SUPPORTED_OUTPUT_FORMATS)}"
+        ) from None
+
 
 def get_wav_duration(wav_path: str) -> float:
     """Read exact WAV duration in seconds via the standard library.
@@ -172,29 +195,29 @@ def get_wav_duration(wav_path: str) -> float:
     return frames / float(rate)
 
 
-def write_pcm_as_wav(pcm_bytes: bytes, out_path: str) -> None:
-    """Wrap raw 16-bit signed PCM @ 44.1kHz mono in a WAV container."""
+def write_pcm_as_wav(pcm_bytes: bytes, out_path: str, *, sample_rate: int = 44100) -> None:
+    """Wrap raw 16-bit signed PCM mono in a WAV container at ``sample_rate``."""
     with wave.open(out_path, "wb") as wav:
         wav.setnchannels(1)
         wav.setsampwidth(2)
-        wav.setframerate(44100)
+        wav.setframerate(sample_rate)
         wav.writeframes(pcm_bytes)
 
 
-def _read_pcm_frames(wav_path: str) -> bytes:
+def _read_pcm_frames(wav_path: str, *, expected_rate: int = 44100) -> bytes:
     """Read raw PCM frames from a WAV file, asserting expected codec params.
 
-    All inputs MUST be 16-bit signed PCM @ 44.1kHz mono — the format
-    ElevenLabs returns when ``output_format="pcm_44100"`` and what
+    All inputs MUST be 16-bit signed PCM mono at ``expected_rate`` — the
+    format ElevenLabs returns for the matching ``output_format`` and what
     ``write_pcm_as_wav`` writes. Mismatched params would silently produce
     garbled audio under raw concat, so we assert loudly instead.
     """
     with wave.open(wav_path, "rb") as w:
-        if (w.getnchannels(), w.getsampwidth(), w.getframerate()) != (1, 2, 44100):
+        if (w.getnchannels(), w.getsampwidth(), w.getframerate()) != (1, 2, expected_rate):
             raise ValueError(
                 f"{wav_path} has unexpected WAV params "
                 f"(channels={w.getnchannels()}, sampwidth={w.getsampwidth()}, "
-                f"rate={w.getframerate()}). Expected mono 16-bit @ 44.1kHz."
+                f"rate={w.getframerate()}). Expected mono 16-bit @ {expected_rate}Hz."
             )
         return w.readframes(w.getnframes())
 
@@ -203,18 +226,20 @@ def concat_wavs(
     chunk_paths: list[str],
     output_path: str,
     inter_chunk_silence_ms: int = 0,
+    *,
+    sample_rate: int = 44100,
 ) -> None:
     """Concatenate WAV chunks losslessly via raw PCM frame concatenation.
 
-    All inputs are 16-bit signed PCM @ 44.1kHz mono, so we read each file's
-    PCM frames, optionally splice in ``inter_chunk_silence_ms`` of zero-bytes
-    between chunks, and write a single new WAV. Bit-perfect by construction
-    — no encoding, no ffmpeg dependency. The pyhton ``wave`` module handles
-    the RIFF header parse/write.
+    All inputs are 16-bit signed PCM mono at ``sample_rate``, so we read each
+    file's PCM frames, optionally splice in ``inter_chunk_silence_ms`` of
+    zero-bytes between chunks, and write a single new WAV. Bit-perfect by
+    construction — no encoding, no ffmpeg dependency. The python ``wave``
+    module handles the RIFF header parse/write.
     """
     silence_frames = b""
     if inter_chunk_silence_ms > 0:
-        num_frames = int(round(44100 * inter_chunk_silence_ms / 1000.0))
+        num_frames = int(round(sample_rate * inter_chunk_silence_ms / 1000.0))
         silence_frames = b"\x00\x00" * num_frames
 
     out_path = Path(output_path)
@@ -224,9 +249,9 @@ def concat_wavs(
     for i, p in enumerate(chunk_paths):
         if i > 0 and silence_frames:
             pcm_parts.append(silence_frames)
-        pcm_parts.append(_read_pcm_frames(p))
+        pcm_parts.append(_read_pcm_frames(p, expected_rate=sample_rate))
 
-    write_pcm_as_wav(b"".join(pcm_parts), output_path)
+    write_pcm_as_wav(b"".join(pcm_parts), output_path, sample_rate=sample_rate)
 
 
 def merge_chunk_syncs(
@@ -276,18 +301,21 @@ def generate_chunk(
     model_id: str,
     voice_settings: VoiceSettings,
     pronunciation_dictionary_locators: list[dict] | None = None,
+    output_format: str = DEFAULT_OUTPUT_FORMAT,
 ) -> tuple[bytes, list[dict]]:
     """Generate audio for a single chunk and return raw PCM bytes + words.
 
     Uses ``convert_with_timestamps`` (not streaming) — sentences are 40-400
     chars, so streaming buys nothing. The caller is responsible for writing
-    the WAV (via ``write_pcm_as_wav``) and the per-chunk sync JSON.
+    the WAV (via ``write_pcm_as_wav``) and the per-chunk sync JSON. Default
+    ``output_format`` is Pro-tier ``pcm_44100``; pass ``pcm_24000`` etc. to
+    stay within Creator-tier limits.
     """
     resp = client.text_to_speech.convert_with_timestamps(
         voice_id=voice_id,
         text=text,
         model_id=model_id,
-        output_format="pcm_44100",
+        output_format=output_format,
         voice_settings=voice_settings,
         pronunciation_dictionary_locators=pronunciation_dictionary_locators,
     )
@@ -380,6 +408,7 @@ def generate_chunked(
     inter_chunk_silence_ms: int = DEFAULT_INTER_CHUNK_SILENCE_MS,
     force: bool = False,
     log: callable = print,
+    output_format: str = DEFAULT_OUTPUT_FORMAT,
 ) -> dict:
     """Full chunked-generation pipeline with auto-detect delta regen.
 
@@ -394,6 +423,7 @@ def generate_chunked(
     With ``force=True``, always regenerates every chunk regardless of
     history.
     """
+    sample_rate = output_format_to_rate(output_format)
     chunks_dir = chunks_dir_for(narration_wav)
     chunks_dir.mkdir(parents=True, exist_ok=True)
     history_path = history_path_for(transcript_json)
@@ -403,6 +433,14 @@ def generate_chunked(
         raise ValueError("split_into_chunks returned no chunks for input text")
 
     history = None if force else load_history(history_path)
+    # If the previous run used a different output_format, the cached chunk WAVs
+    # are at a different sample rate and cannot be safely concatenated. Force
+    # full regen rather than tripping the _read_pcm_frames assertion.
+    if history is not None and history.get("output_format", DEFAULT_OUTPUT_FORMAT) != output_format:
+        log(f"[tts] output_format changed "
+            f"({history.get('output_format', DEFAULT_OUTPUT_FORMAT)} → {output_format}) "
+            f"— forcing full regen")
+        history = None
     changed, unchanged = diff_chunks(new_chunks, history)
     if force:
         changed = list(range(len(new_chunks)))
@@ -432,8 +470,9 @@ def generate_chunked(
                 model_id=model_id,
                 voice_settings=voice_settings,
                 pronunciation_dictionary_locators=pronunciation_dictionary_locators,
+                output_format=output_format,
             )
-            write_pcm_as_wav(pcm_bytes, str(chunk_wav))
+            write_pcm_as_wav(pcm_bytes, str(chunk_wav), sample_rate=sample_rate)
             with open(chunk_sync, "w", encoding="utf-8") as f:
                 json.dump({"words": words}, f, indent=2)
             duration = get_wav_duration(str(chunk_wav))
@@ -460,6 +499,7 @@ def generate_chunked(
         chunk_paths,
         str(narration_wav),
         inter_chunk_silence_ms=inter_chunk_silence_ms,
+        sample_rate=sample_rate,
     )
 
     merged_words = merge_chunk_syncs(
@@ -483,6 +523,7 @@ def generate_chunked(
         },
         "pronunciation_dictionary_locators": pronunciation_dictionary_locators or [],
         "inter_chunk_silence_ms": inter_chunk_silence_ms,
+        "output_format": output_format,
         "chunks": history_entries,
     }
     with open(history_path, "w", encoding="utf-8") as f:

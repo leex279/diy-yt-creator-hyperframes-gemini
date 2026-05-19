@@ -1,0 +1,285 @@
+<!--
+  scene-source-cards.html — CHAPTER 1: The Startup Lifecycle, Rebooted for 2026 (~22s).
+  Chapter 1 graphic dominant hero + source authority cards. 12 narration-anchored beats.
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      #ch1-content {
+        width: 100%; height: 100%;
+        padding: 130px 60px 110px;
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 48px;
+        align-items: stretch;
+        box-sizing: border-box;
+      }
+      /* ─── LEFT: Chapter 1 hero ─── */
+      #ch1-left {
+        display: flex; flex-direction: column;
+        gap: 18px;
+        justify-content: center;
+      }
+      #ch1-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 24px;
+        letter-spacing: 8px;
+        text-transform: uppercase;
+        color: #E97458;
+        opacity: 0;
+      }
+      #ch1-title {
+        font-weight: 900;
+        font-size: 68px;
+        line-height: 1.0;
+        letter-spacing: -2px;
+        color: #F5F1EB;
+        opacity: 0;
+      }
+      #ch1-title .em { color: #A78BFA; }
+      #ch1-graphic-stage {
+        perspective: 2000px;
+        transform-style: preserve-3d;
+        margin-top: 8px;
+        position: relative;
+      }
+      #ch1-graphic {
+        width: 100%;
+        max-width: 720px;
+        border-radius: 18px;
+        border: 2px solid rgba(167, 139, 250, 0.45);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55),
+                    0 0 60px rgba(167, 139, 250, 0.22);
+        display: block;
+        transform-style: preserve-3d;
+        object-fit: cover;
+        aspect-ratio: 4 / 3;
+        opacity: 0;
+      }
+      /* "You are here" chapter progress dots */
+      #ch1-progress {
+        display: flex; flex-direction: row;
+        gap: 12px; margin-top: 14px;
+        opacity: 0;
+      }
+      .ch1-dot {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: rgba(245,241,235,0.18);
+      }
+      .ch1-dot.active {
+        background: #E97458;
+        box-shadow: 0 0 14px rgba(233,116,88,0.7);
+      }
+      .ch1-progress-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 16px;
+        letter-spacing: 3px; color: #9A958D;
+        margin-left: 12px;
+        align-self: center;
+      }
+
+      /* ─── RIGHT: source authority stack ─── */
+      #ch1-right {
+        display: flex; flex-direction: column;
+        gap: 14px;
+        justify-content: center;
+      }
+      .ch1-card {
+        display: flex; flex-direction: row;
+        align-items: center; gap: 18px;
+        padding: 18px 22px;
+        border-radius: 16px;
+        background: rgba(14,18,26,0.85);
+        border: 1.5px solid rgba(245,241,235,0.14);
+        opacity: 0;
+      }
+      .ch1-card.accent-orange { border-color: rgba(233,116,88,0.45); }
+      .ch1-card.accent-purple { border-color: rgba(167,139,250,0.45); }
+      .ch1-card.accent-blue   { border-color: rgba(107,154,239,0.45); }
+      .ch1-card.accent-green  { border-color: rgba(125,211,166,0.45); }
+      .ch1-icon {
+        width: 56px; height: 56px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 28px;
+        flex-shrink: 0;
+      }
+      .ch1-card.accent-orange .ch1-icon { background: rgba(233,116,88,0.18); color: #E97458; }
+      .ch1-card.accent-purple .ch1-icon { background: rgba(167,139,250,0.18); color: #A78BFA; }
+      .ch1-card.accent-blue   .ch1-icon { background: rgba(107,154,239,0.18); color: #6B9AEF; }
+      .ch1-card.accent-green  .ch1-icon { background: rgba(125,211,166,0.18); color: #7DD3A6; }
+      .ch1-card-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+      .ch1-card-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 13px; letter-spacing: 3px;
+        color: #9A958D; text-transform: uppercase;
+      }
+      .ch1-card-value {
+        font-weight: 800; font-size: 28px;
+        line-height: 1.1; color: #F5F1EB;
+      }
+      .ch1-card-value .num {
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .ch1-card.accent-orange .ch1-card-value .num { color: #E97458; }
+      .ch1-card.accent-purple .ch1-card-value .num { color: #A78BFA; }
+      .ch1-card.accent-blue   .ch1-card-value .num { color: #6B9AEF; }
+      .ch1-card.accent-green  .ch1-card-value .num { color: #7DD3A6; }
+
+      /* Ban pills row at bottom */
+      .ch1-ban-row {
+        display: flex; flex-direction: row;
+        gap: 10px;
+        margin-top: 4px;
+      }
+      .ch1-ban-pill {
+        flex: 1;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(209,67,67,0.10);
+        border: 1.5px solid rgba(209,67,67,0.40);
+        display: flex; align-items: center; gap: 10px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 14px;
+        letter-spacing: 1px; color: #FF7C7C;
+        opacity: 0;
+      }
+      .ch1-ban-x {
+        width: 24px; height: 24px;
+        border-radius: 6px;
+        background: #D14343;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 16px; font-weight: 900;
+        flex-shrink: 0;
+      }
+    </style>
+
+    <div id="ch1-content">
+      <div id="ch1-left">
+        <div id="ch1-overline">CHAPTER 1 &middot; PDF p.3</div>
+        <div id="ch1-title">The startup lifecycle, <span class="em">rebooted for 2026.</span></div>
+        <div id="ch1-graphic-stage">
+          <img id="ch1-graphic" src="assets/chapter-icons/chapter-1-lifecycle.png" alt="Chapter 1 — The startup lifecycle, rebooted for 2026" />
+        </div>
+        <div id="ch1-progress">
+          <div class="ch1-dot active"></div>
+          <div class="ch1-dot"></div>
+          <div class="ch1-dot"></div>
+          <div class="ch1-dot"></div>
+          <div class="ch1-dot"></div>
+          <div class="ch1-dot"></div>
+          <div class="ch1-dot"></div>
+          <span class="ch1-progress-label">1 / 7</span>
+        </div>
+      </div>
+
+      <div id="ch1-right">
+        <div class="ch1-card accent-orange" id="ch1-card-version">
+          <div class="ch1-icon">v3</div>
+          <div class="ch1-card-body">
+            <div class="ch1-card-label">EDITION</div>
+            <div class="ch1-card-value"><span class="num">v3</span> &middot; May 6 2026</div>
+          </div>
+        </div>
+        <div class="ch1-card accent-purple" id="ch1-card-author">
+          <div class="ch1-icon">&#x2735;</div>
+          <div class="ch1-card-body">
+            <div class="ch1-card-label">PUBLISHER</div>
+            <div class="ch1-card-value">Anthropic &middot; Applied AI</div>
+          </div>
+        </div>
+        <div class="ch1-card accent-blue" id="ch1-card-pages">
+          <div class="ch1-icon">&#x1F4D6;</div>
+          <div class="ch1-card-body">
+            <div class="ch1-card-label">SCOPE</div>
+            <div class="ch1-card-value"><span class="num" id="ch1-pages-num">0</span> pages &middot; <span class="num" id="ch1-chapters-num">0</span> chapters</div>
+          </div>
+        </div>
+        <div class="ch1-card accent-green" id="ch1-card-promise">
+          <div class="ch1-icon">&#x2713;</div>
+          <div class="ch1-card-body">
+            <div class="ch1-card-label">EVERY CLAIM</div>
+            <div class="ch1-card-value">Sourced &mdash; numbered PDF page.</div>
+          </div>
+        </div>
+        <div class="ch1-ban-row">
+          <div class="ch1-ban-pill" id="ch1-ban-1"><div class="ch1-ban-x">&times;</div>NO INVENTED STATS</div>
+          <div class="ch1-ban-pill" id="ch1-ban-2"><div class="ch1-ban-x">&times;</div>NO FABRICATED CASES</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 22;
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.5 } });
+
+      // Local time = global time - 27.28 (scene's data-start)
+      // BEAT 1: t=0.0 "This is" — overline + title in + chapter graphic 3D entrance
+      tl.to("#ch1-overline", { opacity: 1, y: 0, duration: 0.4 }, 0.0);
+      tl.to("#ch1-title",    { opacity: 1, y: 0, duration: 0.5 }, 0.2);
+      tl.fromTo("#ch1-graphic",
+        { scale: 0.85, rotationY: -20, opacity: 0, transformPerspective: 2000 },
+        { scale: 1.0, rotationY: 0, opacity: 1, duration: 0.9, ease: "back.out(1.4)", immediateRender: false },
+        0.4);
+
+      // BEAT 2: t=0.47 "Founder's" — title pulse + progress dot pop
+      tl.to("#ch1-progress", { opacity: 1, duration: 0.3 }, 1.2);
+      tl.to(".ch1-dot.active", { scale: 1.4, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 1.0);
+
+      // BEAT 3: t=1.59 "version three" — v3 card slides in
+      tl.fromTo("#ch1-card-version", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 1.59);
+
+      // BEAT 4: t=2.5 "published May sixth" — pulse on date
+      tl.to("#ch1-card-version", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 2.5);
+
+      // BEAT 5: t=7.11 "Applied A I team" — Anthropic byline card
+      tl.fromTo("#ch1-card-author", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 7.11);
+
+      // BEAT 6: t=9.19 "Thirty-five pages" — pages card + counter
+      tl.fromTo("#ch1-card-pages", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 9.19);
+      tl.fromTo("#ch1-pages-num", { textContent: 0 }, {
+        textContent: 35, duration: 0.7, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)); }
+      }, 9.19);
+
+      // BEAT 7: t=10.32 "Seven chapters" — chapters counter rolls
+      tl.fromTo("#ch1-chapters-num", { textContent: 0 }, {
+        textContent: 7, duration: 0.6, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)); }
+      }, 10.32);
+
+      // BEAT 8: t=13.06 "sourced" — promise card
+      tl.fromTo("#ch1-card-promise", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 13.06);
+
+      // BEAT 9: t=14.9 "numbered page P D F" — graphic scale pulse to draw eye back to chapter graphic
+      tl.to("#ch1-graphic", { scale: 1.04, duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 14.9);
+
+      // BEAT 10: t=17.03 "No invented stats" — first ban pill
+      tl.to("#ch1-ban-1", { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.6)" }, 17.03);
+
+      // BEAT 11: t=18.28 "No fabricated case studies" — second ban pill
+      tl.to("#ch1-ban-2", { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.6)" }, 18.28);
+
+      // BEAT 12: t=20.75 "Just the book" — chapter graphic glow pulse
+      tl.to("#ch1-graphic", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 100px rgba(167,139,250,0.55)",
+        duration: 0.6, yoyo: true, repeat: 1, ease: "sine.inOut"
+      }, 20.75);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

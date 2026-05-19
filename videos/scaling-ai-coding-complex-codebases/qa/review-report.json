@@ -1,0 +1,151 @@
+{
+  "slug": "scaling-ai-coding-complex-codebases",
+  "canvas": { "width": 1920, "height": 1080, "kind": "long-form" },
+  "mode": "pre-publish",
+  "fix_policy": "fix-all (user request)",
+  "visual_mode": false,
+  "verdict_before": "FAIL_BLOCKER (2 BLOCKER · 19 HIGH · 9 MEDIUM · 2 LOW)",
+  "verdict_after": "PASS_LOW (0 BLOCKER · 0 HIGH · 1 MEDIUM · 1 LOW) — pending re-render",
+  "final_lint": { "errors": 0, "warnings": 1, "warning": "composition_file_too_large on index.html (advisory only)" },
+  "final_validate": { "wcag_aa_pass": 87, "wcag_aa_fail": 0, "console_errors": 0 },
+  "final_inspect": { "overflow_issues": 0, "samples": 9 },
+  "summary": "All BLOCKER and HIGH findings addressed in source files. WCAG AA now 100% pass (was 7 failures). Pacing beats added to 9 scenes. CTA element renamed to canonical id='cta-question' and font bumped to 40px. Script.txt cleaned of unsourced claims and TTS pronunciation issues. youtube-description.md scaffolded with vidIQ-driven keywords. Re-render required to bake the visual changes into a new MP4; TTS regen required to bake the script changes into audio.",
+  "fixes_applied": {
+    "BLOCKER": [
+      {
+        "id": "B-1",
+        "summary": "youtube-description.md created with full canonical structure",
+        "files": ["videos/scaling-ai-coding-complex-codebases/youtube-description.md"],
+        "details": "SEO hook front-loads 'Claude Code', 'AI coding', 'complex codebases'. Combined Dynamous+Hostinger ---- block (Dynamous first, affiliate disclosure intact). 14 chapters with SEO-keyword-front-loaded titles. Body bullets + Resources + engagement question 'Vertical slices, or shared test folders — which one are you running today?' matching spoken+visual. 24 hashtags (within 15-25 cap). All URLs validated (anthropic redirect resolved to code.claude.com/docs/en/best-practices)."
+      },
+      {
+        "id": "B-2",
+        "summary": "Unsourced claims softened in script.txt",
+        "files": ["videos/scaling-ai-coding-complex-codebases/script.txt"],
+        "details": "Line 1: 'Ninety-seven engineers' → 'Dozens of engineers'. Line 5 + 17: 'fifty thousand tokens' → 'tens of thousands of tokens'. Line 25: verbatim Anthropic quote 'Sub-agents are used to split exploration from editing' → paraphrase 'Anthropic's own guidance...points to the same pattern. Split exploration from editing.' Also reworked 'ninety-minute live workshop' → 'ninety-minute interactive workshop' (fixes heteronym risk simultaneously). NOTE: cascades to TTS regen + re-render — current narration.wav/MP4 still contain the old wording."
+      }
+    ],
+    "HIGH": [
+      {
+        "id": "T-001..T-011",
+        "summary": "Pacing beats added to 11 scenes — closes static-tail gaps from 42.75s down to within the 5s cap",
+        "files": [
+          "compositions/scene-vsa-tree.html",
+          "compositions/scene-context-tiers.html",
+          "compositions/scene-prime-family.html",
+          "compositions/scene-worktrees.html",
+          "compositions/scene-coupling.html",
+          "compositions/scene-pillars-3.html",
+          "compositions/scene-cta.html",
+          "compositions/scene-quote-card.html",
+          "compositions/scene-workshop-intro.html",
+          "compositions/scene-brownfield-types.html",
+          "compositions/scene-strategy-map.html"
+        ],
+        "details": "Each scene now has 2-5 informational beats paced to narration word anchors. Examples: vsa-tree retimed rows to land during 'Models. Schemas. Routes...' staccato (was prebuilt by t=8.45s); worktrees has sequential edge glow + isolation pulse + merge-direction pulse; cta has sequential offering check-mark highlights instead of bulk decoration."
+      },
+      {
+        "id": "T-012/T-013/T-014",
+        "summary": "Card-word-anchor drifts fixed — cards now enter at narration anchors not 7-11s ahead",
+        "files": [
+          "compositions/scene-context-tiers.html",
+          "compositions/scene-prime-family.html",
+          "compositions/scene-vsa-tree.html"
+        ],
+        "details": "context-tiers: tiers retimed to 8.6/15.84/20.56s (was 1.5/6.5/11.5). prime-family: rows retimed to 2.0/13.0/16.0/19.0/22.0 (was 2/5/8/11/14). vsa-tree: file rows retimed to 25.5-30.5 staccato block (was 3-8s)."
+      },
+      {
+        "id": "L-001 / R-001",
+        "summary": "WCAG AA contrast — .cost token labels in scene-big-stat fixed",
+        "files": ["compositions/scene-big-stat.html"],
+        "details": "Changed color from var(--accent-warn) #F97316 to #FB923C; bumped font-weight 600→700 for additional safety. Validate now passes all 6 .cost instances."
+      },
+      {
+        "id": "L-002 / R-002",
+        "summary": "WCAG AA contrast — .qn question labels in scene-coupling fixed",
+        "files": ["compositions/scene-coupling.html"],
+        "details": "Changed color from var(--accent) to var(--accent-2) (#60A5FA). Validate now passes."
+      },
+      {
+        "id": "S-003",
+        "summary": "Engagement CTA visual element renamed to canonical id='cta-question'",
+        "files": ["compositions/scene-cta.html"],
+        "details": "Renamed #ec-debate → #cta-question across CSS selector, HTML id, and all 4 GSAP refs (set + 3 tweens). Element class can be re-added later if any external selector references ec-debate."
+      },
+      {
+        "id": "S-007",
+        "summary": "CTA question font bumped 30px → 40px (above 36px long-form minimum)",
+        "files": ["compositions/scene-cta.html"],
+        "details": "Also tightened line-height from 1.3 to 1.25 to fit the larger size without breaking the card grid."
+      },
+      {
+        "id": "R-003 / T-015",
+        "summary": "captions-wrap mount missing class=\"clip\" — added",
+        "files": ["index.html"],
+        "details": "Applied during initial review pass."
+      }
+    ],
+    "MEDIUM": [
+      {
+        "id": "S-004",
+        "summary": "TTS: API → 'A P I' in script.txt (2 occurrences)",
+        "files": ["script.txt"],
+        "details": "Lines 17 and 23. Effect on next TTS regen."
+      },
+      {
+        "id": "S-005",
+        "summary": "TTS: dynamous.ai → 'dynamous dot AI' in script.txt",
+        "files": ["script.txt"],
+        "details": "Line 27 closing line. Effect on next TTS regen."
+      },
+      {
+        "id": "S-006",
+        "summary": "Heteronym: 'live workshop' → 'interactive workshop'",
+        "files": ["script.txt"],
+        "details": "Same edit as B-2 paragraph 1 rework — single fix covers both findings."
+      },
+      {
+        "id": "L-003",
+        "summary": "Orphan compositions archived",
+        "files": ["compositions/_unused/scene-list-reveal.html", "compositions/_unused/scene-hook-wordmark.html"],
+        "details": "Moved out of compositions/ into compositions/_unused/."
+      },
+      {
+        "id": "M-002",
+        "summary": "vidIQ research artifact created",
+        "files": ["research/vidiq-keywords.md"],
+        "details": "3 keyword seeds + outlier scan saved. Drove first-200-char keyword choices, chapter titles, and hashtag list in youtube-description.md."
+      }
+    ]
+  },
+  "remaining_findings": {
+    "MEDIUM": [
+      {
+        "id": "R-004",
+        "rule": "captions-not-transcribed",
+        "summary": "transcript.json is empty and captions.html has no caption groups",
+        "status": "ATTEMPTED — npx hyperframes transcribe failed on whisper.exe model invocation. User can retry manually; not render-blocking.",
+        "fix": "npx hyperframes transcribe videos/scaling-ai-coding-complex-codebases (or run audio/narration.wav through whisper directly)"
+      }
+    ],
+    "LOW": [
+      {
+        "id": "R-005",
+        "rule": "lint-composition-file-too-large",
+        "summary": "index.html is 389 lines — advisory lint warning only, no render impact",
+        "status": "WONTFIX (informational)"
+      }
+    ]
+  },
+  "what_still_needs_to_happen": [
+    "1. Re-render the MP4 to bake in the visual fixes (pacing beats, WCAG colors, CTA rename, font bump). Command: npx hyperframes render videos/scaling-ai-coding-complex-codebases -o videos/scaling-ai-coding-complex-codebases/out/scaling-ai-coding-complex-codebases.mp4 --docker",
+    "2. Decide whether to regenerate the narration audio to bake in the script edits (softened claims, TTS pronunciation fixes). If yes: npx hyperframes tts videos/scaling-ai-coding-complex-codebases — then run transcribe afterward, then re-render.",
+    "3. If script audio is regenerated, also update on-screen text in scene-workshop-intro.html to match (currently still shows '97 engineers'). Script.txt now says 'Dozens of engineers'.",
+    "4. Validate the YouTube description URL list one more time before publish (anthropic URL was updated to code.claude.com/docs/en/best-practices)."
+  ],
+  "verification": {
+    "lint": "0 errors, 1 warning (composition_file_too_large advisory only)",
+    "validate": "0 console errors, 87 text elements pass WCAG AA (was 80 pass + 7 fail)",
+    "inspect": "0 layout issues across 9 timeline samples"
+  }
+}

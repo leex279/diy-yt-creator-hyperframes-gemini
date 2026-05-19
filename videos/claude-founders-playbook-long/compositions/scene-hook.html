@@ -1,0 +1,338 @@
+<!--
+  scene-hook.html — CINEMATIC HOOK (27.28s, 22 narration-anchored beats).
+  Multi-layer choreography. Every spoken keyword triggers a visual cut.
+-->
+<template id="scene-hook-template">
+  <div data-composition-id="scene-hook"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      /* ─── Cinema chrome ─── */
+      #hk-letterbox-top, #hk-letterbox-bot {
+        position: absolute; left: 0; right: 0;
+        height: 60px; background: #000; z-index: 30;
+        pointer-events: none;
+      }
+      #hk-letterbox-top { top: 0; }
+      #hk-letterbox-bot { bottom: 0; }
+      #hk-rec {
+        position: absolute; top: 78px; left: 60px; z-index: 31;
+        display: flex; align-items: center; gap: 10px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 18px; letter-spacing: 3px;
+        color: rgba(245,241,235,0.65);
+      }
+      #hk-rec-dot {
+        width: 12px; height: 12px; border-radius: 50%;
+        background: #D14343;
+        box-shadow: 0 0 12px rgba(209,67,67,0.7);
+      }
+      #hk-tc {
+        position: absolute; top: 78px; right: 60px; z-index: 31;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 18px; letter-spacing: 3px;
+        color: rgba(245,241,235,0.55);
+      }
+      #hk-cover-card {
+        position: absolute;
+        left: 80px; top: 200px;
+        width: 360px; height: auto;
+        z-index: 6;
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.7),
+                    0 0 0 1px rgba(245,241,235,0.10),
+                    0 0 80px rgba(233,116,88,0.25);
+      }
+      /* ─── Stage layers ─── */
+      .hk-layer {
+        position: absolute;
+        inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        z-index: 10;
+        pointer-events: none;
+      }
+      #hk-top-pill {
+        position: absolute;
+        top: 130px; left: 50%;
+        padding: 10px 28px; border-radius: 999px;
+        background: rgba(233,116,88,0.15);
+        border: 1.5px solid rgba(233,116,88,0.45);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 22px; letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #E97458;
+        z-index: 12;
+        opacity: 0;
+      }
+      #hk-stat-cluster {
+        position: absolute;
+        left: 560px; top: 240px;
+        z-index: 11;
+        display: flex; flex-direction: row;
+        align-items: baseline;
+        gap: 28px;
+        opacity: 0;
+      }
+      #hk-stat-num {
+        font-weight: 900; font-size: 200px; line-height: 0.85;
+        letter-spacing: -8px; color: #E97458;
+        font-variant-numeric: tabular-nums lining-nums;
+        text-shadow: 0 0 80px rgba(233,116,88,0.5),
+                     0 8px 24px rgba(0,0,0,0.6);
+      }
+      #hk-stat-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 32px;
+        letter-spacing: 4px; text-transform: uppercase;
+        color: #9A958D; line-height: 1.2;
+      }
+      #hk-playbook-slam {
+        position: absolute;
+        top: 480px; left: 560px;
+        z-index: 12;
+        font-weight: 900; font-size: 180px; line-height: 0.9;
+        letter-spacing: -6px; color: #F5F1EB;
+        text-shadow: 0 0 60px rgba(245,241,235,0.18),
+                     0 12px 30px rgba(0,0,0,0.7);
+        opacity: 0;
+      }
+      #hk-ai-native-badge {
+        position: absolute;
+        top: 690px; left: 560px;
+        z-index: 12;
+        padding: 12px 24px; border-radius: 8px;
+        background: rgba(167,139,250,0.18);
+        border: 1.5px solid rgba(167,139,250,0.55);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 26px; letter-spacing: 4px;
+        color: #A78BFA;
+        opacity: 0;
+      }
+      /* Chapter tile strip */
+      #hk-strip {
+        position: absolute;
+        bottom: 130px; left: 0; right: 0;
+        z-index: 14;
+        display: flex; flex-direction: row;
+        justify-content: center; gap: 16px;
+        opacity: 0;
+      }
+      .hk-tile {
+        width: 200px; height: 150px;
+        border-radius: 12px;
+        background-size: cover; background-position: center;
+        border: 2px solid rgba(245,241,235,0.18);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+        opacity: 0;
+      }
+      .hk-tile.idea   { background-image: url('assets/chapter-icons/chapter-3-idea.png'); border-color: rgba(233,116,88,0.6); }
+      .hk-tile.mvp    { background-image: url('assets/chapter-icons/chapter-4-mvp.png'); border-color: rgba(167,139,250,0.6); }
+      .hk-tile.launch { background-image: url('assets/chapter-icons/chapter-5-launch.png'); border-color: rgba(107,154,239,0.6); }
+      .hk-tile.scale  { background-image: url('assets/chapter-icons/chapter-6-scale.png'); border-color: rgba(125,211,166,0.6); }
+      .hk-tile-label {
+        position: absolute;
+        bottom: -28px; left: 0; right: 0;
+        text-align: center;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 18px; letter-spacing: 3px;
+        color: #F5F1EB;
+        opacity: 0.0;
+      }
+      .hk-tile-wrap { position: relative; }
+      /* FAIL FASTER slam (drama beat) */
+      #hk-fail-stage {
+        position: absolute;
+        inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        z-index: 20;
+        opacity: 0;
+        background: radial-gradient(circle at center, rgba(11,15,24,0.85) 0%, rgba(11,15,24,1) 70%);
+      }
+      #hk-fail-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 32px; letter-spacing: 8px;
+        color: #FF7C7C; text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+      #hk-fail-text {
+        font-weight: 900; font-size: 260px; line-height: 0.9;
+        letter-spacing: -10px; color: #E97458;
+        text-shadow: 0 0 80px rgba(233,116,88,0.55),
+                     0 12px 30px rgba(0,0,0,0.7);
+        position: relative;
+      }
+      #hk-fail-strike {
+        position: absolute;
+        left: 0; right: 0; top: 50%;
+        height: 14px; width: 0;
+        background: #D14343;
+        box-shadow: 0 0 28px rgba(209,67,67,0.85);
+        border-radius: 6px;
+        opacity: 0;
+      }
+      #hk-discipline {
+        position: absolute;
+        bottom: 240px;
+        left: 0; right: 0; text-align: center;
+        font-weight: 900; font-size: 140px;
+        letter-spacing: -4px; color: #7DD3A6;
+        text-shadow: 0 0 60px rgba(125,211,166,0.45);
+        opacity: 0;
+        z-index: 22;
+      }
+      /* "Chapter by chapter" outro lockup */
+      #hk-outro {
+        position: absolute;
+        bottom: 150px; left: 0; right: 0;
+        text-align: center;
+        z-index: 25;
+        opacity: 0;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 30px; letter-spacing: 8px;
+        color: #F5F1EB;
+        text-transform: uppercase;
+      }
+    </style>
+
+    <!-- Cinema chrome -->
+    <div id="hk-letterbox-top"></div>
+    <div id="hk-letterbox-bot"></div>
+    <div id="hk-rec"><span id="hk-rec-dot"></span>REC</div>
+    <div id="hk-tc">00:00:00:00</div>
+
+    <!-- Cover card (left-side hero) -->
+    <img id="hk-cover-card" src="assets/playbook-cover.png" alt="Playbook cover" />
+
+    <!-- Top "JUST PUBLISHED" pill -->
+    <div id="hk-top-pill">ANTHROPIC &middot; JUST PUBLISHED</div>
+
+    <!-- Stat cluster: 35 PAGES -->
+    <div id="hk-stat-cluster">
+      <div id="hk-stat-num">0</div>
+      <div id="hk-stat-cap">PAGE<br/>PLAYBOOK</div>
+    </div>
+
+    <!-- Title slam -->
+    <div id="hk-playbook-slam">PLAYBOOK.</div>
+    <div id="hk-ai-native-badge">AI-NATIVE STARTUP</div>
+
+    <!-- 4-stage chapter strip -->
+    <div id="hk-strip">
+      <div class="hk-tile-wrap"><div class="hk-tile idea"   id="hk-t1"></div></div>
+      <div class="hk-tile-wrap"><div class="hk-tile mvp"    id="hk-t2"></div></div>
+      <div class="hk-tile-wrap"><div class="hk-tile launch" id="hk-t3"></div></div>
+      <div class="hk-tile-wrap"><div class="hk-tile scale"  id="hk-t4"></div></div>
+    </div>
+
+    <!-- Drama beat — FAIL FASTER / DISCIPLINE -->
+    <div id="hk-fail-stage">
+      <div id="hk-fail-overline">FIRST WARNING INSIDE</div>
+      <div id="hk-fail-text">
+        FAIL FASTER<span id="hk-fail-strike"></span>
+      </div>
+    </div>
+    <div id="hk-discipline">unless &mdash; DISCIPLINE.</div>
+
+    <!-- Outro lockup -->
+    <div id="hk-outro">THE PLAYBOOK &middot; CHAPTER BY CHAPTER</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 27.5;
+
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.4 } });
+
+      // ─── BEAT 1: t=0.05 "Anthropic" — REC chrome ───
+      tl.from("#hk-rec",        { x: -20, opacity: 0, duration: 0.4, immediateRender: false }, 0);
+      tl.from("#hk-tc",         { x:  20, opacity: 0, duration: 0.4, immediateRender: false }, 0);
+
+      // BEAT 2: t=0.5 "just published" — TOP PILL flashes in
+      tl.fromTo("#hk-top-pill", { xPercent: -50, y: -20, opacity: 0 }, { xPercent: -50, y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.6)" }, 0.4);
+
+      // BEAT 3: t=0.8 "published" — cover-card slams in from left with scale
+      tl.from("#hk-cover-card", { x: -300, scale: 0.7, opacity: 0, duration: 0.7, ease: "back.out(1.4)", immediateRender: false }, 0.7);
+
+      // BEAT 4: t=1.3 "thirty-five" — stat cluster appears, counter rolls 0→35
+      tl.to("#hk-stat-cluster", { opacity: 1, duration: 0.3 }, 1.3);
+      tl.fromTo("#hk-stat-num", { textContent: 0 }, {
+        textContent: 35, duration: 0.9, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)); }
+      }, 1.3);
+
+      // BEAT 5: t=2.0 "page" — caption flash + impact-style scale-pulse on the number
+      tl.to("#hk-stat-num", { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "sine.inOut" }, 2.2);
+
+      // BEAT 6: t=2.26 "playbook" — PLAYBOOK slam with inline shake
+      tl.fromTo("#hk-playbook-slam", { y: 30, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.6)" }, 2.26);
+      tl.to("#hk-playbook-slam",   { x: 8,  duration: 0.04, ease: "none", overwrite: "auto" }, 3.0);
+      tl.to("#hk-playbook-slam",   { x: -8, duration: 0.04, ease: "none", overwrite: "auto" }, 3.04);
+      tl.to("#hk-playbook-slam",   { x: 4,  duration: 0.04, ease: "none", overwrite: "auto" }, 3.08);
+      tl.to("#hk-playbook-slam",   { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 3.12);
+
+      // BEAT 7: t=4.12 "AI-native" — purple badge slides in
+      tl.to("#hk-ai-native-badge", { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.5)" }, 4.12);
+
+      // BEAT 8: t=6.47 "rebuilds" — top pill morphs to "REBUILDS THE LIFECYCLE" + cover-card subtle scale
+      tl.to("#hk-top-pill", { scale: 1.06, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 6.4);
+      tl.to("#hk-cover-card", { scale: 1.04, duration: 1.5, ease: "sine.inOut" }, 6.4);
+
+      // BEAT 9-12: t=9.66 "Idea" → 12.67 "Scale" — chapter tiles flash in one by one
+      tl.to("#hk-strip", { opacity: 1, duration: 0.3 }, 9.4);
+      tl.fromTo("#hk-t1", { scale: 0.7, opacity: 0, rotationY: -30 }, { scale: 1, opacity: 1, rotationY: 0, duration: 0.5, ease: "back.out(1.6)" }, 9.66);
+      tl.fromTo("#hk-t2", { scale: 0.7, opacity: 0, rotationY: -30 }, { scale: 1, opacity: 1, rotationY: 0, duration: 0.5, ease: "back.out(1.6)" }, 11.0);
+      tl.fromTo("#hk-t3", { scale: 0.7, opacity: 0, rotationY: -30 }, { scale: 1, opacity: 1, rotationY: 0, duration: 0.5, ease: "back.out(1.6)" }, 12.06);
+      tl.fromTo("#hk-t4", { scale: 0.7, opacity: 0, rotationY: -30 }, { scale: 1, opacity: 1, rotationY: 0, duration: 0.5, ease: "back.out(1.6)" }, 12.67);
+
+      // BEAT 13: t=13.84 "stages" — pulse on all 4 tiles + add green glow border ring
+      tl.to(".hk-tile", { boxShadow: "0 12px 32px rgba(0,0,0,0.6), 0 0 24px rgba(245,241,235,0.45)", duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 13.84);
+
+      // BEAT 14: t=14.91 "new rules" — strip shrinks slightly + top pill flashes "NEW RULES"
+      tl.to("#hk-strip", { scale: 0.92, duration: 0.5, ease: "power2.inOut" }, 14.7);
+      tl.to("#hk-top-pill", {
+        backgroundColor: "rgba(125,211,166,0.20)", borderColor: "rgba(125,211,166,0.6)", color: "#7DD3A6",
+        duration: 0.4
+      }, 14.91);
+
+      // BEAT 15: t=17.83 "first warning" — drama curtain rises
+      tl.to("#hk-fail-stage", { opacity: 0.95, duration: 0.5, ease: "power2.out" }, 17.5);
+
+      // BEAT 16: t=20.51 "fail" / 20.79 "faster" — FAIL FASTER text impact + RGB chromatic split
+      tl.from("#hk-fail-overline", { y: -20, opacity: 0, duration: 0.4, ease: "power2.out", immediateRender: false }, 17.8);
+      tl.from("#hk-fail-text",     { y: 40, scale: 0.7, opacity: 0, duration: 0.7, ease: "back.out(1.7)", immediateRender: false }, 20.3);
+      tl.to("#hk-fail-text",   { textShadow: "-6px 0 0 #00FFFF, 6px 0 0 #FF0080, 0 0 60px rgba(233,116,88,0.5)", duration: 0.12, yoyo: true, repeat: 1 }, 20.7);
+      tl.to("#hk-fail-text",   { x: 6,  duration: 0.04, ease: "none", overwrite: "auto" }, 20.79);
+      tl.to("#hk-fail-text",   { x: -6, duration: 0.04, ease: "none", overwrite: "auto" }, 20.83);
+      tl.to("#hk-fail-text",   { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 20.87);
+
+      // BEAT 17: t=21.56 "unless" — strike-through over "FAIL FASTER"
+      tl.to("#hk-fail-strike", { opacity: 1, width: "110%", duration: 0.5, ease: "power2.out" }, 21.56);
+
+      // BEAT 18: t=22.35 "discipline" — DISCIPLINE rises in green
+      tl.to("#hk-discipline", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 22.35);
+
+      // BEAT 19: t=23.88 "So here is" — drama stage fades away, reveal returns
+      tl.to("#hk-fail-stage", { opacity: 0, duration: 0.5, ease: "power2.in" }, 23.88);
+      tl.to("#hk-discipline",  { opacity: 0, duration: 0.5, ease: "power2.in" }, 23.88);
+
+      // BEAT 20: t=24.0 "the playbook" — chapter strip pulses back to full visibility
+      tl.to("#hk-strip", { scale: 1, opacity: 1, duration: 0.4, ease: "power2.out" }, 24.0);
+
+      // BEAT 21: t=25.37 "Chapter by chapter" — outro lockup rises from bottom
+      tl.to("#hk-outro", { opacity: 1, y: -20, duration: 0.5, ease: "power2.out" }, 25.37);
+
+      // REC dot pulse (ambient, finite)
+      tl.to("#hk-rec-dot", { opacity: 0.3, duration: 0.5, yoyo: true, repeat: 25, ease: "sine.inOut" }, 0.5);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-hook"] = tl;
+    </script>
+  </div>
+</template>

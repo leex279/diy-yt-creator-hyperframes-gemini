@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>v10 — The tool Claude missed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="_common.css">
+  <style>
+    .canvas {
+      background:
+        radial-gradient(ellipse 1100px 700px at 50% 50%, rgba(220, 220, 170, 0.16), transparent 70%),
+        var(--bg-deep);
+    }
+
+    #overline {
+      position: absolute;
+      top: 56px;
+      left: 56px;
+      font-family: var(--font-mono);
+      font-size: 22px;
+      color: var(--ast-yellow);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    #overline::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: var(--ast-yellow);
+    }
+
+    .slam-wrap {
+      position: absolute;
+      top: 116px;
+      left: 56px;
+      right: 56px;
+      z-index: 10;
+    }
+
+    .slam-1 {
+      display: block;
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 130px;
+      line-height: 0.88;
+      color: #fff;
+      letter-spacing: -0.045em;
+    }
+
+    .slam-2 {
+      display: block;
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 200px;
+      line-height: 0.85;
+      color: #fff;
+      letter-spacing: -0.05em;
+      margin-top: 2px;
+    }
+
+    .slam-2 .missed {
+      color: var(--ast-yellow);
+    }
+
+    .question-mark {
+      display: inline-block;
+      color: var(--ast-yellow);
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 200px;
+      line-height: 0.85;
+      text-shadow: 0 0 30px rgba(220, 220, 170, 0.5);
+    }
+
+    #ast-mega {
+      position: absolute;
+      bottom: 40px;
+      left: 56px;
+      width: 580px;
+      height: 220px;
+      background: var(--bg-editor);
+      border: 1.5px solid rgba(220, 220, 170, 0.55);
+      border-radius: 16px;
+      padding: 22px 28px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    #ast-mega .arrow-box {
+      width: 110px;
+      height: 110px;
+      background: rgba(220, 220, 170, 0.08);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #ast-mega .arrow-box svg {
+      width: 88px;
+      height: 88px;
+    }
+
+    .ast-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ast-info .name {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 52px;
+      color: var(--ast-yellow);
+      letter-spacing: -0.02em;
+    }
+
+    .ast-info .sub {
+      font-family: var(--font-mono);
+      font-size: 19px;
+      color: var(--fg-muted);
+      font-weight: 600;
+    }
+
+    .ast-info .verdict {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      color: var(--ok);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    #claude-card {
+      position: absolute;
+      bottom: 40px;
+      right: 56px;
+      width: 360px;
+      height: 220px;
+      background: linear-gradient(160deg, rgba(247, 129, 102, 0.16), rgba(80, 30, 20, 0.10));
+      border: 1.5px solid rgba(247, 129, 102, 0.5);
+      border-radius: 16px;
+      padding: 22px 24px;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    #claude-card .lbl {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: #ffc4ad;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    #claude-card .head {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 30px;
+      color: var(--brand-orange);
+      line-height: 1;
+    }
+
+    #claude-card .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    #claude-card .stack .row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--fg-default);
+    }
+
+    #claude-card .stack .row.gone {
+      color: var(--err);
+      text-decoration: line-through;
+      opacity: 0.8;
+    }
+
+    #claude-card .stack .badge {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    #claude-card .stack .badge.has {
+      background: var(--ok);
+      color: #000;
+    }
+
+    #claude-card .stack .badge.miss {
+      background: var(--err);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="canvas">
+    <div class="grid-dots"></div>
+    <div id="overline">read · glob · grep · ...what's missing?</div>
+    <div class="slam-wrap">
+      <span class="slam-1">THE TOOL CLAUDE</span>
+      <span class="slam-2"><span class="missed">MISSED</span><span class="question-mark"> ?</span></span>
+    </div>
+    <div id="ast-mega">
+      <div class="arrow-box">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="100,0 25,50 43.75,62.5 0,100 75,62.5 56.25,50" fill="#dcdcaa" />
+        </svg>
+      </div>
+      <div class="ast-info">
+        <div class="name">ast-grep</div>
+        <div class="sub">structural code search</div>
+        <div class="verdict">&#10003; ship it in CLAUDE.md</div>
+      </div>
+    </div>
+    <div id="claude-card">
+      <div>
+        <div class="lbl">claude code</div>
+        <div class="head">built-in tools</div>
+      </div>
+      <div class="stack">
+        <div class="row"><span>Read</span><span class="badge has">HAS</span></div>
+        <div class="row"><span>Glob</span><span class="badge has">HAS</span></div>
+        <div class="row"><span>Grep</span><span class="badge has">HAS</span></div>
+        <div class="row gone"><span>AST search</span><span class="badge miss">NONE</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

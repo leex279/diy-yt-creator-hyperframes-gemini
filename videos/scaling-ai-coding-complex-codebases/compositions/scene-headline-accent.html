@@ -1,5 +1,5 @@
-﻿<!--
-  scene-headline-accent.html â€” Two-line headline + side decay-graph visual.
+<!--
+  scene-headline-accent.html — Two-line headline + side decay-graph visual.
   Left: headline with Dynamous-Blue underline sweep on "doesn't scale".
   Right: a 4-step decay graph showing the slide from clean greenfield to god components.
 -->
@@ -168,7 +168,7 @@
       tl.to("#ha-sub",      { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 1.0);
       tl.to("#ha-accent",   { backgroundSize: "100% 28%", duration: 0.7, ease: "power2.out" }, 1.6);
 
-      // Right side decay timeline reveals â€” paced ~3s apart
+      // Right side decay timeline reveals — paced ~3s apart
       tl.to("#ha-decay-head", { y: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, 2.4);
       tl.to("#ha-d1", { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, 2.8);
       tl.to("#ha-a1", { y: 0, autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 5.6);
@@ -178,12 +178,15 @@
       tl.to("#ha-a3", { y: 0, autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 12.0);
       tl.to("#ha-d4", { x: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, 12.4);
 
-      // Mid-hold beat â€” pulse the bad row + headline
+      // Mid-hold beat — pulse the bad row + headline
       tl.to("#ha-d4", { boxShadow: "0 0 60px rgba(249, 115, 22, 0.45)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 14.5);
       tl.to("#ha-headline", { scale: 1.02, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 16.5);
 
       // Extend timeline
-      tl.set({}, {}, 18);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#ha-eyebrow", { scale: 1.05, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 17.8);
+
+      tl.set({}, {}, 18.8);
       window.__timelines["scene-headline-accent"] = tl;
     </script>
   </div>

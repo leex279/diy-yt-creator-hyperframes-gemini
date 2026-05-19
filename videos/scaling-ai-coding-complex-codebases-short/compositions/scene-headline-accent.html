@@ -1,0 +1,153 @@
+<!--
+  scene-headline-accent.html — Two-line headline with Dynamous-Blue sweep.
+
+  Signature weight-contrast move (300/800): a light-weight setup line
+  paired with an 800-weight slam line. Dynamous-Blue underline sweeps
+  across the slam phrase as the second beat.
+-->
+<template id="scene-headline-accent-template">
+  <div data-composition-id="scene-headline-accent"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #ha-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) 640px; /* safe-zone — see shorts-safe-zone.md */
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:flex-start;
+        gap: 28px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #ha-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #ha-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 64px; height: 2px;
+        background: var(--accent-2);
+      }
+      #ha-content .light {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 90px;
+        line-height: 1.04;
+        letter-spacing: -0.02em;
+        color: var(--ink-2);
+        max-width: 940px;
+      }
+      #ha-content .slam {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 138px;
+        line-height: 0.96;
+        letter-spacing: -0.03em;
+        color: var(--ink);
+        max-width: 940px;
+        position: relative;
+        display: inline-block;
+      }
+      #ha-content .slam .accent {
+        color: var(--accent);
+        text-shadow: 0 0 60px rgba(59, 130, 246, 0.45);
+      }
+      #ha-sweep {
+        position: absolute;
+        left: 0; bottom: -16px;
+        height: 8px;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent) 0%, var(--accent-3) 100%);
+        box-shadow: 0 0 24px rgba(59, 130, 246, 0.7);
+        border-radius: 4px;
+      }
+      /* Six-strategies diagram card — slide up + tilt entrance.
+         Positioned in the active safe zone (above y=1280).
+         Bottom edge at y=1260 (bottom:660 from canvas bottom). */
+      #ha-diagram {
+        position: absolute;
+        left: 70px; right: 70px;
+        bottom: 660px;
+        width: auto;
+        max-width: 940px;
+        height: 400px;
+        margin: 0 auto;
+        border-radius: 28px;
+        overflow: hidden;
+        background: #0B0E16;
+        border: 1px solid rgba(96, 165, 250, 0.22);
+        box-shadow:
+          0 24px 70px rgba(0, 0, 0, 0.5),
+          0 0 48px rgba(59, 130, 246, 0.15);
+      }
+      #ha-diagram img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: contain;
+        object-position: center center;
+        padding: 28px;
+        box-sizing: border-box;
+        background: #FFFFFF;
+      }
+      #ha-diagram::after {
+        content: "";
+        position: absolute; inset: 0;
+        background: linear-gradient(180deg, transparent 70%, rgba(7, 9, 15, 0.45) 100%);
+        pointer-events: none;
+      }
+    </style>
+
+    <div id="ha-content">
+      <div class="eyebrow" id="ha-eyebrow">WORKSHOP RECAP</div>
+      <div class="light" id="ha-light">Six strategies to scale Claude&nbsp;Code into</div>
+      <div style="position:relative; display:inline-block;">
+        <div class="slam" id="ha-slam">
+          <span class="accent">MESSY</span><br>CODEBASES.
+        </div>
+        <div id="ha-sweep"></div>
+      </div>
+      <div id="ha-diagram" style="opacity:0;visibility:hidden;">
+        <img src="assets/diagrams/six-strategies.png" alt="Six strategies diagram" crossorigin="anonymous" />
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#ha-eyebrow", { y: 24, autoAlpha: 0 }, 0);
+      tl.set("#ha-light",   { y: 30, autoAlpha: 0 }, 0);
+      tl.set("#ha-slam",    { y: 40, autoAlpha: 0, scale: 0.96 }, 0);
+      tl.set("#ha-sweep",   { width: "0%" }, 0);
+      tl.set("#ha-diagram", { y: 80, scale: 0.92, rotation: -2 }, 0);
+
+      tl.to("#ha-eyebrow", { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#ha-light",   { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.6);
+      tl.to("#ha-slam",    { y: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: "back.out(1.4)" }, 1.4);
+
+      // Accent sweep — second beat
+      tl.to("#ha-sweep", { width: "100%", duration: 0.7, ease: "power2.out" }, 2.3);
+
+      // Six-strategies diagram slides up + tilts in
+      tl.to("#ha-diagram",
+        { y: 0, scale: 1, rotation: 1.5, autoAlpha: 1, duration: 0.85, ease: "back.out(1.4)" }, 3.0);
+
+      // Mid-hold beats — keep eye moving
+      tl.to("#ha-slam",    { scale: 1.02, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.2);
+      tl.to("#ha-diagram", { y: -8, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.6);
+
+      tl.set({}, {}, 8.10);
+      window.__timelines["scene-headline-accent"] = tl;
+    </script>
+  </div>
+</template>

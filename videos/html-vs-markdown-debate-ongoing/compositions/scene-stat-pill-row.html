@@ -1,0 +1,365 @@
+<!--
+  scene-stat-pill-row.html — The receipts: 25× tokens cost vs 1M context budget
+  Scene-relative duration: 66.44s. data-start in root = 200.39.
+
+  Beats (scene-relative):
+    0.00  — section "03" + overline + h2 enter ("Here are the receipts…")
+    0.76  — h2 "measured" emphasis pulse
+    4.90  — "One engineer, on X" — attribution (cost pill begins entering)
+    6.70  — COST pill (25×) reveals ("Twenty-five thousand tokens…")
+    14.77 — "25× more" emphasis pulse on cost pill
+    18.06 — "Another, on YouTube" — pivot "vs." enters
+    21.38 — 50% sub-line under COST pill ("fifty percent…")
+    30.57 — BUDGET pill (1M) reveals ("one million token context window")
+    32.50 — Budget sub-line under BUDGET pill
+    36.50 — Pushback intro — budget pulse / emphasis
+    42.38 — "A third commenter" — final caption enters
+    47.73 — 10–20% accuracy caption emphasis
+    63.44 — PUSHBACK counter-take pill ("not buying barely-registers")
+    65.00 — final caption scale pulse
+    66.44 — scene end / crossfade
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row"
+       data-start="0"
+       data-duration="66.44"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Source Serif 4','Playfair Display',Georgia,serif; color:var(--text);">
+
+    <style>
+      #scene-stat-pill-row-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+      }
+      .sp-header {
+        position: relative;
+        padding-left: 88px;
+        margin-bottom: 60px;
+      }
+      .sp-section-number {
+        position: absolute;
+        left: 0;
+        top: 6px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 56px;
+        color: var(--accent-1);
+      }
+      .sp-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        margin-bottom: 14px;
+      }
+      .sp-h2 {
+        font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+        font-weight: 800;
+        font-size: 64px;
+        color: var(--text);
+        letter-spacing: -1px;
+        line-height: 1.04;
+      }
+      .sp-h2 em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .sp-divider {
+        height: 1px;
+        background: var(--border);
+        margin-top: 18px;
+        transform-origin: left center;
+      }
+
+      .sp-row {
+        position: absolute;
+        left: 188px;
+        right: 100px;
+        top: 360px;
+        display: grid;
+        grid-template-columns: 1fr 80px 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+      .sp-pill {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-1);
+        border-radius: 24px;
+        padding: 48px 56px;
+        text-align: center;
+        position: relative;
+      }
+      .sp-pill.is-cost {
+        border-color: var(--accent-2);
+      }
+      .sp-pill.is-budget {
+        border-color: var(--accent-1);
+      }
+      .sp-pill-tag {
+        position: absolute;
+        top: -18px;
+        left: 32px;
+        background: var(--bg);
+        padding: 0 14px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sp-pill.is-budget .sp-pill-tag {
+        color: var(--accent-1);
+      }
+      .sp-pill-num {
+        font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+        font-weight: 800;
+        font-size: 180px;
+        line-height: 0.9;
+        color: var(--text);
+        letter-spacing: -8px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .sp-pill-num em {
+        font-style: italic;
+        color: var(--accent-1);
+      }
+      .sp-pill-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-top: 18px;
+      }
+      .sp-pill-sub {
+        font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+        font-style: italic;
+        font-size: 28px;
+        color: var(--text-secondary);
+        margin-top: 10px;
+        opacity: 0;
+      }
+
+      .sp-pivot {
+        font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+        font-weight: 800;
+        font-size: 56px;
+        font-style: italic;
+        color: var(--accent-1);
+        text-align: center;
+        opacity: 0;
+      }
+
+      /* Hero pull-quote card — replaces the tiny bottom note (user feedback 4:11) */
+      .sp-bottom {
+        position: absolute;
+        left: 140px;
+        right: 140px;
+        bottom: 70px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        align-items: stretch;
+      }
+      .sp-pb-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        opacity: 0;
+      }
+      .sp-pb-overline .sp-pb-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--accent-1);
+      }
+      .sp-pb-overline .sp-pb-sep {
+        width: 28px; height: 1px;
+        background: var(--accent-1); opacity: 0.55;
+      }
+      .sp-pb-overline .sp-pb-badge {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 20px;
+        letter-spacing: 4px;
+        color: #FBF8F1;
+        background: var(--accent-1);
+        padding: 4px 12px;
+        border-radius: 5px;
+      }
+      .sp-final-caption {
+        font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+        font-weight: 800;
+        font-style: italic;
+        font-size: 62px;
+        color: var(--text);
+        line-height: 1.1;
+        letter-spacing: -1px;
+        text-align: center;
+        padding: 28px 56px;
+        background: rgba(244, 241, 234, 0.92);
+        border: 2.5px solid var(--accent-1);
+        border-radius: 18px;
+        box-shadow: 0 16px 48px rgba(28,26,24,0.14);
+        opacity: 0;
+      }
+      .sp-final-caption .sp-fc-lead {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-style: normal;
+        font-weight: 800;
+        font-size: 38px;
+        letter-spacing: 2px;
+        color: var(--accent-1);
+        margin-right: 18px;
+        vertical-align: 6px;
+      }
+      .sp-final-caption em {
+        font-style: italic;
+        color: var(--accent-1);
+        font-weight: 800;
+      }
+      .sp-final-caption .sp-fc-tail {
+        display: block;
+        margin-top: 14px;
+        font-size: 42px;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+      /* counter-pill removed — pushback messaging folded into the hero quote */
+      .sp-counter-pill { display: none !important; opacity: 0 !important; }
+    </style>
+
+    <div id="scene-stat-pill-row-content" style="--hf-studio-offset-x: -3px; --hf-studio-offset-y: -1px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="">
+      <div class="sp-header">
+        <div class="sp-section-number" id="sp-num">03</div>
+        <div class="sp-overline" id="sp-overline">THE RECEIPTS</div>
+        <div class="sp-h2" id="sp-h2">From people who have <em class="accent-italic">measured</em> it.</div>
+        <div class="sp-divider" id="sp-divider"></div>
+      </div>
+
+      <div class="sp-row">
+        <div class="sp-pill is-cost" id="sp-pill-cost" style="--hf-studio-offset-x: 0px; --hf-studio-offset-y: -43px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="none">
+          <div class="sp-pill-tag">COST · X</div>
+          <div class="sp-pill-num" id="sp-cost-num">25<em>×</em></div>
+          <div class="sp-pill-label">more tokens · per artifact</div>
+          <div class="sp-pill-sub" id="sp-cost-sub">25,000 vs 1,000 tokens, same content</div>
+        </div>
+
+        <div class="sp-pivot" id="sp-pivot" style="--hf-studio-offset-x: 0px; --hf-studio-offset-y: -35px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="none">vs.</div>
+
+        <div class="sp-pill is-budget" id="sp-pill-budget" style="--hf-studio-offset-x: 0px; --hf-studio-offset-y: -37px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="none">
+          <div class="sp-pill-tag">BUDGET · OPUS 4.7</div>
+          <div class="sp-pill-num" id="sp-budget-num">1<em>M</em></div>
+          <div class="sp-pill-label">token context window</div>
+          <div class="sp-pill-sub" id="sp-budget-sub">the pro-HTML defense — the room exists</div>
+        </div>
+      </div>
+
+      <div class="sp-bottom">
+        <div class="sp-pb-overline" id="sp-pb-overline">
+          <span class="sp-pb-dot"></span>
+          <span>A THIRD COMMENTER</span>
+          <span class="sp-pb-sep"></span>
+          <span class="sp-pb-badge">PUSHBACK</span>
+          <span class="sp-pb-sep"></span>
+          <span>"BARELY-REGISTERS" — NOT BUYING IT</span>
+        </div>
+        <div class="sp-final-caption" id="sp-final">
+          <span class="sp-fc-lead">THE CATCH —</span>AI accuracy <em>drops</em> above <em>10–20%</em> of max capacity.
+          <span class="sp-fc-tail">Spending budget on layout has a <em>quality</em> cost.</span>
+        </div>
+        <!-- counter pill folded into overline above -->
+        <div class="sp-counter-pill" id="sp-counter" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Hidden-until-reveal
+      tl.set("#sp-pill-cost",   { y: 18, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#sp-pill-budget", { y: 18, opacity: 0, scale: 0.95 }, 0);
+      tl.set("#sp-pivot",       { opacity: 0, scale: 0.7 }, 0);
+      tl.set("#sp-cost-sub",    { opacity: 0 }, 0);
+      tl.set("#sp-budget-sub",  { opacity: 0 }, 0);
+      tl.set("#sp-final",       { y: 24, opacity: 0, scale: 0.94 }, 0);
+      tl.set("#sp-pb-overline", { y: 12, opacity: 0 }, 0);
+      tl.set("#sp-counter",     { opacity: 0 }, 0);
+      tl.set("#sp-divider",     { scaleX: 0 }, 0);
+
+      // Header — scene start 0.00 ("Here are the receipts…")
+      tl.from("#sp-num",      { y: 14, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.2);
+      tl.from("#sp-overline", { y: 12, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.4);
+      tl.from("#sp-h2",       { y: 20, opacity: 0, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.6);
+      tl.to("#sp-divider",    { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.2);
+
+      // h2 "measured" emphasis pulse at 0.76
+      tl.to("#sp-h2 em", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 1.5);
+
+      // COST pill reveals at 6.70 ("Twenty-five thousand tokens…")
+      tl.to("#sp-pill-cost", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 6.70);
+
+      // "25× more" emphasis pulse on cost pill at 14.77
+      tl.to("#sp-pill-cost", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 14.77);
+
+      // Pivot "vs." at 18.06 ("Another, on YouTube")
+      tl.to("#sp-pivot", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 18.06);
+
+      // 50% sub-line under COST pill at 21.38 ("fifty percent…")
+      tl.to("#sp-cost-sub", { opacity: 1, duration: 0.5, ease: "power2.out" }, 21.38);
+
+      // BUDGET pill reveals at 30.57 ("one million token context window")
+      tl.to("#sp-pill-budget", { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 30.57);
+
+      // Budget sub-line at 32.50 ("the room exists")
+      tl.to("#sp-budget-sub", { opacity: 1, duration: 0.5, ease: "power2.out" }, 32.50);
+
+      // Pushback intro — budget pill pulse at 36.50 ("But here is the catch…")
+      tl.to("#sp-pill-budget", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.out" }, 36.50);
+
+      // ── Pushback overline + hero pull-quote card (replaces tiny bottom note) ──
+      // Overline enters at 42.38 ("A third commenter") with the dot+sep+badge run
+      tl.to("#sp-pb-overline", { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, 42.38);
+
+      // Hero pull-quote card slides up + slow zoom-in entrance at 43.0
+      tl.to("#sp-final", { y: 0, opacity: 1, scale: 1.0, duration: 0.8, ease: "back.out(1.2)" }, 43.00);
+      // Slow continuous zoom over the lifetime of the card (15s)
+      tl.to("#sp-final", { scale: 1.05, duration: 13.0, ease: "sine.inOut" }, 44.00);
+
+      // "drops" emphasis pulse at 47.73 (em #1) — colour deepens
+      tl.to("#sp-final em:nth-of-type(1)", { color: "#8C3D2C", duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 47.73);
+      // "10–20%" emphasis at 49.2 (em #2)
+      tl.to("#sp-final em:nth-of-type(2)", { color: "#8C3D2C", duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 49.20);
+      // "quality" emphasis at 56.5 (em #3) — the closing punch
+      tl.to("#sp-final em:nth-of-type(3)", { color: "#8C3D2C", duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 56.50);
+
+      // Overline "× 3 receipts" pulse at 63.44 (matches old PUSHBACK pill cue)
+      tl.to("#sp-pb-overline .sp-pb-badge", { scale: 1.10, duration: 0.3, yoyo: true, repeat: 1, ease: "back.out(2)", transformOrigin: "center center" }, 63.44);
+
+      // Hero card final scale pulse at 65.00
+      tl.to("#sp-final", { scale: 1.07, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 65.00);
+
+      // Pad timeline to full scene duration
+      tl.set({}, {}, 66.44);
+
+      window.__timelines["scene-stat-pill-row"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,6 +1,6 @@
 ---
 name: video-metadata-publish
-description: Audit a HyperFrames video's YouTube publish readiness — youtube-description.md exists and follows the canonical structure (SEO hook → Dynamous block → Chapters [long-form only] → Resources → Hostinger block → engagement question → hashtags), chapter timestamps account for ffmpeg speedup, 15-25 hashtags, vidIQ research present, all URLs return 200, on-screen + description CTA match, no banned sections (Key Concepts, Key Stats). Use before YouTube upload.
+description: Audit a HyperFrames video's YouTube publish readiness — youtube-description.md exists and follows the canonical structure (SEO hook → combined Dynamous+Hostinger block → Chapters [long-form only] → body bullets → resources → engagement question → hashtags), chapter timestamps account for ffmpeg speedup, 15-25 hashtags, vidIQ research present, all URLs return 200, on-screen + description CTA match, no banned sections (Key Concepts, Key Stats). Use before YouTube upload.
 tools: Read, Grep, Glob, Bash, WebFetch
 model: sonnet
 ---
@@ -27,71 +27,81 @@ Per the mandatory rule + memory `feedback_youtube_description_mandatory`: every 
 
 ### 2. Required structure order — HIGH
 
-Verify the file follows EXACTLY this order:
+Verify the file follows EXACTLY this order (per the user's canonical structure locked 2026-05-17, reference implementation: `videos/vercel-zero-introducing/youtube-description.md`):
 
 **For Shorts:**
 1. SEO hook paragraph (keyword-front-loaded, 1-3 sentences, top keywords in first 200 chars)
 2. `----` separator
-3. Dynamous block (exact format with both URLs)
-4. `----` separator
-5. `Resources:` section + links
-6. `----` separator
-7. Hostinger block (exact format)
-8. `----` separator
-9. Engagement question (debate-sparking, single line)
-10. 15-25 hashtags on one line
+3. **Combined Dynamous + Hostinger CTA block** (see §3 — single block, Dynamous first then Hostinger, NOT two separate blocks)
+4. `----` separator (closes the combined block)
+5. Body bullet list — "What you will see in this <N>-minute breakdown:" with `→` arrows
+6. Resources URLs (no "Resources:" header line — short labels + URLs)
+7. Engagement question (debate-sparking, single line/paragraph)
+8. 15-25 hashtags on one line
 
-**For long-form:** insert `Chapters` (literal word on its own line) + timestamps between Dynamous block and Resources.
+**For long-form:** insert `Chapters` (literal word on its own line) + timestamps BETWEEN the closing `----` of the combined block AND the body bullets.
 
 If `Chapters` section appears in a Shorts video: HIGH (YouTube hides chapters on vertical Shorts).
 If `Chapters` section is missing on long-form: HIGH.
 
+If you find TWO separate `----` blocks (e.g., Dynamous in one block, Hostinger in a separate block lower down): HIGH — they MUST be combined into ONE.
+
 Report any structural violation.
 
-### 3. Dynamous block present AND exact format — BLOCKER if missing, HIGH if malformed
+### 3. Combined Dynamous + Hostinger CTA block — BLOCKER if missing, HIGH if malformed
 
-The Dynamous block is **MANDATORY on every video** (Short AND long-form). It is INDEPENDENT of the `dynamousPromotion` flag in `meta.json` — that flag gates ON-SCREEN Dynamous promotion (badge, midroll, interstitial) only, NOT the description block. Every previously-shipped video on the channel has this block and the audience expects it.
+The combined CTA block is **MANDATORY on every video** (Short AND long-form). It is INDEPENDENT of the `dynamousPromotion` flag in `meta.json` — that flag gates ON-SCREEN Dynamous promotion (badge, midroll, interstitial) only, NOT the description block. Every previously-shipped video on the channel has this block and the audience expects it.
 
 **Absence check (BLOCKER):**
 
 ```bash
-grep -c "dynamous\.ai/?code=646a60" videos/<slug>/youtube-description.md
-grep -c "dynamous_ai_10_percent_discount" videos/<slug>/youtube-description.md
+grep -c "dynamous\.ai/?code=646a60"             videos/<slug>/youtube-description.md
+grep -c "dynamous_ai_10_percent_discount"       videos/<slug>/youtube-description.md
+grep -c "hostinger\.com/DIYSMARTCODE"           videos/<slug>/youtube-description.md
+grep -c "DYNAMOUS AI COMMUNITY"                 videos/<slug>/youtube-description.md
+grep -c "HOSTINGER — RELIABLE HOSTING"          videos/<slug>/youtube-description.md
 ```
 
-If EITHER returns 0: the block is missing → BLOCKER. Recommend the auto-fix scaffold below.
+If ANY returns 0: a required line of the combined block is missing → BLOCKER. Recommend the auto-fix scaffold below.
 
 **Format check (HIGH if present but wrong):**
 
-The Dynamous block MUST appear AFTER the SEO hook paragraph, BEFORE the next section (Chapters on long-form, Resources on Shorts), wrapped in `----` separators (four dashes) above and below, and containing this EXACT content with BOTH URLs and the emoji-prefixed lines:
+The block MUST appear AFTER the SEO hook paragraph, BEFORE the next section (Chapters on long-form, body bullets on Shorts), wrapped in `----` separators (four dashes) above and below, with Dynamous FIRST and Hostinger SECOND inside the same separators, blank line between the two sub-sections, with this EXACT content:
 
 ```
 ----
-🚀 Want to learn agentic coding with live daily events and workshops?
+🚀 DYNAMOUS AI COMMUNITY
+
+Want to learn agentic coding with live daily events and workshops?
 Check out Dynamous AI: https://dynamous.ai/?code=646a60
 Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount
+
+⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS (10% OFF)
+
+Whether you're shipping a portfolio, a side project, n8n flows, or AI agents — I use Hostinger for fast, affordable VPS + web hosting.
+
+Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE
+
+(Affiliate link — costs you nothing, supports the channel.)
 ----
 ```
 
 Each of these is a HIGH finding:
 - Missing `----` separator above or below
-- Missing `🚀` or `👉` emoji
-- Wording drift on the "Want to learn agentic coding…" line
-- Either URL is wrong, broken, or replaced with a placeholder like `[link in description]`
-- Block in the wrong position (e.g., after Resources instead of before)
+- Two separate `----` blocks instead of one combined (legacy structure — must be merged)
+- Hostinger placed before Dynamous (must be Dynamous first)
+- Missing `🚀 DYNAMOUS AI COMMUNITY` header line
+- Missing `⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS` header line (note: lightning bolt `⚡`, NOT house `🏠` — the user-locked wording changed)
+- Missing the `(Affiliate link — costs you nothing, supports the channel.)` disclosure line
+- Wording drift on any line ("Want to learn agentic coding…", "Whether you're shipping a portfolio, a side project, n8n flows, or AI agents…", "I use Hostinger for fast, affordable VPS + web hosting.", "Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE")
+- Any URL is wrong, broken, or replaced with a placeholder like `[link in description]`
+- Block placed in the wrong position (e.g., after Resources, after Chapters)
 
-### 4. Hostinger block exact format — HIGH
+### 4. Hostinger affiliate framing (within the combined block) — HIGH
 
-Mandatory after `Resources:`, before engagement question:
+Within the combined block, the Hostinger sub-section MUST end with the disclosure line `(Affiliate link — costs you nothing, supports the channel.)`. This is per memory `feedback_hostinger_affiliate_not_sponsored`: this is affiliate, NOT sponsored. If the disclosure line is missing or the wording reads as sponsorship: HIGH.
 
-```
-----
-🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
-👉 https://hostinger.com/DIYSMARTCODE
-----
-```
-
-The 10% discount is baked into the URL slug `/DIYSMARTCODE` — do NOT append a separate coupon code. Per memory `feedback_hostinger_affiliate_not_sponsored`: this is affiliate, NOT sponsored. If the block is missing or wording reads as sponsorship: HIGH.
+The 10% discount is baked into the URL slug `/DIYSMARTCODE` — do NOT append a separate coupon code.
 
 ### 5. First 200 chars are keyword-rich — HIGH
 
@@ -205,8 +215,9 @@ LOW — easy fix at upload time.
   "summary": {
     "description_present": true,
     "structure_order_correct": true,
-    "dynamous_block_correct": true,
-    "hostinger_block_correct": true,
+    "combined_cta_block_correct": true,
+    "dynamous_subsection_correct": true,
+    "hostinger_subsection_correct": true,
     "hashtag_count": 18,
     "vidiq_research_present": true,
     "urls_validated": { "checked": 5, "live": 5, "dead": 0 },
@@ -230,11 +241,13 @@ LOW — easy fix at upload time.
 
 ## Safe auto-fixes the orchestrator may apply
 
-- Missing `youtube-description.md` → scaffold from canonical template, fill in topic from `meta.json.name`
+- Missing `youtube-description.md` → scaffold from canonical template (`videos/vercel-zero-introducing/youtube-description.md`), fill in topic from `meta.json.name`
+- Two separate `----` blocks for Dynamous and Hostinger → merge into the single combined block with Dynamous first, Hostinger second
+- Combined block missing one of the user-locked lines (header, disclosure, URL) → restore exact canonical wording
 - Description ending on banned phrase → replace with the spoken closer's question
-- Forbidden `→` characters → remove
-- Hostinger wording reading as "Sponsored" → replace with "Try Hostinger"
-- Banned sections (`Key Concepts`, etc.) → remove
+- Hostinger wording reading as "Sponsored" → restore the affiliate disclosure line `(Affiliate link — costs you nothing, supports the channel.)`
+- Banned sections (`Key Concepts`, `Key Changes`, `About This Video`, etc.) → remove
+- "Resources:" header line present → remove (URLs go directly with short labels)
 - Chapter timestamps off by speedup factor → recompute from `data-start / speed_factor`
 
 Heavier edits (rewriting weak chapter titles, replacing dead URLs with their correct destinations, expanding hashtags from vidIQ data) require confirmation.
@@ -250,7 +263,9 @@ Heavier edits (rewriting weak chapter titles, replacing dead URLs with their cor
 
 - [ ] You read `youtube-description.md` end-to-end
 - [ ] You verified the section order matches the canonical structure
-- [ ] You verified Dynamous and Hostinger blocks are byte-correct with `----` separators
+- [ ] You verified the SINGLE combined Dynamous+Hostinger block is byte-correct with `----` separators (NOT two separate blocks)
+- [ ] You verified the block header lines exist verbatim: `🚀 DYNAMOUS AI COMMUNITY` and `⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS`
+- [ ] You verified the Hostinger affiliate disclosure line is present
 - [ ] You counted hashtags
 - [ ] You compared the description CTA against the spoken closer in `script.txt`
 - [ ] For long-form: you verified chapter timestamps account for any `-<N>x.mp4` postfix

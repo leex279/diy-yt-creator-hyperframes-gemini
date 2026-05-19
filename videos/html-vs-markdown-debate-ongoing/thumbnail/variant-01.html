@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!-- Variant 01 — Strike-swap with PART 2 stamp.
+     MARKDOWN vs HTML dominant topic at top. Strike on "vs". Corner stamp "ROUND 2".
+     Sub-receipt: 8 DAYS LATER, NO CONSENSUS. Theme: white minimal. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v01 — Strike-swap + ROUND 2 stamp</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Corner stamp — diagonal ROUND 2 in top-right */
+  .round-stamp {
+    position: absolute;
+    top: 38px; right: -10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent-terracotta);
+    padding: 9px 28px 9px 18px;
+    border-radius: 6px 0 0 6px;
+    box-shadow: -4px 4px 14px rgba(199, 90, 63, 0.35);
+    z-index: 10;
+  }
+
+  /* Main topic block — MARKDOWN vs HTML */
+  .topic-block {
+    position: absolute;
+    top: 150px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-term {
+    font-size: 100px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-strike {
+    position: relative;
+    display: inline-block;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 54px;
+    letter-spacing: -1px;
+    color: var(--text-cream);
+    padding: 0 6px;
+  }
+  .vs-strike::after {
+    content: "";
+    position: absolute;
+    left: -8%; right: -8%;
+    top: 52%;
+    height: 10px;
+    background: var(--accent-terracotta);
+    transform: translateY(-50%) rotate(-3deg);
+    border-radius: 5px;
+    opacity: 0.92;
+  }
+
+  /* Hook sub-line */
+  .hook-line {
+    display: block;
+    margin-top: 24px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    font-size: 56px;
+    letter-spacing: -1.5px;
+    color: var(--accent-terracotta);
+    text-align: center;
+  }
+
+  /* Receipt bottom */
+  .receipt-c {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 52px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .receipt-c strong { color: var(--accent-deep-red); }
+
+  /* Brand top-left, below overline */
+  .theme-white .brand {
+    left: 60px;
+    bottom: auto;
+    top: 56px;
+    right: auto;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-white">
+
+    <!-- Round 2 stamp top-right -->
+    <div class="round-stamp">ROUND 2</div>
+
+    <!-- Overline top-left — pushed below by brand which sits at 56px -->
+    <div class="overline" style="top:108px; font-size:19px; letter-spacing:5px;">Using Claude Code &nbsp;·&nbsp; Part 2</div>
+    <div class="overline-divider" style="top:154px;"></div>
+
+    <!-- Dominant topic header -->
+    <div class="topic-block">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-strike">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <span class="hook-line">BOTH STILL HERE.</span>
+    </div>
+
+    <!-- Receipt -->
+    <div class="receipt-c"><strong>8 days later.</strong> &nbsp;·&nbsp; No consensus.</div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

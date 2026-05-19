@@ -1,17 +1,19 @@
 <!--
-  scene-install.html — Scene 09: Install (198.12 - 215.93, 17.81s)
-  NO TERMINAL. Show the agent config UI instead. Two real-looking config
-  snippets: Claude Code .claude.json + Cursor extension panel.
+  scene-install.html — Scene 09: Install via agent-skill (duration 34.852s)
+  Two install commands in a terminal, plus the explicit-prompt-required callout.
 
-  Scene-local anchors (local = root - 198.12):
-    0.00   "How do you give it to your agent" → title
-    2.46   "Two minutes"                       → 2-min timer
-    3.26   "For Claude Code"                   → CC config card
-    7.07   "For Cursor"                        → Cursor extension card
-    8.97   "Restart your agent"                → restart chip
-    11.03  "Done"                              → DONE stamp
-    14.30  "now searches by structure"         → outcome line
-    17.18  "That's the upgrade"                → UPGRADE pulse
+  Scene-local anchors (RE-ANCHORED to transcript word starts, scene root = 328.821):
+    0.00   "Giving your agent ast-grep"  → title + 2-cmd timer
+    3.62   "One"                         → STEP 1 label
+    5.57   "N P M install …"             → terminal line 1 typewriter
+   10.05   "Two"                         → STEP 2 label
+   12.56   "N P X skills add …"          → terminal line 2 typewriter
+   16.42   "Then restart Claude Code"    → restart chip
+   18.20   "tell it explicitly"          → "Use ast-grep to find..." prompt card
+   19.36   "use ast-grep to find"        → prompt-card emphasis
+   21.62   "That last part matters"      → gotcha callout (yellow warning chip)
+   30.07   "Your agent now has"          → DONE outcome tagline
+   33.66   "from day one"                → outcome pulse
 -->
 <template id="scene-install-template">
   <div data-composition-id="scene-install"
@@ -23,12 +25,12 @@
               background: var(--bg-editor);">
 
     <style>
-      #s09 { position: absolute; inset: 0; padding: 50px 60px; box-sizing: border-box; }
+      #s09 { position: absolute; inset: 0; padding: 44px 60px; box-sizing: border-box; }
 
       #s09-head {
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
         font-weight: 900;
-        font-size: 60px;
+        font-size: 56px;
         line-height: 1.05;
         letter-spacing: -1.5px;
         color: var(--fg-bright);
@@ -42,271 +44,232 @@
         gap: 12px;
         background: rgba(78, 201, 176, 0.15);
         border: 1.5px solid var(--ok);
-        padding: 10px 20px;
+        padding: 8px 18px;
         border-radius: 999px;
         font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
         font-weight: 800;
-        font-size: 24px;
+        font-size: 20px;
         color: var(--ok);
         letter-spacing: 1.5px;
       }
-      #s09-timer .ico { font-size: 22px; }
+      #s09-timer .ico { font-size: 20px; }
 
-      /* Two config cards */
-      .cfg-row {
-        margin-top: 26px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 26px;
-        height: 420px;
-      }
-      .cfg-card {
-        background: var(--bg-panel);
+      /* Terminal */
+      #s09-terminal {
+        margin-top: 24px;
+        background: #0a0e14;
         border: 1.5px solid var(--border-strong);
-        border-radius: 12px;
+        border-radius: 10px;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        position: relative;
       }
-      .cfg-card .head {
-        padding: 16px 22px;
+      .term-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
         background: var(--bg-deep);
         border-bottom: 1px solid var(--border-soft);
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-      .cfg-card .head .ico {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
-        background: var(--bg-panel);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        font-weight: 900;
-        font-size: 24px;
-        border: 1px solid var(--border-strong);
-      }
-      .cfg-card .head .name {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        font-weight: 800;
-        font-size: 24px;
-        color: var(--fg-bright);
-      }
-      .cfg-card .head .sub {
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
         font-size: 14px;
         color: var(--fg-muted);
-        margin-left: auto;
       }
-      .cfg-card.cc .head .ico { color: var(--brand-orange); border-color: var(--brand-orange); }
-      .cfg-card.cursor .head .ico { color: var(--syn-variable); border-color: var(--syn-variable); }
-
-      .cfg-card .body {
-        flex: 1;
-        padding: 18px 22px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        overflow: hidden;
+      .term-head .dots {
+        display: inline-flex;
+        gap: 6px;
+        margin-right: 8px;
       }
-      .cfg-card .step {
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-size: 18px;
-        color: var(--fg-muted);
+      .term-head .dots span {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        background: var(--border-strong);
+      }
+      .term-head .dots span:nth-child(1) { background: #f97583; }
+      .term-head .dots span:nth-child(2) { background: #f7b649; }
+      .term-head .dots span:nth-child(3) { background: var(--ok); }
+      .term-head .title {
+        font-weight: 700;
+        color: var(--fg-bright);
         letter-spacing: 0.5px;
       }
-      .cfg-card .step .num {
+      .term-body {
+        padding: 18px 22px;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 22px;
+        line-height: 1.6;
+        color: var(--fg-bright);
+        min-height: 220px;
+      }
+      .term-step-label {
         display: inline-block;
-        width: 24px;
-        height: 24px;
+        background: var(--bg-panel);
+        border: 1px solid var(--ok);
+        color: var(--ok);
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        margin-right: 12px;
+        vertical-align: middle;
+      }
+      .term-line {
+        display: block;
+        opacity: 0;
+        margin-top: 6px;
+      }
+      .term-line .prompt {
+        color: var(--ok);
+        font-weight: 800;
+      }
+      .term-line .cmd {
+        color: var(--fg-bright);
+      }
+      .term-line .flag {
+        color: var(--syn-keyword);
+      }
+      .term-line .pkg {
+        color: var(--syn-string);
+      }
+      .term-line .ok-tag {
+        display: inline-block;
+        margin-left: 12px;
+        color: var(--ok);
+        font-size: 16px;
+        font-weight: 800;
+        opacity: 0;
+      }
+
+      /* Explicit-prompt callout card */
+      #s09-prompt-row {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 22px;
+      }
+      .prompt-card, .gotcha-card {
+        background: var(--bg-panel);
+        border: 1.5px solid var(--border-strong);
+        border-radius: 10px;
+        padding: 16px 20px;
+        opacity: 0;
+      }
+      .prompt-card .head, .gotcha-card .head {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .prompt-card .head .dot {
+        width: 8px; height: 8px;
         border-radius: 50%;
-        background: var(--bg-deep);
-        border: 1px solid var(--border-strong);
+        background: var(--brand-orange);
+      }
+      .prompt-card .quote {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 24px;
+        color: var(--fg-bright);
+        line-height: 1.4;
+      }
+      .prompt-card .quote .em {
+        color: var(--ok);
+        font-weight: 800;
+        background: rgba(78, 201, 176, 0.12);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .gotcha-card {
+        border-color: var(--warn);
+        background: rgba(215, 186, 125, 0.08);
+      }
+      .gotcha-card .head .dot {
+        background: var(--warn);
+      }
+      .gotcha-card .head {
+        color: var(--warn);
+      }
+      .gotcha-card .body {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--fg-default);
+      }
+      .gotcha-card .body .em {
+        color: var(--warn);
+        font-weight: 800;
+      }
+
+      /* Outcome row */
+      #s09-outcome {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        bottom: 28px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 30px;
         color: var(--fg-bright);
         text-align: center;
-        line-height: 22px;
-        font-size: 13px;
-        font-weight: 800;
-        margin-right: 10px;
+        opacity: 0;
+        line-height: 1.2;
       }
-      .cfg-code {
-        background: var(--bg-deep);
-        border: 1px solid var(--border-soft);
-        border-radius: 6px;
-        padding: 14px 16px;
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-size: 17px;
-        color: var(--fg-default);
-        line-height: 1.5;
-        white-space: pre;
-        position: relative;
-        overflow: hidden;
-      }
-      .cfg-code .added {
-        background: rgba(78, 201, 176, 0.12);
-        border-left: 3px solid var(--ok);
-        padding-left: 8px;
-        margin-left: -8px;
-        display: block;
+      #s09-outcome .em {
         color: var(--ok);
-      }
-      .cfg-code .key { color: var(--syn-variable); }
-      .cfg-code .str { color: var(--syn-string); }
-      .cfg-code .punct { color: var(--fg-muted); }
-
-      /* Cursor extension button */
-      .cursor-ext {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: var(--bg-deep);
-        border: 1px solid var(--border-soft);
-        border-radius: 8px;
-        padding: 14px 16px;
-      }
-      .cursor-ext .name {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        font-weight: 700;
-        font-size: 20px;
-        color: var(--fg-bright);
-      }
-      .cursor-ext .pub {
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-size: 14px;
-        color: var(--fg-muted);
-      }
-      .cursor-ext .install-btn {
-        margin-left: auto;
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-weight: 800;
-        font-size: 16px;
-        padding: 8px 18px;
-        background: var(--accent-line);
-        color: #fff;
-        border-radius: 6px;
-        letter-spacing: 1px;
-      }
-      .cursor-ext .install-btn.done {
-        background: var(--ok);
-        color: var(--bg-deep);
-      }
-
-      /* Bottom outcome row */
-      #s09-outcome {
-        margin-top: 26px;
-        display: flex;
-        align-items: center;
-        gap: 18px;
-      }
-      #s09-restart {
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-weight: 800;
-        font-size: 22px;
-        padding: 10px 18px;
-        background: var(--bg-panel);
-        border: 1px solid var(--border-strong);
-        border-radius: 8px;
-        color: var(--fg-bright);
-        letter-spacing: 1.5px;
-      }
-      #s09-arrow {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        font-weight: 900;
-        font-size: 38px;
-        color: var(--ok);
-      }
-      #s09-done {
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-weight: 900;
-        font-size: 28px;
-        letter-spacing: 3px;
-        padding: 12px 22px;
-        background: rgba(78, 201, 176, 0.18);
-        border: 2px solid var(--ok);
-        color: var(--ok);
-        border-radius: 8px;
-      }
-      #s09-tagline {
-        margin-left: auto;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        font-weight: 800;
-        font-size: 26px;
-        color: var(--fg-bright);
-        text-align: right;
-        line-height: 1.15;
-      }
-      #s09-tagline .em { color: var(--ok); }
-      #s09-tagline .sub {
-        display: block;
-        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-        font-size: 16px;
-        color: var(--fg-muted);
-        margin-top: 4px;
       }
     </style>
 
     <div id="s09">
       <div id="s09-head">
-        Give your agent the new tool. <span class="em">Two minutes.</span>
+        Give your agent ast-grep <span class="em">in two commands.</span>
       </div>
 
       <div id="s09-timer">
         <span class="ico">◷</span>
-        <span>~120 SECONDS · NO TERMINAL</span>
+        <span>2 COMMANDS · ~60 SECONDS</span>
       </div>
 
-      <div class="cfg-row">
-        <div class="cfg-card cc" id="cfg-cc">
-          <div class="head">
-            <span class="ico">★</span>
-            <span class="name">Claude Code</span>
-            <span class="sub">.claude.json</span>
-          </div>
-          <div class="body">
-            <div class="step"><span class="num">1</span>open <code>.claude.json</code> in your project</div>
-            <div class="cfg-code">{
-  <span class="key">"mcpServers"</span><span class="punct">:</span> {
-<span class="added">    <span class="key">"ast-grep"</span><span class="punct">:</span> {
-      <span class="key">"command"</span><span class="punct">:</span> <span class="str">"npx"</span><span class="punct">,</span>
-      <span class="key">"args"</span><span class="punct">:</span> [<span class="str">"@ast-grep/cli"</span>]
-    }</span>
-  }
-}</div>
-            <div class="step"><span class="num">2</span>save · agent picks it up on next message</div>
-          </div>
+      <div id="s09-terminal">
+        <div class="term-head">
+          <span class="dots"><span></span><span></span><span></span></span>
+          <span class="title">~/your-project · zsh</span>
         </div>
+        <div class="term-body">
+          <span class="term-line" id="line-1">
+            <span class="term-step-label">STEP 1</span><span class="prompt">$</span> <span class="cmd">npm install</span> <span class="flag">-g</span> <span class="pkg">@ast-grep/cli</span><span class="ok-tag" id="ok-1">✓ installed</span>
+          </span>
+          <span class="term-line" id="line-2">
+            <span class="term-step-label">STEP 2</span><span class="prompt">$</span> <span class="cmd">npx skills add</span> <span class="pkg">ast-grep/agent-skill</span><span class="ok-tag" id="ok-2">✓ skill added</span>
+          </span>
+          <span class="term-line" id="line-3" style="margin-top: 16px;">
+            <span class="prompt">$</span> <span class="cmd" style="color:var(--fg-muted);">restart Claude Code…</span>
+          </span>
+        </div>
+      </div>
 
-        <div class="cfg-card cursor" id="cfg-cursor">
-          <div class="head">
-            <span class="ico">▣</span>
-            <span class="name">Cursor</span>
-            <span class="sub">Extensions panel</span>
-          </div>
+      <div id="s09-prompt-row">
+        <div class="prompt-card" id="prompt-card">
+          <div class="head"><span class="dot"></span>STEP 3 · TELL THE AGENT EXPLICITLY</div>
+          <div class="quote">&gt; <span class="em">Use ast-grep</span> to find every console.log call.</div>
+        </div>
+        <div class="gotcha-card" id="gotcha-card">
+          <div class="head"><span class="dot"></span>⚠ KNOWN GOTCHA</div>
           <div class="body">
-            <div class="step"><span class="num">1</span>open Extensions · search "ast-grep"</div>
-            <div class="cursor-ext">
-              <div>
-                <div class="name">ast-grep</div>
-                <div class="pub">ast-grep · v0.30.0 · 1.2M installs</div>
-              </div>
-              <div class="install-btn done" id="cursor-btn">✓ INSTALLED</div>
-            </div>
-            <div class="step"><span class="num">2</span>restart agent · upgrade is live</div>
+            As of today, you have to <span class="em">name the tool out loud</span> — or the agent falls back to its old text search.
+          </div>
+          <div class="body" id="gotcha-claudemd" style="margin-top:10px; font-size:18px; color:var(--syn-comment);">
+            <span class="em" style="color:var(--ok);">Pro tip:</span> add a one-liner to <span class="em" style="color:var(--fg-bright);">CLAUDE.md</span> — <span class="em" style="color:var(--fg-bright);">"always use ast-grep for code search"</span> — and the agent picks it up every session.
           </div>
         </div>
       </div>
 
       <div id="s09-outcome">
-        <span id="s09-restart">▶ RESTART AGENT</span>
-        <span id="s09-arrow">→</span>
-        <span id="s09-done">DONE</span>
-        <span id="s09-tagline">
-          Your AI agent now searches code <span class="em">by structure</span>
-          <span class="sub">// not by guessing at text</span>
-        </span>
+        Your agent now has the smart search <span class="em">it should have had from day one.</span>
       </div>
     </div>
 
@@ -318,45 +281,43 @@
       // HIDE
       tl.set("#s09-head",    { opacity: 0, y: -16 }, 0);
       tl.set("#s09-timer",   { opacity: 0, scale: 0.85 }, 0);
-      tl.set("#cfg-cc",      { opacity: 0, x: -36, scale: 0.97 }, 0);
-      tl.set("#cfg-cursor",  { opacity: 0, x: 36, scale: 0.97 }, 0);
-      tl.set("#cursor-btn",  { backgroundColor: "var(--accent-line)", color: "#fff" }, 0);
-      tl.set("#s09-restart", { opacity: 0, x: -12 }, 0);
-      tl.set("#s09-arrow",   { opacity: 0, scale: 0.5 }, 0);
-      tl.set("#s09-done",    { opacity: 0, scale: 0.7 }, 0);
-      tl.set("#s09-tagline", { opacity: 0, y: 12 }, 0);
+      tl.set("#s09-terminal",{ opacity: 0, scale: 0.97 }, 0);
+      tl.set(["#line-1","#line-2","#line-3"], { opacity: 0, x: -10 }, 0);
+      tl.set(["#ok-1","#ok-2"], { opacity: 0 }, 0);
+      tl.set(["#prompt-card","#gotcha-card"], { opacity: 0, y: 14 }, 0);
+      tl.set("#s09-outcome", { opacity: 0, y: 14 }, 0);
 
-      // Head — local 0
+      // Head ("Giving your agent ast-grep takes two commands" 0s local)
       tl.to("#s09-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
+      // Timer chip
+      tl.to("#s09-timer", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 0.6);
+      // Terminal frame
+      tl.to("#s09-terminal", { opacity: 1, scale: 1, duration: 0.55, ease: "expo.out" }, 2.5);
 
-      // Timer — "Two minutes" (local 2.46)
-      tl.to("#s09-timer", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 2.46);
+      // STEP 1 — "One" 3.62s local, "N P M install" typewriter at 5.57s local
+      tl.to("#line-1", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 5.57);
+      tl.to("#ok-1", { opacity: 1, duration: 0.35, ease: "power2.out" }, 9.5);
 
-      // Claude Code card — "For Claude Code" (local 3.26)
-      tl.to("#cfg-cc", { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "expo.out" }, 3.26);
+      // STEP 2 — "Two" 10.05s local, "N P X skills add" typewriter at 12.56s local
+      tl.to("#line-2", { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 12.56);
+      tl.to("#ok-2", { opacity: 1, duration: 0.35, ease: "power2.out" }, 15.7);
 
-      // Cursor card — "For Cursor" (local 7.07)
-      tl.to("#cfg-cursor", { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: "expo.out" }, 7.07);
-      // Cursor INSTALL button click animation — "install the extension" (local 7.71)
-      tl.set("#cursor-btn", { backgroundColor: "var(--ok)", color: "var(--bg-deep)" }, 7.71);
-      tl.set("#cursor-btn", { textContent: "INSTALLING..." }, 7.71);
-      tl.set("#cursor-btn", { textContent: "✓ INSTALLED" }, 8.5);
+      // Restart line ("Then restart Claude Code" 16.42s local)
+      tl.to("#line-3", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 16.42);
 
-      // Restart row — "Restart your agent" (local 8.97)
-      tl.to("#s09-restart", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 8.97);
-      tl.to("#s09-arrow",   { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.0)" }, 9.5);
+      // Explicit-prompt card ("tell it explicitly" 18.20s local)
+      tl.to("#prompt-card", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 18.20);
 
-      // DONE — local 11.03
-      tl.to("#s09-done", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 11.03);
-      tl.to("#s09-done", { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1, overwrite: "auto" }, 11.60);
+      // Gotcha callout ("That last part matters" 21.62s local)
+      tl.to("#gotcha-card", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 21.62);
+      tl.to("#gotcha-card", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.1);
 
-      // Tagline — "now searches by structure" (local 14.30)
-      tl.to("#s09-tagline", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 14.30);
+      // Outcome tagline ("Your agent now has the smart search" 30.07s local)
+      tl.to("#s09-outcome", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 30.07);
+      tl.to("#s09-outcome", { scale: 1.03, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 33.66);
 
-      // UPGRADE pulse on tagline — "That's the upgrade" (local 17.18)
-      tl.to("#s09-tagline", { scale: 1.03, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 17.18);
-
-      tl.set({}, {}, 17.81);
+      // Pad timeline to full local duration (34.852s)
+      tl.set({}, {}, 34.852);
       window.__timelines["scene-install"] = tl;
     </script>
   </div>

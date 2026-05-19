@@ -1,5 +1,5 @@
-﻿<!--
-  scene-worktrees.html â€” Parallel worktrees visualization.
+<!--
+  scene-worktrees.html — Parallel worktrees visualization.
   Central main branch dot, three worktree spurs, three PR cards on the right.
 -->
 <template id="scene-worktrees-template">
@@ -105,11 +105,11 @@
 
       <div id="wt-graph">
         <svg id="wt-svg" xmlns="http://www.w3.org/2000/svg">
-          <!-- main â†’ worktrees (d attributes are set by layoutEdges() below from real DOM positions) -->
+          <!-- main → worktrees (d attributes are set by layoutEdges() below from real DOM positions) -->
           <path class="wt-edge" id="wt-e1" d="M 0,0" />
           <path class="wt-edge" id="wt-e2" d="M 0,0" />
           <path class="wt-edge" id="wt-e3" d="M 0,0" />
-          <!-- worktrees â†’ PRs -->
+          <!-- worktrees → PRs -->
           <path class="wt-edge" id="wt-e4" d="M 0,0" />
           <path class="wt-edge" id="wt-e5" d="M 0,0" />
           <path class="wt-edge" id="wt-e6" d="M 0,0" />
@@ -163,20 +163,20 @@
           if (el) el.setAttribute('d', d);
         }
 
-        // main â†’ worktrees: curve through the horizontal midpoint
+        // main → worktrees: curve through the horizontal midpoint
         const m1 = (mainR.x + w1L.x) / 2;
         setPath('wt-e1', 'M ' + mainR.x + ',' + mainR.y + ' Q ' + m1 + ',' + mainR.y + ' ' + w1L.x + ',' + w1L.y);
         setPath('wt-e2', 'M ' + mainR.x + ',' + mainR.y + ' L ' + w2L.x + ',' + w2L.y);
         setPath('wt-e3', 'M ' + mainR.x + ',' + mainR.y + ' Q ' + m1 + ',' + mainR.y + ' ' + w3L.x + ',' + w3L.y);
 
-        // worktrees â†’ PRs
+        // worktrees → PRs
         const m2 = (w1R.x + pr1L.x) / 2;
         setPath('wt-e4', 'M ' + w1R.x + ',' + w1R.y + ' Q ' + m2 + ',' + w1R.y + ' ' + pr1L.x + ',' + pr1L.y);
         setPath('wt-e5', 'M ' + w2R.x + ',' + w2R.y + ' L ' + pr2L.x + ',' + pr2L.y);
         setPath('wt-e6', 'M ' + w3R.x + ',' + w3R.y + ' Q ' + m2 + ',' + w3R.y + ' ' + pr3L.x + ',' + pr3L.y);
       })();
 
-      // Edges start with stroke-dashoffset trick â€” set dasharray and offset to length
+      // Edges start with stroke-dashoffset trick — set dasharray and offset to length
       const edges = ["#wt-e1","#wt-e2","#wt-e3","#wt-e4","#wt-e5","#wt-e6"];
       edges.forEach(sel => {
         const el = document.querySelector(sel);
@@ -220,20 +220,32 @@
       tl.to("#wt-e6", { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 15.2);
       tl.to("#wt-pr3", { scale: 1, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" }, 15.5);
 
-      // Highlight tagline mid-hold
+      // Mid-hold beats — each is new information, not decoration
+      // 18.0: tagline emphasis on "Same wallet, faster delivery"
       tl.to("#wt-tagline", { scale: 1.04, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 18.0);
-      // Pulse all worktree dots together
+      // 21.0: sequential edge glow showing data flow direction (new info)
+      tl.to(["#wt-e1","#wt-e2","#wt-e3"], { stroke: "#60A5FA", duration: 0.4,
+        ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.4 }, 21.0);
+      // 24.5: isolation pulse on all worktree nodes — narration "Each isolated"
       tl.to(["#wt-w1 .dot", "#wt-w2 .dot", "#wt-w3 .dot"], {
         scale: 1.4, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 2,
         transformOrigin: "50% 50%", stagger: 0.08
-      }, 22.0);
+      }, 24.5);
+      // 28.5: merge-direction pulse on PR nodes — narration "Two pull requests. No cross-talk."
       tl.to(["#wt-pr1 .dot", "#wt-pr2 .dot", "#wt-pr3 .dot"], {
         scale: 1.4, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 2,
         transformOrigin: "50% 50%", stagger: 0.08
-      }, 27.0);
+      }, 28.5);
+      // 32.0: final tagline confirm — narration "bottleneck is the human reviewer"
+      tl.to("#wt-tagline", { scale: 1.05, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 32.0);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 50);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#wt-tagline", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 35.50);
+      tl.to("#wt-w1", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 38.00);
+      tl.to("#wt-w2", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 40.50);
+
+      tl.set({}, {}, 43.3);
       window.__timelines["scene-worktrees"] = tl;
     </script>
   </div>

@@ -1,0 +1,1048 @@
+<!--
+  scene-interview.html — Round 3 — the Thariq Anthropic interview drop.
+  Scene-relative duration: 54.85s. Parent data-start: 481.53.
+
+  Three visual phases, paced to coda transcript word anchors:
+
+  Phase A — Interview drop + compute-allocator quote (0 → 26.5s)
+    0.40   — overline + headline enter ("ROUND 3 / +8 DAYS / INTERVIEW DROPPED TODAY")
+    1.50   — interview tile card slides in (HowIAI lockup placeholder)
+    1.73   — "+8 DAYS" badge pulse
+    8.67   — "DOUBLED DOWN" slam stamp (anchor: word 'doubled')
+    11.50  — interview tile fades / quote card enters
+    13.23  — "8 HRS" big stat (anchor: 'eight hours')
+    16.89  — "= $500" reveal (anchor: 'five hundred')
+    20.49  — "COMPUTE ALLOCATOR" pull-quote slam (anchor: 'allocators')
+    24.45  — "compute" emphasis pulse
+
+  Phase B — Micro software on top of micro software (26.5 → 41s)
+    26.49  — crossfade to Phase B (anchor: 'pattern')
+    27.85  — nested frames diagram enters (anchor: 'micro software')
+    31.07  — "PLAN.html" outer frame highlight (anchor: 'plan')
+    33.30  — "EDITOR.html" inner frame slides in (anchor: 'editor')
+    37.13  — sub-line reveal: "Built once. Tossed when done." (anchor: 'plan.')
+    39.32  — "Tossed" terracotta stamp (anchor: 'Tossed')
+
+  Phase C — Token-revenue conspiracy pushback (41 → 54.85s)
+    41.21  — crossfade to Phase C (anchor: 'comments')
+    42.69  — 3 reply cards stagger in (anchor: 'pushed')
+    44.50  — "× 3" badge pulse (anchor: 'Three replies')
+    46.17  — "ANTHROPIC INVENTED THIS." pull-quote (anchor: 'Anthropic')
+    48.98  — "TOKENS" / "$" icon pulse (anchor: 'tokens')
+    50.99  — question lower-third enters (anchor: 'Whether')
+    53.46  — final beat — "openly on the table" (anchor: 'openly')
+
+  Color palette inherits from arch-stack / source-cards:
+    bg            cream #F4F1EA (composition root)
+    text          #1A1815
+    terracotta    #B14938 (overlines) / #C75A3F (italic emphasis)
+    charcoal tile #1F1B17 (interview lockup contrast)
+    mid grey      #3D3530 / #5C544B
+-->
+<template id="scene-interview-template">
+  <div id="root"
+       data-composition-id="scene-interview"
+       data-start="0"
+       data-duration="54.85"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+              color: #1A1815;">
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      /* ── Page chrome ────────────────────────────────────────── */
+      #iv-wrap {
+        width: 100%;
+        height: 100%;
+        padding: 44px 100px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        position: relative;
+      }
+
+      /* ── Section header ─────────────────────────────────────── */
+      #iv-header {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #iv-overline {
+        font-family: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #B14938;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      #iv-overline .iv-overline-sep {
+        display: inline-block;
+        width: 26px;
+        height: 1px;
+        background: #B14938;
+        opacity: 0.55;
+      }
+      #iv-overline .iv-days-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 18px;
+        letter-spacing: 2px;
+        padding: 5px 12px 5px 12px;
+        background: #B14938;
+        color: #F4F1EA;
+        border-radius: 4px;
+        transform-origin: center;
+      }
+      #iv-h2 {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 80px;
+        color: #1A1815;
+        letter-spacing: -0.5px;
+        line-height: 1.05;
+      }
+      #iv-h2 .iv-italic {
+        font-style: italic;
+        color: #C75A3F;
+      }
+      #iv-divider {
+        height: 1px;
+        background: rgba(28, 26, 24, 0.10);
+        transform-origin: left center;
+        margin-top: 8px;
+      }
+
+      /* ── Phase A — Interview tile + compute-allocator stat block ─ */
+      .iv-phase {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        top: 220px;
+        bottom: 60px;
+        display: flex;
+        flex-direction: row;
+        gap: 56px;
+        align-items: stretch;
+      }
+
+      /* Interview tile (YouTube-like dark thumbnail) */
+      #iv-tile {
+        flex: 0 0 720px;
+        background: #1F1B17;
+        border-radius: 16px;
+        padding: 32px 36px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        color: #F4F1EA;
+        position: relative;
+        border: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 16px 48px rgba(28,26,24,0.18);
+      }
+      #iv-tile .iv-tile-chrome {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        letter-spacing: 4px;
+        color: rgba(244,241,234,0.6);
+      }
+      #iv-tile .iv-tile-chrome .iv-redrec {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #E74E37;
+      }
+      #iv-tile .iv-tile-thumb {
+        flex: 1;
+        background: #0A0806 url("../assets/interview-thumbnail.jpg") center / cover no-repeat;
+        border-radius: 10px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 360px;
+        overflow: hidden;
+      }
+      #iv-tile .iv-tile-thumb::after {
+        content: "35:33";
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: #F4F1EA;
+        background: rgba(0,0,0,0.78);
+        padding: 4px 10px;
+        border-radius: 4px;
+        letter-spacing: 1px;
+      }
+      #iv-tile .iv-play-btn {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: rgba(231,78,55,0.92);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(231,78,55,0.45);
+      }
+      #iv-tile .iv-play-btn::before {
+        content: "";
+        width: 0;
+        height: 0;
+        margin-left: 8px;
+        border-style: solid;
+        border-width: 18px 0 18px 28px;
+        border-color: transparent transparent transparent #F4F1EA;
+      }
+      #iv-tile .iv-tile-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      #iv-tile .iv-tile-host {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 16px;
+        letter-spacing: 3px;
+        color: #C75A3F;
+      }
+      #iv-tile .iv-tile-title {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 30px;
+        line-height: 1.15;
+        color: #F4F1EA;
+      }
+      #iv-tile .iv-tile-author {
+        font-size: 18px;
+        color: rgba(244,241,234,0.65);
+        font-style: italic;
+      }
+
+      /* "DOUBLED DOWN" big stamp slam — sits over tile area */
+      #iv-doubled-stamp {
+        position: absolute;
+        right: 60px;
+        top: 80px;
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-size: 96px;
+        line-height: 0.95;
+        color: #B14938;
+        letter-spacing: -1.5px;
+        transform-origin: center;
+        text-shadow:
+          -1px -1px 0 rgba(244,241,234,0.95),
+           1px -1px 0 rgba(244,241,234,0.95),
+          -1px  1px 0 rgba(244,241,234,0.95),
+           1px  1px 0 rgba(244,241,234,0.95);
+        rotate: -3deg;
+        max-width: 480px;
+        text-align: right;
+      }
+
+      /* Compute-allocator stat block (right column) */
+      #iv-stat-block {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        justify-content: center;
+      }
+      .iv-stat-row {
+        display: flex;
+        align-items: baseline;
+        gap: 20px;
+      }
+      .iv-stat-eq {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 300;
+        font-size: 92px;
+        color: rgba(28,26,24,0.35);
+      }
+      #iv-stat-hours {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-size: 132px;
+        color: #1A1815;
+        line-height: 0.95;
+        letter-spacing: -3px;
+      }
+      #iv-stat-hours .iv-hrs-unit {
+        font-weight: 600;
+        font-size: 56px;
+        margin-left: 8px;
+        color: #5C544B;
+      }
+      #iv-stat-dollars {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-size: 132px;
+        color: #C75A3F;
+        line-height: 0.95;
+        letter-spacing: -3px;
+      }
+      #iv-stat-dollars .iv-d-unit {
+        font-weight: 600;
+        font-size: 48px;
+        color: #B14938;
+        margin-left: 2px;
+      }
+      #iv-stat-caption {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        letter-spacing: 3px;
+        color: #5C544B;
+        text-transform: uppercase;
+        margin-top: 12px;
+      }
+
+      /* "COMPUTE ALLOCATOR" pull-quote — full-takeover hero card */
+      #iv-allocator {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        top: 280px;
+        bottom: 120px;
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 124px;
+        line-height: 1.0;
+        letter-spacing: -2px;
+        color: #B14938;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 28px;
+        z-index: 8;
+      }
+      #iv-allocator .iv-alloc-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #1A1815;
+        background: rgba(28, 26, 24, 0.06);
+        padding: 8px 22px;
+        border-radius: 6px;
+      }
+      #iv-allocator .iv-alloc-main {
+        max-width: 1500px;
+        text-shadow: 0 4px 24px rgba(177, 73, 56, 0.10);
+      }
+      #iv-allocator .iv-alloc-main em {
+        font-style: italic;
+        color: #1A1815;
+      }
+      #iv-allocator .iv-alloc-suf {
+        color: #5C544B;
+        font-style: italic;
+        font-weight: 600;
+        font-size: 36px;
+        letter-spacing: 0;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      #iv-allocator .iv-alloc-suf::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #C75A3F;
+      }
+
+      /* Attribution under quote */
+      #iv-attrib {
+        position: absolute;
+        left: 100px;
+        bottom: 80px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #5C544B;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      #iv-attrib .iv-attrib-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #C75A3F;
+      }
+
+      /* ── Phase B — Micro software on top of micro software ─────── */
+      #iv-phase-b {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        top: 220px;
+        bottom: 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      #iv-phase-b-h {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1.0;
+        color: #1A1815;
+        letter-spacing: -0.5px;
+      }
+      #iv-phase-b-h .iv-pb-em {
+        font-style: italic;
+        color: #C75A3F;
+      }
+      #iv-phase-b-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #B14938;
+        font-weight: 700;
+      }
+
+      /* Nested frames: PLAN.html wraps EDITOR.html wraps the comment */
+      #iv-frames {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 56px;
+      }
+      .iv-frame {
+        border: 2.5px solid #1A1815;
+        border-radius: 14px;
+        padding: 38px 44px 32px;
+        background: #FBFAF6;
+        position: relative;
+        box-shadow: 0 10px 28px rgba(28,26,24,0.10);
+      }
+      .iv-frame-label {
+        position: absolute;
+        top: -18px;
+        left: 28px;
+        background: #F4F1EA;
+        padding: 0 16px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 4px;
+        color: #1A1815;
+      }
+      #iv-frame-plan {
+        flex: 0 0 480px;
+        height: 480px;
+        border-color: #1A1815;
+      }
+      #iv-frame-plan .iv-frame-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 18px;
+        color: #5C544B;
+        opacity: 0.9;
+      }
+      #iv-frame-plan .iv-line {
+        height: 12px;
+        background: rgba(28,26,24,0.08);
+        border-radius: 3px;
+      }
+      #iv-frame-plan .iv-line.iv-line-short { width: 70%; }
+      #iv-frame-plan .iv-line.iv-line-med { width: 88%; }
+      #iv-frame-plan .iv-spacer { height: 14px; }
+      #iv-frame-plan .iv-section-h {
+        font-weight: 800;
+        color: #1A1815;
+        font-size: 20px;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+      #iv-frame-arrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 56px;
+        color: #B14938;
+        line-height: 1;
+      }
+      #iv-frame-editor {
+        flex: 0 0 480px;
+        height: 480px;
+        border-color: #C75A3F;
+        background: #FFF8F5;
+      }
+      #iv-frame-editor .iv-frame-label {
+        background: #FFF8F5;
+        color: #B14938;
+      }
+      #iv-frame-editor .iv-edit-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+      }
+      .iv-edit-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        border: 1.5px dashed rgba(199,90,63,0.35);
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 17px;
+        color: #1A1815;
+      }
+      .iv-edit-row .iv-edit-key {
+        flex: 0 0 130px;
+        font-weight: 700;
+        color: #B14938;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 14px;
+      }
+      .iv-edit-row .iv-edit-val {
+        flex: 1;
+        background: rgba(199,90,63,0.08);
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 15px;
+      }
+      .iv-edit-row .iv-edit-cursor {
+        width: 2px;
+        height: 16px;
+        background: #C75A3F;
+        animation: iv-blink 0.9s steps(2) infinite;
+      }
+      @keyframes iv-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+      #iv-built-tossed {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 26px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #1A1815;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        gap: 36px;
+        margin-top: 8px;
+      }
+      #iv-built-tossed .iv-bt-chip {
+        padding: 10px 20px;
+        background: #F4F1EA;
+        border: 1.5px solid rgba(28,26,24,0.18);
+        border-radius: 8px;
+      }
+      #iv-built-tossed .iv-bt-chip.iv-bt-tossed {
+        border-color: #C75A3F;
+        color: #B14938;
+      }
+
+      /* ── Phase C — Token-revenue pushback ───────────────────────── */
+      #iv-phase-c {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        top: 220px;
+        bottom: 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      #iv-phase-c-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #B14938;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      #iv-phase-c-overline .iv-x3-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        background: #B14938;
+        color: #F4F1EA;
+        border-radius: 6px;
+        font-size: 22px;
+        letter-spacing: 3px;
+        transform-origin: center;
+      }
+      #iv-phase-c-h {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 60px;
+        line-height: 1.0;
+        color: #1A1815;
+        letter-spacing: -0.4px;
+      }
+      #iv-phase-c-h .iv-em { font-style: italic; color: #C75A3F; }
+
+      /* Three reply cards in a row */
+      #iv-reply-grid {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 28px;
+        margin-top: 4px;
+      }
+      .iv-reply-card {
+        background: #FFFFFF;
+        border: 1px solid rgba(28,26,24,0.12);
+        border-radius: 12px;
+        padding: 22px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 4px 16px rgba(28,26,24,0.06);
+      }
+      .iv-reply-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .iv-reply-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+      }
+      .iv-reply-avatar.iv-av-1 { background: linear-gradient(135deg, #4F9DD4, #2E73A8); }
+      .iv-reply-avatar.iv-av-2 { background: linear-gradient(135deg, #C75A3F, #8C3D2C); }
+      .iv-reply-avatar.iv-av-3 { background: linear-gradient(135deg, #5C8F5A, #355A3E); }
+      .iv-reply-user {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 16px;
+        color: #1A1815;
+      }
+      .iv-reply-sub {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 13px;
+        color: #5C544B;
+        letter-spacing: 1px;
+      }
+      .iv-reply-body {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-size: 22px;
+        line-height: 1.25;
+        color: #3D3530;
+        font-style: italic;
+      }
+      .iv-reply-foot {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 13px;
+        color: #5C544B;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .iv-reply-foot .iv-like {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Big pull-quote across phase C */
+      #iv-conspiracy-pull {
+        margin-top: 8px;
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-size: 72px;
+        line-height: 0.98;
+        color: #B14938;
+        letter-spacing: -1.2px;
+        text-align: center;
+      }
+      #iv-conspiracy-pull .iv-cp-sub {
+        display: block;
+        margin-top: 14px;
+        font-weight: 600;
+        font-style: italic;
+        font-size: 36px;
+        color: #5C544B;
+        letter-spacing: 0;
+      }
+
+      /* Final lower-third question */
+      #iv-question {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        bottom: 60px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #1A1815;
+        text-align: center;
+        padding: 14px 24px;
+        border-top: 2px solid #B14938;
+        border-bottom: 2px solid #B14938;
+      }
+      #iv-question .iv-q-em { color: #B14938; }
+    </style>
+
+    <div id="iv-wrap">
+
+      <!-- ── Header ─────────────────────────────────────────────── -->
+      <div id="iv-header">
+        <div id="iv-overline">
+          <span>ROUND&nbsp;03</span>
+          <span class="iv-overline-sep"></span>
+          <span class="iv-days-badge">+ 8&nbsp;DAYS</span>
+          <span class="iv-overline-sep"></span>
+          <span>VIDEO&nbsp;INTERVIEW</span>
+        </div>
+        <h2 id="iv-h2">And then today — <span class="iv-italic">he doubled down.</span></h2>
+        <div id="iv-divider"></div>
+      </div>
+
+      <!-- ── Phase A — Interview tile + compute-allocator stat ─── -->
+      <div id="iv-phase-a" class="iv-phase">
+
+        <!-- Interview tile -->
+        <div id="iv-tile" class="clip" data-start="0" data-duration="26.5" data-track-index="2">
+          <div class="iv-tile-chrome">
+            <span class="iv-redrec"></span>
+            <span>YOUTUBE&nbsp;&nbsp;·&nbsp;&nbsp;HOW&nbsp;I&nbsp;AI</span>
+          </div>
+          <div class="iv-tile-thumb">
+            <div class="iv-play-btn"></div>
+          </div>
+          <div class="iv-tile-meta">
+            <div class="iv-tile-host">CODE&nbsp;WITH&nbsp;CLAUDE&nbsp;·&nbsp;CONFERENCE</div>
+            <div class="iv-tile-title">Why this Claude Code engineer uses HTML files as AI specs</div>
+            <div class="iv-tile-author">Thariq Shihipar — Anthropic</div>
+          </div>
+        </div>
+
+        <!-- DOUBLED DOWN stamp — sits over tile right side -->
+        <div id="iv-doubled-stamp" class="clip" data-start="8" data-duration="18.5" data-track-index="3">
+          DOUBLED<br>DOWN.
+        </div>
+
+        <!-- Stat block — compute allocator quote materializes -->
+        <div id="iv-stat-block" class="clip" data-start="10.5" data-duration="16" data-track-index="4">
+          <div class="iv-stat-row">
+            <span id="iv-stat-hours">8<span class="iv-hrs-unit">HRS</span></span>
+            <span class="iv-stat-eq">=</span>
+            <span id="iv-stat-dollars">$500<span class="iv-d-unit">USD</span></span>
+          </div>
+          <div id="iv-stat-caption">When Claude runs for 8 hours — Claude spends $500</div>
+        </div>
+      </div>
+
+      <!-- COMPUTE ALLOCATOR pull-quote — full-takeover hero (tile + stat fade at 19.8) -->
+      <div id="iv-allocator" class="clip" data-start="20" data-duration="6.5" data-track-index="5">
+        <div class="iv-alloc-overline">THARIQ — THE NEW FRAMING</div>
+        <div class="iv-alloc-main">
+          “All of us are becoming<br><em>compute allocators</em> now.”
+        </div>
+        <div class="iv-alloc-suf">Thariq Shihipar · Anthropic · Claude Code team</div>
+      </div>
+
+      <!-- Attribution dot row (always present in Phase A) -->
+      <div id="iv-attrib" class="clip" data-start="2" data-duration="24" data-track-index="6">
+        <span class="iv-attrib-dot"></span>
+        <span>YOUTUBE&nbsp;·&nbsp;HOW&nbsp;I&nbsp;AI&nbsp;·&nbsp;PUBLISHED&nbsp;TODAY</span>
+      </div>
+
+      <!-- ── Phase B — Micro software on top of micro software ──── -->
+      <div id="iv-phase-b" class="clip" data-start="26.4" data-duration="14.6" data-track-index="7">
+        <div id="iv-phase-b-overline">PATTERN&nbsp;·&nbsp;NEW</div>
+        <h3 id="iv-phase-b-h">Micro software on top of <span class="iv-pb-em">micro software</span>.</h3>
+
+        <div id="iv-frames">
+          <div id="iv-frame-plan" class="iv-frame">
+            <span class="iv-frame-label">PLAN.html</span>
+            <div class="iv-frame-content">
+              <div class="iv-section-h">PRD — Code Review V2</div>
+              <div class="iv-line iv-line-med"></div>
+              <div class="iv-line iv-line-short"></div>
+              <div class="iv-spacer"></div>
+              <div class="iv-section-h">Decision rules</div>
+              <div class="iv-line iv-line-med"></div>
+              <div class="iv-line iv-line-short"></div>
+              <div class="iv-line iv-line-med"></div>
+              <div class="iv-spacer"></div>
+              <div class="iv-section-h">Test plan</div>
+              <div class="iv-line iv-line-short"></div>
+            </div>
+          </div>
+
+          <div id="iv-frame-arrow">→</div>
+
+          <div id="iv-frame-editor" class="iv-frame">
+            <span class="iv-frame-label">EDITOR.html</span>
+            <div class="iv-edit-rows">
+              <div class="iv-edit-row">
+                <span class="iv-edit-key">Rule&nbsp;01</span>
+                <span class="iv-edit-val">if&nbsp;diff&nbsp;&gt;&nbsp;200&nbsp;→&nbsp;summarize</span>
+              </div>
+              <div class="iv-edit-row">
+                <span class="iv-edit-key">Rule&nbsp;02</span>
+                <span class="iv-edit-val">if&nbsp;migration&nbsp;→&nbsp;warn</span>
+              </div>
+              <div class="iv-edit-row">
+                <span class="iv-edit-key">Rule&nbsp;03</span>
+                <span class="iv-edit-val">if&nbsp;test&nbsp;skipped&nbsp;→&nbsp;flag<span class="iv-edit-cursor"></span></span>
+              </div>
+              <div class="iv-edit-row">
+                <span class="iv-edit-key">Rule&nbsp;04</span>
+                <span class="iv-edit-val">if&nbsp;TODO&nbsp;→&nbsp;list</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="iv-built-tossed">
+          <span class="iv-bt-chip">BUILT&nbsp;ONCE</span>
+          <span class="iv-bt-chip iv-bt-tossed">TOSSED&nbsp;WHEN&nbsp;DONE</span>
+        </div>
+      </div>
+
+      <!-- ── Phase C — Token-revenue pushback ────────────────────── -->
+      <div id="iv-phase-c" class="clip" data-start="41.0" data-duration="13.85" data-track-index="8">
+        <div id="iv-phase-c-overline">
+          <span>BUT&nbsp;THE&nbsp;COMMENTS&nbsp;PUSHED&nbsp;BACK</span>
+          <span class="iv-x3-badge">× 3</span>
+        </div>
+        <h3 id="iv-phase-c-h">Same accusation. <span class="iv-em">Three replies. One question.</span></h3>
+
+        <div id="iv-reply-grid">
+          <!-- Reply 1 -->
+          <div id="iv-reply-1" class="iv-reply-card">
+            <div class="iv-reply-head">
+              <div class="iv-reply-avatar iv-av-1"></div>
+              <div>
+                <div class="iv-reply-user">@user&nbsp;·&nbsp;8&nbsp;subs</div>
+                <div class="iv-reply-sub">YOUTUBE&nbsp;·&nbsp;4&nbsp;hours&nbsp;ago</div>
+              </div>
+            </div>
+            <div class="iv-reply-body">“HTML is more expensive by the token. Isn't this a trick by Anthropic to get more revenue?”</div>
+            <div class="iv-reply-foot"><span class="iv-like">▲&nbsp;&nbsp;8&nbsp;likes</span><span>· top reply</span></div>
+          </div>
+
+          <!-- Reply 2 -->
+          <div id="iv-reply-2" class="iv-reply-card">
+            <div class="iv-reply-head">
+              <div class="iv-reply-avatar iv-av-2"></div>
+              <div>
+                <div class="iv-reply-user">@user&nbsp;·&nbsp;31&nbsp;subs</div>
+                <div class="iv-reply-sub">YOUTUBE&nbsp;·&nbsp;1&nbsp;hour&nbsp;ago</div>
+              </div>
+            </div>
+            <div class="iv-reply-body">“Suspicious this statement comes direct from the provider of tokens we use.”</div>
+            <div class="iv-reply-foot"><span class="iv-like">▲&nbsp;&nbsp;—&nbsp;likes</span></div>
+          </div>
+
+          <!-- Reply 3 -->
+          <div id="iv-reply-3" class="iv-reply-card">
+            <div class="iv-reply-head">
+              <div class="iv-reply-avatar iv-av-3"></div>
+              <div>
+                <div class="iv-reply-user">@user&nbsp;·&nbsp;13&nbsp;subs</div>
+                <div class="iv-reply-sub">YOUTUBE&nbsp;·&nbsp;1&nbsp;hour&nbsp;ago</div>
+              </div>
+            </div>
+            <div class="iv-reply-body">“Anthropic wants to fool people into burning more tokens. Very inefficient.”</div>
+            <div class="iv-reply-foot"><span class="iv-like">▲&nbsp;&nbsp;—&nbsp;likes</span></div>
+          </div>
+        </div>
+
+        <div id="iv-conspiracy-pull">
+          ANTHROPIC INVENTED THIS — TO BURN MORE TOKENS.
+          <span class="iv-cp-sub">— a recurring accusation in the interview's reply thread</span>
+        </div>
+      </div>
+
+      <!-- Final question lower-third — sits above everything when present -->
+      <div id="iv-question" class="clip" data-start="51" data-duration="3.85" data-track-index="9">
+        <span class="iv-q-em">QUESTION OPEN:</span>&nbsp;&nbsp;is HTML the future — or just a token tax?
+      </div>
+
+    </div><!-- /iv-wrap -->
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // ── Hidden-until-reveal: explicit set at t=0 ────────────────
+      // Header
+      tl.set("#iv-overline",           { y: 12, opacity: 0 }, 0);
+      tl.set("#iv-overline .iv-days-badge", { scale: 0.6, opacity: 0 }, 0);
+      tl.set("#iv-h2",                 { y: 18, opacity: 0 }, 0);
+      tl.set("#iv-divider",            { scaleX: 0 }, 0);
+      // Phase A
+      tl.set("#iv-tile",               { x: -32, opacity: 0 }, 0);
+      tl.set("#iv-doubled-stamp",      { scale: 0.6, opacity: 0, rotation: -3 }, 0);
+      tl.set("#iv-stat-block",         { y: 24, opacity: 0 }, 0);
+      tl.set("#iv-stat-dollars",       { opacity: 0 }, 0);
+      tl.set("#iv-allocator",          { y: 22, opacity: 0 }, 0);
+      tl.set("#iv-attrib",             { opacity: 0 }, 0);
+      // Phase B
+      tl.set("#iv-phase-b",            { opacity: 0, scale: 0.97 }, 0);
+      tl.set("#iv-phase-b-overline",   { y: 12, opacity: 0 }, 0);
+      tl.set("#iv-phase-b-h",          { y: 18, opacity: 0 }, 0);
+      tl.set("#iv-frame-plan",         { y: 22, opacity: 0 }, 0);
+      tl.set("#iv-frame-arrow",        { opacity: 0, x: -16 }, 0);
+      tl.set("#iv-frame-editor",       { y: 22, opacity: 0 }, 0);
+      tl.set("#iv-built-tossed",       { y: 16, opacity: 0 }, 0);
+      // Phase C
+      tl.set("#iv-phase-c",            { opacity: 0, scale: 0.97 }, 0);
+      tl.set("#iv-phase-c-overline",   { y: 12, opacity: 0 }, 0);
+      tl.set("#iv-phase-c-overline .iv-x3-badge", { scale: 0.6, opacity: 0 }, 0);
+      tl.set("#iv-phase-c-h",          { y: 18, opacity: 0 }, 0);
+      tl.set("#iv-reply-1",            { y: 24, opacity: 0 }, 0);
+      tl.set("#iv-reply-2",            { y: 24, opacity: 0 }, 0);
+      tl.set("#iv-reply-3",            { y: 24, opacity: 0 }, 0);
+      tl.set("#iv-conspiracy-pull",    { y: 22, opacity: 0 }, 0);
+      // Question
+      tl.set("#iv-question",           { y: 12, opacity: 0 }, 0);
+
+      // ── Header entrance (0 → 1.6s) ─────────────────────────────
+      tl.to("#iv-overline",          { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" }, 0.20);
+      tl.to("#iv-overline .iv-days-badge", { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2)" }, 1.30);
+      tl.to("#iv-h2",                { y: 0, opacity: 1, duration: 0.65 }, 0.55);
+      tl.to("#iv-divider",           { scaleX: 1, duration: 0.7, ease: "power2.out" }, 1.20);
+
+      // ── Phase A — Interview tile + compute allocator ──────────
+      // Interview tile slides in
+      tl.to("#iv-tile",              { x: 0, opacity: 1, duration: 0.7, ease: "back.out(1.3)" }, 1.50);
+      // attribution dot
+      tl.to("#iv-attrib",            { opacity: 1, duration: 0.45, ease: "power1.out" }, 2.30);
+      // "+8 DAYS" badge pulse at narration 'eight days' (1.73)
+      tl.to("#iv-overline .iv-days-badge", { scale: 1.10, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", overwrite: "auto" }, 1.85);
+
+      // "DOUBLED DOWN" slam at 8.67 ('doubled')
+      tl.to("#iv-doubled-stamp",     { scale: 1, opacity: 1, rotation: -3, duration: 0.55, ease: "back.out(1.8)" }, 8.55);
+      // Small settle wobble
+      tl.to("#iv-doubled-stamp",     { rotation: -1, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.inOut" }, 9.30);
+
+      // Stat block slides up at 10.95 (just before 'eight hours' at 13.23)
+      tl.to("#iv-stat-block",        { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 10.95);
+      // $500 reveal at 16.85 ('five hundred')
+      tl.to("#iv-stat-dollars",      { opacity: 1, duration: 0.45, ease: "power2.out" }, 16.85);
+      tl.to("#iv-stat-dollars",      { scale: 1.04, duration: 0.30, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" }, 17.20);
+
+      // Full-takeover for the COMPUTE ALLOCATOR moment: tile + stat + doubled-stamp
+      // all fade so the pull-quote owns the canvas (user feedback: "quote overlaps content").
+      tl.to("#iv-tile",              { opacity: 0.0, scale: 0.96, duration: 0.55, ease: "power2.inOut", transformOrigin: "center center" }, 19.80);
+      tl.to("#iv-stat-block",        { opacity: 0.0, scale: 0.95, duration: 0.55, ease: "power2.inOut", transformOrigin: "center center" }, 19.80);
+      tl.to("#iv-doubled-stamp",     { opacity: 0.0, duration: 0.45, ease: "power2.inOut" }, 19.80);
+
+      // COMPUTE ALLOCATOR pull-quote — slow zoom-in entrance at 20.30 ('compute allocators')
+      tl.set("#iv-allocator",        { scale: 0.86, transformOrigin: "center center" }, 0);
+      tl.to("#iv-allocator",         { y: 0, opacity: 1, scale: 0.95, duration: 0.9, ease: "power3.out" }, 20.30);
+      tl.to("#iv-allocator",         { scale: 1.04, duration: 5.0, ease: "sine.inOut" }, 21.20);
+      // Hero emphasis: "compute allocators" colour pulse at 24.45
+      tl.to("#iv-allocator .iv-alloc-main em", { color: "#B14938", duration: 0.4, yoyo: true, repeat: 1, ease: "power2.inOut" }, 24.45);
+
+      // ── Phase A exit (26.0 → 26.6) ─────────────────────────────
+      tl.to("#iv-tile",              { opacity: 0, duration: 0.45, ease: "power1.in" }, 26.00);
+      tl.to("#iv-doubled-stamp",     { opacity: 0, duration: 0.40, ease: "power1.in" }, 26.00);
+      tl.to("#iv-stat-block",        { opacity: 0, duration: 0.45, ease: "power1.in" }, 26.00);
+      tl.to("#iv-allocator",         { opacity: 0, duration: 0.45, ease: "power1.in" }, 26.00);
+      tl.to("#iv-attrib",            { opacity: 0, duration: 0.40, ease: "power1.in" }, 26.00);
+      // Header also crossfades to match new phase tone
+      tl.to("#iv-h2",                { opacity: 0, duration: 0.35, ease: "power1.in" }, 26.10);
+      tl.to("#iv-overline",          { opacity: 0, duration: 0.35, ease: "power1.in" }, 26.10);
+      // Hard-kill at clip boundary for non-linear seeking
+      tl.set("#iv-doubled-stamp",    { opacity: 0 }, 26.40);
+      tl.set("#iv-attrib",           { opacity: 0 }, 26.40);
+
+      // ── Phase B entrance (26.4 → 32) ───────────────────────────
+      tl.to("#iv-phase-b",           { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }, 26.45);
+      tl.to("#iv-phase-b-overline",  { y: 0, opacity: 1, duration: 0.50, ease: "power2.out" }, 26.70);
+      tl.to("#iv-phase-b-h",         { y: 0, opacity: 1, duration: 0.60, ease: "power3.out" }, 27.00);
+
+      // Nested frames — PLAN.html enters at 27.85 ('micro software')
+      tl.to("#iv-frame-plan",        { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }, 27.85);
+      // Arrow appears at 29.20 (mid-phrase, second 'micro software')
+      tl.to("#iv-frame-arrow",       { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 29.20);
+      // EDITOR.html enters at 30.20 ('plan is in HTML')
+      tl.to("#iv-frame-editor",      { y: 0, opacity: 1, duration: 0.65, ease: "back.out(1.4)" }, 30.20);
+
+      // Plan frame border emphasis at 31.07 ('plan')
+      tl.to("#iv-frame-plan",        { boxShadow: "0 0 0 3px #1A1815, 0 14px 32px rgba(28,26,24,0.18)", duration: 0.40, yoyo: true, repeat: 1, ease: "power2.out" }, 31.07);
+      // Editor frame border emphasis at 33.30 ('editor')
+      tl.to("#iv-frame-editor",      { boxShadow: "0 0 0 3px #C75A3F, 0 14px 32px rgba(199,90,63,0.20)", duration: 0.40, ease: "power2.out" }, 33.30);
+      // Editor cursor row scale pulse at 34.50 ('one section')
+      tl.to("#iv-frame-editor .iv-edit-row:nth-child(3)", { scale: 1.04, duration: 0.35, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center" }, 34.50);
+
+      // Built-once / Tossed-when-done chips at 37.10 ('plan.' — end of sentence)
+      tl.to("#iv-built-tossed",      { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 37.10);
+      // Tossed chip stamp at 39.32 ('Tossed')
+      tl.to("#iv-built-tossed .iv-bt-tossed", { scale: 1.08, duration: 0.35, yoyo: true, repeat: 1, ease: "back.out(2)", transformOrigin: "center" }, 39.32);
+
+      // ── Phase B exit (40.5 → 41.0) ─────────────────────────────
+      tl.to("#iv-phase-b",           { opacity: 0, scale: 0.98, duration: 0.50, ease: "power1.in" }, 40.50);
+      // Hard-kill at clip boundary
+      tl.set("#iv-phase-b",          { opacity: 0 }, 41.00);
+
+      // ── Phase C entrance (41.0 → 47) ───────────────────────────
+      tl.to("#iv-phase-c",           { opacity: 1, scale: 1, duration: 0.55, ease: "power2.out" }, 41.00);
+      tl.to("#iv-phase-c-overline",  { y: 0, opacity: 1, duration: 0.50, ease: "power2.out" }, 41.15);
+      tl.to("#iv-phase-c-h",         { y: 0, opacity: 1, duration: 0.60, ease: "power3.out" }, 41.50);
+
+      // Reply cards stagger at 42.69 ('pushed') and on word 'three replies' (44.50)
+      tl.to("#iv-reply-1",           { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 42.69);
+      tl.to("#iv-reply-2",           { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 43.60);
+      tl.to("#iv-reply-3",           { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 44.40);
+
+      // "× 3" badge pulse at 44.50 ('Three replies')
+      tl.to("#iv-phase-c-overline .iv-x3-badge", { scale: 1, opacity: 1, duration: 0.40, ease: "back.out(2)" }, 44.00);
+      tl.to("#iv-phase-c-overline .iv-x3-badge", { scale: 1.10, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center", overwrite: "auto" }, 44.65);
+
+      // ANTHROPIC INVENTED THIS pull-quote at 46.17 ('Anthropic')
+      tl.to("#iv-conspiracy-pull",   { y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }, 46.10);
+
+      // Reply card 2 + 3 desaturate slightly as pull-quote takes focus (subtle layering)
+      tl.to(["#iv-reply-1", "#iv-reply-2", "#iv-reply-3"],
+                                     { opacity: 0.65, duration: 0.50, ease: "power1.inOut" }, 46.90);
+
+      // Pull-quote emphasis pulse at 48.98 ('tokens')
+      tl.to("#iv-conspiracy-pull",   { scale: 1.02, duration: 0.30, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center" }, 48.98);
+      // Second emphasis at 50.30 ('bill')
+      tl.to("#iv-conspiracy-pull",   { color: "#8C3D2C", duration: 0.35, yoyo: true, repeat: 1, ease: "power2.out" }, 50.30);
+
+      // Question lower-third at 51.00 ('Whether')
+      tl.to("#iv-question",          { y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.3)" }, 51.00);
+      // Final beat at 53.46 ('openly')
+      tl.to("#iv-question",          { scale: 1.02, duration: 0.30, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "center" }, 53.46);
+
+      // ── Timeline extender — full scene duration ────────────────
+      tl.set({}, {}, 54.85);
+
+      window.__timelines["scene-interview"] = tl;
+    </script>
+  </div>
+</template>

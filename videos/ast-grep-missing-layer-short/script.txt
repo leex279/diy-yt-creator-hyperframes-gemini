@@ -1,0 +1,15 @@
+Your AI agent is bleeding tokens. Right now. It just flagged a string of text as a real bug. In quotes. Inside a test fixture. Then it billed you to investigate.
+
+Here's the lie. You ask your agent to clean up dee-bug logs. It finds 164 matches across 22 files. But one of them is a test fixture passing the literal string console-dot-log-hi. It's quoted text. Not a real call. Your agent doesn't know.
+
+One example isn't a pattern. So we tested five common searches. Dumb text search over-counted by 26 percent on dee-bug logs. 19 percent on setTimeout. 30 percent on promise chains. 122 percent on useState. Pure billed waste.
+
+Translate that into money. 22 files of false positives is roughly 11 thousand tokens. Call it a cent per refactor. Scale it up. Fifty refactors a day, 30 days a month — that's 15 dollars per developer. Just on bad search.
+
+Meet ast-grep. It reads your code as code. Not as a wall of text. Regular search sees characters. ast-grep sees structure — functions, calls, try-catch blocks. The real shape of what you wrote.
+
+Three steps. One — tree-sitter parses your code into a tree of nodes. Each one tagged by what it actually is. Two — ast-grep matches patterns against the tree. Not the text. A console-dot-log inside a comment can't match a call pattern. Three — it runs in Rust on every C P U core. Fast.
+
+Giving your agent ast-grep takes two commands. N P M install dash-G at ast-grep slash C L I. Then N P X skills add ast-grep slash agent-skill. Restart Claude Code. Tell it: use ast-grep to find.
+
+So here's the question. Your AI agent burns 122 percent more on every refactor than it needs. One config line. Or accept the waste? Drop your pick in the comments. The full breakdown is on this channel. If you want to learn more about AI, check out the dynamous dot AI community.

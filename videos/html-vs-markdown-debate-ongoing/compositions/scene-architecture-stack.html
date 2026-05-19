@@ -1,0 +1,751 @@
+<!--
+  scene-architecture-stack.html — Community Split: Markdown wins vs HTML wins
+  Scene-relative duration: 79.56s. parent t=403.50 → 483.06.
+
+  Beats (scene-relative, retimed to narration anchors):
+    0.00  — overline "05 — THE SPLIT" + serif headline enter
+    8.95  — TWO column headers reveal: AGENT ↔ AGENT | AGENT ↔ HUMAN ("It is a split.")
+    9.50  — .md badge + .html badge
+    10.31 — LEFT: "Specs" (narration: "agent-to-agent communication")
+    12.50 — LEFT: "Plans"
+    14.80 — LEFT: "CLAUDE.md"
+    17.10 — LEFT: "Sub-agent instructions"
+    19.50 — LEFT tag "smaller · cheaper · less brittle"
+    23.91 — RIGHT: "Code review" (narration: "agent-to-human communication")
+    26.20 — RIGHT: "Reports"
+    28.50 — RIGHT: "Mockups"
+    30.80 — RIGHT: "Dashboards"
+    33.10 — RIGHT tag "what a real person clicks through"
+    35.50 — columns fade out (bridge entry)
+    36.00 — Phase B in
+    39.79 — bridge headline ("The split is not a compromise…")
+    41.58 — community quote ("Wherever a human looks…")
+    48.00 — bridge fades → outlier section
+    48.50 — Phase C in
+    49.58 — OUTLIER overline ("And one outlier insight…")
+    51.00 — outlier card
+    57.84 — pull-quote text ("multimodality seems to be a sycophancy multiplier…")
+    63.00 — sub-line
+    68.00 — attribution
+    71.50 — glow beat
+    73.50 — scale beat
+    73.63 — attr colour beat ("That one is not in the documentation…")
+    79.56 — timeline pin / scene end
+-->
+<template id="scene-architecture-stack-template">
+<div id="root"
+     data-composition-id="scene-architecture-stack"
+     data-start="0"
+     data-duration="79.56"
+     data-width="1920"
+     data-height="1080"
+     style="position:absolute; inset:0; overflow:hidden;
+            font-family:'Source Serif 4','Playfair Display',Georgia,serif;
+            color:#1C1C1E;">
+
+  <style>
+    #as-wrap {
+      width:100%; height:100%;
+      padding: 60px 88px 60px 88px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    /* Header */
+    .as-overline {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: #9E6A47;
+      margin-bottom: 12px;
+    }
+    .as-h1 {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-weight: 800;
+      font-size: 80px;
+      color: #1C1C1E;
+      letter-spacing: -1px;
+      line-height: 1.08;
+    }
+    .as-h1 em { font-style: italic; color: #C2714F; }
+    .as-header-divider {
+      height: 1.5px;
+      background: #D4C9BB;
+      margin: 20px 0 28px 0;
+      transform-origin: left center;
+    }
+
+    /* Split columns */
+    .as-split-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+    }
+    .as-col-header {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #D4C9BB;
+      margin-bottom: 20px;
+    }
+    .as-col-header-left  { border-bottom-color: #4A7C59; color: #4A7C59; }
+    .as-col-header-right { border-bottom-color: #C2714F; color: #C2714F; }
+
+    .as-format-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 2px;
+      padding: 8px 18px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .as-badge-md   { background:#EAF4EC; color:#2D6A42; border:1.5px solid #4A7C59; }
+    .as-badge-html { background:#FBF0EB; color:#9E4B28; border:1.5px solid #C2714F; }
+
+    .as-item {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-weight: 600;
+      font-size: 32px;
+      color: #1C1C1E;
+      line-height: 1.3;
+      padding: 10px 0;
+      border-bottom: 1px solid #EDE8E1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    /* Icon container inside each item row */
+    .as-item-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .as-col-tag {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 22px;
+      color: #8C8C8C;
+      letter-spacing: 1.5px;
+      margin-top: 14px;
+      padding: 8px 12px;
+      background: #F2EEE8;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Bridge */
+    .as-bridge-h2 {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-weight: 700;
+      font-size: 56px;
+      color: #1C1C1E;
+      line-height: 1.18;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .as-bridge-h2 em { font-style: italic; color: #C2714F; }
+    .as-community-quote {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-style: italic;
+      font-size: 32px;
+      color: #3A3A3C;
+      line-height: 1.5;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 36px;
+      background: #F5F1EB;
+      border-left: 4px solid #C2714F;
+      border-radius: 4px;
+      text-align: left;
+    }
+    .as-quote-mark {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-size: 56px;
+      color: #C2714F;
+      line-height: 0.6;
+      display: block;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+
+    /* Outlier */
+    .as-outlier-overline {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: #9E6A47;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .as-outlier-overline::before {
+      content: '';
+      display: inline-block;
+      width: 32px; height: 2px;
+      background: #9E6A47;
+    }
+    /* ◆ icon after text */
+    .as-outlier-overline::after {
+      content: '◆';
+      font-size: 14px;
+      color: #C2714F;
+      opacity: 0.7;
+      margin-left: 4px;
+    }
+    .as-outlier-card {
+      background: #FBF0EB;
+      border: 1.5px solid #C2714F;
+      border-radius: 12px;
+      padding: 48px 60px 40px 60px;
+      max-width: 1400px;
+      width: 100%;
+    }
+    /* Pull-quote wrapper for the typewriter + cursor */
+    .as-outlier-pull-wrap {
+      position: relative;
+      margin-bottom: 28px;
+    }
+    .as-outlier-pull-open-quote {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 80px;
+      color: #C2714F;
+      line-height: 0.7;
+      display: block;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .as-outlier-pull {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: 64px;
+      color: #1C1C1E;
+      line-height: 1.25;
+      display: block;
+      min-height: 1.25em;
+    }
+    /* Blinking cursor after typewriter text */
+    #as-outlier-cursor {
+      display: inline-block;
+      width: 3px;
+      height: 0.85em;
+      background: #C2714F;
+      margin-left: 4px;
+      vertical-align: middle;
+      border-radius: 1px;
+    }
+    .as-outlier-divider {
+      height: 1px;
+      background: rgba(194,113,79,0.22);
+      margin: 0 0 24px 0;
+    }
+    .as-outlier-sub {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-style: italic;
+      font-size: 30px;
+      color: #5C5C5E;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .as-outlier-attr {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 20px;
+      color: #8C8C8C;
+      letter-spacing: 2px;
+    }
+    /* Closing note below the card */
+    .as-outlier-closing {
+      font-family: 'Source Serif 4','Playfair Display',Georgia,serif;
+      font-style: italic;
+      font-size: 28px;
+      color: #9E6A47;
+      margin-top: 20px;
+      padding-left: 4px;
+      opacity: 0.85;
+    }
+
+    /* Full-screen phase overlays */
+    .as-phase-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      padding: 60px 88px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+
+  <div id="as-wrap">
+
+    <!-- HEADER (always on screen t=0–78.6) -->
+    <div id="as-overline" class="clip as-overline"
+         data-start="0" data-duration="79.56" data-track-index="1"
+         style="opacity:0;">05 — THE SPLIT</div>
+
+    <div id="as-h1" class="clip as-h1"
+         data-start="0" data-duration="79.56" data-track-index="2"
+         style="opacity:0;">Where each format <em>wins</em>.</div>
+
+    <div id="as-divider" class="clip as-header-divider"
+         data-start="0" data-duration="79.56" data-track-index="3"
+         style="opacity:0;"></div>
+
+    <!-- PHASE A: Two-column layout (t=0–38s) -->
+    <div id="as-phase-a" class="clip"
+         data-start="0" data-duration="38" data-track-index="4"
+         style="opacity:0;">
+
+      <div class="as-split-grid">
+
+        <!-- LEFT column -->
+        <div class="as-col-left">
+          <div id="as-col-left-header" class="clip as-col-header as-col-header-left"
+               data-start="0" data-duration="38" data-track-index="5"
+               style="opacity:0;">AGENT ↔ AGENT</div>
+
+          <div id="as-md-badge" class="clip as-format-badge as-badge-md"
+               data-start="0" data-duration="38" data-track-index="6"
+               style="opacity:0;">.md</div>
+
+          <!-- Specs -->
+          <div id="as-md-item-1" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="7"
+               style="opacity:0;">
+            <span id="as-icon-specs" class="as-item-icon" style="opacity:0;">
+              <!-- Document outline: rounded rect + folded corner + 3 lines -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 4.5C6 3.12 7.12 2 8.5 2H22L30 10V31.5C30 32.88 28.88 34 27.5 34H8.5C7.12 34 6 32.88 6 31.5V4.5Z"
+                      stroke="#C2714F" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                <path d="M22 2V9C22 9.55 22.45 10 23 10H30" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+                <line x1="11" y1="16" x2="25" y2="16" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+                <line x1="11" y1="21" x2="25" y2="21" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+                <line x1="11" y1="26" x2="20" y2="26" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            Specs
+          </div>
+
+          <!-- Plans -->
+          <div id="as-md-item-2" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="8"
+               style="opacity:0;">
+            <span id="as-icon-plans" class="as-item-icon" style="opacity:0;">
+              <!-- Checklist: rounded rect + 3 checkbox+line rows -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="30" height="30" rx="4" stroke="#C2714F" stroke-width="2" fill="none"/>
+                <!-- Row 1: checkbox checked + line -->
+                <rect x="8" y="10" width="7" height="7" rx="1.5" stroke="#C2714F" stroke-width="1.5" fill="none"/>
+                <polyline points="9.5,13.5 11,15 14.5,11.5" stroke="#C2714F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <line x1="18" y1="13.5" x2="28" y2="13.5" stroke="#C2714F" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- Row 2: checkbox checked + line -->
+                <rect x="8" y="19" width="7" height="7" rx="1.5" stroke="#C2714F" stroke-width="1.5" fill="none"/>
+                <polyline points="9.5,22.5 11,24 14.5,20.5" stroke="#C2714F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <line x1="18" y1="22.5" x2="28" y2="22.5" stroke="#C2714F" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            Plans
+          </div>
+
+          <!-- CLAUDE.md -->
+          <div id="as-md-item-3" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="9"
+               style="opacity:0;">
+            <span id="as-icon-claude-md" class="as-item-icon" style="opacity:0;">
+              <!-- File icon with .md label -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 4.5C6 3.12 7.12 2 8.5 2H21L29 10V31.5C29 32.88 27.88 34 26.5 34H8.5C7.12 34 6 32.88 6 31.5V4.5Z"
+                      stroke="#C2714F" stroke-width="2" stroke-linejoin="round" fill="#FBF0EB"/>
+                <path d="M21 2V9C21 9.55 21.45 10 22 10H29" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+                <text x="18" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="8" fill="#C2714F">.md</text>
+              </svg>
+            </span>
+            CLAUDE.md
+          </div>
+
+          <!-- Sub-agent instructions -->
+          <div id="as-md-item-4" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="10"
+               style="opacity:0;">
+            <span id="as-icon-subagent" class="as-item-icon" style="opacity:0;">
+              <!-- Two circles connected by an arrow: •→• -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="7" cy="18" r="5" fill="#C2714F" opacity="0.85"/>
+                <circle cx="29" cy="18" r="5" fill="#C2714F" opacity="0.85"/>
+                <!-- Arrow shaft -->
+                <line x1="13" y1="18" x2="22" y2="18" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+                <!-- Arrowhead -->
+                <polyline points="19,15 22,18 19,21" stroke="#C2714F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </span>
+            Sub-agent instructions
+          </div>
+
+          <div id="as-md-tag" class="clip as-col-tag"
+               data-start="0" data-duration="38" data-track-index="11"
+               style="opacity:0;">
+            <!-- Left tag: down-arrow indicating smaller/cheaper/less -->
+            <span id="as-icon-md-tag" style="font-size:20px; color:#C2714F; opacity:0; display:inline-flex; align-items:center;">↓</span>
+            smaller · cheaper · less brittle
+          </div>
+        </div>
+
+        <!-- RIGHT column -->
+        <div class="as-col-right">
+          <div id="as-col-right-header" class="clip as-col-header as-col-header-right"
+               data-start="0" data-duration="38" data-track-index="12"
+               style="opacity:0;">AGENT ↔ HUMAN</div>
+
+          <div id="as-html-badge" class="clip as-format-badge as-badge-html"
+               data-start="0" data-duration="38" data-track-index="13"
+               style="opacity:0;">.html</div>
+
+          <!-- Code review -->
+          <div id="as-html-item-1" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="14"
+               style="opacity:0;">
+            <span id="as-icon-codereview" class="as-item-icon" style="opacity:0;">
+              <!-- Diff icon: 3 lines with - and + prefixes -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Line 1: red minus -->
+                <text x="3" y="13" font-family="JetBrains Mono, monospace" font-weight="700" font-size="12" fill="#C25A5A">−</text>
+                <line x1="14" y1="10" x2="32" y2="10" stroke="#C25A5A" stroke-width="2" stroke-linecap="round"/>
+                <!-- Line 2: olive/green plus -->
+                <text x="3" y="21" font-family="JetBrains Mono, monospace" font-weight="700" font-size="12" fill="#4A7C59">+</text>
+                <line x1="14" y1="18" x2="32" y2="18" stroke="#4A7C59" stroke-width="2" stroke-linecap="round"/>
+                <!-- Line 3: neutral context line -->
+                <text x="3" y="29" font-family="JetBrains Mono, monospace" font-weight="700" font-size="12" fill="#8C8C8C"> </text>
+                <line x1="14" y1="26" x2="26" y2="26" stroke="#8C8C8C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2"/>
+              </svg>
+            </span>
+            Code review
+          </div>
+
+          <!-- Reports -->
+          <div id="as-html-item-2" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="15"
+               style="opacity:0;">
+            <span id="as-icon-reports" class="as-item-icon" style="opacity:0;">
+              <!-- Page with bar chart inside -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 4.5C6 3.12 7.12 2 8.5 2H22L30 10V31.5C30 32.88 28.88 34 27.5 34H8.5C7.12 34 6 32.88 6 31.5V4.5Z"
+                      stroke="#C2714F" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                <path d="M22 2V9C22 9.55 22.45 10 23 10H30" stroke="#C2714F" stroke-width="2" stroke-linecap="round"/>
+                <!-- 3 bars of different heights inside the page -->
+                <rect x="10" y="22" width="4" height="8" rx="1" fill="#C2714F" opacity="0.7"/>
+                <rect x="16" y="18" width="4" height="12" rx="1" fill="#C2714F" opacity="0.9"/>
+                <rect x="22" y="20" width="4" height="10" rx="1" fill="#C2714F" opacity="0.6"/>
+              </svg>
+            </span>
+            Reports
+          </div>
+
+          <!-- Mockups -->
+          <div id="as-html-item-3" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="16"
+               style="opacity:0;">
+            <span id="as-icon-mockups" class="as-item-icon" style="opacity:0;">
+              <!-- Browser frame: rounded rect + title bar + 3 dots -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="4" width="32" height="28" rx="4" stroke="#C2714F" stroke-width="2" fill="none"/>
+                <!-- Title bar -->
+                <rect x="2" y="4" width="32" height="10" rx="4" fill="#C2714F" opacity="0.18"/>
+                <line x1="2" y1="14" x2="34" y2="14" stroke="#C2714F" stroke-width="1.5"/>
+                <!-- 3 dots in title bar -->
+                <circle cx="8" cy="9" r="2" fill="#C2714F" opacity="0.7"/>
+                <circle cx="14" cy="9" r="2" fill="#C2714F" opacity="0.5"/>
+                <circle cx="20" cy="9" r="2" fill="#C2714F" opacity="0.35"/>
+              </svg>
+            </span>
+            Mockups
+          </div>
+
+          <!-- Dashboards -->
+          <div id="as-html-item-4" class="clip as-item"
+               data-start="0" data-duration="38" data-track-index="17"
+               style="opacity:0;">
+            <span id="as-icon-dashboards" class="as-item-icon" style="opacity:0;">
+              <!-- 2x2 grid of tiles -->
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Top-left tile -->
+                <rect x="3" y="3" width="13" height="13" rx="2.5" stroke="#C2714F" stroke-width="2" fill="#FBF0EB"/>
+                <!-- Top-right tile -->
+                <rect x="20" y="3" width="13" height="13" rx="2.5" stroke="#C2714F" stroke-width="2" fill="#FBF0EB"/>
+                <!-- Bottom-left tile -->
+                <rect x="3" y="20" width="13" height="13" rx="2.5" stroke="#C2714F" stroke-width="2" fill="#FBF0EB"/>
+                <!-- Bottom-right tile -->
+                <rect x="20" y="20" width="13" height="13" rx="2.5" stroke="#C2714F" stroke-width="2" fill="#FBF0EB"/>
+              </svg>
+            </span>
+            Dashboards
+          </div>
+
+          <div id="as-html-tag" class="clip as-col-tag"
+               data-start="0" data-duration="38" data-track-index="18"
+               style="opacity:0;">
+            <!-- Right tag: eye outline indicating "a real person clicks through" -->
+            <span id="as-icon-html-tag" style="opacity:0; display:inline-flex; align-items:center; flex-shrink:0;">
+              <svg width="24" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 9C1 9 4.5 2 12 2C19.5 2 23 9 23 9C23 9 19.5 16 12 16C4.5 16 1 9 1 9Z"
+                      stroke="#C2714F" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+                <circle cx="12" cy="9" r="3.5" stroke="#C2714F" stroke-width="1.8" fill="none"/>
+              </svg>
+            </span>
+            what a real person clicks through
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /as-phase-a -->
+
+    <!-- PHASE B: Bridge headline + quote (t=36–49s) -->
+    <div id="as-phase-b" class="clip as-phase-overlay"
+         data-start="36" data-duration="13" data-track-index="19"
+         style="opacity:0;">
+
+      <div id="as-bridge-h2" class="clip as-bridge-h2"
+           data-start="36" data-duration="13" data-track-index="20"
+           style="opacity:0;">
+        The split is not a compromise. It is a <em>workflow</em>.
+      </div>
+
+      <div id="as-community-quote" class="clip as-community-quote"
+           data-start="36" data-duration="13" data-track-index="21"
+           style="opacity:0;">
+        <span class="as-quote-mark">&ldquo;</span>
+        Wherever a human looks, HTML. Everywhere else, markdown.
+      </div>
+
+    </div><!-- /as-phase-b -->
+
+    <!-- PHASE C: Outlier (t=48.5–79.56s) -->
+    <div id="as-phase-c" class="clip as-phase-overlay"
+         data-start="48.5" data-duration="31.06" data-track-index="22"
+         style="opacity:0; align-items:flex-start;">
+
+      <div id="as-outlier-overline" class="clip as-outlier-overline"
+           data-start="48.5" data-duration="31.06" data-track-index="23"
+           style="opacity:0;">AND ONE OUTLIER INSIGHT</div>
+
+      <div id="as-outlier-card" class="clip as-outlier-card"
+           data-start="48.5" data-duration="31.06" data-track-index="24"
+           style="opacity:0;">
+
+        <!-- Pull-quote: typewriter reveal -->
+        <div class="as-outlier-pull-wrap">
+          <span class="as-outlier-pull-open-quote">&ldquo;</span>
+          <span id="as-outlier-pull" class="as-outlier-pull"></span><span id="as-outlier-cursor" style="opacity:0;"></span>
+        </div>
+
+        <div id="as-outlier-divider" class="clip as-outlier-divider"
+             data-start="48.5" data-duration="31.06" data-track-index="25"
+             style="opacity:0; transform:scaleX(0); transform-origin:left center;"></div>
+
+        <div id="as-outlier-sub" class="clip as-outlier-sub"
+             data-start="48.5" data-duration="31.06" data-track-index="26"
+             style="opacity:0;">
+          Richer formats may make agents nicer. And nicer is not always honest.
+        </div>
+
+        <div id="as-outlier-attr" class="clip as-outlier-attr"
+             data-start="48.5" data-duration="31.06" data-track-index="27"
+             style="opacity:0;">x.com &mdash; outlier reply</div>
+
+      </div>
+
+      <!-- Closing note below the card -->
+      <div id="as-outlier-closing" class="clip as-outlier-closing"
+           data-start="48.5" data-duration="31.06" data-track-index="28"
+           style="opacity:0;">That one is not in the documentation. It is something to watch.</div>
+
+    </div><!-- /as-phase-c -->
+
+  </div><!-- /as-wrap -->
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.55 } });
+
+    // ── Hard-hide everything at t=0 ──
+    tl.set("#as-overline",   { opacity: 0, y: -12 }, 0);
+    tl.set("#as-h1",         { opacity: 0, y: 18 }, 0);
+    tl.set("#as-divider",    { opacity: 0, scaleX: 0 }, 0);
+    tl.set("#as-phase-a",    { opacity: 0 }, 0);
+    tl.set("#as-col-left-header",  { opacity: 0, y: -10 }, 0);
+    tl.set("#as-col-right-header", { opacity: 0, y: -10 }, 0);
+    tl.set("#as-md-badge",   { opacity: 0, scale: 0.88 }, 0);
+    tl.set("#as-html-badge", { opacity: 0, scale: 0.88 }, 0);
+    tl.set("#as-md-item-1",  { opacity: 0, x: -24 }, 0);
+    tl.set("#as-md-item-2",  { opacity: 0, x: -24 }, 0);
+    tl.set("#as-md-item-3",  { opacity: 0, x: -24 }, 0);
+    tl.set("#as-md-item-4",  { opacity: 0, x: -24 }, 0);
+    tl.set("#as-md-tag",     { opacity: 0, x: -24 }, 0);
+    tl.set("#as-html-item-1",{ opacity: 0, x: 24 }, 0);
+    tl.set("#as-html-item-2",{ opacity: 0, x: 24 }, 0);
+    tl.set("#as-html-item-3",{ opacity: 0, x: 24 }, 0);
+    tl.set("#as-html-item-4",{ opacity: 0, x: 24 }, 0);
+    tl.set("#as-html-tag",   { opacity: 0, x: 24 }, 0);
+    // Hard-hide all icons at t=0
+    tl.set("#as-icon-specs",      { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-plans",      { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-claude-md",  { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-subagent",   { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-md-tag",     { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-codereview", { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-reports",    { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-mockups",    { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-dashboards", { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-icon-html-tag",   { opacity: 0, scale: 0.7 }, 0);
+    tl.set("#as-phase-b",    { opacity: 0 }, 36);
+    tl.set("#as-bridge-h2",  { opacity: 0, y: 20 }, 36);
+    tl.set("#as-community-quote", { opacity: 0, y: 16 }, 36);
+    tl.set("#as-phase-c",         { opacity: 0 }, 48.5);
+    tl.set("#as-outlier-overline",{ opacity: 0, x: -20 }, 48.5);
+    tl.set("#as-outlier-card",    { opacity: 0, y: 24 }, 48.5);
+    tl.set("#as-outlier-cursor",  { opacity: 0 }, 48.5);
+    tl.set("#as-outlier-divider", { opacity: 0, scaleX: 0 }, 48.5);
+    tl.set("#as-outlier-sub",     { opacity: 0, y: 12 }, 48.5);
+    tl.set("#as-outlier-attr",    { opacity: 0 }, 48.5);
+    tl.set("#as-outlier-closing", { opacity: 0, y: 10 }, 48.5);
+
+    // ── HEADER (0.00–2s) ──
+    tl.to("#as-overline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.0);
+    tl.to("#as-h1",       { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.3);
+    tl.to("#as-divider",  { opacity: 1, scaleX: 1, duration: 0.7, ease: "power2.out" }, 0.9);
+
+    // ── PHASE A: TWO-COLUMN LAYOUT ──
+    tl.to("#as-phase-a", { opacity: 1, duration: 0.4 }, 8.5);
+
+    // Column headers ("It is a split." — 8.95)
+    tl.to("#as-col-left-header",  { opacity: 1, y: 0, duration: 0.5 }, 8.95);
+    tl.to("#as-col-right-header", { opacity: 1, y: 0, duration: 0.5 }, 9.25);
+
+    // Format badges
+    tl.to("#as-md-badge",   { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 9.50);
+    tl.to("#as-html-badge", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 9.80);
+
+    // LEFT items (~2.2s spacing from 10.31) — row + icon animate together
+    tl.to("#as-md-item-1", { opacity: 1, x: 0, duration: 0.5 }, 10.31);
+    tl.to("#as-icon-specs", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 10.41);
+
+    tl.to("#as-md-item-2", { opacity: 1, x: 0, duration: 0.5 }, 12.50);
+    tl.to("#as-icon-plans", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 12.60);
+
+    tl.to("#as-md-item-3", { opacity: 1, x: 0, duration: 0.5 }, 14.80);
+    tl.to("#as-icon-claude-md", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 14.90);
+
+    tl.to("#as-md-item-4", { opacity: 1, x: 0, duration: 0.5 }, 17.10);
+    tl.to("#as-icon-subagent", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 17.20);
+
+    tl.to("#as-md-tag",    { opacity: 1, x: 0, duration: 0.5 }, 19.50);
+    tl.to("#as-icon-md-tag", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 19.60);
+
+    // RIGHT items (~2.3s spacing from 23.91)
+    tl.to("#as-html-item-1", { opacity: 1, x: 0, duration: 0.5 }, 23.91);
+    tl.to("#as-icon-codereview", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 24.01);
+
+    tl.to("#as-html-item-2", { opacity: 1, x: 0, duration: 0.5 }, 26.20);
+    tl.to("#as-icon-reports", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 26.30);
+
+    tl.to("#as-html-item-3", { opacity: 1, x: 0, duration: 0.5 }, 28.50);
+    tl.to("#as-icon-mockups", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 28.60);
+
+    tl.to("#as-html-item-4", { opacity: 1, x: 0, duration: 0.5 }, 30.80);
+    tl.to("#as-icon-dashboards", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 30.90);
+
+    tl.to("#as-html-tag",    { opacity: 1, x: 0, duration: 0.5 }, 33.10);
+    tl.to("#as-icon-html-tag", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 33.20);
+
+    // Visual beat at 34.5: badge scale pulses (gap-fill before fade at 35.5)
+    tl.to("#as-md-badge",   { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 34.50);
+    tl.to("#as-html-badge", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" }, 34.80);
+
+    // Fade out phase A
+    tl.to("#as-phase-a", { opacity: 0, duration: 0.7, ease: "power2.in" }, 35.50);
+
+    // ── PHASE B: BRIDGE HEADLINE + QUOTE ──
+    tl.to("#as-phase-b",   { opacity: 1, duration: 0.5 }, 36.00);
+    tl.to("#as-bridge-h2", { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 39.79);
+    tl.to("#as-community-quote", { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 41.58);
+
+    // Visual beat at 45.5
+    tl.to("#as-community-quote", { scale: 1.012, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.inOut" }, 45.50);
+
+    // Fade out phase B
+    tl.to("#as-phase-b", { opacity: 0, duration: 0.7, ease: "power2.in" }, 48.00);
+
+    // ── PHASE C: OUTLIER ──
+    tl.to("#as-phase-c",          { opacity: 1, duration: 0.5 }, 48.50);
+    tl.to("#as-outlier-overline", { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 49.58);
+    tl.to("#as-outlier-card",     { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 51.00);
+
+    // Typewriter reveal of pull-quote (53.81 → 56.61, ~2.8s — re-anchored from 57.84
+    // to match narration "Multimodality, the argument goes, is a sycophancy multiplier"
+    // which begins at scene-rel 53.81 in current narration.wav)
+    // The quote text typed character-by-character via onUpdate proxy
+    const quoteText = "Multimodality seems to be a sycophancy multiplier.";
+    const proxy = { progress: 0 };
+    const pullEl = document.querySelector('#as-outlier-pull');
+    tl.set(proxy, { progress: 0 }, 53.81);
+    // Show cursor blink just before typewriter starts
+    tl.to("#as-outlier-cursor", { opacity: 1, duration: 0.15 }, 53.67);
+    tl.to(proxy, {
+      progress: 1,
+      duration: 2.8,
+      ease: "none",
+      onUpdate: function() {
+        if (!pullEl) return;
+        const n = Math.round(quoteText.length * proxy.progress);
+        pullEl.textContent = quoteText.slice(0, n);
+      }
+    }, 53.81);
+    // Cursor blinks out ~0.4s after typing completes
+    tl.to("#as-outlier-cursor", { opacity: 0, duration: 0.4, ease: "power1.in" }, 57.21);
+
+    // Divider line expands below the pull-quote (60.8s)
+    tl.to("#as-outlier-divider", { opacity: 1, scaleX: 1, duration: 0.6, ease: "power2.out" }, 57.50);
+
+    // Sub-line reveals (re-anchored 63.00 → 58.97 to match "Look at the rosy prose" beat)
+    tl.to("#as-outlier-sub",  { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 58.97);
+
+    // Attribution (68.00)
+    tl.to("#as-outlier-attr", { opacity: 1, duration: 0.5 }, 68.00);
+
+    // Visual beat at 71.5: glow pulse on card
+    tl.to("#as-outlier-card", { boxShadow: "0 0 40px rgba(194,113,79,0.32)", duration: 0.55, yoyo: true, repeat: 1, ease: "power2.inOut" }, 71.50);
+
+    // Visual beat at 73.5: scale nudge on pull-quote text
+    tl.to("#as-outlier-pull", { scale: 1.018, duration: 0.35, yoyo: true, repeat: 1, ease: "power2.inOut", transformOrigin: "left center" }, 73.50);
+
+    // Closing note reveals at 73.63 ("That one is not in the documentation…")
+    tl.to("#as-outlier-closing", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 73.63);
+    // Attr gets warm color emphasis at the same moment
+    tl.to("#as-outlier-attr",    { color: "#C2714F", duration: 0.4 }, 73.63);
+
+    // Timeline pin
+    tl.set({}, {}, 79.56);
+
+    window.__timelines["scene-architecture-stack"] = tl;
+  </script>
+
+</div>
+</template>

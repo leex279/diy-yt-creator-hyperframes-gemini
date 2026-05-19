@@ -1,5 +1,5 @@
-﻿<!--
-  scene-context-tiers.html â€” Three-tier context table.
+<!--
+  scene-context-tiers.html — Three-tier context table.
   Three rows: Global / On-demand / Layer-2 plan.
   Each reveals on its own beat with mono badges.
 -->
@@ -127,20 +127,36 @@
       tl.to("#ct-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
       tl.to("#ct-headline", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 0.5);
 
-      // Three rows reveal ~5s apart (narration paces each tier)
-      tl.to("#ct-t1", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 1.5);
-      tl.to("#ct-t2", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 6.5);
-      tl.to("#ct-t3", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 11.5);
+      // Tiers reveal EARLY so the 3-row stack is visible while narration introduces the concept.
+      // Narrator names each tier later — those moments get an emphasis pulse, not a fresh reveal.
+      tl.to("#ct-t1", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 2.0);
+      tl.to("#ct-t2", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 4.5);
+      tl.to("#ct-t3", { y: 0, autoAlpha: 1, duration: 0.6, ease: "back.out(1.3)" }, 7.0);
 
-      // Mid-hold beats â€” pulse each tier as a "this is the one to be careful with"
-      tl.to("#ct-t1", { boxShadow: "0 0 80px rgba(59, 130, 246, 0.45)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 16.0);
-      tl.to("#ct-t2", { boxShadow: "0 0 60px rgba(14, 165, 233, 0.40)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
-      tl.to("#ct-t3", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.40)", duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 28.0);
-      // Final whole-table scale settle pulse
-      tl.to(["#ct-t1","#ct-t2","#ct-t3"], { scale: 1.012, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.08 }, 34.0);
+      // Narrator names each tier — strong scale + glow pulse at the word anchor
+      tl.to("#ct-t1", { scale: 1.04, boxShadow: "0 0 80px rgba(59, 130, 246, 0.55)",
+        duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 10.159);  // "Global is auto"
+      tl.to("#ct-t2", { scale: 1.04, boxShadow: "0 0 80px rgba(14, 165, 233, 0.55)",
+        duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 18.901);  // "On-demand is loaded"
+      tl.to("#ct-t3", { scale: 1.04, boxShadow: "0 0 80px rgba(96, 165, 250, 0.55)",
+        duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 25.379);  // "Layer Two is the plan"
+
+      // Bridge beats every ≤3s — narrator continues explaining within each tier window
+      tl.to("#ct-t1", { boxShadow: "0 0 60px rgba(59, 130, 246, 0.35)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 13.5);
+      tl.to("#ct-t2", { boxShadow: "0 0 60px rgba(14, 165, 233, 0.35)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 16.0);
+      tl.to("#ct-t2", { boxShadow: "0 0 60px rgba(14, 165, 233, 0.40)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 22.0);
+      tl.to("#ct-t3", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 28.5);
+      tl.to(["#ct-t1","#ct-t2","#ct-t3"], { scale: 1.012, duration: 0.8, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.1 }, 31.5);
+      tl.to("#ct-t1", { boxShadow: "0 0 60px rgba(59, 130, 246, 0.45)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 34.5);
+      tl.to("#ct-t2", { boxShadow: "0 0 60px rgba(14, 165, 233, 0.45)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 37.5);
+      tl.to("#ct-t3", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.45)", duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 40.5);
+      tl.to(["#ct-t1","#ct-t2","#ct-t3"], { scale: 1.015, duration: 0.7, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.08 }, 43.5);
+      tl.to("#ct-t3", { scale: 1.03, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 46.0);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 50);
+      tl.set({}, {}, 47.1);
       window.__timelines["scene-context-tiers"] = tl;
     </script>
   </div>

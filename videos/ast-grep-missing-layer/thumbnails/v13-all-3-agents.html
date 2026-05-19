@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v13 — All 3 agents need this</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 1100px 700px at 50% 50%, rgba(220,220,170,0.14), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--ast-yellow); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--ast-yellow); }
+  .slam-wrap { position: absolute; top: 110px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 174px; line-height: 0.86; color: #fff; letter-spacing: -0.05em; }
+  .slam-1 .n3 { color: var(--ast-yellow); }
+  .slam-2 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 124px; line-height: 0.88; color: #fff; letter-spacing: -0.045em; margin-top: 4px; }
+  .slam-2 .need { color: var(--ok); }
+  #agents-row {
+    position: absolute; bottom: 50px; left: 56px; right: 56px;
+    display: flex; gap: 18px; align-items: stretch; z-index: 5;
+  }
+  .agent-tile {
+    flex: 1; height: 200px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+  }
+  .agent-tile .name {
+    font-family: var(--font-mono); font-weight: 800; font-size: 32px;
+    color: var(--fg-bright); letter-spacing: -0.01em;
+  }
+  .agent-tile .sub {
+    font-family: var(--font-mono); font-size: 16px; color: var(--fg-muted); font-weight: 600;
+  }
+  .agent-tile .grep-row {
+    margin-top: auto;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 19px; color: #ff7676; font-weight: 700;
+  }
+  .agent-tile .grep-row .x { color: #ff4d4d; font-weight: 900; }
+  .agent-tile .add-row {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 19px; color: var(--ok); font-weight: 700;
+  }
+  .agent-tile .add-row .plus { color: var(--ok); font-weight: 900; font-size: 22px; }
+  .agent-tile .add-row .yellow { color: var(--ast-yellow); }
+  .ast-needed {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(220,220,170,0.18);
+    border: 1.5px solid rgba(220,220,170,0.55);
+    color: var(--ast-yellow);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 800;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">the search layer they're missing</div>
+  <div class="slam-wrap">
+    <span class="slam-1">ALL <span class="n3">3 AGENTS</span></span>
+    <span class="slam-2"><span class="need">NEED</span> ast-grep.</span>
+  </div>
+  <div id="agents-row">
+    <div class="agent-tile">
+      <div class="ast-needed">+ ast-grep</div>
+      <div class="name">Claude Code</div>
+      <div class="sub">Anthropic · agent CLI</div>
+      <div class="grep-row"><span class="x">&#10005;</span>uses grep</div>
+      <div class="add-row"><span class="plus">+</span><span class="yellow">ast-grep</span></div>
+    </div>
+    <div class="agent-tile">
+      <div class="ast-needed">+ ast-grep</div>
+      <div class="name">Cursor</div>
+      <div class="sub">AI code editor</div>
+      <div class="grep-row"><span class="x">&#10005;</span>uses grep</div>
+      <div class="add-row"><span class="plus">+</span><span class="yellow">ast-grep</span></div>
+    </div>
+    <div class="agent-tile">
+      <div class="ast-needed">+ ast-grep</div>
+      <div class="name">Copilot</div>
+      <div class="sub">GitHub · code agent</div>
+      <div class="grep-row"><span class="x">&#10005;</span>uses grep</div>
+      <div class="add-row"><span class="plus">+</span><span class="yellow">ast-grep</span></div>
+    </div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

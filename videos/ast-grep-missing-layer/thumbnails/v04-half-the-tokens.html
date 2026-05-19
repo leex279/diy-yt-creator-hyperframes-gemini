@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v04 — Half the tokens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 900px 700px at 30% 40%, rgba(78,201,176,0.18), transparent 70%),
+      radial-gradient(ellipse 700px 500px at 80% 90%, rgba(220,220,170,0.10), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--ok); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--ok); }
+  .slam-wrap { position: absolute; top: 130px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 110px; line-height: 0.9; color: #fff; letter-spacing: -0.04em; }
+  .slam-half {
+    display: inline-block;
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: 280px; line-height: 0.82;
+    color: var(--ok);
+    text-shadow: 0 8px 36px rgba(78,201,176,0.4);
+    letter-spacing: -0.05em;
+    margin-top: -6px;
+  }
+  .slam-2 {
+    display: inline-block; font-family: var(--font-sans); font-weight: 900;
+    font-size: 110px; color: #fff; letter-spacing: -0.04em;
+    margin-left: 22px; vertical-align: middle;
+  }
+  #ast-tag {
+    position: absolute; bottom: 36px; left: 56px;
+    width: 540px;
+    background: var(--bg-editor);
+    border: 1.5px solid rgba(220,220,170,0.5);
+    border-radius: 16px;
+    padding: 22px 28px;
+    z-index: 5;
+    display: flex; align-items: center; gap: 20px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .ast-arrow-big {
+    width: 70px; height: 36px;
+    flex-shrink: 0;
+  }
+  .ast-arrow-big svg { width:100%; height:100%; }
+  .tag-text { display: flex; flex-direction: column; gap: 4px; }
+  .tag-name { font-family: var(--font-mono); font-weight: 800; font-size: 38px; color: #fff; letter-spacing: -0.02em; }
+  .tag-name .yellow { color: var(--ast-yellow); }
+  .tag-sub { font-family: var(--font-mono); font-size: 18px; color: var(--fg-muted); font-weight: 500; }
+  #agents-row {
+    position: absolute; bottom: 36px; right: 56px;
+    width: 530px;
+    display: flex; flex-direction: column; gap: 10px;
+    z-index: 5;
+  }
+  .agent-pill {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+    background: rgba(37,37,38,0.85);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    font-family: var(--font-mono); font-size: 18px;
+    color: var(--fg-default); font-weight: 600;
+  }
+  .agent-pill .check { color: var(--ok); font-weight: 800; }
+  .agent-pill .name { color: var(--fg-bright); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">structural search · for AI agents</div>
+  <div class="slam-wrap">
+    <span class="slam-1">CUT YOUR AGENT'S TOKENS</span>
+    <span style="display:flex;align-items:baseline;gap:24px;margin-top:6px;">
+      <span class="slam-half">IN HALF.</span>
+    </span>
+  </div>
+  <div id="ast-tag">
+    <div class="ast-arrow-big">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="100,0 25,50 43.75,62.5 0,100 75,62.5 56.25,50" fill="#dcdcaa"/>
+      </svg>
+    </div>
+    <div class="tag-text">
+      <div class="tag-name"><span class="yellow">ast-grep</span></div>
+      <div class="tag-sub">one config line · every session</div>
+    </div>
+  </div>
+  <div id="agents-row">
+    <div class="agent-pill"><span class="check">&#10003;</span><span>Works with <span class="name">Claude Code</span></span></div>
+    <div class="agent-pill"><span class="check">&#10003;</span><span>Works with <span class="name">Cursor</span></span></div>
+    <div class="agent-pill"><span class="check">&#10003;</span><span>Works with <span class="name">Copilot</span></span></div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

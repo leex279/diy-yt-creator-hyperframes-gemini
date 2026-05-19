@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v06 — One line to CLAUDE.md</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 1000px 700px at 80% 50%, rgba(220,220,170,0.16), transparent 70%),
+      radial-gradient(ellipse 700px 500px at 20% 30%, rgba(78,201,176,0.10), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--ast-yellow); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--ast-yellow); }
+  .slam-wrap { position: absolute; top: 116px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 170px; line-height: 0.86; color: #fff; letter-spacing: -0.05em; }
+  .slam-1 .one { color: var(--ast-yellow); }
+  .slam-2 { display: block; font-family: var(--font-mono); font-weight: 800; font-size: 92px; line-height: 1; color: #fff; letter-spacing: -0.02em; margin-top: 10px; }
+  .slam-2 .file {
+    background: linear-gradient(180deg, var(--ast-yellow), #b8a04a);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  #code-card {
+    position: absolute; bottom: 36px; left: 56px;
+    width: 840px; height: 220px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 14px; overflow: hidden;
+    z-index: 5;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  #code-title {
+    height: 42px; background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex; align-items: center; padding: 0 16px; gap: 10px;
+  }
+  .tdot { width: 11px; height: 11px; border-radius: 50%; }
+  .tdot.r { background: #ff5f56; } .tdot.y { background: #ffbd2e; } .tdot.g { background: #27c93f; }
+  #code-name { margin-left: 14px; font-family: var(--font-mono); font-size: 17px; color: var(--ast-yellow); font-weight: 600; }
+  #code-body {
+    padding: 18px 24px; font-family: var(--font-mono); font-size: 22px; line-height: 1.5;
+    color: var(--fg-default);
+  }
+  .comment { color: var(--syn-comment); }
+  .h2 { color: var(--syn-keyword); font-weight: 700; }
+  .bull { color: var(--ok); font-weight: 800; margin-right: 8px; }
+  .b-text { color: var(--fg-bright); font-weight: 600; }
+  .b-text .cmd { color: var(--ast-yellow); font-weight: 700; }
+  #result-card {
+    position: absolute; bottom: 36px; right: 56px;
+    width: 308px; height: 220px;
+    background: linear-gradient(160deg, rgba(78,201,176,0.18), rgba(0,80,60,0.10));
+    border: 1.5px solid rgba(78,201,176,0.55);
+    border-radius: 14px; padding: 22px 24px;
+    z-index: 6; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  #result-label { font-family: var(--font-mono); font-size: 16px; color: #b3ead9; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+  #result-value { font-family: var(--font-sans); font-weight: 900; font-size: 76px; line-height: 0.9; color: var(--ok); letter-spacing: -0.03em; }
+  #result-sub { font-family: var(--font-mono); font-size: 17px; color: #b3ead9; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">add this · every session forever</div>
+  <div class="slam-wrap">
+    <span class="slam-1"><span class="one">ONE LINE.</span></span>
+    <span class="slam-2"><span class="file">CLAUDE.md</span></span>
+  </div>
+  <div id="code-card">
+    <div id="code-title">
+      <div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div>
+      <div id="code-name">CLAUDE.md</div>
+    </div>
+    <div id="code-body">
+      <div><span class="h2">## Search</span></div>
+      <div><span class="comment">&nbsp;</span></div>
+      <div><span class="bull">-</span><span class="b-text">Use <span class="cmd">ast-grep</span> to find code references.</span></div>
+    </div>
+  </div>
+  <div id="result-card">
+    <div id="result-label">result</div>
+    <div id="result-value">~50%</div>
+    <div id="result-sub">fewer tokens · every refactor</div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

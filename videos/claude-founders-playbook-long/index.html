@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>The Claude Founder's Playbook (Long-form)</title>
+<link rel="stylesheet" href="tokens/anthropic-dark.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #0B0F18;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #F5F1EB;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #ambient {
+    position: absolute;
+    inset: -200px;
+    background:
+      radial-gradient(circle at 28% 22%, rgba(233, 116, 88, 0.10), transparent 55%),
+      radial-gradient(circle at 76% 78%, rgba(167, 139, 250, 0.07), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(107, 154, 239, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #shape-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  #shape-backdrop img {
+    position: absolute;
+    opacity: 0.0425;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  #top-banner {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 1920px;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    text-align: center;
+  }
+  #top-banner-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(245, 241, 235, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: #E97458;
+    box-shadow: 0 0 12px rgba(233, 116, 88, 0.60);
+  }
+
+  .scene-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
+  #scene-hook-wrap                { z-index: 1; opacity: 1; }
+  #scene-source-cards-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-founder-changing-wrap    { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-subscribe-banner-1-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-idea-stage-wrap          { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-mvp-stage-wrap           { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-launch-stage-wrap        { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-scale-stage-wrap         { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-subscribe-banner-2-wrap  { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-same-job-wrap            { z-index: 1; opacity: 0; visibility: hidden; }
+  #scene-cta-wrap                 { z-index: 1; opacity: 0; visibility: hidden; }
+
+  #hostinger-midroll-mount {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 50;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="481"
+     data-width="1920"
+     data-height="1080">
+
+  <div id="ambient"></div>
+  <div id="shape-backdrop"></div>
+
+  <div id="top-banner">
+    <img id="top-banner-logo" src="assets/anthropic-logo-light.svg" alt="Anthropic" />
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <div id="scene-hook-wrap" class="scene-wrapper"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0"
+       data-track-index="1"></div>
+
+  <div id="scene-source-cards-wrap" class="scene-wrapper"
+       data-composition-id="scene-source-cards"
+       data-composition-src="compositions/scene-source-cards.html"
+       data-start="27.28"
+       data-track-index="1"></div>
+
+  <div id="scene-founder-changing-wrap" class="scene-wrapper"
+       data-composition-id="scene-founder-changing"
+       data-composition-src="compositions/scene-founder-changing.html"
+       data-start="49.02"
+       data-track-index="1"></div>
+
+  <div id="scene-subscribe-banner-1-wrap" class="scene-wrapper"
+       data-composition-id="scene-subscribe-banner-1"
+       data-composition-src="compositions/scene-subscribe-banner-1.html"
+       data-start="88.01"
+       data-track-index="1"></div>
+
+  <div id="scene-idea-stage-wrap" class="scene-wrapper"
+       data-composition-id="scene-idea-stage"
+       data-composition-src="compositions/scene-idea-stage.html"
+       data-start="99.27"
+       data-track-index="1"></div>
+
+  <div id="scene-mvp-stage-wrap" class="scene-wrapper"
+       data-composition-id="scene-mvp-stage"
+       data-composition-src="compositions/scene-mvp-stage.html"
+       data-start="173.23"
+       data-track-index="1"></div>
+
+  <div id="hostinger-midroll-mount"
+       data-composition-id="hostinger-midroll"
+       data-composition-src="compositions/hostinger-midroll.html"
+       data-start="248.37"
+       data-duration="20"
+       data-track-index="20"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <div id="scene-launch-stage-wrap" class="scene-wrapper"
+       data-composition-id="scene-launch-stage"
+       data-composition-src="compositions/scene-launch-stage.html"
+       data-start="267.30"
+       data-track-index="1"></div>
+
+  <div id="scene-scale-stage-wrap" class="scene-wrapper"
+       data-composition-id="scene-scale-stage"
+       data-composition-src="compositions/scene-scale-stage.html"
+       data-start="338.36"
+       data-track-index="1"></div>
+
+  <div id="scene-subscribe-banner-2-wrap" class="scene-wrapper"
+       data-composition-id="scene-subscribe-banner-2"
+       data-composition-src="compositions/scene-subscribe-banner-2.html"
+       data-start="400.73"
+       data-track-index="1"></div>
+
+  <div id="scene-same-job-wrap" class="scene-wrapper"
+       data-composition-id="scene-same-job"
+       data-composition-src="compositions/scene-same-job.html"
+       data-start="413.83"
+       data-track-index="1"></div>
+
+  <div id="scene-cta-wrap" class="scene-wrapper"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="465.10"
+       data-track-index="1"></div>
+
+  <audio id="narration"
+         src="audio/narration.wav"
+         data-start="0"
+         data-duration="481"
+         data-track-index="2"
+         data-volume="1"></audio>
+
+  <audio id="sfx-whoosh-01" src="assets/sfx/cinematic-whoosh.mp3" data-start="27.28"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-02" src="assets/sfx/cinematic-whoosh.mp3" data-start="49.02"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-03" src="assets/sfx/cinematic-whoosh.mp3" data-start="88.01"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-04" src="assets/sfx/cinematic-whoosh.mp3" data-start="99.27"  data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-05" src="assets/sfx/cinematic-whoosh.mp3" data-start="173.23" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-06" src="assets/sfx/cinematic-whoosh.mp3" data-start="248.37" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-07" src="assets/sfx/cinematic-whoosh.mp3" data-start="267.30" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-08" src="assets/sfx/cinematic-whoosh.mp3" data-start="338.36" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-09" src="assets/sfx/cinematic-whoosh.mp3" data-start="400.73" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-10" src="assets/sfx/cinematic-whoosh.mp3" data-start="413.83" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+  <audio id="sfx-whoosh-11" src="assets/sfx/cinematic-whoosh.mp3" data-start="465.10" data-duration="1.5" data-track-index="3" data-volume="0.11"></audio>
+
+  <audio id="sfx-impact-hook" src="assets/sfx/impact-slam.mp3" data-start="4.6" data-duration="0.6" data-track-index="4" data-volume="0.15"></audio>
+
+  <audio id="sfx-slam-idea"   src="assets/sfx/scale-slam.mp3" data-start="100.77" data-duration="0.6" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-slam-mvp"    src="assets/sfx/scale-slam.mp3" data-start="174.73" data-duration="0.6" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-slam-launch" src="assets/sfx/scale-slam.mp3" data-start="268.80" data-duration="0.6" data-track-index="4" data-volume="0.13"></audio>
+  <audio id="sfx-slam-scale"  src="assets/sfx/scale-slam.mp3" data-start="339.86" data-duration="0.6" data-track-index="4" data-volume="0.13"></audio>
+
+  <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" seed="42" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" filter="url(#noise-filter)" fill="white" />
+  </svg>
+</div>
+
+<script>
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+
+  function spawnShapes(seedPrefix, container) {
+    const shapes = ['assets/shapes/shape1.svg', 'assets/shapes/shape2.svg', 'assets/shapes/shape3.svg'];
+    const count = 14, w = 1920, h = 1080, minSize = 200, sizeRange = 220;
+    const minDist = 360, MAX_TRIES = 80;
+    const placed = [];
+    let attempt = 0;
+    for (let i = 0; i < count; i++) {
+      let best = null, bestScore = -1;
+      for (let t = 0; t < MAX_TRIES; t++) {
+        const seed = seedPrefix + '-' + i + '-' + attempt++;
+        const size = minSize + seedHash(seed + '-size') * sizeRange;
+        const cx = seedHash(seed + '-x') * (w - size * 0.4) + size * 0.2;
+        const cy = seedHash(seed + '-y') * (h - size * 0.4) + size * 0.2;
+        const rot = (seedHash(seed + '-rot') - 0.5) * 90;
+        let nearest = Infinity;
+        for (const p of placed) {
+          const dx = cx - p.cx, dy = cy - p.cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < nearest) nearest = d2;
+        }
+        if (nearest >= minDist * minDist) { best = { cx, cy, size, rot }; break; }
+        if (nearest > bestScore) { bestScore = nearest; best = { cx, cy, size, rot }; }
+      }
+      placed.push(best);
+      const img = document.createElement('img');
+      img.src = shapes[i % shapes.length];
+      img.style.cssText =
+        'left:' + (best.cx - best.size / 2) + 'px;' +
+        'top:' + (best.cy - best.size / 2) + 'px;' +
+        'width:' + best.size + 'px;' +
+        'height:' + best.size + 'px;';
+      container.appendChild(img);
+      gsap.set(img, { rotation: best.rot });
+    }
+  }
+
+  function animateShapeDrift(tl, container, seedPrefix, totalDuration) {
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img, i) => {
+      const seed = seedPrefix + '-drift-' + i;
+      const dx = (seedHash(seed + '-dx') - 0.5) * 60;
+      const dy = (seedHash(seed + '-dy') - 0.5) * 60;
+      const dr = (seedHash(seed + '-dr') - 0.5) * 8;
+      const dur = totalDuration / 10 + seedHash(seed + '-dur') * (totalDuration / 10);
+      const repeatCount = Math.max(0, Math.floor(totalDuration / dur) - 1);
+      tl.to(img, {
+        x: dx, y: dy, rotation: '+=' + dr,
+        duration: dur, ease: 'sine.inOut',
+        yoyo: true, repeat: repeatCount
+      }, 0);
+    });
+  }
+
+  function crossfadeScenes(tl, fromSel, toSel, atTime) {
+    tl.to(fromSel, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, atTime);
+    tl.to(fromSel, { opacity: 0, duration: 0.4, ease: "power1.in" }, atTime + 0.3);
+    tl.set(fromSel, { visibility: "hidden" }, atTime + 0.7);
+    tl.set(toSel,   { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, atTime + 0.4);
+    tl.to(toSel,    { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, atTime + 0.4);
+    tl.to(toSel,    { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, atTime + 0.6);
+  }
+
+  spawnShapes('founders-playbook-long', document.getElementById('shape-backdrop'));
+
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 481;
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo("#ambient",
+    { opacity: 0.85, scale: 1.0 },
+    { opacity: 1.0, scale: 1.04, duration: 30, ease: "sine.inOut", yoyo: true, repeat: 15 },
+    0);
+
+  animateShapeDrift(tl, document.getElementById('shape-backdrop'), 'founders-playbook-long', TOTAL_DURATION);
+
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  tl.from("#top-banner", { y: -16, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+
+  crossfadeScenes(tl, "#scene-hook-wrap",                "#scene-source-cards-wrap",        27.28 - 0.4);
+  crossfadeScenes(tl, "#scene-source-cards-wrap",        "#scene-founder-changing-wrap",    49.02 - 0.4);
+  crossfadeScenes(tl, "#scene-founder-changing-wrap",    "#scene-subscribe-banner-1-wrap",  88.01 - 0.4);
+  crossfadeScenes(tl, "#scene-subscribe-banner-1-wrap",  "#scene-idea-stage-wrap",          99.27 - 0.4);
+  crossfadeScenes(tl, "#scene-idea-stage-wrap",          "#scene-mvp-stage-wrap",          173.23 - 0.4);
+  crossfadeScenes(tl, "#scene-mvp-stage-wrap",           "#scene-launch-stage-wrap",       267.30 - 0.4);
+  crossfadeScenes(tl, "#scene-launch-stage-wrap",        "#scene-scale-stage-wrap",        338.36 - 0.4);
+  crossfadeScenes(tl, "#scene-scale-stage-wrap",         "#scene-subscribe-banner-2-wrap", 400.73 - 0.4);
+  crossfadeScenes(tl, "#scene-subscribe-banner-2-wrap",  "#scene-same-job-wrap",           413.83 - 0.4);
+  crossfadeScenes(tl, "#scene-same-job-wrap",            "#scene-cta-wrap",                465.10 - 0.4);
+
+  tl.set({}, {}, TOTAL_DURATION);
+
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v14 — Refactors cost 2x</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 1100px 700px at 35% 45%, rgba(255,60,60,0.18), transparent 65%),
+      radial-gradient(ellipse 700px 500px at 85% 85%, rgba(220,220,170,0.10), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: #ff7676; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: #ff7676; }
+  .slam-wrap { position: absolute; top: 116px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 102px; line-height: 0.9; color: #fff; letter-spacing: -0.04em; }
+  .slam-1 .why { color: #ff7676; }
+  .slam-cost {
+    display: inline-block; vertical-align: baseline;
+    font-family: var(--font-sans); font-weight: 900; font-size: 184px; line-height: 0.85;
+    color: #fff; letter-spacing: -0.05em; margin-top: 8px;
+    background: linear-gradient(180deg, #ff8a8a, #ff3030);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 32px rgba(255,80,80,0.35);
+  }
+  .slam-end {
+    display: inline-block; font-family: var(--font-sans); font-weight: 900;
+    font-size: 102px; color: #fff; letter-spacing: -0.04em;
+    margin-left: 18px;
+  }
+  #math-card {
+    position: absolute; bottom: 36px; left: 56px;
+    width: 700px; height: 220px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 22px 26px;
+    z-index: 5;
+    display: flex; flex-direction: column; gap: 10px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  #math-card .title {
+    font-family: var(--font-mono); font-size: 16px;
+    color: var(--fg-muted); letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 700;
+  }
+  .math-row {
+    display: flex; align-items: baseline; gap: 14px;
+    font-family: var(--font-mono); font-size: 24px; font-weight: 600;
+    color: var(--fg-default);
+  }
+  .math-row .pill {
+    font-weight: 800; padding: 2px 12px; border-radius: 6px;
+    font-size: 22px;
+  }
+  .math-row .pill.red { background: rgba(255,77,77,0.16); color: #ff7676; border: 1px solid rgba(255,80,80,0.5); }
+  .math-row .pill.green { background: rgba(78,201,176,0.16); color: var(--ok); border: 1px solid rgba(78,201,176,0.5); }
+  .math-row .x { color: var(--fg-muted); font-weight: 800; }
+  .math-row .out { color: var(--fg-bright); font-weight: 800; }
+  .math-result {
+    margin-top: 4px;
+    display: flex; align-items: baseline; gap: 14px;
+    font-family: var(--font-mono); font-weight: 800;
+  }
+  .math-result .lbl { font-size: 18px; color: var(--fg-muted); }
+  .math-result .val { font-size: 42px; color: var(--ok); letter-spacing: -0.02em; }
+  .math-result .sub { font-size: 16px; color: var(--fg-dim); font-weight: 600; }
+  #fix-card {
+    position: absolute; bottom: 36px; right: 56px;
+    width: 380px; height: 220px;
+    background: linear-gradient(160deg, rgba(78,201,176,0.18), rgba(0,80,60,0.10));
+    border: 1.5px solid rgba(78,201,176,0.55);
+    border-radius: 16px; padding: 22px 24px;
+    z-index: 6; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  #fix-card .lbl { font-family: var(--font-mono); font-size: 16px; color: #b3ead9; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+  #fix-card .fix-name { font-family: var(--font-mono); font-weight: 800; font-size: 50px; color: var(--ast-yellow); line-height: 0.95; }
+  #fix-card .fix-sub { font-family: var(--font-mono); font-size: 18px; color: #b3ead9; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">measured · real refactors</div>
+  <div class="slam-wrap">
+    <span class="slam-1"><span class="why">WHY</span> YOUR REFACTORS</span>
+    <span style="display:flex;align-items:baseline;gap:18px;margin-top:6px;">
+      <span class="slam-cost">COST 2x</span>
+      <span class="slam-end">MORE.</span>
+    </span>
+  </div>
+  <div id="math-card">
+    <div class="title">the math</div>
+    <div class="math-row">
+      <span class="pill red">22 files</span>
+      <span class="x">&times;</span>
+      <span>500 tokens</span>
+      <span class="x">=</span>
+      <span class="out">11,000 tokens</span>
+    </div>
+    <div class="math-row">
+      <span class="pill green">12 files</span>
+      <span class="x">&times;</span>
+      <span>500 tokens</span>
+      <span class="x">=</span>
+      <span class="out">6,000 tokens</span>
+    </div>
+    <div class="math-result">
+      <span class="lbl">saved</span>
+      <span class="val">~50%</span>
+      <span class="sub">per refactor · scales to $15/dev/mo</span>
+    </div>
+  </div>
+  <div id="fix-card">
+    <div>
+      <div class="lbl">the fix</div>
+      <div class="fix-name">▶ ast-grep</div>
+    </div>
+    <div class="fix-sub">1 line in CLAUDE.md<br/>+ N P M install</div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

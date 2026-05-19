@@ -1,0 +1,370 @@
+<!--
+  scene-marker.html — Cinematic hook (0–11s).
+
+  Pattern (open-topic-then-pivot per shorts-thumbnail-frames.md):
+   - t=0.0–2.5  TOPIC LOCKUP — visible from frame 0. AST-GREP brand + receipt.
+                Earns the thumbnail spot YouTube auto-picks.
+   - t=2.5      PIVOT — topic fades, pain headline "BLEEDING TOKENS" crashes in.
+   - t=3.14     "Right now." → red urgency badge enters.
+   - t=4.2      "It just flagged…" → code-snippet pill enters ("console.log(hi)").
+   - t=6.7      "In quotes." → quote-marks emphasis pops.
+   - t=7.6      "Inside a test fixture." → file path chip appears.
+   - t=9.2      "Then it billed you." → token counter ticks up.
+
+  Beats are content-bearing entrances on transcript word anchors, not yoyo pulses.
+-->
+<template id="scene-marker-template">
+  <div data-composition-id="scene-marker"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-marker-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:28px;
+        box-sizing:border-box;
+        position: relative;
+      }
+
+      /* ── TOPIC LOCKUP (t=0–2.5 — thumbnail-grade frame 1) ────
+         Vertically centered in upper safe zone for thumbnail composition. */
+      #marker-topic-lockup {
+        position: absolute;
+        top: 380px; left: 0; right: 0;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 36px;
+        z-index: 3;
+      }
+      #marker-topic-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 34px;
+        letter-spacing: 8px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #marker-topic-brand {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 200px;
+        line-height: 0.95;
+        letter-spacing: -6px;
+        color: var(--text-bright);
+      }
+      #marker-topic-brand .em {
+        color: var(--accent-1);
+      }
+      /* Real ast-grep logo for the topic lockup (replaces the wordmark) */
+      #marker-topic-logo {
+        width: 720px;
+        height: auto;
+        display: block;
+        filter: drop-shadow(0 8px 32px rgba(247, 129, 102, 0.25));
+      }
+      #marker-topic-subhead {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 44px;
+        line-height: 1.2;
+        color: var(--text);
+        max-width: 880px;
+      }
+      #marker-topic-receipt {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 32px;
+        background: rgba(247, 129, 102, 0.12);
+        border: 1px solid rgba(247, 129, 102, 0.45);
+        border-radius: 12px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: 1px;
+        color: var(--accent-1);
+      }
+      #marker-topic-receipt .num {
+        font-size: 38px;
+        color: var(--text-bright);
+      }
+      #marker-topic-receipt .arrow {
+        color: var(--text-secondary);
+      }
+
+      /* ── PAIN HEADLINE (t=2.5 onward) ───────────────────────── */
+      #marker-pain-stage {
+        position: absolute;
+        top: 240px; left: 0; right: 0;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 30px;
+        z-index: 2;
+      }
+      #marker-pain-pretitle {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 32px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #marker-pain-headline {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-weight: 800;
+        font-size: 124px;
+        line-height: 0.96;
+        letter-spacing: -3px;
+        color: var(--text-bright);
+        max-width: 960px;
+      }
+      .marker-wrap {
+        position: relative;
+        display: inline-block;
+        font-style: italic;
+        color: #0d1117;  /* dark text over orange band — max contrast */
+        padding: 0 14px;
+      }
+      .marker-band {
+        position: absolute;
+        left: 0; right: 0; bottom: 12px;
+        height: 60%;
+        background: var(--accent-1);
+        border-radius: 6px;
+        z-index: -1;
+        opacity: 0.95;
+      }
+
+      /* ── BEAT STACK (urgency + code snippet + quote + file path + counter) ─ */
+      #marker-beats {
+        position: absolute;
+        top: 800px; left: 0; right: 0;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 20px;
+        z-index: 4;
+      }
+
+      .beat {
+        opacity: 0;  /* hidden until reveal */
+      }
+
+      /* B1 — urgency badge */
+      #beat-urgency {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 32px;
+        background: rgba(244, 135, 113, 0.14);
+        border: 2px solid var(--accent-2);
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 40px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #beat-urgency .dot {
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: var(--accent-1);
+        box-shadow: 0 0 14px var(--accent-1);
+      }
+
+      /* B2 — code snippet pill (the actual lie) */
+      #beat-codepill {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px 30px;
+        background: #1e1e1e;
+        border: 1px solid #2a2d31;
+        border-radius: 12px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 46px;
+        color: rgba(255, 255, 255, 0.92);
+      }
+      #beat-codepill .strq { color: var(--accent-rose); }
+      #beat-codepill .hot {
+        background: rgba(247, 129, 102, 0.30);
+        border-radius: 6px;
+        padding: 0 8px;
+        color: var(--accent-1);
+      }
+
+      /* B3 — quote-mark emphasis */
+      #beat-quote {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-weight: 900;
+        font-size: 112px;
+        line-height: 1;
+        color: var(--accent-1);
+        letter-spacing: -3px;
+      }
+
+      /* B4 — file path chip */
+      #beat-filepath {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 28px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid #2a2d31;
+        border-radius: 10px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 38px;
+        color: var(--text-secondary);
+      }
+      #beat-filepath .path { color: var(--text); }
+      #beat-filepath .line { color: var(--accent-2); }
+
+      /* B5 — token counter / bill */
+      #beat-counter {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 32px;
+        background: rgba(247, 129, 102, 0.18);
+        border: 2px solid var(--accent-1);
+        border-radius: 12px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 42px;
+        color: var(--text-bright);
+      }
+      #beat-counter .plus { color: var(--accent-1); font-weight: 900; }
+      #beat-counter .num {
+        font-variant-numeric: tabular-nums lining-nums;
+        font-size: 54px;
+        color: var(--accent-1);
+      }
+    </style>
+
+    <div id="scene-marker-content">
+
+      <!-- Topic lockup — visible at t=0, fades out at pivot -->
+      <div id="marker-topic-lockup">
+        <div id="marker-topic-overline">The missing layer</div>
+        <img id="marker-topic-logo" src="../assets/ast-grep-logo.svg" alt="ast-grep" />
+        <div id="marker-topic-subhead">Between grep and your AI coding agent.</div>
+        <div id="marker-topic-receipt">
+          <span class="num">164</span>
+          <span class="arrow">&rarr;</span>
+          <span class="num">12</span>
+          <span>real matches</span>
+        </div>
+      </div>
+
+      <!-- Pain headline — hidden until pivot at t=2.5 -->
+      <div id="marker-pain-stage" style="opacity:0; visibility:hidden;">
+        <div id="marker-pain-pretitle">Right now &middot; receipt below</div>
+        <div id="marker-pain-headline">
+          Your AI agent is<br/>
+          <span class="marker-wrap">
+            <span class="marker-band" id="marker-band"></span>bleeding tokens.
+          </span>
+        </div>
+      </div>
+
+      <!-- Narration-anchored beat stack -->
+      <div id="marker-beats">
+        <div class="beat" id="beat-urgency">
+          <span class="dot"></span>
+          <span>LIVE &middot; burning tokens</span>
+        </div>
+        <div class="beat" id="beat-codepill">
+          <span class="strq">"</span><span class="hot">console.log(hi)</span><span class="strq">"</span>
+        </div>
+        <div class="beat" id="beat-quote">&ldquo; &rdquo;</div>
+        <div class="beat" id="beat-filepath">
+          <span class="path">dag-executor.test.ts</span>
+          <span>:</span>
+          <span class="line">2813</span>
+        </div>
+        <div class="beat" id="beat-counter">
+          <span class="plus">+</span>
+          <span class="num" id="counter-tokens">0</span>
+          <span>tokens billed</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* ── Topic lockup: visible at t=0, NO entrance animation needed ──
+         Critical for thumbnail-grade frame 1 per shorts-thumbnail-frames.md.
+         Only a subtle scale-from to give cinematic weight. */
+      tl.from("#marker-topic-overline",  { y: -10, opacity: 0, duration: 0.4, ease: "power2.out" }, 0);
+      tl.from("#marker-topic-brand",     { scale: 0.94, duration: 0.5, ease: "power3.out" }, 0);
+      tl.from("#marker-topic-subhead",   { y: 10, opacity: 0, duration: 0.4, ease: "power2.out" }, 0.2);
+      tl.from("#marker-topic-receipt",   { y: 14, opacity: 0, duration: 0.4, ease: "power2.out" }, 0.4);
+
+      /* ── PIVOT at t=2.5 — topic fades, pain crashes in ───────────── */
+      tl.to("#marker-topic-lockup",  { opacity: 0, scale: 0.94, duration: 0.45, ease: "power2.in" }, 2.4);
+      tl.set("#marker-topic-lockup", { visibility: "hidden" }, 2.85);
+      tl.set("#marker-pain-stage",   { visibility: "visible" }, 2.5);
+      tl.to("#marker-pain-stage",    { opacity: 1, duration: 0.4, ease: "power2.out" }, 2.6);
+      tl.from("#marker-pain-pretitle", { y: -12, opacity: 0, duration: 0.45, ease: "power2.out" }, 2.7);
+      tl.from("#marker-pain-headline", { y: 30, scale: 0.96, opacity: 0, duration: 0.6, ease: "back.out(1.5)" }, 2.8);
+      tl.fromTo("#marker-band",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.55, ease: "power2.inOut", immediateRender: false }, 3.0);
+
+      /* ── BEAT 1 (t=3.14 — "Right now.") — urgency badge ─────────── */
+      tl.fromTo("#beat-urgency",
+        { y: 16, opacity: 0, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)", immediateRender: false },
+        3.14);
+      tl.to("#beat-urgency .dot", { scale: 1.4, duration: 0.35, ease: "power2.inOut", yoyo: true, repeat: 3 }, 3.3);
+
+      /* ── BEAT 2 (t=4.2 — "It just flagged a string of text") ─────
+            Code-snippet pill showing the actual false positive. */
+      tl.fromTo("#beat-codepill",
+        { y: 18, opacity: 0, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)", immediateRender: false },
+        4.2);
+      tl.to("#beat-codepill .hot", { scale: 1.08, duration: 0.35, ease: "back.out(2)", yoyo: true, repeat: 1, transformOrigin: "center" }, 6.0);
+
+      /* ── BEAT 3 (t=6.7 — "In quotes.") — quote-marks pop ───────── */
+      tl.fromTo("#beat-quote",
+        { y: 12, opacity: 0, scale: 0.7 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(2)", immediateRender: false },
+        6.7);
+
+      /* ── BEAT 4 (t=7.6 — "Inside a test fixture.") — file chip ── */
+      tl.fromTo("#beat-filepath",
+        { y: 16, opacity: 0 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", immediateRender: false },
+        7.62);
+
+      /* ── BEAT 5 (t=9.2 — "Then it billed you.") — token counter ─ */
+      tl.fromTo("#beat-counter",
+        { y: 16, opacity: 0, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)", immediateRender: false },
+        9.2);
+      const tokenCounter = { v: 0 };
+      tl.to(tokenCounter, {
+        v: 11000,
+        duration: 1.4,
+        ease: "power2.out",
+        onUpdate: () => {
+          document.getElementById('counter-tokens').textContent = Math.round(tokenCounter.v).toLocaleString();
+        }
+      }, 9.25);
+
+      // Tail-extend so the sub-comp timeline duration matches the visible window
+      tl.set({}, {}, 12.5);
+
+      window.__timelines["scene-marker"] = tl;
+    </script>
+  </div>
+</template>

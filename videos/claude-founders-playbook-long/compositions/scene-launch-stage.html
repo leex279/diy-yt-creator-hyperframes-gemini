@@ -1,0 +1,298 @@
+<!--
+  scene-launch-stage.html — Chapter 5 Launch Stage (71s). 13 narration-anchored beats.
+-->
+<template id="scene-launch-stage-template">
+  <div data-composition-id="scene-launch-stage"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      #lst-content {
+        width: 100%; height: 100%;
+        padding: 130px 60px 100px;
+        display: grid;
+        grid-template-columns: 0.78fr 1.2fr;
+        gap: 40px;
+        align-items: stretch;
+        box-sizing: border-box;
+      }
+      #lst-left {
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 20px;
+      }
+      #lst-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        text-transform: uppercase; color: #6B9AEF;
+        opacity: 0;
+      }
+      #lst-headline {
+        font-weight: 900; font-size: 130px; line-height: 0.9;
+        letter-spacing: -5px; color: #F5F1EB;
+        opacity: 0;
+      }
+      #lst-headline .em { color: #6B9AEF; }
+      #lst-graphic {
+        width: 100%; max-width: 560px;
+        border-radius: 16px;
+        border: 2px solid rgba(107,154,239,0.45);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.55), 0 0 60px rgba(107,154,239,0.18);
+        display: block; object-fit: cover; aspect-ratio: 4/3;
+        opacity: 0;
+      }
+      #lst-progress {
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+      }
+      .lst-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(245,241,235,0.18); }
+      .lst-dot.active { background: #6B9AEF; box-shadow: 0 0 10px rgba(107,154,239,0.6); }
+      .lst-prog-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 14px; letter-spacing: 3px;
+        color: #9A958D; margin-left: 8px;
+      }
+
+      #lst-right {
+        position: relative;
+        display: flex; flex-direction: column;
+        gap: 14px;
+        align-self: stretch;
+        justify-content: center;
+      }
+      .lst-card {
+        opacity: 0;
+        padding: 18px 22px;
+        border-radius: 14px;
+        background: rgba(14,18,26,0.85);
+        border: 1.5px solid rgba(107,154,239,0.45);
+        display: flex; align-items: center; gap: 18px;
+        position: relative;
+      }
+      .lst-card.danger { border-color: rgba(209,67,67,0.50); background: rgba(40,18,18,0.85); }
+      .lst-card.exit   { border-color: rgba(125,211,166,0.50); }
+      .lst-card-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 14px; letter-spacing: 3px;
+        padding: 6px 12px; border-radius: 6px;
+        background: rgba(107,154,239,0.18); color: #6B9AEF;
+        white-space: nowrap; flex-shrink: 0;
+      }
+      .lst-card.danger .lst-card-tag { background: rgba(209,67,67,0.20); color: #FF7C7C; }
+      .lst-card.exit   .lst-card-tag { background: rgba(125,211,166,0.18); color: #7DD3A6; }
+      .lst-card-text {
+        font-weight: 700; font-size: 22px;
+        line-height: 1.25; color: #F5F1EB;
+      }
+
+      /* Delay clock 1hr → 1wk inside failure */
+      #lst-delay {
+        margin-left: auto;
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 14px; border-radius: 8px;
+        background: rgba(40,12,12,0.7);
+        opacity: 0;
+      }
+      .lst-delay-side {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 2px;
+      }
+      .lst-delay-num {
+        font-weight: 900; font-size: 32px; line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .lst-delay-side.was .lst-delay-num { color: #9A958D; }
+      .lst-delay-side.now .lst-delay-num { color: #FF7C7C; }
+      .lst-delay-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 10px; letter-spacing: 2px;
+        color: #9A958D; text-transform: uppercase;
+      }
+      .lst-delay-arrow {
+        font-size: 28px; color: #FF7C7C;
+      }
+
+      /* Claude surface combined card — two pills */
+      #lst-claude {
+        flex-wrap: wrap;
+      }
+      .lst-claude-pill {
+        margin-left: 10px;
+        padding: 8px 14px; border-radius: 10px;
+        background: rgba(107,154,239,0.10);
+        border: 1.5px solid rgba(107,154,239,0.40);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 16px; letter-spacing: 1px;
+        color: #6B9AEF;
+        opacity: 0;
+      }
+
+      /* 10 CUSTOMERS mega slam */
+      #lst-mega {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 0; opacity: 0; pointer-events: none;
+        background: rgba(11,15,24,0.65); backdrop-filter: blur(8px);
+        border-radius: 18px; z-index: 5;
+      }
+      #lst-mega-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        color: #7DD3A6; margin-bottom: 8px;
+      }
+      #lst-mega-num {
+        font-weight: 900; font-size: 320px; line-height: 0.9;
+        letter-spacing: -14px; color: #7DD3A6;
+        text-shadow: 0 0 80px rgba(125,211,166,0.55), 0 12px 30px rgba(0,0,0,0.7);
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      #lst-mega-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 24px; letter-spacing: 3px;
+        color: #F5F1EB; max-width: 540px; text-align: center;
+        margin-top: 8px;
+      }
+    </style>
+
+    <div id="lst-content">
+      <div id="lst-left">
+        <div id="lst-overline">CHAPTER 5 &middot; PDF p.21</div>
+        <div id="lst-headline"><span class="em">Launch</span>.</div>
+        <img id="lst-graphic" src="assets/chapter-icons/chapter-5-launch.png" alt="Chapter 5 — Launch Stage" />
+        <div id="lst-progress">
+          <div class="lst-dot"></div><div class="lst-dot"></div><div class="lst-dot"></div><div class="lst-dot"></div>
+          <div class="lst-dot active"></div>
+          <div class="lst-dot"></div><div class="lst-dot"></div>
+          <span class="lst-prog-label">5 / 7</span>
+        </div>
+      </div>
+
+      <div id="lst-right">
+        <div class="lst-card" id="lst-goal">
+          <div class="lst-card-tag">GOAL</div>
+          <div class="lst-card-text">First <span style="color:#6B9AEF;font-weight:900">paying customers</span> + first hires.</div>
+        </div>
+
+        <div class="lst-card danger" id="lst-failure">
+          <div class="lst-card-tag">FAILURE MODE</div>
+          <div class="lst-card-text">The founder becomes the <span style="color:#FF7C7C;font-weight:900">bottleneck.</span></div>
+          <div id="lst-delay">
+            <div class="lst-delay-side was">
+              <div class="lst-delay-num" id="lst-was-num">0</div>
+              <div class="lst-delay-cap">WAS</div>
+            </div>
+            <div class="lst-delay-arrow">&rarr;</div>
+            <div class="lst-delay-side now">
+              <div class="lst-delay-num" id="lst-now-num">0</div>
+              <div class="lst-delay-cap">NOW</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lst-card" id="lst-claude" style="min-height:80px;">
+          <div class="lst-card-tag">CLAUDE SURFACE</div>
+          <div class="lst-card-text">Move ops + shipping out of your head:</div>
+          <div class="lst-claude-pill" id="lst-pill-cowork">CLAUDE COWORK &middot; ops</div>
+          <div class="lst-claude-pill" id="lst-pill-code">CLAUDE CODE &middot; ship</div>
+        </div>
+
+        <div class="lst-card exit" id="lst-exit">
+          <div class="lst-card-tag">EXIT CRITERIA</div>
+          <div class="lst-card-text"><span style="color:#7DD3A6;font-weight:900;font-size:36px" id="lst-exit-num">0</span> paying customers + repeatable acquisition.</div>
+        </div>
+
+        <!-- 10 customers mega slam -->
+        <div id="lst-mega">
+          <div id="lst-mega-overline">LAUNCH EXIT GATE &middot; PDF p.22</div>
+          <div id="lst-mega-num">0</div>
+          <div id="lst-mega-cap">paying customers &middot; repeatable acquisition</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 71;
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.5 } });
+
+      // Local time = global - 267.30
+      // BEAT 1: 0.0 "Chapter five" — overline
+      tl.to("#lst-overline", { opacity: 1, x: 0, duration: 0.4 }, 0);
+      tl.to("#lst-progress", { opacity: 1, duration: 0.4 }, 0.2);
+
+      // BEAT 2: 1.05 "Launch stage" — headline slam
+      tl.fromTo("#lst-headline", { y: 40, scale: 0.85, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 1.05);
+
+      // BEAT 3: 2.89 "job changes" — GOAL pill enters
+      tl.to("#lst-goal", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 2.89);
+
+      // BEAT 4: 4.0 — chapter graphic enters
+      tl.fromTo("#lst-graphic",
+        { rotationY: -25, scale: 0.85, opacity: 0, transformPerspective: 2000 },
+        { rotationY: 0, scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)" },
+        4.0);
+
+      // BEAT 5: 13.58 "failure" — FAILURE card setup
+      tl.to("#lst-failure", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 13.58);
+
+      // BEAT 6: 19.01 "bottleneck" — danger glow pulse
+      tl.to("#lst-failure", {
+        boxShadow: "0 0 0 6px rgba(209,67,67,0.30)", duration: 0.4,
+        yoyo: true, repeat: 2, ease: "sine.inOut"
+      }, 19.01);
+
+      // BEAT 7: 24.13 "asset" — delay clock appears, "WAS: 1 HR" counter
+      tl.to("#lst-delay", { opacity: 1, duration: 0.4 }, 24.13);
+      tl.fromTo("#lst-was-num", { textContent: 0 }, {
+        textContent: 1, duration: 0.4, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)) + " HR"; }
+      }, 24.13);
+
+      // BEAT 8: 29.52 "week" — "NOW: 1 WK" counter slams
+      tl.fromTo("#lst-now-num", { textContent: 0 }, {
+        textContent: 1, duration: 0.5, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)) + " WK"; }
+      }, 29.52);
+      tl.to("#lst-now-num", { scale: 1.2, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 30.0);
+
+      // BEAT 9: 41.77 "Cowork" — Claude Surface card + COWORK pill
+      tl.to("#lst-claude", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 41.77);
+      tl.to("#lst-pill-cowork", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, 42.0);
+
+      // BEAT 10: 45.89 "Code" — CODE pill enters
+      tl.to("#lst-pill-code", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, 45.89);
+
+      // BEAT 11: 52.65 "audit findings" — pulse on Code pill
+      tl.to("#lst-pill-code", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 52.65);
+
+      // BEAT 12: 60.5 "ten customers" — MEGA 10 slam overlay
+      tl.to("#lst-mega", { opacity: 1, duration: 0.5, ease: "power2.out" }, 60.5);
+      tl.fromTo("#lst-mega-num", { textContent: 0 }, {
+        textContent: 10, duration: 0.7, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = "~" + Math.round(parseFloat(this.targets()[0].textContent)); }
+      }, 60.5);
+      // ...and also fill the EXIT card behind
+      tl.to("#lst-exit", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 60.5);
+      tl.fromTo("#lst-exit-num", { textContent: 0 }, {
+        textContent: 10, duration: 0.7, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = "~" + Math.round(parseFloat(this.targets()[0].textContent)); }
+      }, 60.5);
+
+      // BEAT 13: 67.0 — mega fades, EXIT remains highlighted
+      tl.to("#lst-mega", { opacity: 0, duration: 0.5, ease: "power2.in" }, 67.0);
+      tl.to("#lst-exit", { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 67.5);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-launch-stage"] = tl;
+    </script>
+  </div>
+</template>

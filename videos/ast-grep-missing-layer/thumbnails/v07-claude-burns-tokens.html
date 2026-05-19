@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v07 — Claude burns tokens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 900px 650px at 30% 30%, rgba(255, 100, 60, 0.22), transparent 65%),
+      radial-gradient(ellipse 800px 500px at 80% 80%, rgba(220,220,170,0.10), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: #ff8a5a; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: #ff8a5a; }
+  .slam-wrap { position: absolute; top: 110px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 { display: block; font-family: var(--font-sans); font-weight: 900; font-size: 138px; line-height: 0.87; color: #fff; letter-spacing: -0.045em; }
+  .slam-1 .claude { color: var(--brand-orange); }
+  .slam-burn {
+    display: inline-block;
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: 184px; line-height: 0.85;
+    color: #fff;
+    background: linear-gradient(180deg, #ffd66b 0%, #ff9933 45%, #ff4d2a 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.045em;
+    text-shadow: 0 0 40px rgba(255,120,60,0.4);
+    margin-top: 6px;
+  }
+  .slam-tokens {
+    display: inline-block;
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: 138px; line-height: 0.85;
+    color: #fff; letter-spacing: -0.045em;
+    margin-left: 18px; vertical-align: baseline;
+  }
+  #fire-emoji {
+    position: absolute; top: 220px; right: 88px;
+    font-size: 200px; opacity: 0.55;
+    filter: blur(0.5px);
+    z-index: 4;
+    line-height: 1;
+  }
+  #cost-row {
+    position: absolute; bottom: 36px; left: 56px; right: 56px;
+    display: flex; gap: 18px; z-index: 5;
+  }
+  .cost-card {
+    flex: 1;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .cost-card .lbl {
+    font-family: var(--font-mono); font-size: 16px;
+    color: var(--fg-muted); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;
+  }
+  .cost-card .val {
+    font-family: var(--font-mono); font-weight: 800; font-size: 48px; line-height: 1; letter-spacing: -0.02em;
+  }
+  .cost-card .sub {
+    font-family: var(--font-mono); font-size: 15px; color: var(--fg-dim); font-weight: 500;
+  }
+  .cost-card.with-grep { border-color: rgba(255,80,80,0.55); }
+  .cost-card.with-grep .val { color: #ff7676; }
+  .cost-card.with-ast { border-color: rgba(78,201,176,0.55); background: linear-gradient(160deg, rgba(78,201,176,0.10), rgba(0,80,60,0.08));}
+  .cost-card.with-ast .val { color: var(--ok); }
+  .vs {
+    align-self: center; font-family: var(--font-mono); font-weight: 800; font-size: 36px;
+    color: var(--fg-muted); padding: 0 10px;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">every refactor · every prompt</div>
+  <div class="slam-wrap">
+    <span class="slam-1"><span class="claude">CLAUDE</span> CODE</span>
+    <span style="display:flex;align-items:baseline;gap:18px;margin-top:4px;">
+      <span class="slam-burn">BURNS</span>
+      <span class="slam-tokens">TOKENS.</span>
+    </span>
+  </div>
+  <div id="fire-emoji">&#128293;</div>
+  <div id="cost-row">
+    <div class="cost-card with-grep">
+      <div class="lbl">with grep</div>
+      <div class="val">22 files</div>
+      <div class="sub">10 are quoted strings · billed anyway</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="cost-card with-ast">
+      <div class="lbl">with ast-grep</div>
+      <div class="val">12 files</div>
+      <div class="sub">only real call sites</div>
+    </div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

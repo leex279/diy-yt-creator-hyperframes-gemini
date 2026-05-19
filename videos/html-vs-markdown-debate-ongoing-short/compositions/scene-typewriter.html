@@ -1,0 +1,194 @@
+<!--
+  scene-typewriter.html — Thariq doubles down (44.3–54.7s, scene-rel 0–10.4s).
+  Beats (transcript scene-rel = abs - 44.3):
+    0.71  — "Then four days ago, Thariq doubled down."
+    3.38  — "One line."
+    4.19  — "HTML continues to be undefeated." (huge italic + marker)
+    6.34  — "But the consensus is forming."
+    8.59  — "Slowly. Out loud. In public."
+-->
+<template id="scene-typewriter-template">
+  <div data-composition-id="scene-typewriter"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Source Serif 4', 'Playfair Display', Georgia, serif; color:var(--text);">
+
+    <style>
+      #sw-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 28px;
+      }
+      .sw-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      .sw-author-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px 22px;
+        align-self: flex-start;
+      }
+      .sw-author-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 24px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+        background: rgba(199, 90, 63, 0.10);
+        border: 2px solid var(--accent-1);
+        border-radius: 8px;
+        padding: 6px 12px;
+      }
+      .sw-author-name {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 800;
+        font-size: 38px;
+        color: var(--text);
+      }
+      .sw-author-when {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+      .sw-one-line {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        align-self: flex-start;
+      }
+      .sw-quote {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-weight: 900;
+        font-style: italic;
+        font-size: 124px;
+        line-height: 0.95;
+        letter-spacing: -2px;
+        color: var(--text);
+      }
+      .sw-quote .sw-em {
+        position: relative;
+        display: inline-block;
+        color: var(--accent-1);
+      }
+      .sw-quote .sw-marker {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 8px;
+        height: 14px;
+        background: var(--accent-1);
+        border-radius: 6px;
+        transform-origin: left center;
+        opacity: 0.65;
+      }
+      .sw-consensus {
+        font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-weight: 700;
+        font-size: 44px;
+        line-height: 1.2;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+      .sw-pace-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 4px;
+      }
+      .sw-pace {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        padding: 12px 20px;
+        border-radius: 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        color: var(--accent-1);
+      }
+    </style>
+
+    <div id="sw-content">
+      <div class="sw-overline" id="sw-overline">FOUR DAYS AGO &middot; DOUBLED DOWN</div>
+
+      <div class="sw-author-row" id="sw-author">
+        <span class="sw-author-tag">@trq212</span>
+        <span class="sw-author-name">Thariq</span>
+        <span class="sw-author-when">&middot; new post</span>
+      </div>
+
+      <div class="sw-one-line" id="sw-one-line">/ ONE LINE</div>
+
+      <div class="sw-quote" id="sw-quote">
+        <span id="sw-q1">HTML continues<br/>to be </span><span class="sw-em" id="sw-em-host">undefeated<span class="sw-marker" id="sw-marker"></span>.</span>
+      </div>
+
+      <div class="sw-consensus" id="sw-consensus">
+        But the consensus is forming.
+      </div>
+
+      <div class="sw-pace-row">
+        <span class="sw-pace" id="sw-pace-1">Slowly.</span>
+        <span class="sw-pace" id="sw-pace-2">Out loud.</span>
+        <span class="sw-pace" id="sw-pace-3">In public.</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+      tl.set("#sw-overline",  { y: -8, opacity: 0 }, 0);
+      tl.set("#sw-author",    { x: -32, opacity: 0 }, 0);
+      tl.set("#sw-one-line",  { x: -16, opacity: 0 }, 0);
+      tl.set("#sw-q1",        { y: 16, opacity: 0 }, 0);
+      tl.set("#sw-em-host",   { y: 24, opacity: 0, scale: 0.85, filter: "blur(15px)" }, 0);
+      tl.set("#sw-marker",    { scaleX: 0 }, 0);
+      tl.set("#sw-consensus", { y: 16, opacity: 0 }, 0);
+      tl.set("#sw-pace-1",    { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sw-pace-2",    { y: 12, opacity: 0, scale: 0.85 }, 0);
+      tl.set("#sw-pace-3",    { y: 12, opacity: 0, scale: 0.85 }, 0);
+
+      tl.to("#sw-overline",  { y: 0, opacity: 1, duration: 0.4 }, 0.10);
+      tl.to("#sw-author",    { x: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, 0.71);
+      tl.to("#sw-one-line",  { x: 0, opacity: 1, duration: 0.4 }, 3.38);
+
+      tl.to("#sw-q1",      { y: 0, opacity: 1, duration: 0.55 }, 4.19);
+      tl.to("#sw-em-host", { y: 0, opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "back.out(1.5)" }, 4.85);
+      tl.to("#sw-marker",  { scaleX: 1, duration: 0.6, ease: "power2.out" }, 5.55);
+
+      tl.to("#sw-consensus", { y: 0, opacity: 1, duration: 0.5 }, 6.34);
+
+      tl.to("#sw-pace-1", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 8.59);
+      tl.to("#sw-pace-2", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 9.10);
+      tl.to("#sw-pace-3", { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 9.60);
+
+      window.__timelines["scene-typewriter"] = tl;
+    </script>
+  </div>
+</template>

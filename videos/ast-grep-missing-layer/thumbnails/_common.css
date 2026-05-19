@@ -1,0 +1,106 @@
+/* ───── Shared tokens for ast-grep thumbnail variants ───── */
+:root {
+  --bg-deep:       #0d1117;
+  --bg-editor:     #1e1e1e;
+  --bg-panel:      #252526;
+  --bg-active:     #2d2d30;
+
+  --border-soft:   #2a2d31;
+  --border-strong: #3c3c3c;
+  --accent-line:   #007acc;
+
+  --fg-default:    #d4d4d4;
+  --fg-muted:      #858585;
+  --fg-dim:        #6a737d;
+  --fg-bright:     #f0f6fc;
+
+  --syn-keyword:   #c586c0;
+  --syn-string:    #ce9178;
+  --syn-function:  #dcdcaa;
+  --syn-variable:  #9cdcfe;
+  --syn-type:      #4ec9b0;
+  --syn-number:    #b5cea8;
+  --syn-comment:   #6a9955;
+
+  --ok:            #4ec9b0;
+  --warn:          #d7ba7d;
+  --err:           #f48771;
+  --err-deep:      #ff4d4d;
+  --ast-yellow:    #dcdcaa;
+  --ast-amber:     #f0c040;
+  --ast-arrow:     #918623;
+
+  --brand-blue:    #4ec9b0;
+  --brand-orange:  #f78166;
+
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", "Menlo", "Monaco", monospace;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  background: var(--bg-deep);
+  font-family: var(--font-sans);
+  color: var(--fg-default);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.canvas {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+}
+
+.grid-dots {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Brand chrome — smartcode.diy text */
+.brand {
+  position: absolute;
+  bottom: 26px;
+  right: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 20;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand-blue);
+  letter-spacing: -0.01em;
+  padding: 8px 14px;
+  background: rgba(13, 17, 23, 0.65);
+  border: 1px solid rgba(78, 201, 176, 0.35);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+.brand-mark {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--brand-blue), #2ea58a);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 16px;
+  color: #0d1117;
+}
+
+/* ast-grep mini-logo (yellow arrow) */
+.ast-arrow {
+  display: inline-block;
+  width: 70px; height: 32px;
+  position: relative;
+}
+.ast-arrow svg { width: 100%; height: 100%; display: block; }

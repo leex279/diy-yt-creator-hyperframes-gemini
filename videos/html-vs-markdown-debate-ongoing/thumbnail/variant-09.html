@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!-- Variant 09 — Question + camp pills.
+     MARKDOWN vs HTML dominant topic at top.
+     "WHO WON?" huge italic below.
+     Three mono pills: MARKDOWN | HYBRID | HTML.
+     PART 2 chip bottom-right. Sub: "8 DAYS LATER, STILL NOBODY."
+     Theme: white minimal. -->
+<html lang="en"><head><meta charset="utf-8">
+<title>v09 — Topic + WHO WON? + three pills + PART 2</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* Topic header — dominant */
+  .topic-header {
+    position: absolute;
+    top: 106px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    font-family: var(--sans-display);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .topic-term {
+    font-size: 96px;
+    color: var(--text-cream);
+    letter-spacing: -3px;
+  }
+  .vs-sep {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--text-dim-cream);
+    padding: 0 4px;
+  }
+  .topic-rule {
+    width: 60px; height: 3px;
+    background: var(--accent-terracotta);
+    margin: 12px auto 0;
+    border-radius: 2px;
+  }
+
+  /* "WHO WON?" block */
+  .who-block {
+    position: absolute;
+    top: 288px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+  }
+  .who-line {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 128px;
+    line-height: 0.94;
+    letter-spacing: -5px;
+    color: var(--text-cream);
+    margin-bottom: 18px;
+  }
+  .who-line em {
+    font-style: italic;
+    color: var(--accent-terracotta);
+  }
+
+  /* Pills row */
+  .pills-row {
+    display: flex;
+    gap: 18px;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .pill {
+    flex: 1;
+    max-width: 320px;
+    border: 3px solid var(--accent-terracotta);
+    border-radius: 12px;
+    padding: 16px 18px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-cream);
+  }
+
+  /* PART 2 chip — bottom right */
+  .part2-chip {
+    position: absolute;
+    bottom: 52px; right: 60px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent-terracotta);
+    padding: 8px 18px;
+    border-radius: 6px;
+    z-index: 10;
+  }
+
+  /* Receipt */
+  .receipt-l {
+    position: absolute;
+    left: 60px;
+    bottom: 52px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-dim-cream);
+  }
+  .receipt-l strong { color: var(--accent-deep-red); }
+
+  .theme-white .brand {
+    left: auto; bottom: auto; top: 56px; right: 60px;
+  }
+</style></head>
+<body>
+  <div class="thumb theme-white">
+    <div class="overline">Using Claude Code</div>
+    <div class="overline-divider"></div>
+
+    <!-- Dominant topic header -->
+    <div class="topic-header">
+      <div class="topic-row">
+        <span class="topic-term">MARKDOWN</span>
+        <span class="vs-sep">vs</span>
+        <span class="topic-term">HTML</span>
+      </div>
+      <div class="topic-rule"></div>
+    </div>
+
+    <!-- WHO WON? + pills -->
+    <div class="who-block">
+      <span class="who-line"><em>WHO</em> WON?</span>
+      <div class="pills-row">
+        <div class="pill">MARKDOWN</div>
+        <div class="pill">HYBRID</div>
+        <div class="pill">HTML</div>
+      </div>
+    </div>
+
+    <div class="receipt-l"><strong>8 days later,</strong> still nobody.</div>
+    <div class="part2-chip">PART 2</div>
+    <div class="brand"><span class="dot"></span><span>diy-yt-creator</span></div>
+  </div>
+</body></html>

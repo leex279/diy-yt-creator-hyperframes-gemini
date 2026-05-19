@@ -1,0 +1,264 @@
+/* _base.css — shared styles for the 10 thumbnail variants
+   Each variant-NN.html links this file then inlines its own headline layout.
+   Tokens come from ../tokens/long-form.css; this file adds variant chrome. */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,800;1,8..60,800&family=Inter:wght@900&family=JetBrains+Mono:wght@700&display=swap');
+
+:root {
+  --bg-cream:        #F4F1EA;
+  --bg-card-cream:   #FBF8F1;
+  --bg-dark:         #0d0d10;
+  --bg-darker:       #050507;
+  --bg-pure-white:   #FFFFFF;
+
+  --accent-terracotta: #C75A3F;
+  --accent-deep-red:   #B14938;
+  --accent-yellow:     #ffd60a;
+
+  --text-cream:        #1A1815;
+  --text-dim-cream:    #5C544B;
+  --text-muted-cream:  #8A8175;
+  --text-dark:         #FFFFFF;
+  --text-dim-dark:     #B5B5B5;
+
+  --serif:        'Source Serif 4', 'Source Serif Pro', Georgia, 'Times New Roman', serif;
+  --sans-display: 'Inter', system-ui, sans-serif;
+  --mono:         'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #2a2a2a;
+}
+
+/* ── Canvas ──────────────────────────────────────────────────── */
+.thumb {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--serif);
+}
+
+.thumb.theme-cream { background: var(--bg-cream); color: var(--text-cream); }
+.thumb.theme-dark  { background: var(--bg-dark);  color: var(--text-dark); }
+.thumb.theme-white { background: var(--bg-pure-white); color: var(--text-cream); }
+
+/* Subtle paper-grain ambient on cream — picks up the editorial paper feel
+   without darkening the surface. */
+.thumb.theme-cream::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(199, 90, 63, 0.07), transparent 50%),
+    radial-gradient(circle at 88% 92%, rgba(177, 73, 56, 0.04), transparent 55%);
+  pointer-events: none;
+}
+.thumb.theme-dark::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(255, 214, 10, 0.04), transparent 50%),
+    radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 100%);
+  pointer-events: none;
+}
+
+/* ── Overline + divider (top-left mono caps) ─────────────────── */
+.overline {
+  position: absolute;
+  top: 56px; left: 60px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.theme-cream .overline { color: var(--accent-deep-red); }
+.theme-dark  .overline { color: var(--accent-yellow); }
+.theme-white .overline { color: var(--accent-deep-red); }
+
+.overline-divider {
+  position: absolute;
+  top: 102px; left: 60px;
+  width: 60px; height: 3px;
+  border-radius: 2px;
+  z-index: 2;
+}
+.theme-cream .overline-divider { background: var(--accent-terracotta); }
+.theme-dark  .overline-divider { background: var(--accent-yellow); }
+.theme-white .overline-divider { background: var(--accent-terracotta); }
+
+/* ── Brand chrome (bottom-left mono mark) ────────────────────── */
+.brand {
+  position: absolute;
+  left: 60px;
+  bottom: 50px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+}
+.theme-cream .brand { color: var(--text-muted-cream); }
+.theme-dark  .brand { color: var(--text-dim-dark); }
+.theme-white .brand { color: var(--text-muted-cream); }
+
+.brand .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.theme-cream .brand .dot { background: var(--accent-terracotta); }
+.theme-dark  .brand .dot { background: var(--accent-yellow); }
+.theme-white .brand .dot { background: var(--accent-terracotta); }
+
+/* ── Cover anchor (article-cover screenshot, tilted, right side) ── */
+.cover-stack {
+  position: absolute;
+  right: 60px;
+  top: 130px;
+  width: 280px;
+  transform: rotate(3deg);
+  transform-origin: top right;
+  z-index: 1;
+}
+.cover-label {
+  display: block;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent-deep-red);
+  background: var(--bg-card-cream);
+  border: 1px solid rgba(28, 26, 24, 0.10);
+  padding: 6px 14px;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(28, 26, 24, 0.10);
+  margin-bottom: 12px;
+  width: fit-content;
+}
+.theme-dark .cover-label {
+  background: rgba(255,255,255,0.92);
+}
+.cover-frame {
+  position: relative;
+  width: 100%;
+  filter: drop-shadow(0 18px 36px rgba(28, 26, 24, 0.20));
+}
+.cover-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  border: 4px solid var(--bg-card-cream);
+}
+.cover-stamp {
+  position: absolute;
+  top: -22px;
+  right: -28px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent-terracotta);
+  padding: 8px 14px;
+  border-radius: 999px;
+  transform: rotate(8deg);
+  box-shadow: 0 8px 20px rgba(199, 90, 63, 0.35);
+}
+
+/* Receipt — single-line outcome, mono caps. Variants override left/right
+   bounds when the layout demands. */
+.receipt {
+  position: absolute;
+  left: 60px;
+  bottom: 110px;
+  right: 400px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  line-height: 1.4;
+  z-index: 2;
+}
+.theme-cream .receipt { color: var(--text-dim-cream); }
+.theme-dark  .receipt { color: var(--text-dim-dark); }
+.theme-white .receipt { color: var(--text-dim-cream); }
+.receipt strong { font-weight: 700; }
+.theme-cream .receipt strong { color: var(--accent-deep-red); }
+.theme-dark  .receipt strong { color: var(--accent-yellow); }
+.theme-white .receipt strong { color: var(--accent-deep-red); }
+
+/* Headline base — variants override font-size + letter-spacing per layout */
+.headline {
+  position: absolute;
+  top: 138px;
+  left: 60px;
+  width: 820px;
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 800;
+  letter-spacing: -2px;
+  z-index: 2;
+}
+.theme-cream .headline { color: var(--text-cream); }
+.theme-dark  .headline { color: var(--text-dark); }
+.theme-white .headline { color: var(--text-cream); }
+
+.headline span,
+.headline em {
+  display: block;
+}
+
+.headline em {
+  font-style: italic;
+}
+.theme-cream .headline em { color: var(--accent-terracotta); }
+.theme-dark  .headline em { color: var(--accent-yellow); font-style: normal; }
+.theme-white .headline em { color: var(--accent-terracotta); }
+
+/* Strikethrough utility — used by variant 02 + 05 */
+.strike {
+  position: relative;
+  display: inline-block;
+}
+.strike::after {
+  content: "";
+  position: absolute;
+  left: -4%; right: -4%;
+  top: 50%;
+  height: 8px;
+  background: var(--accent-terracotta);
+  transform: translateY(-50%) rotate(-2deg);
+  border-radius: 4px;
+  opacity: 0.92;
+}
+.theme-dark .strike::after { background: var(--accent-yellow); }
+
+/* Marker-under utility — terracotta sweep beneath an italic accent word */
+.marker-under {
+  position: relative;
+  display: inline-block;
+}
+.marker-under::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 6px;
+  height: 6px;
+  background: var(--accent-terracotta);
+  border-radius: 3px;
+  opacity: 0.85;
+}
+.theme-dark .marker-under::after { background: var(--accent-yellow); }

@@ -1,0 +1,136 @@
+<!--
+  scene-cta.html — Closing CTA (~17s). Debate question + comment pill + subscribe pulse.
+  Thumbnail-grade close: held still >=1.5s after entrances settle.
+  Engagement question per .claude/rules/engagement-cta.md.
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      #scene-cta-content {
+        width: 100%; height: 100%;
+        padding: 200px 80px 200px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 44px;
+        box-sizing: border-box;
+      }
+      #cta-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: #E97458;
+      }
+      #cta-cover-chip {
+        width: 200px;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.55),
+                    0 0 0 1px rgba(245,241,235,0.10);
+      }
+      #cta-question {
+        font-weight: 900;
+        font-size: 84px;
+        line-height: 1.0;
+        letter-spacing: -2px;
+        color: #F5F1EB;
+        text-align: center;
+        max-width: 1500px;
+      }
+      #cta-question .accent { color: #E97458; }
+      .cta-pills {
+        display: flex; flex-direction: row;
+        align-items: center; justify-content: center;
+        gap: 24px;
+      }
+      .cta-pill-item {
+        padding: 22px 38px;
+        border-radius: 999px;
+        background: rgba(14,18,26,0.85);
+        border: 1.5px solid rgba(245,241,235,0.18);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 26px;
+        letter-spacing: 2px;
+        color: #F5F1EB;
+        display: inline-flex; align-items: center;
+        gap: 14px;
+      }
+      .cta-pill-item.comment .icon { color: #A78BFA; }
+      .cta-pill-item.subscribe {
+        background: linear-gradient(135deg,
+          rgba(233, 116, 88, 0.28) 0%,
+          rgba(233, 116, 88, 0.08) 100%);
+        border-color: rgba(233, 116, 88, 0.55);
+      }
+      .cta-pill-item.subscribe .arrow {
+        color: #E97458;
+        font-weight: 900;
+        font-size: 32px;
+      }
+    </style>
+
+    <div id="scene-cta-content">
+      <img id="cta-cover-chip" src="assets/playbook-cover.png" alt="Playbook cover" />
+      <div id="cta-overline">THE FOUNDER'S PLAYBOOK</div>
+      <div id="cta-question">
+        Running the playbook &mdash; or <span class="accent">validating with vibes?</span>
+      </div>
+      <div class="cta-pills">
+        <div class="cta-pill-item comment" id="cta-comment">
+          <span class="icon">&#x270F;</span>
+          <span>Drop your stage below</span>
+        </div>
+        <div class="cta-pill-item subscribe" id="cta-subscribe">
+          <span>Subscribe</span>
+          <span class="arrow">&rarr;</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 17;
+
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.6 } });
+
+      tl.from("#cta-cover-chip", { scale: 0.85, opacity: 0, duration: 0.6, ease: "back.out(1.4)", immediateRender: false }, 0);
+      tl.from("#cta-overline",   { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.3);
+      tl.from("#cta-question",   { y: 40, opacity: 0, duration: 0.7, ease: "expo.out", immediateRender: false }, 0.6);
+
+      // Inline shake on question for impact
+      tl.to("#cta-question", { x: 5,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.0);
+      tl.to("#cta-question", { x: -5, duration: 0.04, ease: "none", overwrite: "auto" }, 1.04);
+      tl.to("#cta-question", { x: 0,  duration: 0.04, ease: "none", overwrite: "auto" }, 1.08);
+
+      // Pills
+      tl.from("#cta-comment",    { y: 24, opacity: 0, duration: 0.5, ease: "back.out(1.4)", immediateRender: false }, 2.0);
+      tl.from("#cta-subscribe",  { y: 24, opacity: 0, duration: 0.5, ease: "back.out(1.4)", immediateRender: false }, 2.3);
+
+      // Finite subscribe pulse (4 ticks)
+      tl.to("#cta-subscribe", {
+        boxShadow: "0 0 0 6px rgba(233, 116, 88, 0.30)",
+        duration: 0.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 4,
+        immediateRender: false
+      }, 4.5);
+
+      // Mid-scene comment-pill scale pulse — keeps eye moving without violating visual-pacing-5s
+      tl.to("#cta-comment", { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 10.0);
+
+      // Final 1.5s hold — no more entrances
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

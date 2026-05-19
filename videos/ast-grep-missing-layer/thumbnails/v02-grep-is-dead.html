@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v02 — Grep is dead</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 900px 600px at 80% 30%, rgba(220,220,170,0.18), transparent 70%),
+      radial-gradient(ellipse 700px 500px at 20% 80%, rgba(255, 60, 60, 0.12), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--ast-yellow); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--ast-yellow); }
+  .slam-wrap { position: absolute; top: 110px; left: 56px; right: 56px; z-index: 10; }
+  .slam-grep {
+    font-family: var(--font-mono);
+    font-weight: 800; font-size: 170px; line-height: 0.85;
+    color: #ff4d4d;
+    text-shadow: 0 6px 30px rgba(0,0,0,0.65);
+    position: relative; display: inline-block;
+    letter-spacing: -0.04em;
+  }
+  .slam-grep::after {
+    content: ""; position: absolute;
+    top: 50%; left: -16px; right: -16px; height: 14px;
+    background: #ff3333; transform: rotate(-3deg);
+    box-shadow: 0 0 16px rgba(255,60,60,0.7);
+  }
+  .verdict {
+    display: block; margin-top: 18px;
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: 130px; line-height: 0.88;
+    color: var(--fg-bright); letter-spacing: -0.045em;
+  }
+  .verdict .is-dead {
+    background: linear-gradient(180deg, #ffffff, #cfcfd6);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  #replacement {
+    position: absolute; bottom: 36px; left: 56px;
+    width: 780px; height: 200px;
+    background: var(--bg-editor);
+    border: 1.5px solid rgba(220,220,170,0.5);
+    border-radius: 16px;
+    padding: 26px 32px; display: flex; flex-direction: column; justify-content: center; gap: 12px;
+    z-index: 5; box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  #rep-overline {
+    font-family: var(--font-mono); font-size: 18px;
+    color: var(--ast-yellow); letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 700;
+  }
+  #rep-name {
+    font-family: var(--font-mono); font-weight: 800; font-size: 64px;
+    color: #fff; letter-spacing: -0.02em;
+  }
+  #rep-name .yellow { color: var(--ast-yellow); }
+  #rep-sub {
+    font-family: var(--font-mono); font-size: 22px; color: var(--fg-muted); font-weight: 500;
+  }
+  #stat-card {
+    position: absolute; bottom: 36px; right: 56px;
+    width: 380px; height: 200px;
+    background: linear-gradient(160deg, rgba(78,201,176,0.16), rgba(0,80,60,0.10));
+    border: 1.5px solid rgba(78,201,176,0.55);
+    border-radius: 16px; padding: 24px 26px;
+    z-index: 6; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  #stat-label { font-family: var(--font-mono); font-size: 17px; color: #b3ead9; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+  #stat-value { font-family: var(--font-mono); font-weight: 800; font-size: 82px; line-height: 0.9; color: var(--ok); letter-spacing: -0.02em; }
+  #stat-sub { font-family: var(--font-mono); font-size: 18px; color: #b3ead9; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">structural code search · 2026</div>
+  <div class="slam-wrap">
+    <span class="slam-grep">grep</span>
+    <span class="verdict"><span class="is-dead">IS DEAD.</span></span>
+  </div>
+  <div id="replacement">
+    <div id="rep-overline">your agent's new search</div>
+    <div id="rep-name">▶ <span class="yellow">ast-grep</span></div>
+    <div id="rep-sub">reads code · not text</div>
+  </div>
+  <div id="stat-card">
+    <div id="stat-label">tokens saved</div>
+    <div id="stat-value">~50%</div>
+    <div id="stat-sub">on real refactors</div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

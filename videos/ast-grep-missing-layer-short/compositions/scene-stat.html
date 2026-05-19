@@ -1,0 +1,115 @@
+<!--
+  scene-stat.html — One huge animated number (~7s).
+
+  Pattern: small label above → big counter (animates 0→target via
+           textContent updates, deterministic) → caption below.
+
+  Self-contained sub-composition with its own paused timeline at
+  window.__timelines["scene-stat"].
+-->
+<template id="scene-stat-template">
+  <div data-composition-id="scene-stat"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-stat-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:24px;
+        box-sizing:border-box;
+      }
+      #scene-stat-content .label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 32px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+      }
+      #scene-stat-content .stat-frame {
+        position: relative;
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: center;
+        padding: 36px 60px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-warm);
+        border-radius: 28px;
+        box-shadow: var(--shadow-warm);
+      }
+      #scene-stat-content .stat-num {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 240px;
+        line-height: 1.0;
+        letter-spacing: -8px;
+        color: var(--accent-warm);
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      #scene-stat-content .stat-suffix {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-style: italic;
+        font-weight: 700;
+        font-size: 84px;
+        color: var(--accent-deep);
+        margin-left: 16px;
+      }
+      #scene-stat-content .caption {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-weight: 400;
+        font-style: italic;
+        font-size: 38px;
+        color: var(--text);
+        max-width: 800px;
+        line-height: 1.3;
+      }
+    </style>
+
+    <div id="scene-stat-content">
+      <div class="label" id="stat-label">Per developer &middot; per month</div>
+      <div class="stat-frame">
+        <span class="stat-suffix" id="stat-prefix" style="margin-left:0; margin-right:8px;">$</span><span class="stat-num" id="stat-num">0</span>
+      </div>
+      <div class="caption" id="stat-caption">11K tokens per refactor &times; 50/day &times; 30 days. <br/>Pure billed waste &mdash; on bad search.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Counter animation — animate 0 → $15 (per dev / per month bad-search waste).
+      const counter = { v: 0 };
+      const target = 15;
+      const numEl = document.getElementById('stat-num');
+
+      // Entrance (0 → 2.5s)
+      tl.from("#stat-label",   { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from(".stat-frame",   { scale: 0.85, opacity: 0, duration: 0.7, ease: "back.out(1.4)" }, 0.3);
+      tl.from("#stat-prefix",  { x: -14, opacity: 0, duration: 0.4, ease: "power2.out" }, 0.6);
+      tl.to(counter, {
+        v: target,
+        duration: 1.6,
+        ease: "power2.out",
+        onUpdate: () => { numEl.textContent = Math.round(counter.v); }
+      }, 0.8);
+      tl.from("#stat-caption", { y: 16, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.4);
+
+      // Mid-beats — keep the frame alive across the ~14.8s phase
+      tl.to(".stat-frame",     { scale: 1.03, duration: 0.6, ease: "power2.inOut", yoyo: true, repeat: 1 }, 5);
+      tl.to("#stat-num",       { scale: 1.06, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 7.5);
+      tl.to("#stat-caption",   { scale: 1.03, color: "var(--accent-warm)", duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 10.0);
+      tl.to(".stat-frame",     { scale: 1.025, duration: 0.5, ease: "power2.inOut", yoyo: true, repeat: 1 }, 12.5);
+      // Tail-extend so the sub-comp timeline duration matches the visible window in the root
+      tl.set({}, {}, 15.5);
+
+
+      window.__timelines["scene-stat"] = tl;
+    </script>
+  </div>
+</template>

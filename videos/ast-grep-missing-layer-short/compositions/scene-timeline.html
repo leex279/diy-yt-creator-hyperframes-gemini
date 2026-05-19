@@ -1,0 +1,162 @@
+<!--
+  scene-timeline.html — Horizontal dated timeline (~13s).
+
+  Pattern: header → 4 milestone dots on a horizontal rule, with date
+           above each and a short label below. The line draws itself
+           left-to-right; dots pop in along it; labels rise.
+  Self-contained sub-composition with paused timeline at
+  window.__timelines["scene-timeline"].
+-->
+<template id="scene-timeline-template">
+  <div data-composition-id="scene-timeline"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;">
+
+    <style>
+      #scene-timeline-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center; gap:48px;
+        box-sizing:border-box;
+      }
+      #scene-timeline-content .header {
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-weight: 700;
+        font-size: 76px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--accent-ink);
+        max-width: 880px;
+      }
+      #scene-timeline-content .header .em {
+        color: var(--accent-warm);
+        font-style: italic;
+      }
+      #scene-timeline-content .timeline {
+        position: relative;
+        width: 920px;
+        height: 320px;
+      }
+      #scene-timeline-content .rail {
+        position: absolute;
+        top: 50%; left: 0;
+        width: 100%; height: 6px;
+        background: var(--accent-ink);
+        transform-origin: left center;
+        border-radius: 999px;
+      }
+      #scene-timeline-content .stop {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: flex; flex-direction: column; align-items: center; gap: 18px;
+      }
+      #scene-timeline-content .stop.s1 { left: 8%; }
+      #scene-timeline-content .stop.s2 { left: 36%; }
+      #scene-timeline-content .stop.s3 { left: 64%; }
+      #scene-timeline-content .stop.s4 { left: 92%; }
+      #scene-timeline-content .stop .date {
+        position: absolute;
+        bottom: 76px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        padding: 6px 14px;
+        background: var(--bg-card);
+        border-radius: 999px;
+        border: 1.5px solid var(--border);
+      }
+      #scene-timeline-content .stop.s1 .date { color: var(--accent-warm); border-color: var(--accent-warm); }
+      #scene-timeline-content .stop.s2 .date { color: var(--accent-deep); border-color: var(--accent-deep); }
+      #scene-timeline-content .stop.s3 .date { color: var(--accent-sage); border-color: var(--accent-sage); }
+      #scene-timeline-content .stop.s4 .date { color: var(--accent-warm); border-color: var(--accent-warm); }
+      #scene-timeline-content .stop .dot {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        border: 4px solid var(--bg);
+        box-shadow: 0 0 0 4px var(--accent-ink);
+      }
+      #scene-timeline-content .stop.s1 .dot { background: var(--accent-warm); }
+      #scene-timeline-content .stop.s2 .dot { background: var(--accent-deep); }
+      #scene-timeline-content .stop.s3 .dot { background: var(--accent-sage); }
+      #scene-timeline-content .stop.s4 .dot { background: var(--accent-warm); }
+      #scene-timeline-content .stop .label {
+        position: absolute;
+        top: 76px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 1.2;
+        color: var(--accent-ink);
+        max-width: 200px;
+        text-align: center;
+      }
+    </style>
+
+    <div id="scene-timeline-content">
+      <div class="header" id="tl-header">
+        On a <span class="em">timeline.</span>
+      </div>
+      <div class="timeline">
+        <div class="rail" id="tl-rail"></div>
+        <div class="stop s1" id="tl-s1">
+          <div class="date">Q1</div>
+          <div class="dot"></div>
+          <div class="label">Spec</div>
+        </div>
+        <div class="stop s2" id="tl-s2">
+          <div class="date">Q2</div>
+          <div class="dot"></div>
+          <div class="label">Build</div>
+        </div>
+        <div class="stop s3" id="tl-s3">
+          <div class="date">Q3</div>
+          <div class="dot"></div>
+          <div class="label">Ship</div>
+        </div>
+        <div class="stop s4" id="tl-s4">
+          <div class="date">Q4</div>
+          <div class="dot"></div>
+          <div class="label">Iterate</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#tl-header", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
+      // Rail draws left to right
+      tl.from("#tl-rail", { scaleX: 0, duration: 1.0, ease: "power2.inOut" }, 0.5);
+      // Stops pop in along the rail (synced with rail draw)
+      tl.from("#tl-s1", { scale: 0, opacity: 0, duration: 0.4, ease: "back.out(2)" }, 0.7);
+      tl.from("#tl-s2", { scale: 0, opacity: 0, duration: 0.4, ease: "back.out(2)" }, 0.95);
+      tl.from("#tl-s3", { scale: 0, opacity: 0, duration: 0.4, ease: "back.out(2)" }, 1.2);
+      tl.from("#tl-s4", { scale: 0, opacity: 0, duration: 0.4, ease: "back.out(2)" }, 1.45);
+
+      // Mid-beats — sequential per-stop highlight (walk through the timeline)
+      tl.to("#tl-s1 .dot", { scale: 1.4, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 3.5);
+      tl.to("#tl-s1 .label", { color: "var(--accent-warm)", scale: 1.06, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 3.5);
+      tl.to("#tl-s2 .dot", { scale: 1.4, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 5.0);
+      tl.to("#tl-s2 .label", { color: "var(--accent-deep)", scale: 1.06, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 5.0);
+      tl.to("#tl-s3 .dot", { scale: 1.4, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 1 }, 6.5);
+      tl.to("#tl-s3 .label", { color: "var(--accent-sage)", scale: 1.06, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 6.5);
+      tl.to("#tl-s4 .dot", { scale: 1.5, duration: 0.5, ease: "back.out(2)", yoyo: true, repeat: 1 }, 8.0);
+      tl.to("#tl-s4 .label", { color: "var(--accent-warm)", scale: 1.08, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 8.0);
+      // Final all-pulse
+      tl.to("#scene-timeline-content .dot", { scale: 1.15, duration: 0.4, ease: "power2.out", yoyo: true, repeat: 1 }, 10.5);
+      tl.to("#tl-header .em", { scale: 1.06, duration: 0.5, ease: "power2.out", yoyo: true, repeat: 1 }, 12.0);
+
+      window.__timelines["scene-timeline"] = tl;
+    </script>
+  </div>
+</template>

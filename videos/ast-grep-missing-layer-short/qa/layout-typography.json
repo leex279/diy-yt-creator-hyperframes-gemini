@@ -1,0 +1,205 @@
+{
+  "agent": "video-layout-typography",
+  "slug": "ast-grep-missing-layer-short",
+  "mode": "static",
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "kind": "shorts"
+  },
+  "safe_zone_audit": {
+    "pad_bottom_token": "820px",
+    "pad_top_token": "180px",
+    "content_area_px": "y=180 to y=1100",
+    "vertical_center_px": 640,
+    "source_url_top_override": "top:140px (set in tokens/editorial-short.css via !important)",
+    "top_banner_top": "56px",
+    "verdict": "PASS -- all active scenes use pad-top/pad-bottom via flex-center; no content extends below y=1100, well inside the y=1280 dead-zone boundary"
+  },
+  "summary": {
+    "typography_violations": 15,
+    "first_frame_grade": "FAIL",
+    "last_frame_grade": "FAIL",
+    "screenshot_overlays_detected": 0,
+    "shape_backdrop_rearrange": "PASS",
+    "findings_by_severity": {
+      "BLOCKER": 2,
+      "HIGH": 13,
+      "MEDIUM": 2,
+      "LOW": 0
+    },
+    "verdict": "FAIL_BLOCKER"
+  },
+  "findings": [
+    {
+      "id": "L-001",
+      "severity": "BLOCKER",
+      "rule": "shorts-thumbnail-frames first-frame",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-marker.html:39",
+      "selector": "#marker-headline",
+      "summary": "First-frame hero headline at 132px is below the 140px typography minimum and pain-hook wording provides no product-name anchor for YouTube auto-thumbnail.",
+      "evidence": "font-size:132px. Hero-slam minimum=140px. Headline reads as a pain hook with no ast-grep topic anchor. Open-topic-then-pivot pattern requires tool named at t=0.",
+      "fix": "Bump to 140px minimum (160px recommended). Apply open-topic-then-pivot: show ast-grep at t=0 as topic lockup, let pain hook take over at approximately t=2.5s."
+    },
+    {
+      "id": "L-002",
+      "severity": "BLOCKER",
+      "rule": "shorts-thumbnail-frames last-frame",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-cta.html",
+      "selector": "#scene-cta-content",
+      "summary": "Final frame (t=107.6 to t=130) has no dominant topic statement at or above 120px. Matches the solo-CTA-on-empty-background BLOCKER pattern.",
+      "evidence": ".url=56px .cta-question=48px .subscribe=38px .lede=48px. None reaches 120px. 5-element last-frame checklist requires dominant topic >=120px plus visual anchor plus brand chrome >=40px.",
+      "fix": "Add a topic headline at 140-160px to scene-cta.html. Add ast-grep logo as visual anchor. All 5 mandatory elements must coexist on the final held frame."
+    },
+    {
+      "id": "L-003",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/index.html:80",
+      "selector": "#top-banner-wordmark",
+      "summary": "Brand wordmark at 24px -- below 32px overline/mono minimum.",
+      "evidence": "font-size:24px on #top-banner-wordmark (JetBrains Mono uppercase letter-spacing:8px). Overline/mono moustache minimum is 32px.",
+      "fix": "Bump to 32px minimum, 36px recommended."
+    },
+    {
+      "id": "L-004",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-marker.html:31",
+      "selector": "#scene-marker-content .pretitle",
+      "summary": "Pretitle/overline at 30px -- below 32px minimum.",
+      "evidence": "font-size:30px on .pretitle (JetBrains Mono uppercase). Overline/mono minimum is 32px.",
+      "fix": "Bump to 32px minimum, 36px recommended."
+    },
+    {
+      "id": "L-005",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-string-literal.html:24",
+      "selector": "#scene-string-literal-content .kicker",
+      "summary": "Kicker/overline at 28px -- below 32px minimum.",
+      "evidence": "font-size:28px on .kicker (JetBrains Mono uppercase). Overline/mono minimum is 32px.",
+      "fix": "Bump to 32px minimum."
+    },
+    {
+      "id": "L-006",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-string-literal.html:106",
+      "selector": "#scene-string-literal-content .verdict-tail",
+      "summary": "Verdict-tail descriptor at 28px -- below 30px list-item descriptor minimum.",
+      "evidence": "font-size:28px on .verdict-tail. Role: list-item descriptor. Minimum is 30px.",
+      "fix": "Bump to 30px minimum, 32-36px recommended."
+    },
+    {
+      "id": "L-007",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-chart.html:51",
+      "selector": "#scene-chart-content .row .label",
+      "summary": "Chart row labels at 28px -- below 30px list-item descriptor minimum.",
+      "evidence": "font-size:28px on .label (JetBrains Mono uppercase). Role: primary list-item label. Unreadable on phone.",
+      "fix": "Bump to 32px minimum. Shorten label text if layout becomes tight."
+    },
+    {
+      "id": "L-008",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-compare.html:56",
+      "selector": "#scene-compare-content .ribbon",
+      "summary": "Comparison card ribbon badges at 22px -- below 32px caption-pill minimum.",
+      "evidence": "font-size:22px on .ribbon (grep / ast-grep card badges). Role: caption pill. Minimum is 32px.",
+      "fix": "Bump to 32px minimum."
+    },
+    {
+      "id": "L-009",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-process-flow.html:84",
+      "selector": "#scene-process-flow-content .node .sub",
+      "summary": "Process-flow node subtitle lines at 24px -- below 30px list-item descriptor minimum.",
+      "evidence": "font-size:24px on .node .sub. Role: list-item descriptor. Minimum is 30px.",
+      "fix": "Bump to 30px minimum, 32px recommended."
+    },
+    {
+      "id": "L-010",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-code-block.html:29",
+      "selector": "#scene-code-block-content .kicker",
+      "summary": "Code-block kicker at 30px -- below 32px minimum.",
+      "evidence": "font-size:30px on .kicker (JetBrains Mono uppercase). Overline/mono minimum is 32px.",
+      "fix": "Bump to 32px minimum."
+    },
+    {
+      "id": "L-011",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-cta.html:63",
+      "selector": "#scene-cta-content .subscribe",
+      "summary": "Subscribe CTA pill at 38px -- below 44px CTA pill minimum.",
+      "evidence": "font-size:38px on .subscribe. CTA pill minimum is 44px.",
+      "fix": "Bump to 44px minimum, 48px recommended."
+    },
+    {
+      "id": "L-012",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-cta.html:27",
+      "selector": "#scene-cta-content .kicker",
+      "summary": "CTA scene kicker at 30px -- below 32px minimum.",
+      "evidence": "font-size:30px on .kicker. Overline/mono minimum is 32px.",
+      "fix": "Bump to 32px minimum."
+    },
+    {
+      "id": "L-013",
+      "severity": "HIGH",
+      "rule": "shorts-thumbnail-frames first-frame visual anchor missing",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-marker.html",
+      "selector": "scene at t=0",
+      "summary": "No visual anchor (ast-grep logo or badge >=40px tall) visible at t=0. Mandatory element 2 of first-frame thumbnail spec is absent.",
+      "evidence": "scene-marker at t=0 shows .pretitle (30px) plus .headline (132px pain hook) plus .subline (38px). Top-banner wordmark is 24px -- below 40px logo-height requirement.",
+      "fix": "Add ast-grep logo SVG or styled badge (height >=40px) visible from t=0 with no entrance animation delay."
+    },
+    {
+      "id": "L-014",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/index.html:147-154",
+      "selector": "#source-url .source-url-label and .source-url-text",
+      "summary": "Source URL chip label at 14px and text at 18px -- both far below 32px minimum.",
+      "evidence": "font-size:14px on .source-url-label; font-size:18px on .source-url-text. Chip correctly repositioned to top:140px but text renders at approximately 5-6px on device.",
+      "fix": "Bump .source-url-label to 22px, .source-url-text to 24-28px. Or consolidate to single line at 28px."
+    },
+    {
+      "id": "L-015",
+      "severity": "HIGH",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-string-literal.html:55",
+      "selector": "#scene-string-literal-content .filename",
+      "summary": "Code window filename at 20px -- below 32px minimum. Filename dag-executor.test.ts is key scene context.",
+      "evidence": "font-size:20px on .filename. 20px is unreadable on phone.",
+      "fix": "Bump to 28-32px. Truncate path if it overflows the titlebar at that size."
+    },
+    {
+      "id": "L-016",
+      "severity": "MEDIUM",
+      "rule": "sub-composition-wiring",
+      "location": "videos/ast-grep-missing-layer-short/index.html:198-244",
+      "selector": "all .scene-wrapper divs",
+      "summary": "All 8 scene-wrapper mount divs are missing class=clip, data-duration, data-width, and data-height.",
+      "evidence": "Scene wrappers have data-start and data-track-index but lack class=clip, data-duration, data-width=1080, data-height=1920. Per sub-composition-wiring.md all four are required.",
+      "fix": "Add class=clip, data-width=1080, data-height=1920, and data-duration to every scene wrapper. Approx durations: scene-marker=11.0, scene-string-literal=15.3, scene-chart=16.7, scene-stat=14.9, scene-compare=13.4, scene-process-flow=19.3, scene-code-block=17.0, scene-cta=22.4."
+    },
+    {
+      "id": "L-017",
+      "severity": "MEDIUM",
+      "rule": "shorts-typography-minimum",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-code-block.html:69",
+      "selector": "#scene-code-block-content .line",
+      "summary": "Code body lines at 32px mono -- at caption-pill floor but well below URL/mono technical minimum of 56px.",
+      "evidence": "font-size:32px on .line (JetBrains Mono). Narration covers content so reading dependency is reduced. 32px renders at approximately 11px on phone.",
+      "fix": "Bump to 36px. Trim code lines if needed."
+    }
+  ]
+}

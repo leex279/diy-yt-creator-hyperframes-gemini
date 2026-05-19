@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: #F5F0E8;
+    color: #1A1A1A;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #root {
+    position: relative; width: 1920px; height: 1080px; overflow: hidden;
+  }
+
+  /* ONE POST. — visible at t=0, centered hero */
+  #sh-onepost {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 240px; font-weight: 700; letter-spacing: -0.02em;
+    color: #1A1A1A; white-space: nowrap;
+    opacity: 1; /* HARD RULE: visible at t=0 — never changed to 0 */
+  }
+
+  /* SEVEN DAYS. */
+  #sh-sevendays {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 240px; font-weight: 700; letter-spacing: -0.02em;
+    color: #1A1A1A; white-space: nowrap;
+    opacity: 0;
+  }
+
+  /* WENT TO WAR. */
+  #sh-war {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 200px; font-weight: 700; font-style: italic;
+    letter-spacing: -0.02em; color: #1A1A1A; white-space: nowrap;
+    opacity: 0;
+  }
+  #sh-war .war-word { color: #C75A3F; }
+
+  /* Article group — LEFT column: cover + Thariq chip below cover */
+  #sh-article-group {
+    position: absolute; left: 100px; top: 130px;
+    width: 780px; opacity: 0;
+  }
+  #sh-article-cover {
+    display: block; width: 780px; height: 528px; object-fit: cover; object-position: top;
+    border-radius: 12px; border: 2px solid #D4C9B8;
+    background: #D4C9B8;
+  }
+  #sh-thariq-chip {
+    position: absolute; top: 560px; left: 0;
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 24px; border-radius: 9999px;
+    border: 2px solid #C75A3F; background: #F5F0E8;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 28px; color: #C75A3F; white-space: nowrap;
+    opacity: 0;
+  }
+  #sh-thariq-pfp {
+    width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+    background: #C75A3F;
+  }
+
+  /* Markdown headline — RIGHT column */
+  #sh-md-headline {
+    position: absolute; left: 1020px; top: 240px;
+    width: 800px; opacity: 0;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 100px; font-weight: 600; line-height: 0.95; color: #1A1A1A;
+  }
+  #sh-md-headline em { color: #C75A3F; font-style: italic; }
+
+  /* Badge row — RIGHT column */
+  #sh-badge-row {
+    position: absolute; left: 1020px; top: 540px;
+    display: flex; gap: 16px; opacity: 0;
+  }
+  .badge {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 30px; padding: 10px 22px; border-radius: 8px;
+    border: 2px solid #C75A3F; color: #C75A3F; background: transparent;
+    opacity: 0;
+  }
+
+  /* Sub-line: Almost all of it — RIGHT column */
+  #sh-almostall {
+    position: absolute; left: 1020px; top: 660px;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 48px; font-weight: 400; font-style: italic; color: #555;
+    opacity: 0;
+  }
+
+  /* OUT. slam */
+  #sh-out {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 240px; font-weight: 800; color: #C75A3F;
+    letter-spacing: -0.02em; opacity: 0;
+  }
+
+  /* ── Receipt pills — cinematic horizontal row ─────────────────────────── */
+  #sh-receipts {
+    position: absolute; left: 20px; right: 20px; top: 360px;
+    display: flex; flex-direction: row; gap: 40px;
+    opacity: 0;
+  }
+  .receipt-pill {
+    flex: 1;
+    padding: 32px 40px 36px 40px;
+    border-radius: 18px;
+    border: 2px solid rgba(199,90,63,0.55);
+    background: rgba(199,90,63,0.05);
+    display: flex; flex-direction: column; gap: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+  /* top: metric label */
+  .rec-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 28px; font-weight: 700; letter-spacing: 0.12em;
+    color: #C75A3F;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .rec-arrow {
+    display: inline-block;
+    font-size: 22px; line-height: 1;
+    color: #C75A3F;
+  }
+  /* hero number */
+  .rec-number {
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 200px; font-weight: 700; line-height: 0.85;
+    color: #1A1A1A; letter-spacing: -0.03em;
+  }
+  .rec-suffix {
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 200px; font-weight: 700; font-style: italic;
+    color: #C75A3F; letter-spacing: -0.03em;
+  }
+  /* baseline accent rule */
+  .rec-baseline {
+    display: block; height: 1px;
+    background: #C75A3F;
+    transform-origin: left center;
+    transform: scaleX(0);
+    margin-top: 12px; margin-bottom: 16px;
+  }
+  /* sub-line */
+  .rec-sub {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px; color: #555; letter-spacing: 0.04em;
+  }
+
+  /* DAY ONE stamp */
+  #sh-dayone {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 160px; font-weight: 700; color: #C75A3F;
+    letter-spacing: 0.04em; opacity: 0;
+  }
+
+  /* Reply-card zone (replaces camp-chip zone) */
+  #sh-camps {
+    position: absolute; left: 60px; top: 220px;
+    width: 1800px; display: flex; flex-direction: column; gap: 36px;
+    opacity: 0;
+  }
+
+  /* ── Reply card shell ──────────────────────────────────────────────────── */
+  .reply-card {
+    display: flex; flex-direction: row; align-items: stretch;
+    height: 220px;
+    border-radius: 14px;
+    background: #FFFFFF;
+    border-left: 4px solid #C75A3F;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  /* Left DAY badge */
+  .rc-day-badge {
+    width: 200px; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #C75A3F;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 56px; font-weight: 700; color: #FFFFFF;
+    letter-spacing: 0.02em; line-height: 1;
+    gap: 8px;
+  }
+  .rc-day-badge .rc-day-num {
+    font-size: 72px; font-weight: 800; line-height: 0.9;
+  }
+  .rc-day-badge .rc-day-word {
+    font-size: 28px; letter-spacing: 0.12em;
+  }
+
+  /* Middle content */
+  .rc-content {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    padding: 28px 32px;
+    gap: 12px; overflow: hidden;
+  }
+  .rc-camp-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 28px; font-weight: 700; color: #C75A3F;
+    letter-spacing: 0.06em; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rc-quote {
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 38px; font-weight: 400; font-style: italic;
+    color: #1A1A1A; line-height: 1.25;
+  }
+
+  /* Right stat block */
+  .rc-stat {
+    width: 140px; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px 16px;
+    border-left: 1px solid rgba(0,0,0,0.08);
+    gap: 4px;
+  }
+  .rc-like-count {
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 48px; font-weight: 700; color: #C75A3F; line-height: 1;
+  }
+  .rc-heart {
+    font-size: 28px; line-height: 1;
+  }
+  .rc-like-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 18px; color: #888; letter-spacing: 0.10em;
+    margin-top: 4px;
+  }
+
+  /* Far-right venue chip */
+  .rc-venue {
+    width: 88px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px 12px;
+    border-left: 1px solid rgba(0,0,0,0.08);
+  }
+  .rc-venue-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 18px; font-weight: 700; color: #888;
+    letter-spacing: 0.08em; writing-mode: vertical-rl;
+    text-orientation: mixed; text-transform: uppercase;
+  }
+
+  /* ── X-post card (replaces pull-quote) ─────────────────────────────────── */
+  #sh-xpost-card {
+    position: absolute; left: 510px; top: 300px;
+    width: 900px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 28px 32px 20px 32px;
+    font-family: 'Inter', system-ui, sans-serif;
+    opacity: 0;
+  }
+  #sh-xpost-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  #sh-xpost-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #C75A3F url('assets/thariq-profile.png') center/cover no-repeat;
+    flex-shrink: 0;
+  }
+  #sh-xpost-nameline {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  #sh-xpost-displayname {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 26px; font-weight: 700; color: #0F172A; line-height: 1.1;
+  }
+  /* Twitter blue checkmark badge */
+  #sh-xpost-check {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 4px;
+    background: #1D9BF0; flex-shrink: 0;
+  }
+  #sh-xpost-handle {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 22px; color: #6B7280; line-height: 1.1;
+  }
+  #sh-xpost-quote {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 50px; font-weight: 600; color: #0F172A;
+    line-height: 1.2; margin-bottom: 20px;
+  }
+  #sh-xpost-quote .xq-w1,
+  #sh-xpost-quote .xq-w2,
+  #sh-xpost-quote .xq-w3,
+  #sh-xpost-quote .xq-w4 {
+    opacity: 0;
+  }
+  .xq-undefeated {
+    display: inline; /* so glow applies to just this word */
+  }
+  #sh-xpost-engagement {
+    display: flex; align-items: center; gap: 36px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+  .xeng-item {
+    display: flex; align-items: center; gap: 7px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 22px; color: #6B7280;
+  }
+  .xeng-item svg {
+    flex-shrink: 0;
+  }
+  #sh-xpost-hearts-count { display: inline; }
+  /* views item pushed right — pushes views + bookmark to the right side */
+  .xeng-views { margin-left: auto; }
+
+  /* Title: The debate is still going — positioned upper-center above cards */
+  #sh-title {
+    position: absolute; left: 0; right: 0; top: 180px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 132px; font-weight: 700; color: #1A1A1A;
+    letter-spacing: -0.02em; text-align: center;
+    opacity: 0;
+  }
+  #sh-title em { color: #C75A3F; font-style: italic; }
+
+  /* Preview cards row */
+  #sh-preview-cards {
+    position: absolute; left: 148px; right: 148px; top: 390px;
+    display: flex; flex-direction: row; gap: 32px;
+    opacity: 0;
+  }
+  .preview-card {
+    width: 520px; height: 360px;
+    border: 1px solid #C75A3F;
+    border-radius: 16px;
+    background: rgba(199, 90, 63, 0.04);
+    padding: 28px 32px 24px 32px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0;
+    opacity: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .pcard-header {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 36px; font-weight: 700; letter-spacing: 0.08em;
+    color: #C75A3F; text-align: center;
+    margin-bottom: 12px;
+  }
+  .pcard-icon {
+    width: 90px; height: 90px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px auto;
+    flex-shrink: 0;
+  }
+  .pcard-icon svg {
+    width: 90px; height: 90px;
+  }
+  .pcard-sub {
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 24px; font-style: italic; color: #555;
+    text-align: center; line-height: 1.35;
+    margin-top: auto;
+  }
+
+  /* Closing sub — below cards */
+  #sh-closing-sub {
+    position: absolute; left: 120px; right: 120px; top: 808px;
+    font-family: 'Source Serif 4', 'Playfair Display', Georgia, serif;
+    font-size: 36px; font-style: italic; color: #555;
+    text-align: center; opacity: 0;
+    line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+<div id="root"
+     data-composition-id="scene-hook"
+     data-start="0"
+     data-duration="53.04"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- t=0: ALREADY VISIBLE — ONE POST. (opacity:1 in CSS, never set to 0) -->
+  <div id="sh-onepost" class="clip" data-start="0" data-duration="0.87" data-track-index="1">
+    ONE POST.
+  </div>
+
+  <!-- SEVEN DAYS. -->
+  <div id="sh-sevendays" class="clip" data-start="0.77" data-duration="0.89" data-track-index="2">
+    SEVEN DAYS.
+  </div>
+
+  <!-- WENT TO WAR. -->
+  <div id="sh-war" class="clip" data-start="1.66" data-duration="2.24" data-track-index="3">
+    WENT TO <span class="war-word">WAR.</span>
+  </div>
+
+  <!-- Article group (cover + chip) — clip ends at 16.35 so framework removes it before receipt pills -->
+  <div id="sh-article-group" class="clip" data-start="4.09" data-duration="12.26" data-track-index="4">
+    <img id="sh-article-cover" src="assets/article-cover.png" alt="Article cover" style="--hf-studio-width: 774px; --hf-studio-height: 705px; width: 774px; height: 705px; min-width: 0px; min-height: 0px; max-width: none; max-height: none; box-sizing: border-box; --hf-studio-offset-x: -25px; --hf-studio-offset-y: 15px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-box-size="true" data-hf-studio-original-width="" data-hf-studio-original-height="" data-hf-studio-original-min-width="" data-hf-studio-original-min-height="" data-hf-studio-original-max-width="" data-hf-studio-original-max-height="" data-hf-studio-original-flex-basis="" data-hf-studio-original-flex-grow="" data-hf-studio-original-flex-shrink="" data-hf-studio-original-box-sizing="" data-hf-studio-original-display="" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="">
+    <div id="sh-thariq-chip" style="--hf-studio-offset-x: -12px; --hf-studio-offset-y: 191px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="none">
+      <img id="sh-thariq-pfp" src="assets/thariq-profile.png" alt="Thariq profile">
+      @trq212 &middot; Thariq Attar &middot; Anthropic
+    </div>
+  </div>
+
+  <!-- Markdown headline — clip ends at 16.35 -->
+  <div id="sh-md-headline" class="clip" data-start="8.28" data-duration="8.07" data-track-index="5">
+    Markdown is the <em>wrong</em> format.
+  </div>
+
+  <!-- Badge row — clip ends at 16.35 -->
+  <div id="sh-badge-row" class="clip" data-start="10.11" data-duration="6.24" data-track-index="6">
+    <span id="sh-badge-spec"     class="badge">SPEC</span>
+    <span id="sh-badge-plan"     class="badge">PLAN</span>
+    <span id="sh-badge-pr"       class="badge">PR WRITEUP</span>
+  </div>
+
+  <!-- Almost all of it -->
+  <div id="sh-almostall" class="clip" data-start="13.72" data-duration="2.63" data-track-index="7">
+    Almost all of it.
+  </div>
+
+  <!-- OUT. slam -->
+  <div id="sh-out" class="clip" data-start="15.55" data-duration="0.95" data-track-index="10">
+    OUT.
+  </div>
+
+  <!-- Receipt pills — cinematic horizontal row -->
+  <div id="sh-receipts" class="clip" data-start="16.23" data-duration="7.42" data-track-index="11">
+
+    <!-- Pill 1: 751K VIEWS -->
+    <div id="sh-rec-pill-1" class="receipt-pill clip" data-start="16.23" data-duration="7.42" data-track-index="2">
+      <div class="rec-label">
+        <span class="rec-arrow">↑</span>VIEWS
+      </div>
+      <div class="rec-number">
+        <span id="sh-rec-num-1">0</span><span class="rec-suffix">K</span>
+      </div>
+      <span id="sh-rec-baseline-1" class="rec-baseline"></span>
+      <div class="rec-sub">on X &middot; day one</div>
+    </div>
+
+    <!-- Pill 2: 2.7K LIKES -->
+    <div id="sh-rec-pill-2" class="receipt-pill clip" data-start="19.02" data-duration="4.63" data-track-index="3">
+      <div class="rec-label">
+        <span class="rec-arrow">↑</span>LIKES
+      </div>
+      <div class="rec-number">
+        <span id="sh-rec-num-2">0</span><span class="rec-suffix">K</span>
+      </div>
+      <span id="sh-rec-baseline-2" class="rec-baseline"></span>
+      <div class="rec-sub">in 24 hours</div>
+    </div>
+
+    <!-- Pill 3: 340 REPOSTS -->
+    <div id="sh-rec-pill-3" class="receipt-pill clip" data-start="20.97" data-duration="2.68" data-track-index="4">
+      <div class="rec-label">
+        <span class="rec-arrow">↑</span>REPOSTS
+      </div>
+      <div class="rec-number">
+        <span id="sh-rec-num-3">0</span>
+      </div>
+      <span id="sh-rec-baseline-3" class="rec-baseline"></span>
+      <div class="rec-sub">in 24 hours</div>
+    </div>
+
+  </div>
+
+  <!-- DAY ONE stamp -->
+  <div id="sh-dayone" class="clip" data-start="23.65" data-duration="1.51" data-track-index="13">
+    DAY ONE.
+  </div>
+
+  <!-- Reply cards — hard-ended at 35.90 so framework removes them before xpost card -->
+  <div id="sh-camps" class="clip" data-start="25.16" data-duration="10.74" data-track-index="14">
+
+    <!-- Card 1: Markdown Camp — enters t=25.16 -->
+    <div id="sh-reply-card-1" class="reply-card clip" data-start="25.16" data-duration="10.74" data-track-index="21">
+      <div id="sh-rc1-badge" class="rc-day-badge">
+        <span class="rc-day-num">3</span>
+        <span class="rc-day-word">DAY</span>
+      </div>
+      <div class="rc-content">
+        <div id="sh-rc1-label" class="rc-camp-label">MARKDOWN CAMP — came out swinging.</div>
+        <div id="sh-rc1-quote" class="rc-quote">"Simplicity is the feature, not a bug."</div>
+      </div>
+      <div class="rc-stat">
+        <span class="rc-heart">❤</span>
+        <span id="sh-rc1-likes" class="rc-like-count">0</span>
+        <span class="rc-like-label">LIKES</span>
+      </div>
+      <div class="rc-venue">
+        <span class="rc-venue-label">youtube</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Hybrid Camp — enters t=28.48 -->
+    <div id="sh-reply-card-2" class="reply-card clip" data-start="28.48" data-duration="7.42" data-track-index="22">
+      <div id="sh-rc2-badge" class="rc-day-badge">
+        <span class="rc-day-num">5</span>
+        <span class="rc-day-word">DAY</span>
+      </div>
+      <div class="rc-content">
+        <div id="sh-rc2-label" class="rc-camp-label">HYBRID CAMP — landed in the middle.</div>
+        <div id="sh-rc2-quote" class="rc-quote">"Markdown for agents only. HTML for agents and humans."</div>
+      </div>
+      <div class="rc-stat">
+        <span class="rc-heart">❤</span>
+        <span id="sh-rc2-likes" class="rc-like-count">—</span>
+        <span class="rc-like-label">LIKES</span>
+      </div>
+      <div class="rc-venue">
+        <span class="rc-venue-label">x.com</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Conspiracy Camp — enters t=32.19 -->
+    <div id="sh-reply-card-3" class="reply-card clip" data-start="32.19" data-duration="3.71" data-track-index="23">
+      <div id="sh-rc3-badge" class="rc-day-badge">
+        <span class="rc-day-num">7</span>
+        <span class="rc-day-word">DAY</span>
+      </div>
+      <div class="rc-content">
+        <div id="sh-rc3-label" class="rc-camp-label">CONSPIRACY CAMP — pointed at the tokens.</div>
+        <div id="sh-rc3-quote" class="rc-quote">"Someone earning money on token spending suggests we spend more tokens."</div>
+      </div>
+      <div class="rc-stat">
+        <span class="rc-heart">❤</span>
+        <span id="sh-rc3-likes" class="rc-like-count">—</span>
+        <span class="rc-like-label">LIKES</span>
+      </div>
+      <div class="rc-venue">
+        <span class="rc-venue-label">x.com</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- X-post card — replaces pull-quote (t=36.12 → 42.20) -->
+  <div id="sh-xpost-card" class="clip" data-start="36.12" data-duration="6.08" data-track-index="16">
+
+    <!-- Header: avatar + name + handle -->
+    <div id="sh-xpost-header">
+      <div id="sh-xpost-avatar"></div>
+      <div id="sh-xpost-nameline">
+        <div id="sh-xpost-displayname">
+          Thariq
+          <!-- Twitter blue checkmark SVG -->
+          <span id="sh-xpost-check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+        <div id="sh-xpost-handle">@trq212 &middot; 4d</div>
+      </div>
+    </div>
+
+    <!-- Quote text — words revealed individually -->
+    <div id="sh-xpost-quote">
+      <span class="xq-w1">HTML continues</span> <span class="xq-w2">to be</span> <span class="xq-w3 xq-undefeated">undefeated.</span>
+    </div>
+
+    <!-- Engagement row -->
+    <div id="sh-xpost-engagement">
+      <!-- Reply -->
+      <div class="xeng-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        142
+      </div>
+      <!-- Retweet -->
+      <div class="xeng-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        89
+      </div>
+      <!-- Like (heart) -->
+      <div class="xeng-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span id="sh-xpost-hearts-count">0</span>
+      </div>
+      <!-- Views (bar chart) -->
+      <div class="xeng-item xeng-views">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        47K
+      </div>
+      <!-- Bookmark -->
+      <div class="xeng-item xeng-bookmark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Title: The debate is still going — floats above preview cards -->
+  <div id="sh-title" class="clip" data-start="42.57" data-duration="10.47" data-track-index="17">
+    The debate is <em>still</em> going.
+  </div>
+
+  <!-- Three preview cards: THE PROS / THE CONS / THE RECEIPTS -->
+  <div id="sh-preview-cards" class="clip" data-start="45.34" data-duration="7.70" data-track-index="18">
+
+    <!-- Card 1: THE PROS -->
+    <div id="sh-card-pros" class="preview-card clip" data-start="45.34" data-duration="7.70" data-track-index="2">
+      <div class="pcard-header">THE PROS</div>
+      <div class="pcard-icon">
+        <!-- Up-arrow bar chart icon -->
+        <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8"  y="52" width="18" height="30" rx="3" fill="#C75A3F" opacity="0.25"/>
+          <rect x="8"  y="52" width="18" height="30" rx="3" stroke="#C75A3F" stroke-width="2.5"/>
+          <rect x="36" y="34" width="18" height="48" rx="3" fill="#C75A3F" opacity="0.25"/>
+          <rect x="36" y="34" width="18" height="48" rx="3" stroke="#C75A3F" stroke-width="2.5"/>
+          <rect x="64" y="18" width="18" height="64" rx="3" fill="#C75A3F" opacity="0.25"/>
+          <rect x="64" y="18" width="18" height="64" rx="3" stroke="#C75A3F" stroke-width="2.5"/>
+          <polyline points="17,40 45,22 73,8" stroke="#C75A3F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="63,8 73,8 73,18" stroke="#C75A3F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="pcard-sub">Pro-HTML arguments</div>
+    </div>
+
+    <!-- Card 2: THE CONS -->
+    <div id="sh-card-cons" class="preview-card clip" data-start="46.50" data-duration="6.54" data-track-index="3">
+      <div class="pcard-header">THE CONS</div>
+      <div class="pcard-icon">
+        <!-- Balance scale icon -->
+        <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Center pole -->
+          <line x1="45" y1="10" x2="45" y2="80" stroke="#C75A3F" stroke-width="3" stroke-linecap="round"/>
+          <!-- Crossbar -->
+          <line x1="12" y1="26" x2="78" y2="26" stroke="#C75A3F" stroke-width="3" stroke-linecap="round"/>
+          <!-- Left chain -->
+          <line x1="20" y1="26" x2="20" y2="48" stroke="#C75A3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+          <!-- Right chain -->
+          <line x1="70" y1="26" x2="70" y2="48" stroke="#C75A3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+          <!-- Left pan -->
+          <path d="M10 48 Q20 56 30 48" stroke="#C75A3F" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <!-- Right pan -->
+          <path d="M60 48 Q70 56 80 48" stroke="#C75A3F" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <!-- Base -->
+          <line x1="35" y1="80" x2="55" y2="80" stroke="#C75A3F" stroke-width="3" stroke-linecap="round"/>
+          <!-- Center diamond pivot -->
+          <circle cx="45" cy="26" r="4" fill="#C75A3F"/>
+        </svg>
+      </div>
+      <div class="pcard-sub">Pro-Markdown pushback</div>
+    </div>
+
+    <!-- Card 3: THE RECEIPTS -->
+    <div id="sh-card-receipts" class="preview-card clip" data-start="47.60" data-duration="5.44" data-track-index="4">
+      <div class="pcard-header">THE RECEIPTS</div>
+      <div class="pcard-icon">
+        <!-- Receipt / document icon with hash mark -->
+        <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Paper body -->
+          <rect x="18" y="8" width="54" height="68" rx="5" fill="#C75A3F" opacity="0.08"/>
+          <rect x="18" y="8" width="54" height="68" rx="5" stroke="#C75A3F" stroke-width="2.5"/>
+          <!-- Torn bottom edge -->
+          <polyline points="18,76 24,70 30,76 36,70 42,76 48,70 54,76 60,70 66,76 72,70 72,76" stroke="#C75A3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- Lines on paper -->
+          <line x1="28" y1="26" x2="62" y2="26" stroke="#C75A3F" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <line x1="28" y1="38" x2="55" y2="38" stroke="#C75A3F" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <!-- Hash # symbol centered lower -->
+          <line x1="35" y1="50" x2="35" y2="64" stroke="#C75A3F" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="43" y1="50" x2="43" y2="64" stroke="#C75A3F" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="55" x2="47" y2="55" stroke="#C75A3F" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="61" x2="47" y2="61" stroke="#C75A3F" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="pcard-sub">25&times; tokens &middot; 10&ndash;20% cliff</div>
+    </div>
+
+  </div>
+
+  <!-- Closing sub-line — below the cards -->
+  <div id="sh-closing-sub" class="clip" data-start="48.84" data-duration="4.20" data-track-index="20">
+    &hellip;and the question every team is going to have to answer themselves.
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  window.__timelines = window.__timelines || {};
+  window.__timelines["scene-hook"] = tl;
+
+  // ── HIDE EVERYTHING EXCEPT #sh-onepost at t=0 ─────────────────────────────
+  // #sh-onepost is opacity:1 in CSS — NOT touched here, stays visible at t=0
+  tl.set("#sh-sevendays",     { opacity: 0, x: 200 }, 0);
+  tl.set("#sh-war",           { opacity: 0, y: -80 }, 0);
+  tl.set("#sh-article-group", { opacity: 0, y: 40 }, 0);
+  tl.set("#sh-thariq-chip",   { opacity: 0, y: 20 }, 0);
+  tl.set("#sh-md-headline",   { opacity: 0, y: 20 }, 0);
+  tl.set("#sh-badge-row",     { opacity: 0 }, 0);
+  tl.set("#sh-badge-spec",    { opacity: 0, y: 16 }, 0);
+  tl.set("#sh-badge-plan",    { opacity: 0, y: 16 }, 0);
+  tl.set("#sh-badge-pr",      { opacity: 0, y: 16 }, 0);
+  tl.set("#sh-almostall",     { opacity: 0, y: 16 }, 0);
+  tl.set("#sh-out",           { opacity: 0, scale: 0.7 }, 0);
+  tl.set("#sh-receipts",      { opacity: 0 }, 0);
+  tl.set("#sh-rec-pill-1",   { opacity: 0, y: 80 }, 0);
+  tl.set("#sh-rec-pill-2",   { opacity: 0, y: 80 }, 0);
+  tl.set("#sh-rec-pill-3",   { opacity: 0, y: 80 }, 0);
+  tl.set("#sh-rec-baseline-1", { scaleX: 0 }, 0);
+  tl.set("#sh-rec-baseline-2", { scaleX: 0 }, 0);
+  tl.set("#sh-rec-baseline-3", { scaleX: 0 }, 0);
+  tl.set("#sh-dayone",        { opacity: 0, scale: 0.6 }, 0);
+  tl.set("#sh-camps",         { opacity: 0 }, 0);
+  tl.set("#sh-reply-card-1",  { opacity: 0, y: 40 }, 0);
+  tl.set("#sh-reply-card-2",  { opacity: 0, y: 40 }, 0);
+  tl.set("#sh-reply-card-3",  { opacity: 0, y: 40 }, 0);
+  tl.set("#sh-rc1-likes",     { textContent: "0" }, 0);
+  // rc2 and rc3 likes are "—" placeholder — no counter animation
+  // X-post card initial state — hidden; words also hidden (set again before their reveal for seek-safety)
+  tl.set("#sh-xpost-card",    { opacity: 0, y: 60, scale: 2, transformOrigin: "center center" }, 0);
+  tl.set("#sh-title",         { opacity: 0, y: 40 }, 0);
+  tl.set("#sh-preview-cards", { opacity: 0 }, 0);
+  tl.set("#sh-card-pros",     { opacity: 0, y: 40, scale: 0.94 }, 0);
+  tl.set("#sh-card-cons",     { opacity: 0, y: 40, scale: 0.94 }, 0);
+  tl.set("#sh-card-receipts", { opacity: 0, y: 40, scale: 0.94 }, 0);
+  tl.set("#sh-closing-sub",   { opacity: 0, y: 16 }, 0);
+
+  // ── ONE POST. tiny life pulse at 0.04 ─────────────────────────────────────
+  tl.to("#sh-onepost", { scale: 1.04, duration: 0.1, yoyo: true, repeat: 1, ease: "power1.inOut" }, 0.04);
+  // Slide out ONE POST at 0.67
+  tl.to("#sh-onepost", { x: -220, opacity: 0, duration: 0.22, ease: "power2.in" }, 0.67);
+
+  // ── SEVEN DAYS. slides in at 0.77 ─────────────────────────────────────────
+  tl.to("#sh-sevendays", { opacity: 1, x: 0, duration: 0.25, ease: "back.out(2)" }, 0.77);
+  // Pulse at 1.08
+  tl.to("#sh-sevendays", { scale: 1.04, duration: 0.1, yoyo: true, repeat: 1, ease: "power1.inOut" }, 1.08);
+  // Slide out at 1.56
+  tl.to("#sh-sevendays", { x: 220, opacity: 0, duration: 0.22, ease: "power2.in" }, 1.56);
+
+  // ── WENT TO WAR. slams in at 1.66 ─────────────────────────────────────────
+  tl.to("#sh-war", { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.8)" }, 1.66);
+  // Aftershake at 2.60
+  tl.to("#sh-war", { scale: 1.06, rotation: 1.2, duration: 0.12, yoyo: true, repeat: 3, ease: "power1.inOut" }, 2.60);
+  // Fade at 3.7
+  tl.to("#sh-war", { opacity: 0, duration: 0.4, ease: "power2.in" }, 3.70);
+  // Hard-kill: ensure war is invisible at clip-start boundary (seek safety)
+  tl.set("#sh-war", { opacity: 0 }, 4.09);
+
+  // ── Article cover + Thariq chip at 4.09 ───────────────────────────────────
+  tl.to("#sh-article-group", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 4.09);
+  tl.to("#sh-thariq-chip",   { opacity: 1, y: 0, duration: 0.4,  ease: "back.out(1.6)" }, 4.50);
+
+  // ── Markdown headline at 8.28 ─────────────────────────────────────────────
+  tl.to("#sh-md-headline", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 8.28);
+
+  // ── Badges: SPEC 10.11 / PLAN 11.64 / PR WRITEUP 12.38 ───────────────────
+  tl.to("#sh-badge-row",  { opacity: 1, duration: 0.01 }, 10.10);
+  tl.to("#sh-badge-spec", { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.6)" }, 10.11);
+  tl.to("#sh-badge-plan", { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.6)" }, 11.64);
+  tl.to("#sh-badge-pr",   { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.6)" }, 12.38);
+
+  // ── Almost all of it at 13.72 ─────────────────────────────────────────────
+  tl.to("#sh-almostall", { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 13.72);
+
+  // ── OUT. slam at 15.55 — clears ALL thesis content so receipt pills land clean ─
+  tl.to(["#sh-article-group", "#sh-thariq-chip", "#sh-md-headline", "#sh-badge-row", "#sh-almostall"],
+    { opacity: 0.30, duration: 0.20 }, 15.45);
+  tl.to("#sh-out", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.0)" }, 15.55);
+  // OUT. fades out; thesis content fades fully out (NO restore) so receipt pills enter clean
+  tl.to("#sh-out", { opacity: 0, scale: 1.12, duration: 0.28, ease: "power2.in" }, 16.05);
+  tl.to(["#sh-article-group", "#sh-thariq-chip", "#sh-md-headline", "#sh-badge-row", "#sh-almostall"],
+    { opacity: 0, duration: 0.25 }, 16.05);
+  tl.set(["#sh-article-group", "#sh-thariq-chip", "#sh-md-headline", "#sh-badge-row", "#sh-almostall"],
+    { visibility: "hidden" }, 16.35);
+
+  // ── Receipt pills — cinematic horizontal row ──────────────────────────────
+  // Make the container visible (pills themselves animate individually)
+  tl.to("#sh-receipts", { opacity: 1, duration: 0.01 }, 16.22);
+
+  // ── Pill 1: 751K VIEWS — enters at 16.23 ─────────────────────────────────
+  tl.to("#sh-rec-pill-1", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(2.0)" }, 16.23);
+  // Counter: 0 → 751K (spans 16.4 → 17.3)
+  var counter1 = { val: 0 };
+  tl.to(counter1, {
+    val: 751,
+    duration: 0.9,
+    ease: "power2.out",
+    onUpdate: function () {
+      var el = document.querySelector('#sh-rec-num-1');
+      if (el) el.textContent = Math.floor(counter1.val);
+    }
+  }, 16.4);
+  // Baseline draw-in (after counter finishes)
+  tl.to("#sh-rec-baseline-1", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 17.35);
+  // Glow pulse
+  tl.to("#sh-rec-pill-1", {
+    boxShadow: "0 0 40px rgba(199,90,63,0.5), 0 0 80px rgba(199,90,63,0.2)",
+    duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut"
+  }, 17.4);
+
+  // ── Pill 2: 2.7K LIKES — enters at 19.02 ─────────────────────────────────
+  tl.to("#sh-rec-pill-2", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(2.0)" }, 19.02);
+  // Counter: 0.0 → 2.7K (spans 19.2 → 19.9)
+  var counter2 = { val: 0 };
+  tl.to(counter2, {
+    val: 2.7,
+    duration: 0.7,
+    ease: "power2.out",
+    onUpdate: function () {
+      var el = document.querySelector('#sh-rec-num-2');
+      if (el) el.textContent = counter2.val.toFixed(1);
+    }
+  }, 19.2);
+  tl.to("#sh-rec-baseline-2", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 19.95);
+  tl.to("#sh-rec-pill-2", {
+    boxShadow: "0 0 40px rgba(199,90,63,0.5), 0 0 80px rgba(199,90,63,0.2)",
+    duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut"
+  }, 20.0);
+
+  // ── Pill 3: 340 REPOSTS — enters at 20.97 ────────────────────────────────
+  tl.to("#sh-rec-pill-3", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(2.0)" }, 20.97);
+  // Counter: 0 → 340 (spans 21.15 → 21.7)
+  var counter3 = { val: 0 };
+  tl.to(counter3, {
+    val: 340,
+    duration: 0.55,
+    ease: "power2.out",
+    onUpdate: function () {
+      var el = document.querySelector('#sh-rec-num-3');
+      if (el) el.textContent = Math.floor(counter3.val);
+    }
+  }, 21.15);
+  tl.to("#sh-rec-baseline-3", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 21.75);
+  tl.to("#sh-rec-pill-3", {
+    boxShadow: "0 0 40px rgba(199,90,63,0.5), 0 0 80px rgba(199,90,63,0.2)",
+    duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut"
+  }, 21.8);
+
+  // ── Dim all receipt pills for DAY ONE at 23.0 ─────────────────────────────
+  tl.to(["#sh-rec-pill-1", "#sh-rec-pill-2", "#sh-rec-pill-3"],
+    { opacity: 0.35, scale: 0.94, duration: 0.3, ease: "power2.out" }, 23.00);
+
+  // ── DAY ONE. stamp at 23.65 ───────────────────────────────────────────────
+  tl.to("#sh-dayone", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.0)" }, 23.65);
+  // Fade out DAY ONE + receipt pills at 24.7
+  tl.to("#sh-dayone", { opacity: 0, scale: 1.1, duration: 0.3, ease: "power2.in" }, 24.70);
+  tl.to(["#sh-receipts", "#sh-rec-pill-1", "#sh-rec-pill-2", "#sh-rec-pill-3"],
+    { opacity: 0, duration: 0.35 }, 24.65);
+
+  // ── Reply cards at 25.16, 28.48, 32.19 ───────────────────────────────────
+  tl.to("#sh-camps", { opacity: 1, duration: 0.01 }, 25.15);
+
+  // Card 1 — MARKDOWN CAMP — enters at 25.16
+  tl.to("#sh-reply-card-1", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 25.16);
+  // DAY badge scale yoyo 0.4s after card lands
+  tl.to("#sh-rc1-badge", { scale: 1.06, duration: 0.15, yoyo: true, repeat: 1, ease: "power2.inOut" }, 25.56);
+  // Like counter: 0 → 369 (verified from YouTube comment scraping), starts 0.6s after land
+  var rcCounter1 = { val: 0 };
+  tl.to(rcCounter1, {
+    val: 369, duration: 0.7, ease: "power2.out",
+    onUpdate: function () {
+      var el = document.querySelector('#sh-rc1-likes');
+      if (el) el.textContent = Math.floor(rcCounter1.val);
+    }
+  }, 25.76);
+
+  // Card 2 — HYBRID CAMP — enters at 28.48
+  tl.to("#sh-reply-card-2", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 28.48);
+  // DAY badge scale yoyo
+  tl.to("#sh-rc2-badge", { scale: 1.06, duration: 0.15, yoyo: true, repeat: 1, ease: "power2.inOut" }, 28.88);
+  // No like counter — rc2 shows "—"
+
+  // Card 3 — CONSPIRACY CAMP — enters at 32.19
+  tl.to("#sh-reply-card-3", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 32.19);
+  // DAY badge scale yoyo
+  tl.to("#sh-rc3-badge", { scale: 1.06, duration: 0.15, yoyo: true, repeat: 1, ease: "power2.inOut" }, 32.59);
+  // No like counter — rc3 shows "—"
+
+  // Fully hide all reply cards at 35.6 (opacity 0) so they don't overlap the X-post card
+  tl.to(["#sh-reply-card-1", "#sh-reply-card-2", "#sh-reply-card-3"], { opacity: 0, duration: 0.30 }, 35.60);
+  tl.to("#sh-camps", { opacity: 0, duration: 0.30 }, 35.60);
+  // Hard-kill at 35.90 (matches data-duration end: 25.16+10.74=35.90)
+  tl.set(["#sh-camps", "#sh-reply-card-1", "#sh-reply-card-2", "#sh-reply-card-3"],
+    { visibility: "hidden" }, 35.90);
+
+  // ── X-post word spans — hidden at t=0 (seek-safety) ────────────────────
+  tl.set(".xq-w1", { opacity: 0 }, 0);
+  tl.set(".xq-w2", { opacity: 0 }, 0);
+  tl.set(".xq-w3", { opacity: 0 }, 0);
+
+  // ── X-post card slides in at 36.12 ───────────────────────────────────────
+  tl.to("#sh-xpost-card", { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.6)" }, 36.12);
+
+  // ── Quote words reveal starting at 38.45 (stagger ~0.32s each) ───────────
+  tl.to(".xq-w1", { opacity: 1, duration: 0.3, ease: "power2.out" }, 38.45);
+  tl.to(".xq-w2", { opacity: 1, duration: 0.3, ease: "power2.out" }, 38.77);
+  tl.to(".xq-w3", { opacity: 1, duration: 0.3, ease: "power2.out" }, 39.09);
+
+  // Heart counter rolls 0 → 1200 starting at 39.5
+  var xHeartCounter = { val: 0 };
+  tl.to(xHeartCounter, {
+    val: 1200,
+    duration: 1.4,
+    ease: "power2.out",
+    onUpdate: function () {
+      var el = document.querySelector('#sh-xpost-hearts-count');
+      if (!el) return;
+      var v = Math.floor(xHeartCounter.val);
+      el.textContent = v >= 1000 ? (v / 1000).toFixed(1) + 'K' : String(v);
+    }
+  }, 39.50);
+
+  // ── "undefeated." emphasis pulse at 41.72 ────────────────────────────────
+  tl.to(".xq-undefeated", {
+    scale: 1.06,
+    textShadow: "0 0 18px rgba(199,90,63,0.4)",
+    duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut"
+  }, 41.72);
+
+  // Fade out X-post card at 42.2
+  tl.to("#sh-xpost-card", { opacity: 0, duration: 0.4, ease: "power2.in" }, 42.20);
+  // Hard-kill at title slam boundary (seek safety)
+  tl.set("#sh-xpost-card", { opacity: 0 }, 42.57);
+
+  // ── Title slam at 42.57 ───────────────────────────────────────────────────
+  tl.to("#sh-title", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, 42.57);
+  // Pulse on "still" at 43.0
+  tl.to("#sh-title em", { scale: 1.07, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.inOut" }, 43.00);
+  // Title dims slightly at 51.5 so cards + sub get focus during hold
+  tl.to("#sh-title", { opacity: 0.5, duration: 0.5, ease: "power2.out" }, 51.50);
+
+  // ── Preview cards: container visible, then each card enters ───────────────
+  tl.to("#sh-preview-cards", { opacity: 1, duration: 0.01 }, 45.33);
+  // Card 1 — THE PROS — at 45.34
+  tl.to("#sh-card-pros", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 45.34);
+  // Card 1 icon scale-yoyo 0.4s after land
+  tl.to("#sh-card-pros .pcard-icon", { scale: 1.04, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut" }, 46.14);
+  // Card 2 — THE CONS — at 46.50
+  tl.to("#sh-card-cons", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 46.50);
+  // Card 2 icon scale-yoyo
+  tl.to("#sh-card-cons .pcard-icon", { scale: 1.04, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut" }, 47.30);
+  // Card 3 — THE RECEIPTS — at 47.60
+  tl.to("#sh-card-receipts", { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 47.60);
+  // Card 3 icon scale-yoyo
+  tl.to("#sh-card-receipts .pcard-icon", { scale: 1.04, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut" }, 48.40);
+
+  // ── Closing sub at 48.84 ──────────────────────────────────────────────────
+  tl.to("#sh-closing-sub", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 48.84);
+
+  // ── Extend timeline to exactly 53.04s ─────────────────────────────────────
+  tl.set({}, {}, 53.04);
+})();
+</script>
+</body>
+</html>

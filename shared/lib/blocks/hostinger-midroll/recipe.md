@@ -14,6 +14,9 @@ A 20-second, 5-phase Hostinger affiliate midroll for **long-form (1920×1080)** 
    ┌──── 1920 × 1080 frame ──────────────────────────────────────┐
    │  [WERBUNG]                              [Hostinger logo]    │
    │                                                             │
+   │   (persistent across all phases, bottom-right corner:       │
+   │    [ 10% OFF | DIYSMARTCODE ] — green pill + purple pill )  │
+   │                                                             │
    │  Phase 1 (0.0–3.0s)  Hostinger intro                        │
    │     TODAY'S PICK                                            │
    │     Try Hostinger    (220px purple gradient)                │
@@ -215,6 +218,8 @@ The midroll ships **brand-locked**. Don't edit per-video:
 | `.hm-cta-code` | `DIYSMARTCODE` | DO NOT EDIT. Locked affiliate slug. |
 | `#hm-cta-url` | `hostinger.com/DIYSMARTCODE` | DO NOT EDIT. Locked affiliate redirect. |
 | `.hm-cta-discount` | `10% OFF` | DO NOT EDIT. |
+| `.hm-promo-discount` | `10% OFF` | DO NOT EDIT. Persistent bottom-right badge. |
+| `.hm-promo-code` | `DIYSMARTCODE` | DO NOT EDIT. Persistent bottom-right badge. |
 | `.hm-werbung` | `Werbung` | DO NOT REMOVE. DE ad-disclosure compliance. |
 
 ## Don'ts

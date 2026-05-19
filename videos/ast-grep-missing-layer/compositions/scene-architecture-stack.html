@@ -1,17 +1,19 @@
 <!--
-  scene-architecture-stack.html — Scene 02: Blind Spot (17.39 - 37.93, 20.54s)
+  scene-architecture-stack.html — Scene 02: Blind Spot (16.277 - 34.283, 18.006s)
   Three AI coding agents — Claude Code, Cursor, Copilot — all use the same
   dumb text search and share the same blind spot. NO Layer 1/2/3 taxonomy.
 
-  Scene-local anchors (local = root - 17.39):
-    0.00  "Every AI coding agent" → heading
-    2.11  "blind spot"            → "BLIND SPOT" stamp
-    3.71  "Claude Code"           → claude-code badge
-    4.61  "Cursor"                → cursor badge
-    5.19  "Copilot"               → copilot badge
-    9.74  "scan for matching"     → grep query strip
-    15.66 "can't tell the diff"   → cross-mark on "is this code? or string?"
-    19.26 "Watch what that costs" → pivot teaser
+  RE-ANCHORED to new transcript (audio = 381.73s). Scene root = 16.277.
+  Scene-local anchors (local = root - 16.277):
+    0.000  "Every AI coding agent" → heading
+    2.113  "blind spot"             → "BLIND SPOT" stamp
+    3.715  "Claude Code"            → claude-code badge
+    4.562  "Cursor"                 → cursor badge
+    5.201  "Copilot"                → copilot badge
+    8.068  "text search for exact"  → grep query strip (replaces "scan for matching")
+   10.948  "But text search can't"  → decision row
+   11.726  "can't tell"             → cross-mark pulse
+   15.928  "Watch what that costs"  → pivot teaser
 -->
 <template id="scene-architecture-stack-template">
   <div data-composition-id="scene-architecture-stack"
@@ -88,6 +90,10 @@
         width: auto;
         height: auto;
         object-fit: contain;
+      }
+      #badge-copilot .icon img {
+        /* Recolor GitHub octocat (dark fill) to pure white to match other agent marks */
+        filter: brightness(0) invert(1);
       }
       .agent-badge .name {
         font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
@@ -196,22 +202,22 @@
         <div class="agent-badge" id="badge-claude-code">
           <div class="icon"><img src="assets/claude-code-logo-light.svg" alt="Claude Code" crossorigin="anonymous" /></div>
           <div class="name">Claude Code</div>
-          <div class="tool">tool: grep · text only</div>
+          <div class="tool">exact code hunts → text grep</div>
         </div>
         <div class="agent-badge" id="badge-cursor">
           <div class="icon"><img src="assets/cursor-logo.png" alt="Cursor" crossorigin="anonymous" /></div>
           <div class="name">Cursor</div>
-          <div class="tool">tool: grep · text only</div>
+          <div class="tool">exact code hunts → text grep</div>
         </div>
         <div class="agent-badge" id="badge-copilot">
           <div class="icon"><img src="assets/github-logo.svg" alt="GitHub Copilot" crossorigin="anonymous" /></div>
           <div class="name">Copilot</div>
-          <div class="tool">tool: grep · text only</div>
+          <div class="tool">exact code hunts → text grep</div>
         </div>
       </div>
 
       <div id="s02-grep-strip">
-        <span class="lbl">they all run</span>
+        <span class="lbl">for exact hunts, they fall back to</span>
         <span>grep <span class="q">"console.log"</span></span>
         <span class="gap">no structure</span>
       </div>
@@ -243,33 +249,33 @@
       // Heading — "Every AI coding agent" (local 0)
       tl.to("#s02-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
 
-      // BLIND SPOT stamp — "blind spot" (local 2.11)
-      tl.to("#s02-stamp", { opacity: 1, scale: 1.0, rotate: -4, duration: 0.5, ease: "back.out(2.2)" }, 2.11);
+      // BLIND SPOT stamp — "blind spot" (local 2.113)
+      tl.to("#s02-stamp", { opacity: 1, scale: 1.0, rotate: -4, duration: 0.5, ease: "back.out(2.2)" }, 2.113);
       // Pulse
       tl.to("#s02-stamp", { scale: 1.08, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.65);
 
-      // Claude Code badge — local 3.71
-      tl.to("#badge-claude-code", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 3.71);
-      // Cursor badge — local 4.61
-      tl.to("#badge-cursor", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 4.61);
-      // Copilot badge — local 5.19
-      tl.to("#badge-copilot", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 5.19);
+      // Claude Code badge — local 3.715
+      tl.to("#badge-claude-code", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 3.715);
+      // Cursor badge — local 4.562
+      tl.to("#badge-cursor", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 4.562);
+      // Copilot badge — local 5.201
+      tl.to("#badge-copilot", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 5.201);
 
-      // "they all search the same dumb way" (local ~6.5) — group scale-pulse
-      tl.to(".agent-badge", { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.08 }, 7.5);
+      // "they all lean heavily on text search" (local ~7.0) — group scale-pulse
+      tl.to(".agent-badge", { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.08 }, 7.0);
 
-      // grep query strip — "scan for matching text" (local 9.74)
-      tl.to("#s02-grep-strip", { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 9.74);
+      // grep query strip — "text search for exact code hunts" (local 8.068)
+      tl.to("#s02-grep-strip", { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 8.068);
 
-      // Decision row — "can't tell the difference" (local 13.0)
-      tl.to("#s02-decision", { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 13.0);
-      // CAMERA-ABUSE: cross-mark pulse on "can't tell" (local 15.66)
-      tl.to("#s02-decision .cross", { scale: 1.25, duration: 0.3, ease: "back.out(2.5)", yoyo: true, repeat: 1 }, 15.66);
+      // Decision row — "But text search can't tell" (local 10.948)
+      tl.to("#s02-decision", { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 10.948);
+      // CAMERA-ABUSE: cross-mark pulse on "can't tell" (local 11.726)
+      tl.to("#s02-decision .cross", { scale: 1.25, duration: 0.3, ease: "back.out(2.5)", yoyo: true, repeat: 1 }, 11.726);
 
-      // Teaser — "Watch what that costs you" (local 19.26)
-      tl.to("#s02-teaser", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 19.26);
+      // Teaser — "Watch what that costs you" (local 15.928)
+      tl.to("#s02-teaser", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 15.928);
 
-      tl.set({}, {}, 20.54);
+      tl.set({}, {}, 18.006);
       window.__timelines["scene-architecture-stack"] = tl;
     </script>
   </div>

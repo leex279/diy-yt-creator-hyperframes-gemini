@@ -1,5 +1,5 @@
-﻿<!--
-  scene-vsa-tree.html â€” Vertical Slice Architecture file tree visualization.
+<!--
+  scene-vsa-tree.html — Vertical Slice Architecture file tree visualization.
   Displays the canonical `products/` shape line-by-line, each row revealing on its own beat.
 -->
 <template id="scene-vsa-tree-template">
@@ -125,22 +125,58 @@
       tl.to("#vsa-headline", { y: 0, autoAlpha: 1, duration: 0.65, ease: "power3.out" }, 0.5);
       tl.to("#vsa-blurb",    { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 1.1);
 
-      // Tree rows reveal one at a time
-      const treeTimes = [1.8, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+      // Tree rows reveal early — spread across the first ~16s so the tree is
+      // populated while the narrator explains the problem; then narration-anchored
+      // emphasis pulses fire when the narrator names each file in the staccato list.
+      const treeTimes = [2.5, 4.5, 6.5, 9.0, 11.5, 13.5, 15.5];
       ["#vsa-r1","#vsa-r2","#vsa-r3","#vsa-r4","#vsa-r5","#vsa-r6","#vsa-r7"].forEach((sel, i) => {
         tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, treeTimes[i]);
       });
 
-      // Mid-hold beats â€” pulse the feature row periodically
-      tl.to("#vsa-r1", { scale: 1.03, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1,
-        transformOrigin: "left center" }, 11.0);
+      // Continuous decoration pulses across 18-28s while narrator describes the layered problem
+      tl.to("#vsa-r1", { scale: 1.03, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1,
+        transformOrigin: "left center" }, 18.0);
       tl.to("#vsa-tree", { boxShadow: "0 0 100px rgba(59, 130, 246, 0.35)",
-        duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 15.0);
-      tl.to("#vsa-r1", { scale: 1.03, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1,
-        transformOrigin: "left center" }, 19.0);
+        duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.0);
+      tl.to("#vsa-blurb", { scale: 1.015, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.5);
+      tl.to(["#vsa-r2","#vsa-r3","#vsa-r4"], { scale: 1.02, duration: 0.6, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.15, transformOrigin: "left center" }, 27.0);
+
+      // Narrator names each file in staccato — color flash on each row in turn
+      const fileBeats = [
+        { sel: "#vsa-r1", t: 28.060 },  // "One folder per feature"
+        { sel: "#vsa-r2", t: 31.950 },  // "Models."
+        { sel: "#vsa-r3", t: 32.426 },  // "Schemas."
+        { sel: "#vsa-r4", t: 32.949 },  // "Routes."
+        { sel: "#vsa-r5", t: 33.355 },  // "Service."
+        { sel: "#vsa-r6", t: 33.854 },  // "Errors."
+        { sel: "#vsa-r7", t: 35.247 },  // "Tests."
+      ];
+      fileBeats.forEach(b => {
+        tl.to(b.sel, { scale: 1.06, duration: 0.25, ease: "back.out(1.8)",
+          yoyo: true, repeat: 1, transformOrigin: "left center" }, b.t);
+      });
+
+      // Post-narration continuing beats — every ~3s through scene end (61.2s)
+      tl.to("#vsa-tree", { boxShadow: "0 0 120px rgba(96, 165, 250, 0.55)",
+        duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 38.0);
+      tl.to(["#vsa-r1","#vsa-r2","#vsa-r3"], { scale: 1.02, duration: 0.5, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.12, transformOrigin: "left center" }, 41.0);
+      tl.to(["#vsa-r4","#vsa-r5","#vsa-r6","#vsa-r7"], { scale: 1.02, duration: 0.5, ease: "sine.inOut",
+        yoyo: true, repeat: 1, stagger: 0.12, transformOrigin: "left center" }, 44.0);
+      tl.to("#vsa-blurb", { scale: 1.02, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 47.0);
+      tl.to("#vsa-tree", { boxShadow: "0 0 100px rgba(59, 130, 246, 0.45)",
+        duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 50.0);
+      tl.to("#vsa-r1", { scale: 1.04, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1,
+        transformOrigin: "left center" }, 53.0);
+      tl.to("#vsa-tree", { boxShadow: "0 0 140px rgba(96, 165, 250, 0.45)",
+        duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 56.0);
+      tl.to(["#vsa-r1","#vsa-r2","#vsa-r3","#vsa-r4","#vsa-r5","#vsa-r6","#vsa-r7"],
+        { scale: 1.015, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.06,
+          transformOrigin: "left center" }, 59.0);
 
       // Extend timeline to full slot duration
-      tl.set({}, {}, 52);
+      tl.set({}, {}, 61.2);
       window.__timelines["scene-vsa-tree"] = tl;
     </script>
   </div>

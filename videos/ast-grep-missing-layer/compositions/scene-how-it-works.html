@@ -1,0 +1,428 @@
+<!--
+  scene-how-it-works.html — Scene 03b: How ast-grep Works (duration 67.128s)
+  Three-step pipeline: code → tree-sitter AST → pattern match with meta-vars.
+
+  Scene-local anchors (RE-ANCHORED to transcript word starts, scene root = 62.332):
+    0.00   "But how does it actually work"  → title
+    2.97   "First"                          → STEP 1 highlight (parse code)
+    5.32   "tree-sitter"                    → tree-sitter chip
+    8.31   "tree of nodes"                  → CODE → AST pane reveal
+   17.04   "That tree is called an AST"     → AST recap pulse
+   17.96   "Second"                         → STEP 2 highlight
+   19.76   "patterns"                       → PATTERN card appears
+   29.35   "Dollar-sign-VAR"                → $VAR meta-var chip
+   33.35   "BODY"                           → $$$BODY meta-var chip
+   37.12   "console-dot-log of $VAR"        → live pattern + match highlight
+   48.11   "inside a comment"               → COMMENT false-match strike-through
+   53.54   "Third"                          → STEP 3 highlight
+   54.66   "Rust on every CPU core"         → Rust+multi-core badge
+   59.30   "That's it / Tree-sitter for shape" → recap row
+   66.05   "agent doesn't get fooled"       → OUTCOME tagline
+-->
+<template id="scene-how-it-works-template">
+  <div data-composition-id="scene-how-it-works"
+       data-start="0"
+       data-width="1556"
+       data-height="998"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, -apple-system, sans-serif; color:var(--fg-default);
+              background: var(--bg-editor);">
+
+    <style>
+      #s03b { position: absolute; inset: 0; padding: 44px 56px; box-sizing: border-box; }
+
+      #s03b-head {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 54px;
+        line-height: 1.05;
+        letter-spacing: -1.2px;
+        color: var(--fg-bright);
+      }
+      #s03b-head .em { color: var(--ok); }
+
+      /* 3-step stepper across the top */
+      #s03b-stepper {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+      }
+      .step-card {
+        background: var(--bg-panel);
+        border: 1.5px solid var(--border-strong);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        opacity: 0.4;
+        transition: none;
+      }
+      .step-card.on {
+        border-color: var(--ok);
+        background: rgba(78, 201, 176, 0.10);
+        opacity: 1;
+      }
+      .step-card .num {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        background: var(--bg-deep);
+        border: 1.5px solid var(--border-strong);
+        color: var(--fg-bright);
+        text-align: center;
+        line-height: 36px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .step-card.on .num {
+        background: var(--ok);
+        border-color: var(--ok);
+        color: var(--bg-deep);
+      }
+      .step-card .lbl {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--fg-bright);
+        letter-spacing: 0.3px;
+      }
+      .step-card .sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-top: 2px;
+      }
+
+      /* Body two-column: left = source code, right = AST tree */
+      #s03b-body {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        height: 460px;
+      }
+      .src-pane, .ast-pane, .pat-pane {
+        background: var(--bg-panel);
+        border: 1.5px solid var(--border-strong);
+        border-radius: 10px;
+        padding: 16px 20px;
+        overflow: hidden;
+        position: relative;
+      }
+      .pane-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: var(--fg-muted);
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+      .pane-head .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--brand-orange);
+      }
+      .src-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--fg-default);
+        white-space: pre;
+      }
+      .src-code .key { color: var(--syn-keyword); }
+      .src-code .fn  { color: var(--syn-function); }
+      .src-code .str { color: var(--syn-string); }
+      .src-code .var { color: var(--syn-variable); }
+      .src-code .com { color: var(--syn-comment); font-style: italic; }
+      .src-code .num { color: var(--syn-number); }
+
+      /* AST tree */
+      .ast-tree {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        line-height: 1.45;
+        color: var(--fg-default);
+      }
+      .ast-node {
+        display: block;
+        padding-left: var(--ind, 0px);
+        color: var(--fg-default);
+        opacity: 0;
+      }
+      .ast-node .type {
+        color: var(--syn-type);
+        font-weight: 700;
+      }
+      .ast-node .lbl {
+        color: var(--fg-muted);
+        margin-left: 6px;
+      }
+      .ast-node.match {
+        background: rgba(78, 201, 176, 0.18);
+        border-left: 2px solid var(--ok);
+        padding-left: calc(var(--ind, 0px) - 2px);
+        margin-left: 0;
+      }
+
+      /* Tree-sitter chip + Rust chip */
+      .tool-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        margin-left: 10px;
+        background: var(--bg-deep);
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--fg-bright);
+        opacity: 0;
+      }
+      .tool-chip .ico { color: var(--brand-orange); }
+
+      /* Pattern + meta-vars row */
+      #s03b-pattern-row {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 18px;
+        height: 200px;
+        opacity: 0;
+      }
+      .pat-pane .pat-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 22px;
+        line-height: 1.6;
+        color: var(--fg-default);
+      }
+      .pat-pane .pat-code .meta {
+        color: var(--ok);
+        font-weight: 700;
+        background: rgba(78, 201, 176, 0.15);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .pat-pane .pat-code .fn { color: var(--syn-function); }
+      .pat-pane .pat-code .pn { color: var(--fg-muted); }
+
+      .meta-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .meta-chip {
+        background: var(--bg-deep);
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: var(--fg-default);
+        opacity: 0;
+      }
+      .meta-chip .meta {
+        color: var(--ok);
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .meta-chip .desc {
+        display: block;
+        font-size: 12px;
+        color: var(--fg-muted);
+        margin-top: 4px;
+      }
+
+      /* Comment / quoted-text false-match cross-out (overlays src pane) */
+      #s03b-falsematch {
+        position: absolute;
+        right: 24px;
+        bottom: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: var(--err);
+        font-weight: 700;
+        opacity: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #s03b-falsematch .x {
+        font-size: 18px;
+      }
+
+      /* Outcome tagline */
+      #s03b-outcome {
+        position: absolute;
+        left: 56px;
+        right: 56px;
+        bottom: 26px;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        color: var(--fg-bright);
+        text-align: center;
+        opacity: 0;
+      }
+      #s03b-outcome .em {
+        color: var(--ok);
+      }
+    </style>
+
+    <div id="s03b">
+      <div id="s03b-head">
+        How <span class="em">ast-grep</span> actually works
+        <span class="tool-chip" id="chip-ts"><span class="ico">▣</span>tree-sitter</span>
+        <span class="tool-chip" id="chip-rust"><span class="ico">▦</span>Rust · multi-core</span>
+      </div>
+
+      <div id="s03b-stepper">
+        <div class="step-card" id="step-1">
+          <span class="num">1</span>
+          <div>
+            <div class="lbl">PARSE</div>
+            <div class="sub">code → AST</div>
+          </div>
+        </div>
+        <div class="step-card" id="step-2">
+          <span class="num">2</span>
+          <div>
+            <div class="lbl">MATCH</div>
+            <div class="sub">pattern → nodes</div>
+          </div>
+        </div>
+        <div class="step-card" id="step-3">
+          <span class="num">3</span>
+          <div>
+            <div class="lbl">RUN</div>
+            <div class="sub">Rust · all cores</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="s03b-body">
+        <div class="src-pane" id="src-pane">
+          <div class="pane-head"><span class="dot"></span>source · app.ts</div>
+          <div class="src-code"><span class="key">function</span> <span class="fn">debug</span>(<span class="var">msg</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="var">msg</span>);
+}
+
+<span class="com">// console.log("hi")</span>
+<span class="key">const</span> <span class="var">s</span> = <span class="str">"console.log('x')"</span>;</div>
+          <div id="s03b-falsematch"><span class="x">✕</span>not a call node</div>
+        </div>
+
+        <div class="ast-pane" id="ast-pane">
+          <div class="pane-head"><span class="dot"></span>AST (tree-sitter output)</div>
+          <div class="ast-tree" id="ast-tree">
+            <span class="ast-node" id="ast-1" style="--ind:0px;"><span class="type">function_declaration</span> <span class="lbl">debug</span></span>
+            <span class="ast-node" id="ast-2" style="--ind:24px;"><span class="type">parameter</span> <span class="lbl">msg</span></span>
+            <span class="ast-node" id="ast-3" style="--ind:24px;"><span class="type">block</span></span>
+            <span class="ast-node match" id="ast-4" style="--ind:48px;"><span class="type">call_expression</span> <span class="lbl">console.log(msg)</span></span>
+            <span class="ast-node" id="ast-5" style="--ind:0px;"><span class="type">comment</span> <span class="lbl">// console.log("hi")</span></span>
+            <span class="ast-node" id="ast-6" style="--ind:0px;"><span class="type">variable_declaration</span> <span class="lbl">s</span></span>
+            <span class="ast-node" id="ast-7" style="--ind:24px;"><span class="type">string_literal</span> <span class="lbl">"console.log('x')"</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="s03b-pattern-row">
+        <div class="pat-pane">
+          <div class="pane-head"><span class="dot"></span>ast-grep pattern</div>
+          <div class="pat-code"><span class="fn">console</span><span class="pn">.</span><span class="fn">log</span><span class="pn">(</span><span class="meta" id="pat-var">$VAR</span><span class="pn">)</span></div>
+          <div style="margin-top:14px; font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--fg-muted);">
+            matches every real call · skips strings + comments
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-chip" id="chip-var"><span class="meta">$VAR</span> <span class="desc">any single node</span></div>
+          <div class="meta-chip" id="chip-body"><span class="meta">$$$BODY</span> <span class="desc">any list of nodes</span></div>
+        </div>
+      </div>
+
+      <div id="s03b-outcome">Your agent <span class="em">doesn't get fooled.</span></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // HIDE everything at t=0
+      tl.set("#s03b-head", { opacity: 0, y: -14 }, 0);
+      tl.set(["#step-1", "#step-2", "#step-3"], { opacity: 0, y: 12 }, 0);
+      tl.set("#src-pane", { opacity: 0, scale: 0.96 }, 0);
+      tl.set("#ast-pane", { opacity: 0, x: 18, scale: 0.96 }, 0);
+      tl.set(["#ast-1","#ast-2","#ast-3","#ast-4","#ast-5","#ast-6","#ast-7"], { opacity: 0, x: -12 }, 0);
+      tl.set("#s03b-pattern-row", { opacity: 0, y: 18 }, 0);
+      tl.set(["#chip-var","#chip-body"], { opacity: 0, x: 12 }, 0);
+      tl.set(["#chip-ts","#chip-rust"], { opacity: 0, y: -8 }, 0);
+      tl.set("#s03b-falsematch", { opacity: 0 }, 0);
+      tl.set("#s03b-outcome", { opacity: 0, y: 18 }, 0);
+
+      // Head ("But how does it actually work")
+      tl.to("#s03b-head", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.0);
+
+      // Three-step stepper (cards in immediately at ~"Three steps", greyed out)
+      tl.to("#step-1", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.4);
+      tl.to("#step-2", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.6);
+      tl.to("#step-3", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.8);
+
+      // ── STEP 1 — Parse ── ("First" 2.97s local)
+      tl.call(() => { document.getElementById("step-1").classList.add("on"); }, [], 2.97);
+      tl.to("#src-pane", { opacity: 1, scale: 1, duration: 0.55, ease: "expo.out" }, 3.0);
+      // Tree-sitter chip ("tree-sitter" 5.32s local)
+      tl.to("#chip-ts", { opacity: 1, y: 0, duration: 0.4, ease: "back.out(2.0)" }, 5.32);
+      // CINEMATIC MOMENT — AST tree formation ("tree of nodes" 8.31s local)
+      tl.to("#ast-pane", { opacity: 1, x: 0, scale: 1, duration: 0.7, ease: "expo.out" }, 8.31);
+      // Tree nodes stagger in
+      tl.to("#ast-1", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" },  9.0);
+      tl.to("#ast-2", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" },  9.6);
+      tl.to("#ast-3", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 10.2);
+      tl.to("#ast-4", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 10.9);
+      tl.to("#ast-5", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 11.6);
+      tl.to("#ast-6", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 12.3);
+      tl.to("#ast-7", { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 13.0);
+      // AST label scale-pulse ("That tree is called an AST" 17.04s local)
+      tl.to("#ast-pane", { scale: 1.02, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 1 }, 17.04);
+
+      // ── STEP 2 — Match ── ("Second" 17.96s local)
+      tl.call(() => { document.getElementById("step-2").classList.add("on"); }, [], 17.96);
+      tl.to("#s03b-pattern-row", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 19.76);
+      // $VAR chip ("Dollar-sign-VAR" 29.35s local)
+      tl.to("#chip-var", { opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.8)" }, 29.35);
+      tl.to("#pat-var", { scale: 1.12, duration: 0.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 29.55);
+      // $$$BODY chip ("BODY" 33.35s local)
+      tl.to("#chip-body", { opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.8)" }, 33.35);
+      // Pattern-match highlight pulse ("console-dot-log of $VAR" 37.12s local)
+      tl.to("#ast-4", { scale: 1.04, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1, transformOrigin: "left center" }, 37.12);
+      tl.to("#pat-var", { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 37.32);
+      // Comment + string false-match cross-out ("inside a comment" 48.11s local)
+      tl.to("#s03b-falsematch", { opacity: 1, duration: 0.4, ease: "power2.out" }, 48.11);
+      tl.to("#ast-5", { opacity: 0.35, duration: 0.4, ease: "power2.out" }, 48.31);
+      tl.to("#ast-7", { opacity: 0.35, duration: 0.4, ease: "power2.out" }, 48.51);
+
+      // ── STEP 3 — Run ── ("Third" 53.54s local)
+      tl.call(() => { document.getElementById("step-3").classList.add("on"); }, [], 53.54);
+      tl.to("#chip-rust", { opacity: 1, y: 0, duration: 0.45, ease: "back.out(2.0)" }, 54.66);
+      tl.to("#chip-rust", { scale: 1.08, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 1 }, 55.06);
+
+      // Recap moment — all 3 steps glow together ("That's it" 59.30s local)
+      tl.to(["#step-1", "#step-2", "#step-3"], { scale: 1.04, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.08 }, 59.30);
+
+      // Outcome tagline ("doesn't get fooled" 66.05s local)
+      tl.to("#s03b-outcome", { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 63.0);
+      tl.to("#s03b-outcome", { scale: 1.03, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 66.05);
+
+      // Pad timeline to full local duration (67.128s)
+      tl.set({}, {}, 67.128);
+      window.__timelines["scene-how-it-works"] = tl;
+    </script>
+  </div>
+</template>

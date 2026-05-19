@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v05 — AI's blind spot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 1100px 600px at 50% 30%, rgba(247,129,102,0.18), transparent 70%),
+      radial-gradient(ellipse 800px 500px at 50% 90%, rgba(78,201,176,0.12), transparent 70%),
+      var(--bg-deep);
+  }
+  #overline {
+    position: absolute; top: 56px; left: 56px;
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--brand-orange); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 10;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--brand-orange); }
+  .slam-wrap { position: absolute; top: 116px; left: 56px; right: 56px; z-index: 10; }
+  .slam-1 {
+    display: block; font-family: var(--font-sans); font-weight: 900; font-size: 200px;
+    line-height: 0.86; color: #fff; letter-spacing: -0.05em;
+    text-shadow: 0 6px 30px rgba(0,0,0,0.65);
+  }
+  .slam-1 .ais { color: var(--brand-orange); }
+  .slam-2 {
+    display: block; font-family: var(--font-sans); font-weight: 900; font-size: 170px;
+    line-height: 0.86; color: #fff; letter-spacing: -0.05em; margin-top: 4px;
+  }
+  .blind-mark {
+    display: inline-block; position: relative;
+    color: #fff;
+  }
+  .blind-mark::after {
+    content: ""; position: absolute;
+    left: -10px; right: -10px; bottom: 18px; height: 18px;
+    background: var(--brand-orange);
+    opacity: 0.42;
+    z-index: -1;
+    transform: skewX(-6deg);
+  }
+  #agents-strip {
+    position: absolute; bottom: 36px; left: 56px; right: 56px;
+    display: flex; gap: 16px; z-index: 5;
+  }
+  .agent-card {
+    flex: 1; height: 180px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .agent-card .x-overlay {
+    position: absolute; top: 12px; right: 12px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,77,77,0.18);
+    border: 2px solid #ff4d4d;
+    color: #ff4d4d;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 900; font-size: 22px;
+  }
+  .agent-name { font-family: var(--font-mono); font-weight: 800; font-size: 32px; color: var(--fg-bright); letter-spacing: -0.01em; }
+  .agent-search-row { font-family: var(--font-mono); font-size: 18px; color: var(--fg-muted); display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .agent-search-row .label { color: var(--fg-dim); }
+  .agent-search-row .uses { color: #ff7676; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="overline">claude · cursor · copilot · all of them</div>
+  <div class="slam-wrap">
+    <span class="slam-1"><span class="ais">AI'S</span></span>
+    <span class="slam-2"><span class="blind-mark">BLIND SPOT.</span></span>
+  </div>
+  <div id="agents-strip">
+    <div class="agent-card">
+      <div class="x-overlay">&#10005;</div>
+      <div class="agent-name">Claude Code</div>
+      <div class="agent-search-row"><span class="label">searches with:</span><span class="uses">grep</span></div>
+    </div>
+    <div class="agent-card">
+      <div class="x-overlay">&#10005;</div>
+      <div class="agent-name">Cursor</div>
+      <div class="agent-search-row"><span class="label">searches with:</span><span class="uses">grep</span></div>
+    </div>
+    <div class="agent-card">
+      <div class="x-overlay">&#10005;</div>
+      <div class="agent-name">Copilot</div>
+      <div class="agent-search-row"><span class="label">searches with:</span><span class="uses">grep</span></div>
+    </div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

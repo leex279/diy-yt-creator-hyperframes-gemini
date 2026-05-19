@@ -1,0 +1,260 @@
+<!--
+  scene-cta.html — Dynamous endcard (vertical Shorts adaptation).
+
+  Vertical single-column layout for 1080x1920. Brand lockup (flame + wordmark)
+  on top, debate question in the middle (satisfies engagement-cta rule —
+  appears on screen as #cta-question and the same wording is spoken in the
+  final 3-5s of narration). 4 community offerings as the offer block.
+  Link in Description + 10% OFF pill + dynamous.ai URL.
+
+  Held-still final frame satisfies shorts-thumbnail-frames rule:
+   - Topic statement (the debate question, 56px) — dominant
+   - Visual anchor (Dynamous flame, 100x150px)
+   - Brand chrome (Dynamous wordmark + top-banner overlay)
+   - Outcome receipt (community offerings list)
+   - CTA pill ("Link in Description ↓ + 10% OFF")
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #ec-content {
+        width:100%; height:100%;
+        /* safe-zone: top 240 + bottom 640 (mobile UI). Content ends by y=1280 */
+        padding: 240px 70px 640px;
+        display: flex; flex-direction: column;
+        gap: 24px;
+        align-items: stretch; justify-content: flex-start;
+        box-sizing:border-box;
+      }
+      .ec-card {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 28px;
+        padding: 38px 36px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow:
+          0 16px 64px rgba(0, 0, 0, 0.55),
+          0 0 80px rgba(59, 130, 246, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        position: relative;
+      }
+
+      /* TOP — brand lockup */
+      #ec-brand-row {
+        display: flex; align-items: center; gap: 22px;
+      }
+      #ec-icon {
+        width: 100px; height: 140px;
+        filter: drop-shadow(0 0 36px rgba(59, 130, 246, 0.55));
+        flex: 0 0 100px;
+      }
+      #ec-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+      #ec-wordmark { flex: 1; }
+      #ec-wordmark img { width: 100%; height: auto; display: block; max-width: 460px; }
+
+      /* MIDDLE — debate question (engagement-cta rule on-screen slot) */
+      #ec-headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 64px;
+        line-height: 1.04;
+        letter-spacing: -0.015em;
+        color: var(--ink);
+        margin-bottom: 6px;
+      }
+      #cta-question {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 56px;
+        line-height: 1.18;
+        letter-spacing: -0.012em;
+        color: var(--accent-2);
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,255,255,0.10);
+      }
+      #ec-comment {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 28px;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      #ec-comment .pencil {
+        display: inline-block; margin-right: 10px;
+        color: var(--accent);
+      }
+
+      /* BOTTOM — offerings + CTA pill + URL */
+      #ec-offerings {
+        list-style: none;
+        margin: 0; padding: 0;
+        display: flex; flex-direction: column;
+        gap: 14px;
+      }
+      #ec-offerings li {
+        display: flex; align-items: center; gap: 16px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1.18;
+        color: #f1f5f9;
+      }
+      .ec-check {
+        flex-shrink: 0;
+        width: 44px; height: 44px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 24px; font-weight: 900;
+        color: #ffffff;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 100%);
+        box-shadow: 0 0 18px rgba(59, 130, 246, 0.55);
+      }
+      #ec-button-row {
+        display: flex; align-items: center; gap: 16px;
+        margin-top: 8px;
+      }
+      #ec-button {
+        flex: 1;
+        display: flex; align-items: center; justify-content: center; gap: 14px;
+        padding: 22px 28px;
+        border-radius: 18px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-3) 100%);
+        background-size: 200% 100%;
+        box-shadow:
+          0 4px 24px rgba(59, 130, 246, 0.4),
+          0 0 60px rgba(14, 165, 233, 0.18);
+      }
+      #ec-button .arrow {
+        font-size: 40px; line-height: 0.7; font-weight: 900;
+      }
+      #ec-discount {
+        flex: 0 0 auto;
+        padding: 16px 22px;
+        border-radius: 14px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-size: 36px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+      }
+      #ec-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 28px;
+        font-weight: 600;
+        color: #cbd5e1;
+        letter-spacing: 0.04em;
+        text-align: center;
+        word-break: break-all;
+        margin-top: 8px;
+      }
+    </style>
+
+    <div id="ec-content">
+      <!-- Brand + debate -->
+      <div class="ec-card" id="ec-top">
+        <span class="dec-werbung"
+              style="position:absolute; top:20px; right:24px;
+                     color:#ffffff; background:#dc2626;
+                     font-family:'JetBrains Mono', ui-monospace, monospace;
+                     font-size:26px; font-weight:800;
+                     padding:8px 18px; border-radius:8px;
+                     letter-spacing:1.5px; text-transform:uppercase;
+                     opacity:0; z-index:10;
+                     box-shadow:0 4px 12px rgba(220, 38, 38, 0.30);">Werbung</span>
+        <div id="ec-brand-row">
+          <div id="ec-icon" style="opacity:0;visibility:hidden;">
+            <img src="assets/dynamous-icon.png" alt="Dynamous" crossorigin="anonymous" />
+          </div>
+          <div id="ec-wordmark" style="opacity:0;visibility:hidden;">
+            <img src="assets/dynamous-logo-light.svg" alt="Dynamous AI Mastery" />
+          </div>
+        </div>
+        <div id="ec-headline" style="opacity:0;visibility:hidden; margin-top: 22px;">Join the Community</div>
+        <div id="cta-question" style="opacity:0;visibility:hidden;">Vertical slices, or shared test folders &mdash; which one are you running?</div>
+        <div id="ec-comment" style="opacity:0;visibility:hidden;"><span class="pencil">&#x270F;</span>Drop your take in the comments</div>
+      </div>
+
+      <!-- Offerings + button -->
+      <div class="ec-card" id="ec-bottom">
+        <ul id="ec-offerings">
+          <li id="ec-o1" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>Agentic Coding Course</span></li>
+          <li id="ec-o2" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>AI Second Brain</span></li>
+          <li id="ec-o3" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>AI Agent Master Course</span></li>
+          <li id="ec-o4" style="opacity:0;visibility:hidden;"><span class="ec-check">&#x2713;</span><span>Daily Events &amp; Friday Workshops</span></li>
+        </ul>
+        <div id="ec-button-row">
+          <div id="ec-button" style="opacity:0;visibility:hidden;">
+            <span>Link in Description</span>
+            <span class="arrow">&darr;</span>
+          </div>
+          <div id="ec-discount" style="opacity:0;visibility:hidden;">10% OFF</div>
+        </div>
+        <div id="ec-url" style="opacity:0;visibility:hidden;">https://dynamous.ai/?code=646a60</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial offsets
+      tl.set("#ec-icon",     { scale: 0.85 }, 0);
+      tl.set("#ec-wordmark", { x: -16 }, 0);
+      tl.set("#ec-headline", { y: 18 }, 0);
+      tl.set("#cta-question",{ y: 22 }, 0);
+      tl.set("#ec-comment",  { y: 14 }, 0);
+      ["#ec-o1","#ec-o2","#ec-o3","#ec-o4"].forEach(sel => tl.set(sel, { x: -22 }, 0));
+      tl.set("#ec-button",   { scale: 0.9 }, 0);
+      tl.set("#ec-discount", { scale: 0.5 }, 0);
+      tl.set("#ec-url",      { y: 10 }, 0);
+
+      // Card scale-in
+      tl.from("#ec-top",    { scale: 0.94, autoAlpha: 0, duration: 0.55, ease: "back.out(1.2)", immediateRender: false }, 0);
+      tl.from("#ec-bottom", { scale: 0.94, autoAlpha: 0, duration: 0.55, ease: "back.out(1.2)", immediateRender: false }, 0.2);
+
+      // Werbung disclosure — German law (UWG §5a) requires visible promo marker.
+      // Fades in WITH the card (0.1s lead-in is acceptable per .claude/rules/werbung-disclosure.md).
+      tl.to(".dec-werbung", { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.1);
+
+      // Top reveals
+      tl.to("#ec-icon",     { scale: 1, autoAlpha: 1, duration: 0.65, ease: "back.out(1.6)" }, 0.4);
+      tl.to("#ec-wordmark", { x: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.6);
+      tl.to("#ec-headline", { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.9);
+      tl.to("#cta-question",{ y: 0, autoAlpha: 1, duration: 0.7, ease: "power3.out" }, 1.4);
+      tl.to("#ec-comment",  { y: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, 2.0);
+
+      // Bottom reveals — offerings stagger
+      ["#ec-o1","#ec-o2","#ec-o3","#ec-o4"].forEach((sel, i) => {
+        tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.7 + i * 0.18);
+      });
+      tl.to("#ec-button",   { scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.6)" }, 1.7);
+      tl.to("#ec-discount", { scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.8)" }, 1.9);
+      tl.to("#ec-url",      { y: 0, autoAlpha: 1, duration: 0.45, ease: "power2.out" }, 2.2);
+
+      // Mid-hold beats — keep eye moving through the held thumbnail frame
+      tl.to("#ec-button",   { backgroundPosition: "200% 0%", duration: 6, ease: "none" }, 2.5);
+      tl.to("#ec-icon",     { y: -8, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 2 }, 3.0);
+      tl.to("#ec-discount", { scale: 1.06, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 2 }, 4.0);
+      tl.to("#cta-question",{ scale: 1.03, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.0);
+      tl.to("#ec-url",      { scale: 1.04, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.0);
+
+      tl.set({}, {}, 10);
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

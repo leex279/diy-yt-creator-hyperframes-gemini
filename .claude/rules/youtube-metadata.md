@@ -25,26 +25,34 @@ This file contains the complete YouTube description ready for copy-paste upload.
 <SEO hook paragraph — keyword-rich opening, 1-3 sentences, top 2-3 keywords in first 200 chars>
 
 ----
-🚀 Want to learn agentic coding with live daily events and workshops?
+🚀 DYNAMOUS AI COMMUNITY
+
+Want to learn agentic coding with live daily events and workshops?
 Check out Dynamous AI: https://dynamous.ai/?code=646a60
 Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount
+
+⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS (10% OFF)
+
+Whether you're shipping a portfolio, a side project, n8n flows, or AI agents — I use Hostinger for fast, affordable VPS + web hosting.
+
+Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE
+
+(Affiliate link — costs you nothing, supports the channel.)
 ----
 
 Chapters                                  ← LONG-FORM ONLY — omit entirely on Shorts
 <Chapter timestamps — M:SS format, one per line>
 
-Resources:
-<Links section — primary sources, docs, validated URLs>
+<Body bullet list — "What you will see in this <N>-minute breakdown:" with → arrows>
 
-----
-🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
-👉 https://hostinger.com/DIYSMARTCODE
-----
+<Resources block — primary URLs with short labels, no "Resources:" header line>
 
 <Engagement question — debate-sparking, polarizing, references a video claim>
 
 #Hashtag1 #Hashtag2 …    (15-25 hashtags)
 ```
+
+> **User's canonical override (locked 2026-05-17):** Dynamous + Hostinger are ALWAYS combined in a SINGLE `----` block immediately after the SEO hook — NOT two separate blocks interleaved with chapters/resources. The block uses the exact wording above (the `🚀 DYNAMOUS AI COMMUNITY` and `⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS` header lines, the lightning bolt for Hostinger, and the affiliate disclosure line). Reference implementation: `videos/vercel-zero-introducing/youtube-description.md`. See also `feedback_youtube_description_canonical_structure` in memory.
 
 ### What was REMOVED (do NOT re-add)
 
@@ -59,42 +67,31 @@ These sections are explicitly cut from the template — they bloat the descripti
 
 If the video's SEO would genuinely benefit from a feature inventory (e.g. a major Claude Code release with 30+ features), pack the top 3-5 features into the hook paragraph as a comma-separated list — NOT as a bulleted section.
 
-**MANDATORY: Dynamous CTA Block** — Every video (Short AND long-form) MUST include
-the Dynamous CTA block in its YouTube description. This is a description-level
-requirement and is INDEPENDENT of the per-video `dynamousPromotion` flag in
-`meta.json` (which gates ON-SCREEN Dynamous promotion — badge, midroll, interstitial —
-NOT the description block).
+**MANDATORY: Combined Dynamous + Hostinger CTA Block** — Every video (Short AND long-form) MUST include a single combined CTA block in its YouTube description. This is a description-level requirement and is INDEPENDENT of the per-video `dynamousPromotion` flag in `meta.json` (which gates ON-SCREEN Dynamous promotion — badge, midroll, interstitial — NOT the description block).
 
-The Dynamous block MUST be wrapped in `----` separators (four dashes) above and
-below, placed BETWEEN the hook paragraph and the next section (Chapters on
-long-form, Resources on Shorts). This exact format — with BOTH URLs and the
-emoji-prefixed lines — is mandatory:
+The combined block MUST be wrapped in `----` separators (four dashes) above and below, placed BETWEEN the hook paragraph and the next section (Chapters on long-form, body bullets on Shorts). Dynamous goes FIRST, Hostinger SECOND, separated by a blank line. This exact format is mandatory:
 
 ```
 ----
-🚀 Want to learn agentic coding with live daily events and workshops?
+🚀 DYNAMOUS AI COMMUNITY
+
+Want to learn agentic coding with live daily events and workshops?
 Check out Dynamous AI: https://dynamous.ai/?code=646a60
 Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount
+
+⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS (10% OFF)
+
+Whether you're shipping a portfolio, a side project, n8n flows, or AI agents — I use Hostinger for fast, affordable VPS + web hosting.
+
+Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE
+
+(Affiliate link — costs you nothing, supports the channel.)
 ----
 ```
 
-A description missing the Dynamous block, or with the block in the wrong format
-(missing one URL, missing the `----` separators, wrong emoji, wrong wording),
-is a publish-blocking defect. The block has been on every previously-shipped
-video and the channel's audience expects it.
+A description missing this block, splitting it into two separate `----` blocks, reordering Hostinger above Dynamous, or with wording drift on any line, is a publish-blocking defect. The block has been on every previously-shipped video and the channel's audience expects it.
 
-**MANDATORY: Hostinger Affiliate Block** — Every video (Short AND long-form) MUST
-include the Hostinger affiliate block AFTER `Resources:` and BEFORE the engagement
-question. Wrap it in `----` separators, same pattern as the Dynamous block:
-
-```
-----
-🏠 Self-host your AI agents & projects on Hostinger (10% OFF):
-👉 https://hostinger.com/DIYSMARTCODE
-----
-```
-
-The discount is baked into the URL slug `/DIYSMARTCODE` — do not append a separate coupon code.
+**Hostinger framing**: this is AFFILIATE not sponsored — the `(Affiliate link — costs you nothing, supports the channel.)` disclosure line is required. The 10% discount is baked into the URL slug `/DIYSMARTCODE` — do NOT append a separate coupon code. See memory `feedback_hostinger_affiliate_not_sponsored`.
 
 **Chapters: LONG-FORM ONLY** — Shorts MUST NOT include a `Chapters` section. YouTube hides chapters on vertical Shorts and the section just adds visual length. The full Shorts structure is:
 
@@ -102,15 +99,15 @@ The discount is baked into the URL slug `/DIYSMARTCODE` — do not append a sepa
 <SEO hook paragraph>
 
 ----
-🚀 Dynamous block
+🚀 DYNAMOUS AI COMMUNITY
+…
+⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS
+…
 ----
 
-Resources:
-<links>
+<Body bullets — "What you will see in this <N>-minute breakdown:" with → arrows>
 
-----
-🏠 Hostinger block
-----
+<Resources URLs — short labels, no "Resources:" header>
 
 <Engagement question>
 
@@ -347,20 +344,31 @@ description must be comprehensively keyword-optimized, not just the first line.
 > keyword density; a separate Concepts block bloats the description and pushes
 > Resources / affiliates below the fold.
 
-## Brand Links (MANDATORY)
+## Brand Links (MANDATORY) — combined block, user-locked wording
 
-Always use these exact links — never use placeholders:
+Always use these exact lines in this exact order — never use placeholders, never split into two separate `----` blocks, never reorder Hostinger above Dynamous.
 
-| Brand | Link |
-|-------|------|
-| Dynamous AI | <pre>🚀 Want to learn agentic coding with live daily events and workshops?<br/>Check out Dynamous AI: https://dynamous.ai/?code=646a60<br/>Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount</pre> |
-| Hostinger (affiliate) | <pre>🏠 Self-host your AI agents & projects on Hostinger (10% OFF):<br/>👉 https://hostinger.com/DIYSMARTCODE</pre> |
+```
+----
+🚀 DYNAMOUS AI COMMUNITY
 
-When generating YouTube descriptions, scripts mentioning Dynamous, or any CTA
-referencing the course, **always include the full Dynamous link above**. Never use
-`[link in description]` or similar placeholders.
+Want to learn agentic coding with live daily events and workshops?
+Check out Dynamous AI: https://dynamous.ai/?code=646a60
+Get 10% off here 👉 https://shorturl.smartcode.diy/dynamous_ai_10_percent_discount
 
-The Hostinger affiliate block is **mandatory in every video's description** (Shorts and long-form), placed AFTER `Resources:` and BEFORE the engagement question. The 10% discount is baked into the URL slug `/DIYSMARTCODE` — do not append a separate coupon code field.
+⚡ HOSTINGER — RELIABLE HOSTING FOR YOUR PROJECTS (10% OFF)
+
+Whether you're shipping a portfolio, a side project, n8n flows, or AI agents — I use Hostinger for fast, affordable VPS + web hosting.
+
+Get 10% off here 👉 https://hostinger.com/DIYSMARTCODE
+
+(Affiliate link — costs you nothing, supports the channel.)
+----
+```
+
+When generating YouTube descriptions, scripts mentioning Dynamous, or any CTA referencing the course, **always include the full combined block above**. Never use `[link in description]` or similar placeholders.
+
+The block is **mandatory in every video's description** (Shorts and long-form), placed AFTER the SEO hook paragraph and BEFORE the chapters (long-form) / body bullets (shorts). The 10% Hostinger discount is baked into the URL slug `/DIYSMARTCODE` — do not append a separate coupon code field. The Hostinger framing is affiliate, NOT sponsored — the `(Affiliate link — costs you nothing, supports the channel.)` disclosure line is required.
 
 ## Thumbnail: Version Badge Must Be LARGE
 

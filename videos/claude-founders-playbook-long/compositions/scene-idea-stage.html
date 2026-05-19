@@ -1,0 +1,316 @@
+<!--
+  scene-idea-stage.html — Chapter 3 Idea Stage (74s). 13 narration-anchored beats.
+-->
+<template id="scene-idea-stage-template">
+  <div data-composition-id="scene-idea-stage"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', system-ui, sans-serif; color:#F5F1EB;">
+
+    <style>
+      #ist-content {
+        width: 100%; height: 100%;
+        padding: 130px 60px 100px;
+        display: grid;
+        grid-template-columns: 0.78fr 1.2fr;
+        gap: 40px;
+        align-items: stretch;
+        box-sizing: border-box;
+      }
+      /* LEFT — chapter identity */
+      #ist-left {
+        display: flex; flex-direction: column;
+        align-items: flex-start; justify-content: center;
+        gap: 20px;
+      }
+      #ist-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        text-transform: uppercase; color: #E97458;
+        opacity: 0;
+      }
+      #ist-headline {
+        font-weight: 900; font-size: 130px; line-height: 0.9;
+        letter-spacing: -5px; color: #F5F1EB;
+        opacity: 0;
+      }
+      #ist-headline .em { color: #E97458; }
+      #ist-graphic {
+        width: 100%; max-width: 560px;
+        border-radius: 16px;
+        border: 2px solid rgba(233,116,88,0.45);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.55), 0 0 60px rgba(233,116,88,0.18);
+        display: block; object-fit: cover; aspect-ratio: 4/3;
+        opacity: 0;
+      }
+      #ist-progress {
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+      }
+      .ist-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(245,241,235,0.18); }
+      .ist-dot.active { background: #E97458; box-shadow: 0 0 10px rgba(233,116,88,0.6); }
+      .ist-prog-label {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 14px; letter-spacing: 3px;
+        color: #9A958D; margin-left: 8px;
+      }
+
+      /* RIGHT — dynamic content stage */
+      #ist-right {
+        position: relative;
+        display: flex; flex-direction: column;
+        gap: 14px;
+        align-self: stretch;
+        justify-content: center;
+      }
+      .ist-card {
+        opacity: 0;
+        padding: 18px 22px;
+        border-radius: 14px;
+        background: rgba(14,18,26,0.85);
+        border: 1.5px solid rgba(233,116,88,0.45);
+        display: flex; align-items: center; gap: 18px;
+      }
+      .ist-card.danger { border-color: rgba(209,67,67,0.50); background: rgba(40,18,18,0.85); }
+      .ist-card.exit   { border-color: rgba(125,211,166,0.50); }
+      .ist-card-tag {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 14px; letter-spacing: 3px;
+        padding: 6px 12px; border-radius: 6px;
+        background: rgba(233,116,88,0.18); color: #E97458;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .ist-card.danger .ist-card-tag { background: rgba(209,67,67,0.20); color: #FF7C7C; }
+      .ist-card.exit   .ist-card-tag { background: rgba(125,211,166,0.18); color: #7DD3A6; }
+      .ist-card-text {
+        font-weight: 700; font-size: 22px;
+        line-height: 1.25; color: #F5F1EB;
+      }
+      .ist-card-num {
+        font-weight: 900; font-size: 48px; line-height: 1;
+        letter-spacing: -2px;
+        font-variant-numeric: tabular-nums lining-nums;
+        color: #E97458; margin-left: auto;
+      }
+      .ist-card.danger .ist-card-num { color: #FF7C7C; }
+
+      /* MEGA stat (42% slam) */
+      #ist-mega {
+        position: absolute;
+        inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 0;
+        opacity: 0;
+        pointer-events: none;
+        background: rgba(11,15,24,0.65);
+        backdrop-filter: blur(8px);
+        border-radius: 18px;
+        z-index: 5;
+      }
+      #ist-mega-overline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800; font-size: 22px; letter-spacing: 7px;
+        text-transform: uppercase; color: #FF7C7C;
+        margin-bottom: 8px;
+      }
+      #ist-mega-num {
+        font-weight: 900; font-size: 320px; line-height: 0.9;
+        letter-spacing: -14px; color: #E97458;
+        text-shadow: 0 0 80px rgba(233,116,88,0.55), 0 12px 30px rgba(0,0,0,0.7);
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      #ist-mega-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 26px; letter-spacing: 4px;
+        color: #F5F1EB; max-width: 480px; text-align: center;
+        margin-top: 8px;
+      }
+      #ist-mega-arrow {
+        font-size: 60px; line-height: 1; color: #FF7C7C;
+        margin-top: 8px; opacity: 0;
+      }
+
+      /* 4hr / 0 users mini panel inside failure card */
+      .ist-mini-row {
+        display: flex; flex-direction: row;
+        align-items: center; gap: 14px;
+        margin-left: auto;
+      }
+      .ist-mini-stat {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 2px;
+        padding: 8px 12px; border-radius: 8px;
+        background: rgba(20,12,12,0.7);
+        position: relative;
+      }
+      .ist-mini-num {
+        font-weight: 900; font-size: 36px; line-height: 1;
+        color: #FF7C7C; font-variant-numeric: tabular-nums;
+      }
+      .ist-mini-num.strike::after {
+        content: ""; position: absolute;
+        left: 8px; right: 8px; top: 50%;
+        height: 4px; background: #D14343;
+        width: 0; opacity: 0;
+      }
+      .ist-mini-cap {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 700; font-size: 11px; letter-spacing: 2px;
+        color: #9A958D; text-transform: uppercase;
+      }
+
+      /* Claude chat mock for Claude Surface card */
+      .ist-claude-chat {
+        position: absolute; right: 16px; top: 50%;
+        transform: translateY(-50%);
+        width: 240px; padding: 12px 14px;
+        background: rgba(233,116,88,0.10);
+        border: 1.5px solid rgba(233,116,88,0.40);
+        border-radius: 12px;
+        opacity: 0;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 14px; line-height: 1.45;
+        color: #F5F1EB;
+      }
+      .ist-claude-chat .chat-prefix {
+        font-weight: 800; color: #E97458;
+      }
+    </style>
+
+    <div id="ist-content">
+      <div id="ist-left">
+        <div id="ist-overline">CHAPTER 3 &middot; PDF p.8</div>
+        <div id="ist-headline"><span class="em">Idea</span>.</div>
+        <img id="ist-graphic" src="assets/chapter-icons/chapter-3-idea.png" alt="Chapter 3 — Idea Stage" />
+        <div id="ist-progress">
+          <div class="ist-dot"></div><div class="ist-dot"></div>
+          <div class="ist-dot active"></div>
+          <div class="ist-dot"></div><div class="ist-dot"></div><div class="ist-dot"></div><div class="ist-dot"></div>
+          <span class="ist-prog-label">3 / 7</span>
+        </div>
+      </div>
+
+      <div id="ist-right">
+        <div class="ist-card" id="ist-goal">
+          <div class="ist-card-tag">GOAL</div>
+          <div class="ist-card-text">Find a problem worth <span style="color:#E97458;font-weight:900">paying</span> to solve.</div>
+        </div>
+
+        <div class="ist-card danger" id="ist-failure" style="position:relative;">
+          <div class="ist-card-tag">FAILURE MODE</div>
+          <div class="ist-card-text">Mistaking <span style="color:#FF7C7C;font-weight:900">building</span> for validating.</div>
+          <div class="ist-mini-row" id="ist-mini-row">
+            <div class="ist-mini-stat">
+              <div class="ist-mini-num strike" id="ist-mini-hours">0</div>
+              <div class="ist-mini-cap">HOURS</div>
+            </div>
+            <div class="ist-mini-stat">
+              <div class="ist-mini-num strike" id="ist-mini-users">0</div>
+              <div class="ist-mini-cap">REAL USERS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ist-card" id="ist-claude" style="position:relative; min-height:96px;">
+          <div class="ist-card-tag">CLAUDE SURFACE</div>
+          <div class="ist-card-text">Chat as your <span style="color:#E97458;font-weight:900">devil's advocate.</span></div>
+          <div class="ist-claude-chat" id="ist-chat-bubble">
+            <span class="chat-prefix">Claude:</span> Challenge this idea before any code.
+          </div>
+        </div>
+
+        <div class="ist-card exit" id="ist-exit">
+          <div class="ist-card-tag">EXIT CRITERIA</div>
+          <div class="ist-card-text">Real problem &middot; precise profile &middot; concept that <span style="color:#7DD3A6;font-weight:900">beats every alternative.</span></div>
+        </div>
+
+        <!-- Mega 42% slam overlay -->
+        <div id="ist-mega">
+          <div id="ist-mega-overline">CB INSIGHTS &middot; PLAYBOOK p.10</div>
+          <div id="ist-mega-num">0</div>
+          <div id="ist-mega-cap">OF STARTUPS FAIL because they built<br/>something nobody wanted.</div>
+          <div id="ist-mega-arrow">&uarr;</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const SCENE_DURATION = 74;
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out", duration: 0.5 } });
+
+      // Local-time anchors (subtract 99.27 from global timestamps)
+      // BEAT 1: 0.0 "Chapter three" — overline + progress
+      tl.to("#ist-overline", { opacity: 1, x: 0, duration: 0.4 }, 0);
+      tl.to("#ist-progress", { opacity: 1, duration: 0.4 }, 0.2);
+
+      // BEAT 2: 0.85 "Idea stage" — headline slam
+      tl.fromTo("#ist-headline", { y: 40, scale: 0.85, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 0.85);
+
+      // BEAT 3: 2.62 "goal" — GOAL pill enters
+      tl.to("#ist-goal", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 2.62);
+
+      // BEAT 4: 4.5 "Find a problem ... solve" — chapter graphic 3D rotate-in
+      tl.fromTo("#ist-graphic",
+        { rotationY: -25, scale: 0.85, opacity: 0, transformPerspective: 2000 },
+        { rotationY: 0, scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)" },
+        4.5);
+
+      // BEAT 5: 14.48 "failure mode" — FAILURE pill enters with danger flash
+      tl.to("#ist-failure", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 14.48);
+      tl.to("#ist-failure", {
+        boxShadow: "0 0 0 6px rgba(209,67,67,0.30)", duration: 0.4,
+        yoyo: true, repeat: 2, ease: "sine.inOut"
+      }, 14.78);
+
+      // BEAT 6: 19.21 "Mistaking building for validating" — emphasis pulse
+      tl.to("#ist-failure .ist-card-text", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 19.21);
+
+      // BEAT 7: 25.26 "four hours" — 4hr counter rolls
+      tl.fromTo("#ist-mini-hours", { textContent: 0 }, {
+        textContent: 4, duration: 0.5, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () { this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)); }
+      }, 25.26);
+      // 0 USERS counter stays at 0 — flash it
+      tl.to("#ist-mini-users", { scale: 1.2, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 25.6);
+
+      // BEAT 8: 28.46 "It is not proof" — strike-through both mini stats
+      tl.to("#ist-mini-hours.strike::after", { width: "calc(100% - 16px)", opacity: 1, duration: 0.4 }, 28.46);
+      tl.to("#ist-mini-users.strike::after", { width: "calc(100% - 16px)", opacity: 1, duration: 0.4 }, 28.6);
+
+      // BEAT 9: 33.59 "forty-two percent" — MEGA 42% slam (overlay)
+      tl.to("#ist-mega", { opacity: 1, duration: 0.5, ease: "power2.out" }, 33.59);
+      tl.fromTo("#ist-mega-num", { textContent: 0 }, {
+        textContent: 42, duration: 0.9, ease: "expo.out",
+        snap: { textContent: 1 },
+        onUpdate: function () {
+          this.targets()[0].textContent = Math.round(parseFloat(this.targets()[0].textContent)) + "%";
+        }
+      }, 33.59);
+
+      // BEAT 10: 42.37 "climb" — arrow appears on the mega slam
+      tl.to("#ist-mega-arrow", { opacity: 1, y: -10, duration: 0.4, ease: "back.out(1.5)" }, 42.37);
+      tl.to("#ist-mega-arrow", { y: 0, duration: 0.4, yoyo: true, repeat: 3, ease: "sine.inOut" }, 42.8);
+
+      // BEAT 11: 47.0 — mega slam fades out, back to cards
+      tl.to("#ist-mega", { opacity: 0, duration: 0.6, ease: "power2.in" }, 47.0);
+
+      // BEAT 12: 47.64 "devil's advocate" — CLAUDE SURFACE pill + chat mock
+      tl.to("#ist-claude", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 47.64);
+      tl.to("#ist-chat-bubble", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 48.2);
+
+      // BEAT 13: 64.74 "Idea exits" — EXIT pill
+      tl.to("#ist-exit", { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.4)" }, 64.74);
+      tl.to("#ist-exit", { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 65.4);
+
+      tl.set({}, {}, SCENE_DURATION);
+      window.__timelines["scene-idea-stage"] = tl;
+    </script>
+  </div>
+</template>

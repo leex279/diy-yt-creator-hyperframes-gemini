@@ -1,0 +1,206 @@
+<!--
+  scene-list-reveal.html — Enumerated list, step-by-step reveal (Shorts).
+
+  Step-by-step reveal per .claude/rules/step-by-step-reveal.md — each row
+  enters ~4.5s apart, paced for Cole-voice narration on the 6 strategies.
+  Numbered chip + label + descriptor. Marker sweep under the active row.
+
+  Default 6 rows / 28s — operator can shrink to 4-5 rows for shorter scenes.
+  Sizing for vertical: row label 52px, descriptor 32px (above shorts mins).
+-->
+<template id="scene-list-reveal-template">
+  <div data-composition-id="scene-list-reveal"
+       data-start="0"
+       data-width="1080"
+       data-height="1920"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Montserrat', system-ui, sans-serif; color:var(--ink);">
+
+    <style>
+      #lr-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) 640px; /* safe-zone — see shorts-safe-zone.md */
+        display:flex; flex-direction:column;
+        align-items:flex-start; justify-content:flex-start;
+        gap: 22px;
+        box-sizing:border-box;
+        position: relative;
+      }
+      #lr-content .eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--accent-2);
+        display: inline-flex; align-items: center; gap: 18px;
+      }
+      #lr-content .eyebrow::before {
+        content: ""; display: inline-block;
+        width: 56px; height: 2px;
+        background: var(--accent-2);
+      }
+      #lr-content .headline {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 68px;
+        line-height: 1.04;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+        max-width: 940px;
+      }
+      #lr-content .rows {
+        display: flex; flex-direction: column;
+        gap: 14px;
+        margin-top: 16px;
+        width: 940px;
+      }
+      .list-row {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 24px;
+        align-items: center;
+        padding: 18px 26px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        position: relative;
+      }
+      .list-row .num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 600;
+        font-size: 42px;
+        color: var(--accent);
+        text-align: center;
+      }
+      .list-row .body { display: flex; flex-direction: column; gap: 4px; }
+      .list-row .label {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        line-height: 1.05;
+        letter-spacing: -0.012em;
+        color: var(--ink);
+      }
+      .list-row .desc {
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: 32px;
+        line-height: 1.28;
+        color: var(--muted);
+      }
+      .list-row .marker {
+        position: absolute;
+        left: 0; bottom: -1px;
+        width: 0%;
+        height: 3px;
+        background: var(--accent-2);
+        box-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
+      }
+      /* Brownfield diagram callout — appears at row 2's anchor, fades by row 3.
+         Positioned within the active safe zone (y=820-1280).
+         Overlays the rows 3-6 slot while they're still hidden. */
+      #lr-callout {
+        position: absolute;
+        left: 100px;
+        bottom: 640px;
+        width: 880px;
+        height: 460px;
+        border-radius: 28px;
+        overflow: hidden;
+        background: #0B0E16;
+        border: 1px solid rgba(96, 165, 250, 0.28);
+        box-shadow:
+          0 24px 70px rgba(0, 0, 0, 0.55),
+          0 0 60px rgba(59, 130, 246, 0.22);
+        z-index: 4;
+      }
+      #lr-callout img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: contain;
+        background: #FFFFFF;
+        padding: 22px;
+        box-sizing: border-box;
+      }
+      #lr-callout-tag {
+        position: absolute;
+        top: 18px; left: 22px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #051026;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        z-index: 5;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+      }
+    </style>
+
+    <div id="lr-content">
+      <div class="eyebrow" id="lr-eyebrow">THE SIX</div>
+      <h2 class="headline" id="lr-headline">Six strategies. One conviction each.</h2>
+      <div class="rows" id="lr-rows">
+        <div class="list-row" id="lr-r1"><div class="num">01</div><div class="body"><div class="label">Vertical slices.</div><div class="desc">Organize by feature, not by layer.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r2"><div class="num">02</div><div class="body"><div class="label">Brownfield day one.</div><div class="desc">Sub-agents derive your AI layer.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r3"><div class="num">03</div><div class="body"><div class="label">Three-tier context.</div><div class="desc">Global. On-demand. Ticket-only.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r4"><div class="num">04</div><div class="body"><div class="label">Focused priming.</div><div class="desc">One prime command per slice.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r5"><div class="num">05</div><div class="body"><div class="label">Parallel worktrees.</div><div class="desc">Multiple agents. Zero collisions.</div></div><div class="marker"></div></div>
+        <div class="list-row" id="lr-r6"><div class="num">06</div><div class="body"><div class="label">Coupling over lines.</div><div class="desc">Lines aren&rsquo;t the metric. Coupling is.</div></div><div class="marker"></div></div>
+      </div>
+      <!-- Brownfield diagram callout — anchored to row 2 reveal -->
+      <div id="lr-callout" style="opacity:0;visibility:hidden;">
+        <div id="lr-callout-tag">02 &middot; BROWNFIELD</div>
+        <img src="assets/diagrams/two-kinds-of-brownfield.png" alt="Two kinds of brownfield" crossorigin="anonymous" />
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#lr-eyebrow",  { y: 20, autoAlpha: 0 }, 0);
+      tl.set("#lr-headline", { y: 24, autoAlpha: 0 }, 0);
+      tl.set("#lr-callout",  { scale: 0.7, y: 40, rotation: -1.5 }, 0);
+      ["#lr-r1","#lr-r2","#lr-r3","#lr-r4","#lr-r5","#lr-r6"].forEach(sel => {
+        tl.set(sel, { x: -36, autoAlpha: 0 }, 0);
+        tl.set(sel + " .marker", { width: "0%" }, 0);
+      });
+
+      tl.to("#lr-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#lr-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
+
+      // Step-by-step reveal — retimed to transcript word-anchors.
+      // Scene starts at 27.43s; row times below are scene-relative.
+      //   r1 "vertical"   abs 29.50 → scene-rel 2.07
+      //   r2 "brownfield" abs 33.20 → scene-rel 5.77
+      //   r3 "Three"      abs 36.74 → scene-rel 9.31
+      //   r4 "focused"    abs 41.03 → scene-rel 13.60
+      //   r5 "parallel"   abs 44.21 → scene-rel 16.78
+      //   r6 "size"       abs 47.97 → scene-rel 20.54
+      const rowTimes = [2.07, 5.77, 9.31, 13.60, 16.78, 20.54];
+      ["#lr-r1","#lr-r2","#lr-r3","#lr-r4","#lr-r5","#lr-r6"].forEach((sel, i) => {
+        tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)" }, rowTimes[i]);
+        tl.to(sel + " .marker", { width: "100%", duration: 0.55, ease: "power2.out" }, rowTimes[i] + 0.3);
+      });
+
+      // Brownfield diagram callout — enters with row 2, fades when row 3 reveals
+      tl.to("#lr-callout",
+        { autoAlpha: 1, scale: 1, y: 0, rotation: -1.5, duration: 0.7, ease: "back.out(1.5)" }, 5.50);
+      tl.to("#lr-callout",
+        { rotation: 1.0, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.6);
+      tl.to("#lr-callout",
+        { autoAlpha: 0, scale: 0.94, y: -20, duration: 0.5, ease: "power2.in" }, 9.10);
+
+      // Tail-hold settle pulse — fills the gap from last row entrance to scene exit (23.27s)
+      tl.to("#lr-rows", { scale: 1.01, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.6);
+
+      tl.set({}, {}, 23.28);
+      window.__timelines["scene-list-reveal"] = tl;
+    </script>
+  </div>
+</template>

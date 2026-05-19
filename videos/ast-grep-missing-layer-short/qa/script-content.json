@@ -1,0 +1,70 @@
+{
+  "agent": "video-script-content",
+  "slug": "ast-grep-missing-layer-short",
+  "summary": {
+    "heteronym_risks": 0,
+    "tech_term_risks": 0,
+    "banned_quote_word": 0,
+    "cta_status": {
+      "spoken": "PRESENT",
+      "visual": "PRESENT",
+      "description": "PRESENT",
+      "all_match": true,
+      "criterion_3_weakness": "Question does not embed the specific claim (122% / test fixture) directly -- description adds context but the spoken and visual lines do not"
+    },
+    "banned_phrases_in_closer": 0,
+    "unsourced_claims": 2,
+    "hook_score": 6.5,
+    "hook_breakdown": {
+      "curiosity_gap": 8,
+      "stakes_clarity": 7,
+      "specificity_numbers": 7,
+      "visual_narration_alignment": 4,
+      "visual_gap_seconds": 6.8,
+      "visual_gap_location": "scene-marker t=1.7s (subline entrance) to t=8.5s (marker redraw)"
+    },
+    "narration_speed": {
+      "word_count": 336,
+      "expected_seconds": 134.4,
+      "actual_seconds": 127.2,
+      "delta_pct": "5.39%",
+      "finding": "OK"
+    },
+    "findings_by_severity": {
+      "BLOCKER": 0,
+      "HIGH": 1,
+      "MEDIUM": 2,
+      "LOW": 0
+    },
+    "verdict": "FAIL_HIGH"
+  },
+  "findings": [
+    {
+      "id": "S-001",
+      "severity": "HIGH",
+      "rule": "visual-pacing-5s",
+      "location": "videos/ast-grep-missing-layer-short/compositions/scene-marker.html",
+      "summary": "Hook scene has a 6.8s dead gap (t=1.7s to t=8.5s) with no qualifying new visual content -- directly causes the too-much-talking-without-screen-changes problem the user flagged",
+      "evidence": "scene-marker.html GSAP timeline: pretitle t=0.0s, headline t=0.3s, marker sweep t=1.1s, subline entrance t=1.7s. Next qualifying beat: marker redraw at t=8.5s. Gap = 6.8s. Mid-beats at t=4.5s (opacity yoyo) and t=6.5s (scale yoyo) do NOT qualify per visual-pacing-5s.md -- scale yoyo and opacity pulse on existing elements do not advance the viewer information state. In those 6.8s the narration delivers 5 punchy phrases: 'Right now.' (3.14s), 'It just flagged...' (3.88s), 'In quotes.' (6.72s), 'Inside a test fixture.' (7.62s), 'Then it billed you to investigate.' (9.20s). Each is a narration beat the viewer hears but sees nothing new on screen.",
+      "fix": "Add 2-3 new visual entrances paced to transcript word anchors. Suggested: (1) At t=3.14s ('Right now'): reveal a small mono-pill badge showing '164 grep hits / 22 files' -- new information, tiny footprint. (2) At t=6.72s ('In quotes'): reveal a monospace code snippet card showing `script: console.log(\"hi\")` from dag-executor.test.ts -- the actual false-positive receipt. 48px monospace, max-width 860px. tl.from() at 6.72s. (3) Optionally at t=4.8s: a '22 files vs 12 files' counter chip bridging the gap. Each is a real content beat, not an animation flourish, and each maps directly to a narration phrase."
+    },
+    {
+      "id": "S-002",
+      "severity": "MEDIUM",
+      "rule": "feedback_no_fabrication_source_only",
+      "location": "videos/ast-grep-missing-layer-short/script.txt line 7",
+      "summary": "The 'cent per refactor' token-pricing estimate and '$15/dev/month' total are not explicitly sourced in any research artifact",
+      "evidence": "Script: '22 files of false positives is roughly 11 thousand tokens. Call it a cent per refactor. Scale it up. Fifty refactors a day, 30 days a month -- that is 15 dollars per developer.' The 11K token estimate IS sourced (content-brief.md section 5: 22 Read calls x ~500 tokens = ~11K). The cent per refactor pricing is an unattributed assumption. content-brief.md section 5 gives token counts only, no dollar conversion. At Claude Haiku input pricing ($0.80/1M tokens): 11K x $0.80/1M = $0.0088 per refactor (close to 1 cent). At Sonnet: $0.033. The brief does not specify a model tier for the estimate.",
+      "fix": "Option A: attribute the model tier -- 'Call it a cent per refactor at Haiku-tier pricing.' Option B (safer): drop the dollar conversion entirely and keep only the token receipt -- '22 files of false positives is roughly 11 thousand tokens of wasted file context. Per refactor. Pure waste.' The 122% over-count stat already carries the argument; the $15 figure adds rhetorical weight but is an unattributed back-of-envelope calculation."
+    },
+    {
+      "id": "S-003",
+      "severity": "MEDIUM",
+      "rule": "engagement-cta-criterion-3",
+      "location": "videos/ast-grep-missing-layer-short/script.txt (closing) + compositions/scene-cta.html + youtube-description.md",
+      "summary": "CTA criterion 3 (references a specific claim) is weak -- the spoken and visual questions do not embed the key stat (122%) and 'one config line' is factually imprecise (the install is two commands)",
+      "evidence": "Spoken: 'Are you fixing that today with one config line? Or accepting the waste?' Visual (cta-question): 'One config line -- or accept the waste?' Description: 'Are you fixing that today with one config line, or accepting the waste?' None embeds the receipt (122%, useState, console.log) directly. The preceding narration sentence does: 'Your AI agent burns money on every refactor. 122 percent more work than it needs.' Criterion 3 is arguably met by proximity but the engagement-cta.md examples show the specific claim inside the question text, not before it. Additionally 'one config line' is imprecise: the install scene (script line 13) shows TWO commands (NPM install + NPX skills add), making the CTA anchor factually misleading.",
+      "fix": "Rewrite the spoken closer to embed the claim and fix the factual anchor: 'Your agent over-counted by 122 percent today. Are you adding ast-grep with two commands right now -- or staying on plain text search?' Tighten to 14-16 words for Short budget. Update #cta-question in scene-cta.html and the description engagement line to match."
+    }
+  ]
+}

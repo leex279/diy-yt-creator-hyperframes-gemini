@@ -1,15 +1,15 @@
-﻿<!--
-  scene-strategy-map.html â€” Native 6-cell strategy overview.
+<!--
+  scene-strategy-map.html — Native 6-cell strategy overview.
   Each cell is a native HTML/SVG/CSS card matching the Dynamous dark-navy
   palette. Per-cell mini-diagrams reveal as the cell appears.
 
-  Cells (3Ã—2 grid):
-    01 Vertical Slice     â€” mini folder tree
-    02 Brownfield Day 1   â€” hub-and-spoke sub-agents
-    03 Context Management â€” 3-tier stack
-    04 Focused Priming    â€” prime cmd â†’ output flow
-    05 Parallel Worktrees â€” main â†’ branches â†’ PRs graph
-    06 Coupling > LOC     â€” isolated dot vs tangled web
+  Cells (3×2 grid):
+    01 Vertical Slice     — mini folder tree
+    02 Brownfield Day 1   — hub-and-spoke sub-agents
+    03 Context Management — 3-tier stack
+    04 Focused Priming    — prime cmd → output flow
+    05 Parallel Worktrees — main → branches → PRs graph
+    06 Coupling > LOC     — isolated dot vs tangled web
 -->
 <template id="scene-strategy-map-template">
   <div data-composition-id="scene-strategy-map"
@@ -66,39 +66,39 @@
       .sm-cell {
         background: rgba(255,255,255,0.03);
         border: 1.5px solid rgba(255,255,255,0.10);
-        border-radius: 16px;
-        padding: 14px 22px 16px;
+        border-radius: 18px;
+        padding: 20px 28px 22px;
         display: grid;
         grid-template-rows: auto 1fr auto;
-        gap: 8px;
+        gap: 12px;
         position: relative;
         overflow: hidden;
         min-height: 0;
       }
       .sm-cell .cell-head {
-        display: flex; align-items: baseline; gap: 16px;
+        display: flex; align-items: baseline; gap: 18px;
       }
       .sm-cell .num {
         font-family: 'JetBrains Mono', ui-monospace, monospace;
-        font-weight: 600;
-        font-size: 24px;
+        font-weight: 700;
+        font-size: 30px;
         color: var(--accent);
         letter-spacing: 0.08em;
       }
       .sm-cell .ttl {
         font-family: 'Montserrat', system-ui, sans-serif;
-        font-weight: 700;
-        font-size: 32px;
+        font-weight: 800;
+        font-size: 40px;
         line-height: 1.0;
-        letter-spacing: -0.015em;
+        letter-spacing: -0.018em;
         color: var(--ink);
       }
       .sm-cell .mini {
         display: flex; align-items: center; justify-content: center;
         position: relative;
-        padding: 2px 2px;
+        padding: 4px 2px;
         min-height: 0;
-        max-height: 230px;
+        max-height: 260px;
         overflow: hidden;
       }
       /* SVG minis: cap height so they don't push the cell taller */
@@ -106,14 +106,14 @@
       .sm-cell .mini-tree,
       .sm-cell .mini-couple {
         width: 100%;
-        max-height: 220px;
+        max-height: 250px;
       }
       .sm-cell .desc {
         font-family: 'Montserrat', system-ui, sans-serif;
-        font-weight: 500;
-        font-size: 18px;
+        font-weight: 600;
+        font-size: 24px;
         line-height: 1.25;
-        color: var(--muted);
+        color: var(--ink-2);
       }
       .sm-cell .rule {
         position: absolute;
@@ -125,7 +125,7 @@
         box-shadow: 0 0 14px rgba(59, 130, 246, 0.65);
       }
 
-      /* â”€â”€ Mini 1: VSA folder tree â”€â”€ */
+      /* ── Mini 1: VSA folder tree ── */
       .mini-vsa {
         font-family: 'JetBrains Mono', ui-monospace, monospace;
         font-size: 18px;
@@ -144,7 +144,7 @@
       .mini-vsa .indent { padding-left: 24px; }
       .mini-vsa .indent2 { padding-left: 44px; }
 
-      /* â”€â”€ Mini 2: hub-and-spoke sub-agents â”€â”€ */
+      /* ── Mini 2: hub-and-spoke sub-agents ── */
       .mini-hub { width: 100%; height: 100%; }
       .mini-hub svg { width: 100%; height: 100%; display: block; }
       .mini-hub .spoke {
@@ -157,7 +157,7 @@
       .mini-hub .hub { fill: var(--accent); }
       .mini-hub .hub-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; }
 
-      /* â”€â”€ Mini 3: 3-tier stack â”€â”€ */
+      /* ── Mini 3: 3-tier stack ── */
       .mini-stack {
         display: flex; flex-direction: column;
         gap: 8px;
@@ -191,7 +191,7 @@
         color: var(--ink);
       }
 
-      /* â”€â”€ Mini 4: prime command flow â”€â”€ */
+      /* ── Mini 4: prime command flow ── */
       .mini-prime {
         display: grid;
         grid-template-columns: 1fr 44px 1fr;
@@ -230,7 +230,7 @@
         font-weight: 700;
       }
 
-      /* â”€â”€ Mini 5: worktree branch graph â”€â”€ */
+      /* ── Mini 5: worktree branch graph ── */
       .mini-tree { width: 100%; height: 100%; }
       .mini-tree svg { width: 100%; height: 100%; display: block; }
       .mini-tree .main-line { stroke: var(--accent-2); stroke-width: 4; }
@@ -250,7 +250,7 @@
         fill: var(--ink);
       }
 
-      /* â”€â”€ Mini 6: coupling â€” isolated vs tangled â”€â”€ */
+      /* ── Mini 6: coupling — isolated vs tangled ── */
       .mini-couple { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 8px; align-items: center; width: 100%; height: 100%; }
       .mini-couple .divider { background: rgba(255,255,255,0.10); height: 70%; align-self: center; }
       .mini-couple .side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -277,7 +277,7 @@
 
       <div id="sm-grid">
 
-        <!-- Cell 1 â€” Vertical Slice -->
+        <!-- Cell 1 — Vertical Slice -->
         <div class="sm-cell" id="sm-c1" style="opacity:0;visibility:hidden;">
           <div class="cell-head"><span class="num">01</span><span class="ttl">Vertical Slice</span></div>
           <div class="mini">
@@ -293,7 +293,7 @@
           <div class="rule"></div>
         </div>
 
-        <!-- Cell 2 â€” Brownfield Day 1 (hub-and-spoke) -->
+        <!-- Cell 2 — Brownfield Day 1 (hub-and-spoke) -->
         <div class="sm-cell" id="sm-c2" style="opacity:0;visibility:hidden;">
           <div class="cell-head"><span class="num">02</span><span class="ttl">Brownfield Day 1</span></div>
           <div class="mini">
@@ -323,7 +323,7 @@
           <div class="rule"></div>
         </div>
 
-        <!-- Cell 3 â€” Context Management (3-tier stack) -->
+        <!-- Cell 3 — Context Management (3-tier stack) -->
         <div class="sm-cell" id="sm-c3" style="opacity:0;visibility:hidden;">
           <div class="cell-head"><span class="num">03</span><span class="ttl">Context Mgmt</span></div>
           <div class="mini">
@@ -337,7 +337,7 @@
           <div class="rule"></div>
         </div>
 
-        <!-- Cell 4 â€” Focused Priming (flow) -->
+        <!-- Cell 4 — Focused Priming (flow) -->
         <div class="sm-cell" id="sm-c4" style="opacity:0;visibility:hidden;">
           <div class="cell-head"><span class="num">04</span><span class="ttl">Focused Priming</span></div>
           <div class="mini">
@@ -359,7 +359,7 @@
           <div class="rule"></div>
         </div>
 
-        <!-- Cell 5 â€” Parallel Worktrees (branch graph) -->
+        <!-- Cell 5 — Parallel Worktrees (branch graph) -->
         <div class="sm-cell" id="sm-c5" style="opacity:0;visibility:hidden;">
           <div class="cell-head"><span class="num">05</span><span class="ttl">Parallel Worktrees</span></div>
           <div class="mini">
@@ -396,7 +396,7 @@
           <div class="rule"></div>
         </div>
 
-        <!-- Cell 6 â€” Coupling > LOC -->
+        <!-- Cell 6 — Coupling > LOC -->
         <div class="sm-cell" id="sm-c6" style="opacity:0;visibility:hidden;">
           <div class="cell-head"><span class="num">06</span><span class="ttl">Coupling &gt; LOC</span></div>
           <div class="mini">
@@ -458,14 +458,14 @@
       tl.to("#sm-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
 
       // Six cells reveal one at a time, anchored to the actual narration
-      // word-starts in audio/narration.wav (scene starts at 57.3s absolute):
-      //   One   â†’ 65.04s â†’ scene_t 7.74
-      //   Two   â†’ 69.32s â†’ scene_t 12.02
-      //   Three â†’ 74.88s â†’ scene_t 17.58
-      //   Four  â†’ 77.76s â†’ scene_t 20.46
-      //   Five  â†’ 80.78s â†’ scene_t 23.48
-      //   Six   â†’ 86.42s â†’ scene_t 29.12
-      const cellTimes = [7.74, 12.02, 17.58, 20.46, 23.48, 29.12];
+      // ordinal word-starts (scene starts at 67.568s absolute):
+      //   One   →  76.333s → scene_t  8.765
+      //   Two   →  82.114s → scene_t 14.546
+      //   Three →  88.523s → scene_t 20.955
+      //   Four  →  91.541s → scene_t 23.973
+      //   Five  →  95.349s → scene_t 27.781
+      //   Six   → 101.015s → scene_t 33.447
+      const cellTimes = [8.765, 14.546, 20.955, 23.973, 27.781, 33.447];
       const cells = ["#sm-c1","#sm-c2","#sm-c3","#sm-c4","#sm-c5","#sm-c6"];
       cells.forEach((sel, i) => {
         tl.to(sel, { y: 0, scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.3)" }, cellTimes[i]);
@@ -475,7 +475,27 @@
         tl.to(sel, { boxShadow: "0 0 0px rgba(59, 130, 246, 0.00)", duration: 0.8, ease: "sine.in"  }, cellTimes[i] + 0.9);
       });
 
-      tl.set({}, {}, 32);
+      // Pre-cell-1 bridge — narrator: "Each one stands alone. Combined, they turn any messy..."
+      tl.to("#sm-headline", { scale: 1.02, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.0);
+      tl.to("#sm-eyebrow", { letterSpacing: "0.40em", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.5);
+      tl.to("#sm-headline", { scale: 1.015, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.5);
+
+      // Cell-1 → Cell-2 bridge (5.8s gap) — narration "Organize by feature, not by layer."
+      tl.to("#sm-c1", { scale: 1.03, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 11.5);
+      tl.to("#sm-c1 .mini-vsa", { scale: 1.04, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 13.0);
+
+      // Cell-2 → Cell-3 bridge (6.4s gap) — narration "Use parallel sub-agents to derive..."
+      tl.to("#sm-c2", { scale: 1.03, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 16.5);
+      tl.to(["#sm-c1","#sm-c2"], { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.15 }, 18.5);
+
+      // Cell-4 → Cell-5 bridge (3.8s gap)
+      tl.to(["#sm-c3","#sm-c4"], { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 26.0);
+
+      // Cell-5 → Cell-6 bridge (5.7s gap) — narration explains "parallel worktrees"
+      tl.to("#sm-c5", { scale: 1.03, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 30.0);
+      tl.to(["#sm-c4","#sm-c5"], { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 31.8);
+
+      tl.set({}, {}, 35.2);
       window.__timelines["scene-strategy-map"] = tl;
     </script>
   </div>

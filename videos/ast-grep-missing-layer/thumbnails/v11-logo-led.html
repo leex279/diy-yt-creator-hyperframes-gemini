@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>v11 — Logo led / your daily hammer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_common.css">
+<style>
+  .canvas {
+    background:
+      radial-gradient(ellipse 900px 700px at 30% 50%, rgba(220,220,170,0.20), transparent 65%),
+      radial-gradient(ellipse 800px 500px at 80% 80%, rgba(78,201,176,0.10), transparent 70%),
+      #0a0d11;
+  }
+  #left-logo {
+    position: absolute;
+    top: 50%; left: 130px;
+    transform: translateY(-50%);
+    width: 380px; height: 380px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  #left-logo .arrow-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle, rgba(220,220,170,0.25), transparent 60%);
+    filter: blur(20px);
+  }
+  #left-logo svg {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 8px 36px rgba(220,220,170,0.5));
+    position: relative; z-index: 2;
+  }
+  #right-text {
+    position: absolute;
+    top: 50%; right: 56px;
+    transform: translateY(-50%);
+    width: 640px;
+    z-index: 10;
+  }
+  #overline {
+    font-family: var(--font-mono); font-size: 22px;
+    color: var(--ast-yellow); letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 700; display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px;
+  }
+  #overline::before { content: ""; width: 28px; height: 2px; background: var(--ast-yellow); }
+  .slam {
+    font-family: var(--font-sans); font-weight: 900;
+    line-height: 0.88; letter-spacing: -0.045em;
+    color: var(--fg-bright);
+    text-shadow: 0 6px 30px rgba(0,0,0,0.6);
+  }
+  .slam .l1 { display: block; font-size: 110px; }
+  .slam .l2 { display: block; font-size: 110px; margin-top: 2px; color: var(--ast-yellow); }
+  .slam .l3 { display: block; font-size: 110px; margin-top: 2px; }
+  .name-line {
+    margin-top: 22px;
+    font-family: var(--font-mono); font-weight: 800; font-size: 56px;
+    color: #fff; letter-spacing: -0.02em;
+  }
+  .name-line .y { color: var(--ast-yellow); }
+  #foot-card {
+    position: absolute; bottom: 36px; left: 130px;
+    width: 380px;
+    background: var(--bg-editor);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 12px;
+    padding: 14px 20px;
+    text-align: center;
+    z-index: 6;
+  }
+  #foot-card .lbl { font-family: var(--font-mono); font-size: 14px; color: var(--fg-muted); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+  #foot-card .val { font-family: var(--font-mono); font-weight: 800; font-size: 26px; color: var(--ok); margin-top: 4px; letter-spacing: -0.01em; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-dots"></div>
+  <div id="left-logo">
+    <div class="arrow-bg"></div>
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="100,0 25,50 43.75,62.5 0,100 75,62.5 56.25,50" fill="#dcdcaa"/>
+    </svg>
+  </div>
+  <div id="right-text">
+    <div id="overline">the search every agent needs</div>
+    <div class="slam">
+      <span class="l1">THE</span>
+      <span class="l2">DAILY</span>
+      <span class="l3">HAMMER.</span>
+    </div>
+    <div class="name-line">&rarr; <span class="y">ast-grep</span></div>
+  </div>
+  <div id="foot-card">
+    <div class="lbl">supports</div>
+    <div class="val">20+ languages</div>
+  </div>
+  <div class="brand"><div class="brand-mark">{</div>smartcode.diy</div>
+</div>
+</body>
+</html>

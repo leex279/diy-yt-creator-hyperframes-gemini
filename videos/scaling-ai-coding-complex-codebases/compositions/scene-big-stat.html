@@ -1,5 +1,5 @@
-﻿<!--
-  scene-big-stat.html â€” Hero stat with counter ramp + token-stream visual.
+<!--
+  scene-big-stat.html — Hero stat with counter ramp + token-stream visual.
   Big 50,000 counter on the left, a vertical "token-burn" bar on the right
   with 10 stacked file-chunks that fill in over the scene, visualizing
   context bloat.
@@ -124,8 +124,8 @@
       .tok-chunk .cost {
         font-family: 'JetBrains Mono', ui-monospace, monospace;
         font-size: 16px;
-        font-weight: 600;
-        color: var(--accent-warn);
+        font-weight: 700;
+        color: #FB923C;
         letter-spacing: 0.04em;
       }
       #bs-budget-cap {
@@ -210,7 +210,7 @@
       tl.to("#bs-right", { x: 0, autoAlpha: 1, duration: 0.6, ease: "power2.out" }, 2.5);
       tl.to("#bs-running-total", { autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 3.0);
 
-      // Token chunks stack in one by one (10 chunks Ã— ~1.6s apart = 16s of motion)
+      // Token chunks stack in one by one (10 chunks × ~1.6s apart = 16s of motion)
       const chunkCosts = [3200, 5400, 4800, 6100, 7200, 4500, 3900, 5800, 2400, 6700];
       let cumulative = 0;
       for (let i = 0; i < 10; i++) {
@@ -236,7 +236,11 @@
       tl.to("#bs-number", { textShadow: "0 0 120px rgba(59, 130, 246, 0.7)", duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 19.0);
 
       // Extend to full slot
-      tl.set({}, {}, 22);
+      // tail-pacing bridge beats — ensure no gap > 3s through scene end
+      tl.to("#bs-number", { scale: 1.04, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 15.50);
+      tl.to("#bs-label", { scale: 1.02, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 18.00);
+
+      tl.set({}, {}, 19.9);
       window.__timelines["scene-big-stat"] = tl;
     </script>
   </div>
