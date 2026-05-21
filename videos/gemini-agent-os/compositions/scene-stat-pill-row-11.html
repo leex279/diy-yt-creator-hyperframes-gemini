@@ -1,0 +1,512 @@
+<!--
+  scene-stat-pill-row.html — Receipts. 2 huge color-rotated stats with labels.
+
+  Above: overline + headline. Below: row of 2 pills (red/accent-warn,
+  yellow/accent-3). Each pill contains a 130px stat number + 22px label.
+
+  Adapted from shared/lib/blocks/stat-pill-row/ for 1920x1080 horizontal.
+  Google variant: red (Google brand `EA4335`) + yellow (`FBBC04`) — these
+  are the two accents the V2 reference reserves for danger/highlight
+  moments, mirroring scene-defense + scene-hook in the GoogleCloudNext2026V2
+  Remotion project.
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row-11"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Plus Jakarta Sans', sans-serif; color:var(--text); background:#05060a;">
+
+    <style>
+      /* ──────────────────────────────────────────────────
+         CONTAINER & UTILITIES
+         ────────────────────────────────────────────────── */
+      #scene-stat-pill-row-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 56px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 5;
+      }
+      
+      .glass-premium {
+        background: rgba(10, 12, 22, 0.75);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 
+          0 15px 45px -10px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+        border-radius: 28px;
+      }
+
+      /* Volumetric spotlights and vignette background */
+      #stat-bg {
+        position: absolute;
+        inset: 0;
+        background: #05060a;
+        z-index: 1;
+        overflow: hidden;
+      }
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+        background-position: center center;
+        opacity: 0.8;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .spotlight-red {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        top: 25%;
+        left: 10%;
+        background: radial-gradient(circle, rgba(234, 67, 53, 0.16) 0%, rgba(234, 67, 53, 0) 70%);
+        filter: blur(40px);
+        pointer-events: none;
+        z-index: 2;
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      .spotlight-yellow {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        top: 25%;
+        right: 10%;
+        background: radial-gradient(circle, rgba(251, 188, 5, 0.16) 0%, rgba(251, 188, 5, 0) 70%);
+        filter: blur(40px);
+        pointer-events: none;
+        z-index: 2;
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      .bg-vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle, transparent 40%, rgba(5, 6, 10, 0.85) 100%);
+        pointer-events: none;
+        z-index: 3;
+      }
+
+      #scene-stat-pill-row-content .header-block {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 16px;
+        text-align: center;
+      }
+      #scene-stat-pill-row-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-warn);
+        text-shadow: 0 0 25px rgba(234, 67, 53, 0.3);
+      }
+      #scene-stat-pill-row-content .headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        color: var(--text);
+        text-shadow: 0 0 35px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.6);
+      }
+      #scene-stat-pill-row-content .pills {
+        display: flex; flex-direction: row;
+        align-items: center; justify-content: center;
+        gap: 60px;
+        perspective: 1200px;
+        transform-style: preserve-3d;
+      }
+      .stat-pill {
+        width: 540px;
+        height: 320px;
+        box-sizing: border-box;
+        border-radius: 28px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 18px;
+        transform-style: preserve-3d;
+        position: relative;
+        opacity: 0;
+      }
+      
+      /* Clockwise glowing animated border SVG & rect */
+      .card-border-glow-svg {
+        position: absolute;
+        inset: -2px;
+        width: calc(100% + 4px);
+        height: calc(100% + 4px);
+        pointer-events: none;
+        z-index: 10;
+        overflow: visible;
+        transform: translateZ(0);
+        will-change: transform, opacity;
+        opacity: 0;
+      }
+      .glow-rect-blur {
+        fill: none;
+        stroke: var(--pill-accent-color);
+        stroke-width: 6;
+        stroke-dasharray: 300 1420;
+        stroke-dashoffset: 1720;
+        filter: blur(5px);
+        will-change: stroke-dashoffset;
+      }
+      .glow-rect-sharp {
+        fill: none;
+        stroke: var(--pill-accent-color);
+        stroke-width: 2.5;
+        stroke-dasharray: 300 1420;
+        stroke-dashoffset: 1720;
+        will-change: stroke-dashoffset;
+      }
+
+      #stat-pill-1 {
+        --pill-accent-color: var(--accent-warn);
+      }
+      #stat-pill-2 {
+        --pill-accent-color: var(--accent-3);
+      }
+
+      .stat-pill .stat-num {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 900;
+        font-size: 130px;
+        line-height: 0.9;
+        letter-spacing: -4px;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .stat-pill.warn .stat-num {
+        color: var(--accent-warn);
+        text-shadow: 0 0 60px rgba(234, 67, 53, 0.8), 0 0 20px rgba(234, 67, 53, 0.4);
+      }
+      .stat-pill.gold .stat-num {
+        color: var(--accent-3);
+        text-shadow: 0 0 60px rgba(251, 188, 5, 0.8), 0 0 20px rgba(251, 188, 5, 0.4);
+      }
+      .stat-pill .stat-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+    </style>
+
+    <!-- Background grid and volumetric spotlights -->
+    <div id="stat-bg">
+      <div class="bg-grid"></div>
+      <div class="spotlight-red" id="spotlight-1"></div>
+      <div class="spotlight-yellow" id="spotlight-2"></div>
+      <div class="bg-vignette"></div>
+    </div>
+
+    <!-- Camera Float 3D Drift Wrapper -->
+    <div id="camera-float-wrap" style="width:100%; height:100%; transform-style:preserve-3d; will-change:transform;">
+      <div id="scene-stat-pill-row-content">
+        <div class="header-block">
+          <div class="overline" id="stat-row-overline">SYNTHID TRUST LAYER</div>
+          <div class="headline" id="stat-row-headline">AI PROVENANCE AT MASSIVE SCALE</div>
+        </div>
+
+        <div class="pills">
+          <!-- Stat Pill 1: 100B IMAGES -->
+          <div class="stat-pill glass-premium glow-red warn" id="stat-pill-1">
+            <svg class="card-border-glow-svg" width="540" height="320" viewBox="0 0 540 320">
+              <rect x="0" y="0" width="540" height="320" rx="28" ry="28" class="glow-rect-blur" />
+              <rect x="0" y="0" width="540" height="320" rx="28" ry="28" class="glow-rect-sharp" />
+            </svg>
+            <div class="stat-num">100B</div>
+            <div class="stat-label">IMAGES WATERMARKED</div>
+          </div>
+
+          <!-- Stat Pill 2: 60K YEARS OF AUDIO -->
+          <div class="stat-pill glass-premium glow-yellow gold" id="stat-pill-2">
+            <svg class="card-border-glow-svg" width="540" height="320" viewBox="0 0 540 320">
+              <rect x="0" y="0" width="540" height="320" rx="28" ry="28" class="glow-rect-blur" />
+              <rect x="0" y="0" width="540" height="320" rx="28" ry="28" class="glow-rect-sharp" />
+            </svg>
+            <div class="stat-num">60K</div>
+            <div class="stat-label">YEARS OF AUDIO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Continuous camera float drift (yoyo loop inside timeline for deterministic seek rendering)
+      tl.fromTo("#camera-float-wrap",
+        { rotationY: -1.5, rotationX: -1.0, y: -5 },
+        { 
+          rotationY: 1.5, 
+          rotationX: 1.0, 
+          y: 5, 
+          duration: 7.5, 
+          ease: "sine.inOut", 
+          yoyo: true, 
+          repeat: 7, // Covers 7.5s * 8 = 60.0s, past the 53.45s total duration
+          immediateRender: false
+        },
+        0
+      );
+
+      // 0.0s: Overline enters
+      tl.fromTo("#stat-row-overline", 
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false }, 
+        0
+      );
+      
+      // 0.3s: Headline enters
+      tl.fromTo("#stat-row-headline", 
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power3.out", immediateRender: false }, 
+        0.3
+      );
+
+      // 2.0s: Headline text glow sweep (cyan/blue)
+      tl.to("#stat-row-headline", { textShadow: "0 0 25px rgba(66, 133, 244, 0.5)", duration: 0.6 }, 2.0);
+      tl.to("#stat-row-headline", { textShadow: "none", duration: 0.6 }, 2.6);
+
+      // 4.0s: Pill 1 enters (100B Images) and Spotlight 1 fades in
+      tl.fromTo("#stat-pill-1", {
+        scale: 0.82,
+        y: 50,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        scale: 1,
+        y: 0,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.6)",
+        immediateRender: false
+      }, 4.0);
+
+      tl.fromTo("#spotlight-1", {
+        opacity: 0,
+        scale: 0.8
+      }, {
+        opacity: 0.6,
+        scale: 1.0,
+        duration: 1.5,
+        ease: "power2.out",
+        immediateRender: false
+      }, 4.0);
+
+      // 5.5s: Count-up animation for Pill 1 (val: 0 -> 100)
+      var stat1El = document.querySelector("#stat-pill-1 .stat-num");
+      var stat1Obj = { val: 0 };
+      tl.fromTo(stat1Obj, { val: 0 }, {
+        val: 100,
+        duration: 1.5,
+        ease: "power3.out",
+        immediateRender: false,
+        onUpdate: function() {
+          stat1El.textContent = Math.round(stat1Obj.val) + "B";
+        }
+      }, 5.5);
+
+      // 7.5s: Volumetric glow pulse on Pill 1 border & neon SVG border reveal
+      tl.to("#stat-pill-1", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(234, 67, 53, 0.65)",
+        duration: 0.6
+      }, 7.5);
+      tl.to("#stat-pill-1", {
+        boxShadow: "none",
+        duration: 0.8
+      }, 8.1);
+
+      tl.fromTo("#stat-pill-1 .card-border-glow-svg",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
+        7.5
+      );
+      tl.fromTo("#stat-pill-1 .glow-rect-blur, #stat-pill-1 .glow-rect-sharp",
+        { strokeDashoffset: 1720 },
+        { strokeDashoffset: -15480, duration: 30.0, ease: "none", immediateRender: false },
+        7.5
+      );
+
+      // 10.0s: Highlight Pill 1's label text (red)
+      tl.to("#stat-pill-1 .stat-label", {
+        color: "#EA4335",
+        duration: 0.5
+      }, 10.0);
+      tl.to("#stat-pill-1 .stat-label", {
+        color: "var(--text-secondary)",
+        duration: 0.6
+      }, 10.6);
+
+      // 13.0s: Slow stage 3D tilt transformation to the right
+      tl.to(".pills", {
+        rotationY: 8,
+        rotationX: 3,
+        duration: 2.0,
+        ease: "power2.inOut"
+      }, 13.0);
+
+      // 16.0s: Stage zooms in slightly
+      tl.to(".pills", {
+        scale: 1.03,
+        duration: 1.5,
+        ease: "sine.inOut"
+      }, 16.0);
+
+      // 19.5s: Stage tilts back to center
+      tl.to(".pills", {
+        rotationY: 0,
+        rotationX: 0,
+        duration: 1.8,
+        ease: "power2.inOut"
+      }, 19.5);
+
+      // 23.0s: Pill 2 enters (60K Years) and Spotlight 2 fades in
+      tl.fromTo("#stat-pill-2", {
+        scale: 0.82,
+        y: 50,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        scale: 1,
+        y: 0,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.6)",
+        immediateRender: false
+      }, 23.0);
+
+      tl.fromTo("#spotlight-2", {
+        opacity: 0,
+        scale: 0.8
+      }, {
+        opacity: 0.6,
+        scale: 1.0,
+        duration: 1.5,
+        ease: "power2.out",
+        immediateRender: false
+      }, 23.0);
+
+      // 25.0s: Count-up animation for Pill 2 (val: 0 -> 60)
+      var stat2El = document.querySelector("#stat-pill-2 .stat-num");
+      var stat2Obj = { val: 0 };
+      tl.fromTo(stat2Obj, { val: 0 }, {
+        val: 60,
+        duration: 1.5,
+        ease: "power3.out",
+        immediateRender: false,
+        onUpdate: function() {
+          stat2El.textContent = Math.round(stat2Obj.val) + "K";
+        }
+      }, 25.0);
+
+      // 28.0s: Glow pulse on Pill 2 border & neon SVG border reveal
+      tl.to("#stat-pill-2", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(251, 188, 5, 0.65)",
+        duration: 0.6
+      }, 28.0);
+      tl.to("#stat-pill-2", {
+        boxShadow: "none",
+        duration: 0.8
+      }, 28.6);
+
+      tl.fromTo("#stat-pill-2 .card-border-glow-svg",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
+        28.0
+      );
+      tl.fromTo("#stat-pill-2 .glow-rect-blur, #stat-pill-2 .glow-rect-sharp",
+        { strokeDashoffset: 1720 },
+        { strokeDashoffset: -12040, duration: 24.0, ease: "none", immediateRender: false },
+        28.0
+      );
+
+      // 31.0s: Highlight Pill 2's label text (yellow)
+      tl.to("#stat-pill-2 .stat-label", {
+        color: "#FBBC05",
+        duration: 0.5
+      }, 31.0);
+      tl.to("#stat-pill-2 .stat-label", {
+        color: "var(--text-secondary)",
+        duration: 0.6
+      }, 31.6);
+
+      // 34.0s: Slowly rotate stage to the left
+      tl.to(".pills", {
+        rotationY: -8,
+        rotationX: -3,
+        duration: 2.0,
+        ease: "power2.inOut"
+      }, 34.0);
+
+      // 37.0s: Headline and overline glow sweep (yellow)
+      tl.to("#stat-row-headline", {
+        textShadow: "0 0 25px rgba(251, 188, 5, 0.5)",
+        duration: 0.6
+      }, 37.0);
+      tl.to("#stat-row-headline", {
+        textShadow: "none",
+        duration: 0.6
+      }, 37.6);
+
+      // 40.0s: Staggered glow flash on both pills simultaneously
+      tl.to(["#stat-pill-1", "#stat-pill-2"], {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255,255,255,0.25)",
+        stagger: 0.15,
+        duration: 0.65
+      }, 40.0);
+      tl.to(["#stat-pill-1", "#stat-pill-2"], {
+        boxShadow: "none",
+        stagger: 0.15,
+        duration: 0.8
+      }, 40.85);
+
+      // 43.0s: Slow stage zoom (scale: 1.05)
+      tl.to(".pills", {
+        scale: 1.05,
+        duration: 2.5,
+        ease: "sine.inOut"
+      }, 43.0);
+
+      // 47.0s: Tilt stage back to right
+      tl.to(".pills", {
+        rotationY: 4,
+        rotationX: 2,
+        duration: 2.0,
+        ease: "power2.inOut"
+      }, 47.0);
+
+      // 50.0s: Settle stage back to normal
+      tl.to(".pills", {
+        rotationY: 0,
+        rotationX: 0,
+        scale: 1.0,
+        duration: 2.0,
+        ease: "power2.out"
+      }, 50.0);
+
+      window.__timelines["scene-stat-pill-row-11"] = tl;
+    </script>
+  </div>
+</template>

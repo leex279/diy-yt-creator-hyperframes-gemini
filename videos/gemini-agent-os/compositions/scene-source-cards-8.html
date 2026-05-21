@@ -1,0 +1,369 @@
+<!--
+  scene-source-cards.html — 3 photo + overline + title cards in a row.
+
+  Each card: top half is a 16:9 photo crop, bottom half is a meta block
+  with mono overline + sans title. Cards stagger in with 0.5s offset and
+  rotate accents (blue → cyan → purple).
+
+  Operator drops their own assets/screenshots/source-{1,2,3}.png. Lint
+  warns (not errors) until they ship. Wrapper card div carries class="clip"
+  AND the inner <img> also carries class="clip" — both get framework
+  visibility control.
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards-8"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #scene-source-cards-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:48px;
+        box-sizing:border-box;
+      }
+      #scene-source-cards-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-source-cards-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #scene-source-cards-content .headline {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      #scene-source-cards-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 32px;
+        perspective: 1200px;
+        transform-style: preserve-3d;
+      }
+      .source-card {
+        width: 520px;
+        height: 540px;
+        border-radius: 24px;
+        overflow: hidden;
+        display:flex; flex-direction:column;
+        transform-style: preserve-3d;
+        opacity: 0;
+      }
+      .source-card .photo-wrap {
+        width: 100%;
+        height: 62%;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .source-card .photo-wrap img {
+        display:block;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s ease;
+      }
+      .source-card:hover .photo-wrap img {
+        transform: scale(1.05);
+      }
+      .source-card .meta {
+        padding: 24px 28px;
+        display:flex; flex-direction:column;
+        gap: 8px;
+        flex: 1;
+      }
+      .source-card .meta .ovl {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      /* Brighter accent variants for AA contrast at 18px on translucent
+         gradient card backgrounds (the dim accents fail AA at small sizes).
+         Google palette → lightened tints: blue → #8AB4F8 (Google's mat-design
+         accent-light), red → #F6AEA8 (50% mix red+text), yellow stays as
+         FBBC04 (already AAA at 18px on dark). */
+      .source-card.a .meta .ovl { color: #8AB4F8; }
+      .source-card.b .meta .ovl { color: #F6AEA8; }
+      .source-card.c .meta .ovl { color: #FBBC04; }
+      .source-card .meta .ttl {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.15;
+        color: var(--text);
+      }
+    </style>
+
+    <div id="scene-source-cards-content">
+      <div class="header-block">
+        <div class="overline" id="src-overline">CHROME & FLOW</div>
+        <div class="headline" id="src-headline">STRUCTURED HANDLES FOR WEB AGENTS</div>
+      </div>
+
+      <div class="row">
+        <div class="source-card glass-premium glow-blue a" id="src-card-1">
+          <div class="photo-wrap" data-layout-allow-overflow="true">
+            <img id="src-img-1"
+                 src="assets/blog/io-collection.webp"
+                 alt="Source 1"
+                 data-layout-allow-overflow="true" />
+          </div>
+          <div class="meta">
+            <div class="ovl">WEBMCP STANDARD</div>
+            <div class="ttl">Expose structured functions & HTML forms to browser agents</div>
+          </div>
+        </div>
+        <div class="source-card glass-premium glow-red b" id="src-card-2">
+          <div class="photo-wrap" data-layout-allow-overflow="true">
+            <img id="src-img-2"
+                 src="assets/blog/gemini-app-bento.webp"
+                 alt="Source 2"
+                 data-layout-allow-overflow="true" />
+          </div>
+          <div class="meta">
+            <div class="ovl">WEBMCP STANDARD</div>
+            <div class="ttl">Console & accessibility tree access in Chrome DevTools for Agents</div>
+          </div>
+        </div>
+        <div class="source-card glass-premium glow-yellow c" id="src-card-3">
+          <div class="photo-wrap" data-layout-allow-overflow="true">
+            <img id="src-img-3"
+                 src="assets/blog/tpu-8-chips.webp"
+                 alt="Source 3"
+                 data-layout-allow-overflow="true" />
+          </div>
+          <div class="meta">
+            <div class="ovl">WEBMCP STANDARD</div>
+            <div class="ttl">Brainstorm dialogue & edit video section-by-section in Google Flow</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.55 }
+      });
+
+      tl.from("#src-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#src-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+
+      // 4.0s: Card 1 enters
+      tl.fromTo("#src-card-1", {
+        y: 60,
+        scale: 0.88,
+        rotationX: -8,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1.0,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 4.0);
+
+      // 7.0s: Card 1 border glow pulse (blue)
+      tl.to("#src-card-1", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.65)",
+        duration: 0.6
+      }, 7.0);
+      tl.to("#src-card-1", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 0.8
+      }, 7.6);
+
+      // 10.0s: Card 1 photo zoom
+      tl.to("#src-img-1", {
+        scale: 1.08,
+        duration: 1.5,
+        ease: "sine.inOut"
+      }, 10.0);
+
+      // 13.5s: Highlight title text glow for Card 1 (blue)
+      tl.to("#src-card-1 .meta .ttl", {
+        color: "#8AB4F8",
+        textShadow: "0 0 20px rgba(66, 133, 244, 0.65)",
+        duration: 0.5
+      }, 13.5);
+      tl.to("#src-card-1 .meta .ttl", {
+        color: "var(--text)",
+        textShadow: "none",
+        duration: 0.6
+      }, 14.5);
+
+      // 17.0s: Card 2 enters
+      tl.fromTo("#src-card-2", {
+        y: 60,
+        scale: 0.88,
+        rotationX: -8,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1.0,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 17.0);
+
+      // 20.0s: Card 2 border glow pulse (red)
+      tl.to("#src-card-2", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(234, 67, 53, 0.65)",
+        duration: 0.6
+      }, 20.0);
+      tl.to("#src-card-2", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 0.8
+      }, 20.6);
+
+      // 23.0s: Card 2 photo zoom
+      tl.to("#src-img-2", {
+        scale: 1.08,
+        duration: 1.5,
+        ease: "sine.inOut"
+      }, 23.0);
+
+      // 26.5s: Highlight title text glow for Card 2 (red)
+      tl.to("#src-card-2 .meta .ttl", {
+        color: "#F6AEA8",
+        textShadow: "0 0 20px rgba(234, 67, 53, 0.65)",
+        duration: 0.5
+      }, 26.5);
+      tl.to("#src-card-2 .meta .ttl", {
+        color: "var(--text)",
+        textShadow: "none",
+        duration: 0.6
+      }, 27.5);
+
+      // 30.0s: Card 3 enters
+      tl.fromTo("#src-card-3", {
+        y: 60,
+        scale: 0.88,
+        rotationX: -8,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1.0,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 30.0);
+
+      // 33.0s: Card 3 border glow pulse (yellow)
+      tl.to("#src-card-3", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(251, 188, 4, 0.65)",
+        duration: 0.6
+      }, 33.0);
+      tl.to("#src-card-3", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 0.8
+      }, 33.6);
+
+      // 36.0s: Card 3 photo zoom
+      tl.to("#src-img-3", {
+        scale: 1.08,
+        duration: 1.5,
+        ease: "sine.inOut"
+      }, 36.0);
+
+      // 39.5s: Highlight title text glow for Card 3 (yellow)
+      tl.to("#src-card-3 .meta .ttl", {
+        color: "#FBBC04",
+        textShadow: "0 0 20px rgba(251, 188, 4, 0.65)",
+        duration: 0.5
+      }, 39.5);
+      tl.to("#src-card-3 .meta .ttl", {
+        color: "var(--text)",
+        textShadow: "none",
+        duration: 0.6
+      }, 40.5);
+
+      // 43.0s: Subtle 3D tilt shift on all cards in row
+      tl.to(".row", {
+        rotateY: -5,
+        rotateX: 2,
+        duration: 2.0,
+        ease: "power2.inOut"
+      }, 43.0);
+
+      // 47.0s: Row scaling zoom
+      tl.to(".row", {
+        scale: 1.04,
+        duration: 3.5,
+        ease: "sine.inOut"
+      }, 47.0);
+
+      // 52.0s: Tilt shift card row back to the right
+      tl.to(".row", {
+        rotateY: 5,
+        rotateX: -2,
+        duration: 2.5,
+        ease: "power2.inOut"
+      }, 52.0);
+
+      // 57.0s: Glow wave pulse on Card 1 & Card 2
+      tl.to(["#src-card-1", "#src-card-2"], {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255,255,255,0.2)",
+        duration: 0.6,
+        stagger: 0.15
+      }, 57.0);
+      tl.to(["#src-card-1", "#src-card-2"], {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 0.8,
+        stagger: 0.15
+      }, 57.6);
+
+      // 61.0s: Glow wave pulse on Card 3
+      tl.to("#src-card-3", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255,255,255,0.2)",
+        duration: 0.6
+      }, 61.0);
+      tl.to("#src-card-3", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 0.8
+      }, 61.6);
+
+      // 65.0s: Wobble float in Y direction on all cards
+      tl.to(".row", {
+        y: -15,
+        duration: 1.8,
+        ease: "sine.inOut"
+      }, 65.0);
+
+      // 68.0s: Settle row back to center
+      tl.to(".row", {
+        y: 0,
+        scale: 1.0,
+        rotateY: 0,
+        rotateX: 0,
+        duration: 2.2,
+        ease: "power2.out"
+      }, 68.0);
+
+      window.__timelines["scene-source-cards-8"] = tl;
+    </script>
+  </div>
+</template>

@@ -1,0 +1,608 @@
+<!--
+  scene-video-embed.html — Premium Bento Split-Screen showcase for Google AI Studio.
+
+  Structure:
+    Background: Frosted glass stage.
+    Foreground: 1560px-wide glass card with display: grid.
+      - Left column: AI Studio Workspace checklist with gorgeous glassy rows and colored bullets.
+      - Right column: macOS-style Kotlin IDE editor with high-contrast syntax highlighting.
+-->
+<template id="scene-video-embed-template">
+  <div data-composition-id="scene-video-embed"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #scene-video-embed-content {
+        width:100%; height:100%;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-video-embed-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-video-embed-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #8ab4f8;
+        text-shadow: 0 0 12px rgba(138, 180, 248, 0.45);
+      }
+      #scene-video-embed-content .caption {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.1;
+        letter-spacing: -1.5px;
+        color: #ffffff;
+      }
+      
+      #video-frame-wrapper {
+        width: 1560px;
+        height: 720px;
+        border-radius: 32px;
+        overflow: hidden;
+        position: relative;
+        transform-style: preserve-3d;
+        opacity: 0;
+        background: rgba(15, 15, 20, 0.45);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      #vembed-placeholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 32px;
+        padding: 40px;
+        box-sizing: border-box;
+        background: rgba(10, 10, 12, 0.5);
+      }
+
+      /* Left Side Card (AI Studio Workspace) */
+      .vembed-side-card {
+        border-radius: 24px;
+        background: rgba(20, 20, 25, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-top: 4px solid #4285f4;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-sizing: border-box;
+        text-align: left;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 20px 20px -20px rgba(66, 133, 244, 0.15);
+      }
+
+      #vembed-side-title {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 36px;
+        letter-spacing: -0.5px;
+        color: #8ab4f8;
+        text-shadow: 0 0 15px rgba(66, 133, 244, 0.25);
+        margin: 0;
+      }
+
+      /* Modern Checklist rows */
+      .checklist-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .list-row {
+        opacity: 0.25; /* Dim default opacity for premium dashboard feel */
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 22px;
+        color: rgba(255, 255, 255, 0.5);
+        padding: 12px 18px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.3s ease;
+      }
+      .list-bullet {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        flex-shrink: 0;
+      }
+
+      /* Right Side (macOS Code Editor Panel) */
+      .editor-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+      }
+      #vembed-code-panel {
+        width: 100%;
+        height: 100%;
+        background: #0d0e11;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .editor-header {
+        background: #16181d;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        position: relative;
+        flex-shrink: 0;
+      }
+      .editor-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .editor-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .dot-red { background: #ff5f56; }
+      .dot-yellow { background: #ffbd2e; }
+      .dot-green { background: #27c93f; }
+      .editor-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #sdk-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: #81c995;
+        background: rgba(52, 168, 83, 0.15);
+        border: 1px solid rgba(52, 168, 83, 0.3);
+        padding: 4px 10px;
+        border-radius: 8px;
+        opacity: 0; /* Animated scale/opacity in GSAP (exempt from css-conflict via fromTo) */
+      }
+      .editor-body {
+        padding: 24px 32px 32px;
+        margin: 0;
+        overflow: hidden;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: #0d0e11;
+        justify-content: space-between;
+      }
+      #vembed-code-comment {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px;
+        color: #fdd663;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(251, 188, 5, 0.2);
+        margin: 0;
+      }
+      #vembed-code-pre {
+        margin: 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px;
+        line-height: 1.5;
+        color: #e3e4e6;
+        white-space: pre;
+      }
+      .code-line {
+        opacity: 0.05; /* Dim before generation typing */
+        transform: translateY(5px);
+      }
+
+      /* Syntax Highlighting */
+      .keyword { color: #f472b6; font-weight: bold; }
+      .string { color: #38bdf8; }
+      .comment { color: #6b7280; font-style: italic; }
+      .function { color: #c084fc; }
+      .annotation { color: #fb923c; font-weight: bold; }
+
+      /* Status Alert Bar */
+      #vembed-callout {
+        opacity: 0; /* Animated in GSAP via fromTo */
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        line-height: 1.4;
+        color: #81c995;
+        font-weight: 700;
+        padding: 16px 20px;
+        border-radius: 12px;
+        background: rgba(52, 168, 83, 0.1);
+        border: 1px solid rgba(52, 168, 83, 0.25);
+        box-shadow: 0 0 15px rgba(52, 168, 83, 0.08);
+      }
+      .highlight-gold {
+        color: #fdd663;
+        text-shadow: 0 0 10px rgba(251, 188, 5, 0.4);
+      }
+
+      /* Floating Antigravity Export Overlay */
+      #vembed-export-panel {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 82%;
+        background: rgba(13, 14, 17, 0.96);
+        border: 2px solid #a855f7; /* Antigravity brand purple */
+        border-radius: 24px;
+        padding: 32px;
+        box-sizing: border-box;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 35px rgba(168, 85, 247, 0.35);
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        opacity: 0; /* Centering and opacity handled by GSAP fromTo */
+        pointer-events: none;
+        z-index: 100;
+      }
+      .export-title {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: -0.5px;
+        color: #d2a8ff;
+        text-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+        margin: 0;
+        text-align: center;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        padding-bottom: 12px;
+      }
+      .export-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .export-row {
+        opacity: 0.15;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.85);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+      }
+      .export-check {
+        color: #a855f7;
+        font-weight: bold;
+        font-size: 22px;
+        text-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+      }
+      .export-status-footer {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 1px;
+        color: #81c995;
+        background: rgba(52, 168, 83, 0.1);
+        border: 1px solid rgba(52, 168, 83, 0.2);
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+      }
+    </style>
+ 
+    <div id="scene-video-embed-content" class="perspective-stage">
+      <div class="header-block">
+        <div class="overline" id="vembed-overline">GOOGLE AI STUDIO</div>
+        <div class="caption"  id="vembed-caption">PROMPT-TO-APP BUILDER</div>
+      </div>
+ 
+      <div id="video-frame-wrapper" class="glass-premium glow-blue">
+        <div id="vembed-placeholder">
+          <!-- Left Column (Sidebar / Panel) -->
+          <div class="vembed-side-card" id="vembed-left-card">
+            <h3 id="vembed-side-title">AI Studio</h3>
+            <div class="checklist-container">
+              <div class="list-row" id="vembed-side-item-1">
+                <span class="list-bullet" id="list-bullet-1"></span>
+                <span>Workspace Integration</span>
+              </div>
+              <div class="list-row" id="vembed-side-item-2">
+                <span class="list-bullet" id="list-bullet-2"></span>
+                <span>Antigravity Export</span>
+              </div>
+              <div class="list-row" id="vembed-side-item-3">
+                <span class="list-bullet" id="list-bullet-3"></span>
+                <span>Nano Banana Assets</span>
+              </div>
+              <div class="list-row" id="vembed-side-item-4">
+                <span class="list-bullet" id="list-bullet-4"></span>
+                <span>In-Preview Edit Tool</span>
+              </div>
+              <div class="list-row" id="vembed-side-item-5">
+                <span class="list-bullet" id="list-bullet-5"></span>
+                <span>Mobile Builder App</span>
+              </div>
+              <div class="list-row" id="vembed-side-item-6">
+                <span class="list-bullet" id="list-bullet-6"></span>
+                <span>Native Android Building</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column (macOS Kotlin IDE) -->
+          <div class="editor-column" id="vembed-right-column">
+            <!-- macOS Code Editor Panel -->
+            <div id="vembed-code-panel">
+              <div class="editor-header">
+                <div class="editor-dots">
+                  <div class="editor-dot dot-red"></div>
+                  <div class="editor-dot dot-yellow"></div>
+                  <div class="editor-dot dot-green"></div>
+                </div>
+                <div class="editor-title">GeminiAgentApp.kt</div>
+                <div id="sdk-badge">SDK SETUP: NONE</div>
+              </div>
+              <div class="editor-body">
+                <div id="vembed-code-comment">// Generates production-quality native Kotlin code</div>
+                <pre id="vembed-code-pre"><div class="code-line" id="line-1"><span class="annotation">@Composable</span></div><div class="code-line" id="line-2"><span class="keyword">fun</span> <span class="function">GeminiAgentApp</span>() {</div><div class="code-line" id="line-3">    <span class="function">Column</span>(modifier = Modifier.<span class="function">fillMaxSize</span>().<span class="function">padding</span>(16.dp)) {</div><div class="code-line" id="line-4">        <span class="function">Text</span>(<span class="string">"Gemini Agent Platform"</span>, style = MaterialTheme.typography.h4)</div><div class="code-line" id="line-5">        <span class="function">Spacer</span>(modifier = Modifier.<span class="function">height</span>(8.dp))</div><div class="code-line" id="line-6">        <span class="function">Button</span>(onClick = { <span class="comment">/* Deploy subagent */</span> }) {</div><div class="code-line" id="line-7">            <span class="function">Text</span>(<span class="string">"Launch Parallel Agentic SDK Tasks"</span>)</div><div class="code-line" id="line-8">        }</div><div class="code-line" id="line-9">    }</div><div class="code-line" id="line-10">}</div></pre>
+                <div id="vembed-callout">Deploy first 2 apps to Google Cloud <span class="highlight-gold">at zero cost</span> without <span class="highlight-gold">credit card</span>.</div>
+              </div>
+            </div>
+
+            <!-- Floating Antigravity Export Overlay -->
+            <div id="vembed-export-panel">
+              <div class="export-title">ANTIGRAVITY DEPLOYMENT PORTAL</div>
+              <div class="export-list">
+                <div class="export-row" id="export-item-1">
+                  <span class="export-check">✔</span>
+                  <span>Conversation History Preserved</span>
+                </div>
+                <div class="export-row" id="export-item-2">
+                  <span class="export-check">✔</span>
+                  <span>Project Files &amp; Assets Preserved</span>
+                </div>
+                <div class="export-row" id="export-item-3">
+                  <span class="export-check">✔</span>
+                  <span>Environment Secrets &amp; Keys Secured</span>
+                </div>
+              </div>
+              <div class="export-status-footer" id="export-status-footer">[ STATUS: DEPLOYED TO PRODUCTION ]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+ 
+      // 0.0s - 2.0s: Heading elements entrance
+      tl.from("#vembed-overline",       { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.1);
+      tl.from("#vembed-caption",        { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.4);
+      
+      // 0.7s: 3.5D spatial frame wrapper entrance
+      tl.fromTo("#video-frame-wrapper", {
+        scale: 0.86,
+        rotateX: 14,
+        rotateY: -8,
+        z: -100,
+        opacity: 0
+      }, {
+        scale: 1,
+        rotateX: 0,
+        rotateY: 0,
+        z: 0,
+        opacity: 1,
+        duration: 0.85,
+        ease: "back.out(1.3)",
+        immediateRender: false
+      }, 0.7);
+
+      // Stagger entrance of Left Sidebar Card and Right Editor Column inside the frame
+      tl.from("#vembed-left-card", { x: -40, opacity: 0, duration: 0.6 }, 1.2);
+      tl.from("#vembed-code-panel", { x: 40, opacity: 0, duration: 0.6 }, 1.4);
+ 
+      // ========================================================
+      // DETAILED VISUAL CHOREOGRAPHY SYNC'D TO NARRATION TIMINGS
+      // ========================================================
+ 
+      // 10.04s: "deep Workspace integration"
+      tl.to("#vembed-side-item-1", { 
+        opacity: 1, 
+        x: 8, 
+        color: "#8ab4f8", 
+        backgroundColor: "rgba(66, 133, 244, 0.15)",
+        borderColor: "rgba(66, 133, 244, 0.45)",
+        duration: 0.4 
+      }, 10.04);
+      tl.to("#list-bullet-1", { backgroundColor: "#8ab4f8", boxShadow: "0 0 12px #8ab4f8", duration: 0.4 }, 10.04);
+ 
+      // 11.56s: "Antigravity export"
+      tl.to("#vembed-side-item-2", { 
+        opacity: 1, 
+        x: 8, 
+        color: "#d2a8ff", 
+        backgroundColor: "rgba(168, 85, 247, 0.15)",
+        borderColor: "rgba(168, 85, 247, 0.45)",
+        duration: 0.4 
+      }, 11.56);
+      tl.to("#list-bullet-2", { backgroundColor: "#d2a8ff", boxShadow: "0 0 12px #d2a8ff", duration: 0.4 }, 11.56);
+ 
+      // 12.96s: "custom asset generation with Nano Banana"
+      tl.to("#vembed-side-item-3", { 
+        opacity: 1, 
+        x: 8, 
+        color: "#fdd663", 
+        backgroundColor: "rgba(251, 188, 5, 0.12)",
+        borderColor: "rgba(251, 188, 5, 0.4)",
+        duration: 0.4 
+      }, 12.96);
+      tl.to("#list-bullet-3", { backgroundColor: "#fdd663", boxShadow: "0 0 12px #fdd663", duration: 0.4 }, 12.96);
+ 
+      // 15.52s: "a new in-preview edit tool"
+      tl.to("#vembed-side-item-4", { 
+        opacity: 1, 
+        x: 8, 
+        color: "#ff8a80", 
+        backgroundColor: "rgba(234, 67, 53, 0.15)",
+        borderColor: "rgba(234, 67, 53, 0.45)",
+        duration: 0.4 
+      }, 15.52);
+      tl.to("#list-bullet-4", { backgroundColor: "#ff8a80", boxShadow: "0 0 12px #ff8a80", duration: 0.4 }, 15.52);
+ 
+      // 17.38s: "an AI Studio mobile app"
+      tl.to("#vembed-side-item-5", { 
+        opacity: 1, 
+        x: 8, 
+        color: "#80deea", 
+        backgroundColor: "rgba(0, 188, 212, 0.15)",
+        borderColor: "rgba(0, 188, 212, 0.45)",
+        duration: 0.4 
+      }, 17.38);
+      tl.to("#list-bullet-5", { backgroundColor: "#80deea", boxShadow: "0 0 12px #80deea", duration: 0.4 }, 17.38);
+
+      // 19.08s: "and native Android building"
+      tl.to("#vembed-side-item-6", { 
+        opacity: 1, 
+        x: 8, 
+        color: "#81c995", 
+        backgroundColor: "rgba(52, 168, 83, 0.15)",
+        borderColor: "rgba(52, 168, 83, 0.45)",
+        duration: 0.4 
+      }, 19.08);
+      tl.to("#list-bullet-6", { backgroundColor: "#81c995", boxShadow: "0 0 12px #81c995", duration: 0.4 }, 19.08);
+ 
+      // 21.41s: "generate production-quality native Kotlin code" (Glow IDE & start typing)
+      tl.to("#vembed-code-panel", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.65), 0 0 40px rgba(138, 180, 248, 0.25)",
+        borderColor: "rgba(138, 180, 248, 0.4)",
+        duration: 0.6
+      }, 21.41);
+
+      // Stagger reveal of Kotlin code lines simulating real-time AI code generation
+      for (let i = 1; i <= 10; i++) {
+        tl.to(`#line-${i}`, {
+          opacity: 1,
+          y: 0,
+          duration: 0.35,
+          ease: "power2.out"
+        }, 21.5 + (i * 0.25));
+      }
+
+      // 27.05s: "without requiring any local SDK setup" (Highlight Green status badge in editor header)
+      // Resolved GSAP-CSS scale conflict by using direct fromTo
+      tl.fromTo("#sdk-badge", 
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" },
+        27.05
+      );
+      tl.to("#vembed-code-panel", {
+        borderColor: "rgba(52, 168, 83, 0.4)",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.65), 0 0 45px rgba(52, 168, 83, 0.25)",
+        duration: 0.5
+      }, 27.05);
+      tl.to("#vembed-code-panel", {
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+        duration: 0.8
+      }, 28.5);
+
+      // 30.58s: "deploy their first two apps to Google Cloud" (Slide in bottom callout)
+      // Resolved GSAP-CSS translateY conflict by using direct fromTo
+      tl.fromTo("#vembed-callout",
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+        30.58
+      );
+
+      // 34.20s: "at no cost and without a credit card" (Pulse/Glow gold highlights in callout)
+      tl.to(".highlight-gold", {
+        fontWeight: "900",
+        duration: 0.3
+      }, 34.20);
+      tl.to("#vembed-callout", {
+        boxShadow: "0 0 25px rgba(251, 188, 5, 0.2)",
+        borderColor: "rgba(251, 188, 5, 0.4)",
+        duration: 0.4
+      }, 34.20);
+      tl.to("#vembed-callout", {
+        boxShadow: "0 0 15px rgba(52, 168, 83, 0.08)",
+        borderColor: "rgba(52, 168, 83, 0.25)",
+        duration: 0.6
+      }, 35.5);
+
+      // 36.58s: "exported to Antigravity" (Trigger floating deployment dashboard)
+      // Resolved GSAP-CSS translate conflict by using direct fromTo with xPercent/yPercent
+      tl.fromTo("#vembed-export-panel",
+        { xPercent: -50, yPercent: -50, scale: 0.9, y: 0, opacity: 0 },
+        { xPercent: -50, yPercent: -50, scale: 1, y: -40, opacity: 1, pointerEvents: "auto", duration: 0.7, ease: "back.out(1.2)" },
+        36.58
+      );
+
+      // 37.70s - 39.30s: "with conversation history, project files, and secrets preserved" (Stagger item checks)
+      tl.to("#export-item-1", { opacity: 1, duration: 0.4 }, 37.70);
+      tl.to("#export-item-2", { opacity: 1, duration: 0.4 }, 38.50);
+      tl.to("#export-item-3", { opacity: 1, duration: 0.4 }, 39.30);
+
+      // 40.50s: Blinking loop animation for export production footer status
+      tl.to("#export-status-footer", {
+        boxShadow: "0 0 20px rgba(52, 168, 83, 0.4)",
+        borderColor: "rgba(52, 168, 83, 0.5)",
+        duration: 0.4,
+        yoyo: true,
+        repeat: 3
+      }, 40.50);
+
+      // 43.37s: "no-install, browser-based path" (Volumetric stage zoom and pulse)
+      tl.to("#video-frame-wrapper", {
+        scale: 1.03,
+        rotateY: 5,
+        rotateX: -2,
+        boxShadow: "0 30px 70px rgba(0,0,0,0.65), 0 0 50px rgba(168, 85, 247, 0.25)",
+        duration: 2.0,
+        ease: "power2.inOut"
+      }, 43.37);
+
+      // 49.66s: "needs to turn into a real, managed codebase" (Settle cleanly for transition)
+      tl.to("#video-frame-wrapper", {
+        scale: 1.0,
+        rotateY: 0,
+        rotateX: 0,
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 1.5,
+        ease: "power3.out"
+      }, 49.66);
+      tl.to("#vembed-export-panel", {
+        scale: 0.95,
+        opacity: 0,
+        duration: 0.6
+      }, 51.0);
+
+      window.__timelines["scene-video-embed"] = tl;
+    </script>
+  </div>
+</template>

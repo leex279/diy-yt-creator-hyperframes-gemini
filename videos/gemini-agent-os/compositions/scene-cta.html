@@ -1,0 +1,599 @@
+<!--
+  scene-cta.html — Closing CTA archetype.
+
+  3-phase content (sequential reveals on a single timeline):
+    1. FitHeadline debate question (40-72px Inter 900) at t=0 — expo.out rise
+    2. Comment-prompt pill + subscribe pill at t=2.5 — back.out(1.4)
+    3. Optional next-video thumbnail card at t=5 — pulsing border (FINITE repeat)
+
+  HARD RULE: subscribe pulse uses a FINITE repeat (yoyo:true, repeat:N) — never
+  repeat:-1. The framework requires deterministic timelines. Compute repeat as
+  Math.ceil(scene_duration / pulse_cycle).
+
+  MANDATORY: #cta-debate carries the debate-sparking question per
+  .claude/rules/engagement-cta.md. The wording MUST match the final spoken line
+  of scripts/full-script.md AND the engagement question in youtube-description.md.
+-->
+<template id="scene-cta-template">
+  <div data-composition-id="scene-cta"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Plus Jakarta Sans', sans-serif; color:var(--text);">
+
+    <style>
+      /* ── Background Grid & Spots ─────────────────────── */
+      #cta-bg {
+        position: absolute; inset: 0; z-index: 0;
+        pointer-events: none;
+      }
+      #cta-bg-grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        background-size: 60px 60px;
+        opacity: 0.8;
+      }
+      #cta-bg-overlay {
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at center, transparent 30%, rgba(6, 8, 15, 0.8) 100%);
+      }
+      .cta-spotlight {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+      .cta-spotlight.blue-spot {
+        top: 40%; left: 20%;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(66, 133, 244, 0.15) 0%, transparent 70%);
+      }
+      .cta-spotlight.red-spot {
+        top: 40%; left: 45%;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(234, 67, 53, 0.15) 0%, transparent 70%);
+      }
+      .cta-spotlight.yellow-spot {
+        top: 55%; left: 30%;
+        width: 700px; height: 450px;
+        background: radial-gradient(circle, rgba(251, 188, 5, 0.12) 0%, transparent 70%);
+      }
+
+      /* ── Content Stage ────────────────────────────────── */
+      #scene-cta-content {
+        width: 100%; height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 36px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1;
+      }
+      #scene-cta-content .debate {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 58px;
+        line-height: 1.15;
+        letter-spacing: -1.5px;
+        color: var(--text);
+        text-align: center;
+        max-width: 1600px;
+        opacity: 0;
+        margin-bottom: 12px;
+      }
+      #scene-cta-content .pills {
+        display: flex; flex-direction: row;
+        align-items: center; justify-content: center;
+        gap: 24px;
+      }
+
+      /* ── CTA Pills ───────────────────────────────────── */
+      .cta-pill {
+        position: relative;
+        padding: 20px 36px;
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 1.5px;
+        color: var(--text);
+        display: inline-flex; align-items: center;
+        gap: 14px;
+        transform-style: preserve-3d;
+        opacity: 0;
+        background: rgba(12, 12, 14, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
+      }
+      .cta-pill.comment {
+        padding-right: 28px;
+      }
+      .pill-glow-border {
+        position: absolute;
+        inset: -1px;
+        border-radius: 999px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .pill-glow-border.blue.blur {
+        border: 2px solid rgba(66, 133, 244, 0.5);
+        filter: blur(5px);
+      }
+      .pill-glow-border.blue.sharp {
+        border: 1.5px solid rgba(66, 133, 244, 0.8);
+      }
+      .pill-glow-border.red.blur {
+        border: 2px solid rgba(234, 67, 53, 0.5);
+        filter: blur(5px);
+      }
+      .pill-glow-border.red.sharp {
+        border: 1.5px solid rgba(234, 67, 53, 0.8);
+      }
+      .pill-glow-border.yellow.blur {
+        border: 2px solid rgba(251, 188, 5, 0.5);
+        filter: blur(5px);
+      }
+      .pill-glow-border.yellow.sharp {
+        border: 1.5px solid rgba(251, 188, 5, 0.8);
+      }
+      #cta-next-card .pill-glow-border {
+        border-radius: 24px;
+      }
+      .cta-pill.comment .icon {
+        color: #8ab4f8;
+        font-size: 22px;
+        filter: drop-shadow(0 0 8px rgba(66, 133, 244, 0.6));
+      }
+      .pill-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        color: #81c995;
+        background: rgba(52, 168, 83, 0.15);
+        border: 1px solid rgba(52, 168, 83, 0.35);
+        padding: 4px 10px;
+        border-radius: 6px;
+        margin-left: 8px;
+        box-shadow: 0 0 10px rgba(52, 168, 83, 0.15);
+      }
+      .arrow-wrap {
+        display: inline-flex;
+        width: 24px;
+        height: 24px;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+      }
+      .cta-pill.subscribe .arrow {
+        color: #f28b82;
+        font-weight: 900;
+        font-size: 22px;
+        position: absolute;
+      }
+
+      /* ── Watch Next Card ─────────────────────────────── */
+      #cta-next-card {
+        margin-top: 24px;
+        width: 580px;
+        height: 380px;
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+        transform-style: preserve-3d;
+        opacity: 0;
+        background: rgba(12, 12, 14, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
+        display: flex;
+        flex-direction: column;
+      }
+      .cta-card-header {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        background: rgba(8, 8, 12, 0.5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .cta-card-header .mac-dots {
+        margin-bottom: 0;
+        gap: 6px;
+      }
+      .cta-card-header .mac-dot {
+        width: 10px;
+        height: 10px;
+      }
+      .cta-card-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        color: #fbbc05;
+        background: rgba(251, 188, 5, 0.15);
+        border: 1px solid rgba(251, 188, 5, 0.35);
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+      .cta-card-media-wrap {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background: #08080c;
+      }
+      #cta-next-card img {
+        display: block;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transform-origin: center center;
+        opacity: 0.85;
+      }
+      .cta-card-hud-overlay {
+        position: absolute;
+        inset: 0;
+        background: 
+          linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        background-size: 15px 15px;
+        pointer-events: none;
+      }
+      .cta-card-scanline {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(251, 188, 5, 0.25), transparent);
+        opacity: 0.6;
+        pointer-events: none;
+      }
+      .cta-card-play-btn {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        background: rgba(251, 188, 5, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 25px rgba(251, 188, 5, 0.5);
+        z-index: 3;
+      }
+      .play-icon-glow {
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+        border: 2px solid rgba(251, 188, 5, 0.4);
+        opacity: 0;
+      }
+      .cta-card-play-btn .play-arrow {
+        color: #06080f;
+        font-size: 20px;
+        margin-left: 4px;
+      }
+      #cta-next-card .nx-meta {
+        position: static;
+        padding: 16px 20px;
+        background: rgba(8, 8, 12, 0.85);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .nx-pre {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 2px;
+        color: #fbbc05;
+        text-shadow: 0 0 10px rgba(251, 188, 5, 0.3);
+      }
+      .nx-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.5px;
+        color: #e8eaed;
+        text-transform: none;
+      }
+    </style>
+
+    <!-- Background Spotlights & Grid -->
+    <div id="cta-bg">
+      <div id="cta-bg-grid"></div>
+      <div id="cta-bg-overlay"></div>
+      <div class="cta-spotlight blue-spot" id="cta-spot-blue"></div>
+      <div class="cta-spotlight red-spot" id="cta-spot-red"></div>
+      <div class="cta-spotlight yellow-spot" id="cta-spot-yellow"></div>
+    </div>
+ 
+    <div id="scene-cta-content" class="perspective-stage">
+      <!-- Debate headline styled with blockbuster highlights -->
+      <div class="debate" id="cta-debate">
+        WILL YOU BUILD ON <span class="g-gradient-text-blue-green" style="font-weight:900; filter: drop-shadow(0 0 20px rgba(66, 133, 244, 0.35));">GOOGLE'S INTEGRATED AGENT OS</span>,<br>OR <span class="g-gradient-text-rainbow" style="background: linear-gradient(90deg, #EA4335 0%, #FBBC05 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(234, 67, 53, 0.35));">MODULAR OPEN TOOLS</span>?
+      </div>
+ 
+      <div class="pills">
+        <!-- Re-architected Comment Pill with SVG blur/sharp lines and metadata tag -->
+        <div class="cta-pill glass-premium comment" id="cta-comment">
+          <div class="pill-glow-border blue blur"></div>
+          <div class="pill-glow-border blue sharp"></div>
+          <span class="icon">&#x270F;</span>
+          <span>Drop your take in the comments</span>
+          <span class="pill-badge" id="cta-comment-badge">[ 💬 DEBATE ACTIVE ]</span>
+        </div>
+        
+        <!-- Re-architected Subscribe Pill with arrow slide-fade loop -->
+        <div class="cta-pill glass-premium subscribe" id="cta-subscribe">
+          <div class="pill-glow-border red blur"></div>
+          <div class="pill-glow-border red sharp"></div>
+          <span>Subscribe</span>
+          <span class="arrow-wrap"><span class="arrow" id="cta-sub-arrow">&rarr;</span></span>
+        </div>
+      </div>
+ 
+      <!-- Elevated Widescreen Next Video Deck -->
+      <div id="cta-next-card" class="glass-premium">
+        <div class="pill-glow-border yellow blur"></div>
+        <div class="pill-glow-border yellow sharp"></div>
+        
+        <!-- macOS dots and recommendation indicator -->
+        <div class="cta-card-header">
+          <div class="mac-dots">
+            <div class="mac-dot red"></div>
+            <div class="mac-dot yellow"></div>
+            <div class="mac-dot green"></div>
+          </div>
+          <div class="cta-card-badge">✦ RECOMMENDED BY AI</div>
+        </div>
+        
+        <!-- Interactive media container -->
+        <div class="cta-card-media-wrap">
+          <img src="assets/blog/io-collection.webp" alt="Next video" />
+          <div class="cta-card-hud-overlay"></div>
+          <div class="cta-card-scanline"></div>
+          
+          <!-- Central play indicator -->
+          <div class="cta-card-play-btn" id="cta-next-play">
+            <div class="play-icon-glow"></div>
+            <span class="play-arrow">&#9658;</span>
+          </div>
+        </div>
+        
+        <!-- Footer Watch Next metadata -->
+        <div class="nx-meta">
+          <span class="nx-pre">WATCH NEXT</span>
+          <span class="nx-title">Google I/O Highlights</span>
+        </div>
+      </div>
+    </div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+ 
+      // 1. Debate question — expo.out rise at t=0
+      tl.from("#cta-debate", { y: 40, opacity: 0, duration: 0.7, ease: "expo.out", immediateRender: false }, 0);
+ 
+      // 2. Comment pill entrance at t=2.0
+      tl.fromTo("#cta-comment", {
+        y: 35,
+        rotateX: 12,
+        opacity: 0
+      }, {
+        y: 0,
+        rotateX: 0,
+        opacity: 1,
+        duration: 0.7,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 2.0);
+      
+      // Reveal comment border and spotlight background
+      tl.to(".pill-glow-border.blue", { opacity: 1, duration: 0.8 }, 2.0);
+      tl.to("#cta-spot-blue", { opacity: 1, duration: 1.0 }, 2.0);
+ 
+      // 3. Subscribe pill entrance at t=2.25
+      tl.fromTo("#cta-subscribe", {
+        y: 35,
+        rotateX: 12,
+        opacity: 0
+      }, {
+        y: 0,
+        rotateX: 0,
+        opacity: 1,
+        duration: 0.7,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 2.25);
+      
+      // Reveal subscribe border and spotlight background
+      tl.to(".pill-glow-border.red", { opacity: 1, duration: 0.8 }, 2.25);
+      tl.to("#cta-spot-red", { opacity: 1, duration: 1.0 }, 2.25);
+      
+      // Snappy arrow slide-in on entry (using set & to for deterministic linter validation)
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 2.25);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.35, ease: "back.out(1.5)" }, 2.25);
+ 
+      // Pulsing red glow halo starting after it completes entrance at 3.05s
+      // yoyo iterations beautifully covers the full 30.91s duration.
+      tl.fromTo(".pill-glow-border.red.blur", {
+        opacity: 0.3,
+        scale: 0.95
+      }, {
+        opacity: 0.9,
+        scale: 1.05,
+        duration: 0.65,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 42,
+        immediateRender: false
+      }, 3.05);
+
+      // Snappy continuous arrow sliding loop (unrolled for perfect static timeline linting and seek-safety)
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 3.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 3.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 3.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 6.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 6.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 6.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 9.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 9.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 9.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 12.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 12.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 12.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 15.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 15.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 15.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 18.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 18.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 18.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 21.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 21.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 21.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 24.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 24.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 24.9);
+
+      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 27.5);
+      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 27.9);
+      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 27.9);
+ 
+      // 4. Next-video card pop entrance at t=4.1
+      tl.fromTo("#cta-next-card", {
+        y: 80,
+        rotateY: -15,
+        rotateX: 10,
+        scale: 0.85,
+        opacity: 0
+      }, {
+        y: 0,
+        rotateY: 0,
+        rotateX: 0,
+        scale: 1,
+        opacity: 1,
+        duration: 0.95,
+        ease: "back.out(1.3)",
+        immediateRender: false
+      }, 4.1);
+      
+      // Reveal next card border and spotlight background
+      tl.to(".pill-glow-border.yellow", { opacity: 1, duration: 0.8 }, 4.1);
+      tl.to("#cta-spot-yellow", { opacity: 1, duration: 1.0 }, 4.1);
+      
+      // Animate next card scanline loop
+      tl.fromTo(".cta-card-scanline",
+        { top: "0%" },
+        { top: "100%", duration: 3.5, ease: "none", repeat: 8, immediateRender: false },
+        4.1
+      );
+      
+      // Animate play button pulse loop
+      tl.fromTo(".play-icon-glow",
+        { opacity: 0.1, scale: 0.9 },
+        { opacity: 0.8, scale: 1.15, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 26, immediateRender: false },
+        4.1
+      );
+ 
+      // 7.0s: Next-video card border pulse (yellow blur outline)
+      tl.to(".pill-glow-border.yellow.blur", {
+        opacity: 0.95,
+        scale: 1.04,
+        duration: 0.75,
+        ease: "sine.inOut"
+      }, 7.0);
+      tl.to(".pill-glow-border.yellow.blur", {
+        opacity: 0,
+        scale: 1.0,
+        duration: 0.85,
+        ease: "sine.inOut"
+      }, 7.75);
+ 
+      // 10.5s: Debate text glow pulse
+      tl.to("#cta-debate", {
+        textShadow: "0 0 35px rgba(255, 255, 255, 0.75)",
+        color: "#ffffff",
+        duration: 0.7,
+        ease: "power2.inOut"
+      }, 10.5);
+      tl.to("#cta-debate", {
+        textShadow: "none",
+        color: "var(--text)",
+        duration: 0.8,
+        ease: "power2.inOut"
+      }, 11.2);
+ 
+      // 14.0s: Comment pill volumetric glow sweep (blue blur outline)
+      tl.to(".pill-glow-border.blue.blur", {
+        opacity: 0.95,
+        scale: 1.05,
+        duration: 0.75,
+        ease: "sine.inOut"
+      }, 14.0);
+      tl.to(".pill-glow-border.blue.blur", {
+        opacity: 0,
+        scale: 1.0,
+        duration: 0.85,
+        ease: "sine.inOut"
+      }, 14.75);
+ 
+      // 18.0s: Slow 3D tilt shift on all elements in CTA stage
+      tl.to("#scene-cta-content", {
+        rotationY: 8,
+        rotationX: 4,
+        duration: 2.0,
+        ease: "power2.inOut"
+      }, 18.0);
+ 
+      // 22.0s: Next-video image Ken Burns zoom
+      tl.to("#cta-next-card img", {
+        scale: 1.12,
+        duration: 3.0,
+        ease: "sine.inOut"
+      }, 22.0);
+ 
+      // 26.0s: Soft float wobble in Y direction on all elements
+      tl.to("#scene-cta-content", {
+        y: -15,
+        duration: 1.8,
+        ease: "sine.inOut"
+      }, 26.0);
+ 
+      // 29.5s: Final settle to neutral center
+      tl.to("#scene-cta-content", {
+        rotationY: 0,
+        rotationX: 0,
+        y: 0,
+        duration: 1.2,
+        ease: "power2.out"
+      }, 29.5);
+      tl.to("#cta-next-card img", {
+        scale: 1.0,
+        duration: 1.2,
+        ease: "power2.out"
+      }, 29.5);
+ 
+      window.__timelines["scene-cta"] = tl;
+    </script>
+  </div>
+</template>

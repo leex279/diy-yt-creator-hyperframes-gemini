@@ -1,0 +1,1381 @@
+<!--
+  scene-stat-pill-row.html — Receipts & Benchmarks (Cinematic Blockbuster Overhaul).
+  
+  Visual timeline:
+  - 0.0s - 15.4s: Intro banner and official Gemini 3.5 Flash brand card showcase.
+  - 15.4s - 35.1s: Side-by-side speed chart comparison and massive 4X Faster token output gauge.
+  - 35.1s - 60.2s: Staggered reveal of 4 key benchmark cards in a 2x2 grid.
+  - 60.2s - 75.19s: Sleek bottom horizontal shelf of 7 available apps lighting up as named.
+-->
+<template id="scene-stat-pill-row-template">
+  <div data-composition-id="scene-stat-pill-row"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Plus Jakarta Sans', sans-serif; color:var(--text); background:transparent;">
+
+    <style>
+      /* ──────────────────────────────────────────────────
+         CONTAINER & UTILITIES
+         ────────────────────────────────────────────────── */
+      #scene-2-content {
+        --g-blue: #4285F4;
+        --g-red: #EA4335;
+        --g-yellow: #FBBC05;
+        --g-green: #34A853;
+
+        width: 100%; height: 100%;
+        padding: 60px 100px 40px;
+        display: flex; flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 2;
+      }
+      
+      .glass-premium {
+        background: rgba(10, 12, 22, 0.75);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 
+          0 15px 45px -10px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+        border-radius: 24px;
+      }
+
+      /* Volumetric Brand-Colored Ambient Glows */
+      .glow-blue {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(66, 133, 244, 0.18) !important;
+        border-color: rgba(66, 133, 244, 0.3) !important;
+      }
+      .glow-red {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(234, 67, 53, 0.18) !important;
+        border-color: rgba(234, 67, 53, 0.3) !important;
+      }
+      .glow-yellow {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(251, 188, 5, 0.18) !important;
+        border-color: rgba(251, 188, 5, 0.3) !important;
+      }
+      .glow-green {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(52, 168, 83, 0.18) !important;
+        border-color: rgba(52, 168, 83, 0.3) !important;
+      }
+
+      /* ──────────────────────────────────────────────────
+         HEADER BANNER
+         ────────────────────────────────────────────────── */
+      .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:12px;
+        text-align:center;
+        margin-bottom: 40px;
+        will-change: transform, opacity;
+      }
+      .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--g-blue);
+        text-shadow: 0 0 25px rgba(66, 133, 244, 0.45);
+      }
+      .headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        color: var(--text);
+        text-shadow: 0 0 35px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.6);
+        text-align: center;
+      }
+
+      /* ──────────────────────────────────────────────────
+         STAGE VIEWPORT (Holds different layers)
+         ────────────────────────────────────────────────── */
+      .stage-viewport {
+        position: relative;
+        width: 1720px;
+        height: 800px;
+        transform-style: preserve-3d;
+        perspective: 1200px;
+      }
+
+      /* LAYER 1: SPEED & FLASH INTRO */
+      #intro-showcase {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        will-change: transform, opacity;
+      }
+      
+      .glow-purple {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(224, 64, 251, 0.18) !important;
+        border-color: rgba(224, 64, 251, 0.3) !important;
+      }
+
+      #pro-card-wrap {
+        position: absolute;
+        width: 520px;
+        height: 480px;
+        left: 310px;
+        top: 130px;
+        overflow: hidden;
+        border-radius: 24px;
+        border-top: 4px solid #E040FB;
+        will-change: transform;
+      }
+
+      .pro-card-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #0A0A1E 0%, #120A2A 100%);
+        z-index: 1;
+      }
+
+      .pro-grid-lines {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.7;
+      }
+
+      .pro-glow-orb {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(224, 64, 251, 0.25) 0%, transparent 70%);
+        top: -50px;
+        right: -50px;
+        filter: blur(20px);
+        animation: orbFloat 10s ease-in-out infinite alternate;
+      }
+
+      @keyframes orbFloat {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(-30px, 30px) scale(1.2); }
+      }
+
+      .pro-card-content {
+        position: absolute;
+        inset: 0;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-start;
+        z-index: 2;
+        background: linear-gradient(180deg, transparent 40%, rgba(10, 5, 20, 0.85) 100%);
+      }
+
+      .pro-card-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 38px;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: #FFFFFF;
+        text-shadow: 0 0 20px rgba(224, 64, 251, 0.6);
+        margin-bottom: 12px;
+      }
+
+      .pro-card-status {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 16px;
+        color: #E040FB;
+        letter-spacing: 2px;
+        margin-bottom: 4px;
+      }
+
+      .pro-card-date {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+      
+      #gemini-card-wrap {
+        position: absolute;
+        width: 520px;
+        height: 480px;
+        left: 890px;
+        top: 130px;
+        overflow: hidden;
+        border-radius: 24px;
+        border-top: 4px solid var(--g-blue);
+        will-change: transform;
+      }
+
+      
+      #speed-chart-wrap {
+        position: absolute;
+        width: 900px;
+        height: 480px;
+        left: 700px;
+        top: 130px;
+        overflow: hidden;
+        border-radius: 24px;
+        border-top: 4px solid var(--g-yellow);
+        will-change: transform;
+      }
+      
+      #speed-gauge-wrap {
+        position: absolute;
+        width: 440px;
+        height: 480px;
+        left: 640px;
+        top: 130px;
+        border-radius: 24px;
+        border-top: 4px solid var(--g-red);
+        will-change: transform;
+      }
+      
+      .media-card-wrapper {
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .media-card-wrapper::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+        pointer-events: none;
+      }
+      .media-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.01);
+        transition: transform 0.8s ease;
+      }
+      .media-card-wrapper:hover .media-card-img {
+        transform: scale(1.05);
+      }
+      .card-tag {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 3;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: rgba(10, 15, 30, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 6px 14px;
+        border-radius: 30px;
+        color: var(--g-blue);
+      }
+      .card-glow-overlay {
+        position: absolute;
+        inset: -2px;
+        border-radius: 20px;
+        background: linear-gradient(45deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+        z-index: -1;
+        opacity: 0;
+        filter: blur(10px);
+        transition: opacity 0.5s ease;
+      }
+
+      /* SPEED GAUGE WIDGET */
+      .speed-gauge-card {
+        padding: 40px 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        position: relative;
+        border: 1.5px solid rgba(234, 67, 53, 0.15);
+        will-change: transform, opacity;
+      }
+      .gauge-ring-outer {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .gauge-svg {
+        position: absolute;
+        inset: 0;
+        transform: rotate(-90deg);
+        width: 100%;
+        height: 100%;
+      }
+      .gauge-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.05);
+        stroke-width: 14px;
+      }
+      .gauge-fill {
+        fill: none;
+        stroke: url(#gaugeGradient);
+        stroke-width: 14px;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 440;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 12px rgba(234, 67, 53, 0.5));
+      }
+      .gauge-value {
+        font-weight: 900;
+        font-size: 64px;
+        letter-spacing: -2px;
+        color: var(--accent-warn);
+        text-shadow: 0 0 30px rgba(234, 67, 53, 0.8);
+        font-variant-numeric: tabular-nums lining-nums;
+        z-index: 2;
+      }
+      .gauge-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+      .gauge-subtext {
+        font-size: 15px;
+        color: var(--text-muted);
+        text-align: center;
+        max-width: 80%;
+      }
+
+      /* LAYER 2: BENCHMARK GRID (2x2) */
+      #benchmark-grid {
+        position: absolute;
+        top: 10px;
+        left: 100px;
+        width: 1520px;
+        height: 480px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 30px;
+        transform-style: preserve-3d;
+        will-change: transform, opacity;
+        opacity: 0;
+        visibility: hidden;
+      }
+      
+      .bench-card {
+        padding: 24px 36px;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        border: 1.5px solid rgba(255, 255, 255, 0.08);
+        border-top: 4px solid var(--bench-color, var(--g-blue));
+        transform-style: preserve-3d;
+        will-change: transform, opacity;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        position: relative;
+        z-index: 1;
+      }
+      
+      /* Clockwise glowing animated border SVG & rect */
+      .card-border-glow-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+        overflow: visible;
+        transform: translateZ(0);
+        will-change: transform, opacity;
+        opacity: 0;
+      }
+      .glow-rect-blur {
+        fill: none;
+        stroke: var(--bench-color, var(--g-blue));
+        stroke-width: 6;
+        stroke-dasharray: 350 1550;
+        stroke-dashoffset: 1900;
+        filter: blur(5px);
+        will-change: stroke-dashoffset;
+      }
+      .glow-rect-sharp {
+        fill: none;
+        stroke: var(--bench-color, var(--g-blue));
+        stroke-width: 2.5;
+        stroke-dasharray: 350 1550;
+        stroke-dashoffset: 1900;
+        will-change: stroke-dashoffset;
+      }
+      .bench-num-wrap {
+        display: flex;
+        align-items: baseline;
+        position: relative;
+      }
+      .bench-num {
+        font-weight: 900;
+        font-size: 88px;
+        letter-spacing: -3px;
+        line-height: 1;
+        font-variant-numeric: tabular-nums lining-nums;
+      }
+      .bench-num-wrap::after {
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--bench-color, var(--g-blue));
+        box-shadow: 0 0 12px var(--bench-color, var(--g-blue));
+        border-radius: 2px;
+      }
+      .bench-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .bench-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--text);
+      }
+      .bench-desc {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.3;
+      }
+      
+      /* Technical Capability Chips in Benchmarks */
+      .bench-chips-container {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .bench-chip {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+      }
+
+      /* Custom colors per card */
+      .bench-card.orange { --bench-color: var(--g-red); }
+      .bench-card.cyan { --bench-color: #00BCD4; }
+      .bench-card.gold { --bench-color: var(--g-yellow); }
+      .bench-card.emerald { --bench-color: var(--g-green); }
+
+      .bench-card.orange .bench-num {
+        color: #EA4335;
+        text-shadow: 0 0 45px rgba(234, 67, 53, 0.6);
+      }
+      .bench-card.cyan .bench-num {
+        color: #00E5FF;
+        text-shadow: 0 0 45px rgba(0, 229, 255, 0.5);
+      }
+      .bench-card.gold .bench-num {
+        color: #FBBC05;
+        text-shadow: 0 0 45px rgba(251, 188, 5, 0.6);
+      }
+      .bench-card.emerald .bench-num {
+        color: #00E676;
+        text-shadow: 0 0 45px rgba(0, 230, 118, 0.5);
+      }
+
+      /* LAYER 3: APP SHELF */
+      #app-shelf {
+        position: absolute;
+        bottom: -15px;
+        left: 60px;
+        width: 1600px;
+        height: 192px;
+        padding: 0 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1.5px solid rgba(255, 255, 255, 0.06);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 -20px 50px rgba(0, 0, 0, 0.5);
+        will-change: transform, opacity;
+        opacity: 0;
+        visibility: hidden;
+      }
+      #app-shelf::before {
+        content: "";
+        position: absolute;
+        top: -1.5px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, 
+          rgba(66, 133, 244, 0) 0%, 
+          rgba(66, 133, 244, 0.8) 25%, 
+          rgba(234, 67, 53, 0.8) 50%, 
+          rgba(251, 188, 5, 0.8) 75%, 
+          rgba(52, 168, 83, 0) 100%);
+        box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+        border-radius: 2px 2px 0 0;
+      }
+      .app-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        width: 210px;
+        opacity: 0.25;
+        transform: scale(0.9);
+        will-change: transform, opacity;
+        filter: grayscale(80%);
+        transition: filter 0.5s ease;
+      }
+      .app-icon-wrap {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .app-icon-wrap svg {
+        width: 40px;
+        height: 40px;
+        fill: var(--app-color, #fff);
+      }
+      .app-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-align: center;
+        max-width: 95%;
+        line-height: 1.2;
+        transition: color 0.5s ease;
+      }
+
+      /* Active illuminated states */
+      .app-item.active {
+        opacity: 1 !important;
+        transform: scale(1.15) !important;
+        filter: grayscale(0%) !important;
+      }
+      .app-item.active .app-icon-wrap {
+        background: rgba(10, 15, 30, 0.95);
+        border-color: var(--app-color);
+        box-shadow: 
+          0 0 30px var(--app-color-glow),
+          0 10px 25px rgba(0, 0, 0, 0.5);
+      }
+      .app-item.active .app-label {
+        color: var(--text);
+      }
+
+      .app-item[data-app="gemini"]     { --app-color: var(--g-blue);   --app-color-glow: rgba(66, 133, 244, 0.6); }
+      .app-item[data-app="search"]     { --app-color: var(--g-red);    --app-color-glow: rgba(234, 67, 53, 0.6); }
+      .app-item[data-app="antigravity"]{ --app-color: var(--g-yellow); --app-color-glow: rgba(251, 188, 5, 0.6); }
+      .app-item[data-app="studio"]     { --app-color: var(--g-green);  --app-color-glow: rgba(52, 168, 83, 0.6); }
+      .app-item[data-app="android"]    { --app-color: #3DDC84;         --app-color-glow: rgba(61, 220, 132, 0.6); }
+      .app-item[data-app="platform"]   { --app-color: #00BCD4;         --app-color-glow: rgba(0, 188, 212, 0.6); }
+      .app-item[data-app="enterprise"] { --app-color: #E040FB;         --app-color-glow: rgba(224, 64, 251, 0.6); }
+
+      /* Futuristic neon rubber stamps */
+      .pro-stamp {
+        position: absolute;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 900;
+        font-size: 28px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        border: 4px double currentColor;
+        padding: 8px 18px;
+        border-radius: 14px;
+        opacity: 0;
+        transform: scale(4.5) rotate(-45deg);
+        z-index: 5;
+        pointer-events: none;
+        text-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.5);
+        background: rgba(10, 5, 20, 0.4);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+      }
+      #stamp-internal {
+        color: #FF2E93; /* Hyper-vibrant hot pink */
+        top: 60px;
+        right: 40px;
+        transform-origin: center;
+      }
+      #stamp-next-month {
+        color: #00E5FF; /* Vivid neon cyan */
+        top: 170px;
+        right: 50px;
+        transform-origin: center;
+      }
+    </style>
+
+    <div id="scene-2-content">
+      <!-- HEADER BANNER -->
+      <div class="header-block">
+        <div class="overline" id="stat-row-overline">GEMINI 3.5 FLASH</div>
+        <div class="headline" id="stat-row-headline">THE FIRST FRONTIER MODEL FOR AGENTS</div>
+      </div>
+
+      <!-- CAMERA FLOAT WRAPPER -->
+      <div id="camera-float-wrap" style="width:100%; height:100%; transform-style:preserve-3d; will-change:transform;">
+        <!-- VIEWPORT STAGE -->
+        <div class="stage-viewport">
+          
+          <!-- LAYER 1: SPEED & INTRO SHOWCASE -->
+          <div id="intro-showcase" data-layout-allow-overflow="true">
+          
+          <!-- GEMINI 3.5 PRO BRAND CARD -->
+          <div class="media-card-wrapper glass-premium glow-purple" id="pro-card-wrap" style="opacity: 0;">
+            <span class="card-tag" style="color: #E040FB; border-color: rgba(224, 64, 251, 0.3);">Flagship Model</span>
+            <div class="pro-card-bg">
+              <div class="pro-grid-lines"></div>
+              <div class="pro-glow-orb"></div>
+            </div>
+            <div class="pro-card-content">
+              <div class="pro-card-title">GEMINI 3.5 PRO</div>
+              <div class="pro-card-status">INTERNAL PREVIEW</div>
+              <div class="pro-card-date">ROLLOUT NEXT MONTH</div>
+            </div>
+            <!-- Futuristic neon rubber stamps -->
+            <div class="pro-stamp" id="stamp-internal">INTERNAL</div>
+            <div class="pro-stamp" id="stamp-next-month">NEXT MONTH</div>
+            <div class="card-glow-overlay" id="pro-card-glow"></div>
+          </div>
+          
+          <!-- OFFICIAL GEMINI 3.5 BRAND CARD -->
+          <div class="media-card-wrapper glass-premium glow-blue" id="gemini-card-wrap">
+            <span class="card-tag">Frontier Model</span>
+            <img src="assets/blog/gemini-3-5-card.webp" class="media-card-img" alt="Gemini 3.5" />
+            <div class="card-glow-overlay" id="gemini-card-glow"></div>
+          </div>
+
+          <!-- B-ROLL SPEED INDEX CHART -->
+          <div class="media-card-wrapper glass-premium glow-yellow" id="speed-chart-wrap" style="opacity: 0;">
+            <span class="card-tag">Speed Index</span>
+            <img src="assets/blog/flash-speed-chart.webp" class="media-card-img" alt="Flash Speed Chart" />
+          </div>
+
+          <!-- DYNAMIC NEON SPEED GAUGE -->
+          <div class="speed-gauge-card glass-premium glow-red" id="speed-gauge-wrap" style="opacity: 0;">
+            <div class="gauge-ring-outer">
+              <svg class="gauge-svg" viewBox="0 0 160 160">
+                <defs>
+                  <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#EA4335" />
+                    <stop offset="100%" stop-color="#FBBC05" />
+                  </linearGradient>
+                </defs>
+                <circle class="gauge-bg" cx="80" cy="80" r="70" />
+                <circle class="gauge-fill" id="gauge-fill-path" cx="80" cy="80" r="70" />
+              </svg>
+              <div class="gauge-value" id="gauge-value-text">1.0X</div>
+            </div>
+            <div class="gauge-label">Token Speed</div>
+            <div class="gauge-subtext">Output tokens per second vs Pro models</div>
+          </div>
+
+        </div>
+
+        <!-- LAYER 2: BENCHMARK GRID -->
+        <div id="benchmark-grid">
+          
+          <!-- Terminal-Bench -->
+          <div class="bench-card glass-premium orange" id="bench-card-1">
+            <svg class="card-border-glow-svg" width="745" height="225" viewBox="0 0 745 225">
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-blur" />
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-sharp" />
+            </svg>
+            <div class="bench-num-wrap">
+              <div class="bench-num">76.2%</div>
+            </div>
+            <div class="bench-info">
+              <div class="bench-label">Terminal-Bench 2.1</div>
+              <div class="bench-desc">Autonomous CLI terminal shell & environment task completion</div>
+              <div class="bench-chips-container">
+                <span class="bench-chip"><span style="font-size:12px;">💻</span> CLI DEV</span>
+                <span class="bench-chip"><span style="font-size:12px;">🧠</span> CHAIN-OF-THOUGHT</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- GDP Val Elo -->
+          <div class="bench-card glass-premium cyan" id="bench-card-2">
+            <svg class="card-border-glow-svg" width="745" height="225" viewBox="0 0 745 225">
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-blur" />
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-sharp" />
+            </svg>
+            <div class="bench-num-wrap">
+              <div class="bench-num">1656</div>
+            </div>
+            <div class="bench-info">
+              <div class="bench-label">GDP Val AA (Elo)</div>
+              <div class="bench-desc">Real-world coding execution, tools, and exception recovery rate</div>
+              <div class="bench-chips-container">
+                <span class="bench-chip"><span style="font-size:12px;">✏️</span> RECOVERY</span>
+                <span class="bench-chip"><span style="font-size:12px;">💾</span> EXECUTION</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- MCP Atlas -->
+          <div class="bench-card glass-premium gold" id="bench-card-3">
+            <svg class="card-border-glow-svg" width="745" height="225" viewBox="0 0 745 225">
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-blur" />
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-sharp" />
+            </svg>
+            <div class="bench-num-wrap">
+              <div class="bench-num">83.6%</div>
+            </div>
+            <div class="bench-info">
+              <div class="bench-label">MCP Atlas Standard</div>
+              <div class="bench-desc">Structured tool wiring, model connection protocol execution</div>
+              <div class="bench-chips-container">
+                <span class="bench-chip"><span style="font-size:12px;">🔌</span> WEBMCP</span>
+                <span class="bench-chip"><span style="font-size:12px;">⚡</span> TOOL WIRING</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Char-Xiv Reasoning -->
+          <div class="bench-card glass-premium emerald" id="bench-card-4">
+            <svg class="card-border-glow-svg" width="745" height="225" viewBox="0 0 745 225">
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-blur" />
+              <rect x="0" y="0" width="745" height="225" rx="24" ry="24" class="glow-rect-sharp" />
+            </svg>
+            <div class="bench-num-wrap">
+              <div class="bench-num">84.2%</div>
+            </div>
+            <div class="bench-info">
+              <div class="bench-label">Char-Xiv Reasoning</div>
+              <div class="bench-desc">Complex mathematical deconstruction & multi-step academic loops</div>
+              <div class="bench-chips-container">
+                <span class="bench-chip"><span style="font-size:12px;">🎓</span> ACADEMIC</span>
+                <span class="bench-chip"><span style="font-size:12px;">🧮</span> MATH LOOP</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LAYER 3: APP SHELF -->
+        <div id="app-shelf" class="glass-premium" style="--hf-studio-offset-x: -77px; --hf-studio-offset-y: -145px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px); --hf-studio-width: 1762px; --hf-studio-height: 219px; width: 1762px; height: 219px; min-width: 0px; min-height: 0px; max-width: none; max-height: none; box-sizing: border-box; scale: none" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="none" data-hf-studio-box-size="true" data-hf-studio-original-width="" data-hf-studio-original-height="" data-hf-studio-original-min-width="" data-hf-studio-original-min-height="" data-hf-studio-original-max-width="" data-hf-studio-original-max-height="" data-hf-studio-original-flex-basis="" data-hf-studio-original-flex-grow="" data-hf-studio-original-flex-shrink="" data-hf-studio-original-box-sizing="" data-hf-studio-original-display="">
+          
+          <!-- Gemini App -->
+          <div class="app-item" id="app-item-1" data-app="gemini">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2L14.7 9.3L22 12L14.7 14.7L12 22L9.3 14.7L2 12L9.3 9.3L12 2Z" />
+              </svg>
+            </div>
+            <div class="app-label">Gemini App</div>
+          </div>
+
+          <!-- AI Search -->
+          <div class="app-item" id="app-item-2" data-app="search">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+              </svg>
+            </div>
+            <div class="app-label">AI Mode in Search</div>
+          </div>
+
+          <!-- Antigravity -->
+          <div class="app-item" id="app-item-3" data-app="antigravity">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
+              </svg>
+            </div>
+            <div class="app-label">Google Antigravity</div>
+          </div>
+
+          <!-- AI Studio -->
+          <div class="app-item" id="app-item-4" data-app="studio">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+              </svg>
+            </div>
+            <div class="app-label">AI Studio API</div>
+          </div>
+
+          <!-- Android Studio -->
+          <div class="app-item" id="app-item-5" data-app="android">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+              </svg>
+            </div>
+            <div class="app-label">Android Studio</div>
+          </div>
+
+          <!-- Enterprise Agent Platform -->
+          <div class="app-item" id="app-item-6" data-app="platform">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 18h16v2H4zm8-16C7.58 2 4 5.58 4 10c0 3.32 2.68 6.44 6 7.66V20h4v-2.34c3.32-1.22 6-4.34 6-7.66 0-4.42-3.58-8-8-8zm0 12c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+              </svg>
+            </div>
+            <div class="app-label">Agent Platform</div>
+          </div>
+
+          <!-- Gemini Enterprise -->
+          <div class="app-item" id="app-item-7" data-app="enterprise">
+            <div class="app-icon-wrap">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 12H7v-1.5c0-1.66 3.33-2.5 5-2.5s5 .84 5 2.5V19h-5z" />
+              </svg>
+            </div>
+            <div class="app-label">Gemini Enterprise</div>
+          </div>
+
+        </div>
+
+      </div>
+      </div> <!-- Closes #camera-float-wrap -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Continuous camera float drift (yoyo loop inside timeline for deterministic seek rendering)
+      tl.fromTo("#camera-float-wrap",
+        { rotationY: -1.5, rotationX: -1.0, y: -5 },
+        { 
+          rotationY: 1.5, 
+          rotationX: 1.0, 
+          y: 5, 
+          duration: 7.5, 
+          ease: "sine.inOut", 
+          yoyo: true, 
+          repeat: 11, // Covers 7.5s * 12 = 90.0s, extending past the 75.19s total duration
+          immediateRender: false
+        },
+        0
+      );
+ 
+      // ─────────────────────────────────────────────────────
+      // STAGE 1 & 2: INTRO & SPEED GAUGE (0.0s - 35.1s)
+      // ─────────────────────────────────────────────────────
+      
+      // 0.0s - Overline and Headline entrance
+      tl.fromTo("#stat-row-overline", 
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false }, 
+        0
+      );
+      tl.fromTo("#stat-row-headline", 
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power3.out", immediateRender: false }, 
+        0.3
+      );
+
+      // 0.5s - Both brand cards enter side-by-side (symmetrical initial visual)
+      tl.fromTo("#pro-card-wrap",
+        { scale: 0.82, y: 50, rotationX: -12, opacity: 0 },
+        { scale: 1.0, y: 0, rotationX: 0, opacity: 1, duration: 1.0, ease: "back.out(1.2)", immediateRender: false },
+        0.5
+      );
+      tl.fromTo("#gemini-card-wrap",
+        { scale: 0.82, y: 50, rotationX: -12, opacity: 0 },
+        { scale: 1.0, y: 0, rotationX: 0, opacity: 1, duration: 1.0, ease: "back.out(1.2)", immediateRender: false },
+        0.5
+      );
+
+      // Card hovering idle breathing (0.5s - 6.6s)
+      tl.to(["#pro-card-wrap", "#gemini-card-wrap"], {
+        y: -10,
+        rotationY: 3,
+        duration: 4.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 1,
+        stagger: 0.2
+      }, 1.5);
+
+      // 6.6s - Focus on Gemini 3.5 Flash card, dim Pro card (aligned with "starting with Gemini 3.5")
+      tl.to("#gemini-card-wrap", {
+        scale: 1.08,
+        z: 40,
+        boxShadow: "0 40px 80px rgba(66, 133, 244, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+        opacity: 1,
+        duration: 0.6,
+        ease: "back.out(1.4)",
+        overwrite: "auto"
+      }, 6.6);
+      
+      tl.to("#pro-card-wrap", {
+        scale: 0.85,
+        z: -50,
+        opacity: 0.15,
+        duration: 0.6,
+        ease: "power2.out",
+        overwrite: "auto"
+      }, 6.6);
+
+      // 8.3s - Capsule card border/glow flash when the word "Flash" is first spoken
+      tl.to("#gemini-card-glow", { opacity: 0.8, duration: 0.38, ease: "power2.out" }, 8.3);
+      tl.to("#gemini-card-glow", { opacity: 0.2, duration: 0.8, ease: "power2.in", overwrite: "auto" }, 8.7);
+      tl.to("#gemini-card-wrap", {
+        scale: 1.12,
+        boxShadow: "0 50px 100px rgba(66, 133, 244, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+        duration: 0.5,
+        ease: "back.out(1.5)"
+      }, 8.3);
+      tl.to("#gemini-card-wrap", {
+        scale: 1.08,
+        boxShadow: "0 40px 80px rgba(66, 133, 244, 0.4)",
+        duration: 0.8,
+        ease: "power2.out"
+      }, 8.8);
+
+      // 9.2s - Focus on Gemini 3.5 Pro card, dim Flash card (aligned with "flagship Gemini 3.5 Pro")
+      tl.to("#pro-card-wrap", {
+        scale: 1.08,
+        z: 40,
+        boxShadow: "0 40px 80px rgba(224, 64, 251, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+        opacity: 1,
+        duration: 0.6,
+        ease: "back.out(1.4)",
+        overwrite: "auto"
+      }, 9.2);
+      
+      tl.to("#gemini-card-wrap", {
+        scale: 0.85,
+        z: -50,
+        opacity: 0.15,
+        duration: 0.6,
+        ease: "power2.out",
+        overwrite: "auto"
+      }, 9.2);
+      
+      tl.to("#pro-card-glow", { opacity: 0.8, duration: 0.38, ease: "power2.out" }, 9.2);
+      tl.to("#pro-card-glow", { opacity: 0.2, duration: 0.8, ease: "power2.in", overwrite: "auto" }, 9.6);
+
+      // 12.49s - "INTERNAL" stamp slams down with high-impact shake on narrator cue
+      tl.fromTo("#stamp-internal",
+        { scale: 4.5, rotation: -45, opacity: 0 },
+        { scale: 1.0, rotation: -8, opacity: 1, duration: 0.22, ease: "power2.in" },
+        12.49
+      );
+      tl.to("#pro-card-wrap", {
+        scale: 1.13,
+        rotationZ: -1.5,
+        duration: 0.08,
+        yoyo: true,
+        repeat: 1,
+        ease: "power1.inOut"
+      }, 12.71);
+      
+      // 14.56s - "NEXT MONTH" stamp slams down with high-impact shake on narrator cue
+      tl.fromTo("#stamp-next-month",
+        { scale: 4.5, rotation: 45, opacity: 0 },
+        { scale: 1.0, rotation: 12, opacity: 1, duration: 0.22, ease: "power2.in" },
+        14.56
+      );
+      tl.to("#pro-card-wrap", {
+        scale: 1.13,
+        rotationZ: 1.5,
+        duration: 0.08,
+        yoyo: true,
+        repeat: 1,
+        ease: "power1.inOut"
+      }, 14.78);
+
+      // 15.4s - Animate side-by-side transition: slide brand card left, bring in speed chart right
+      tl.to("#pro-card-wrap", {
+        scale: 0.7,
+        z: -100,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.inOut",
+        overwrite: "auto"
+      }, 15.4);
+      tl.set("#pro-card-wrap", { visibility: "hidden" }, 16.2);
+
+      tl.to("#gemini-card-wrap", {
+        x: -770, // Moves Flash Card from 890px to 120px
+        scale: 0.9,
+        opacity: 1,
+        z: 0,
+        rotationY: 0,
+        duration: 0.8,
+        ease: "power3.inOut",
+        overwrite: "auto"
+      }, 15.4);
+
+      tl.fromTo("#speed-chart-wrap",
+        { x: 500, scale: 0.8, opacity: 0 },
+        { x: 0, scale: 1.0, opacity: 1, duration: 0.8, ease: "power3.inOut", immediateRender: false },
+        15.4
+      );
+
+      // 16.2s - Subtle yoyo breathing for both side-by-side cards
+      tl.to(["#gemini-card-wrap", "#speed-chart-wrap"], {
+        y: -8,
+        duration: 4.0,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 3,
+        stagger: 0.2
+      }, 16.2);
+
+      // 24.8s - Cinematic 3D focus/zoom on the benchmark chart, push brand card into background
+      tl.to("#speed-chart-wrap", {
+        x: -290,
+        y: 0,
+        z: 180,
+        scale: 1.25,
+        rotationY: -10,
+        rotationX: 5,
+        duration: 0.8,
+        ease: "power3.out",
+        overwrite: "auto"
+      }, 24.8);
+
+      tl.to("#gemini-card-wrap", {
+        x: -830, // 890px - 830px = 60px absolute
+        y: 40,
+        z: -300,
+        scale: 0.7,
+        rotationY: 35,
+        rotationX: -5,
+        opacity: 0.15,
+        duration: 0.8,
+        ease: "power3.out",
+        overwrite: "auto"
+      }, 24.8);
+
+      // 30.0s - Speed gauge slides in and centers while cards shift/shrink into 3D space
+      tl.to("#gemini-card-wrap", {
+        x: -790, // 890px - 790px = 100px absolute
+        y: 0,
+        z: -150,
+        rotationY: 20,
+        rotationX: 0,
+        scale: 0.8,
+        opacity: 0.3,
+        duration: 0.9,
+        ease: "power2.inOut"
+      }, 30.0);
+      
+      tl.to("#speed-chart-wrap", {
+        x: 180,
+        y: 0,
+        z: -150,
+        rotationY: -20,
+        rotationX: 0,
+        scale: 0.8,
+        opacity: 0.3,
+        duration: 0.9,
+        ease: "power2.inOut"
+      }, 30.0);
+
+      tl.fromTo("#speed-gauge-wrap",
+        { scale: 0.8, y: 60, opacity: 0 },
+        { x: 0, scale: 1.0, y: 0, opacity: 1, duration: 0.9, ease: "back.out(1.4)", immediateRender: false },
+        30.0
+      );
+
+      // 35.1s - Count-up animation for Token Speed (1X -> 4X) synced to the "four times faster" claim
+      const gaugeValEl = document.getElementById("gauge-value-text");
+      const gaugeFillPath = document.getElementById("gauge-fill-path");
+      const valObj = { val: 1.0 };
+      
+      tl.to(valObj, {
+        val: 4.0,
+        duration: 2.2,
+        ease: "power2.out",
+        onUpdate: function() {
+          gaugeValEl.textContent = valObj.val.toFixed(1) + "X";
+          // Circle circumference is ~440 (2 * PI * r = 2 * 3.14159 * 70 = 439.8).
+          // Fill from 1/4 to full corresponding to progress.
+          const progress = (valObj.val - 1.0) / 3.0; // 0 to 1
+          const dashoffset = 440 - (progress * 330); // Leave a small 1/4 gap at the bottom for aesthetics
+          gaugeFillPath.style.strokeDashoffset = dashoffset;
+        }
+      }, 35.1);
+
+      // Volumetric glow flash when count hits 4X
+      tl.to("#speed-gauge-wrap", {
+        boxShadow: "0 25px 60px rgba(234, 67, 53, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+        duration: 0.5
+      }, 37.0);
+      tl.to("#speed-gauge-wrap", {
+        boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+        duration: 0.8
+      }, 37.5);
+
+      // ─────────────────────────────────────────────────────
+      // STAGE 3: BENCHMARK GRID (35.1s - 60.2s)
+      // ─────────────────────────────────────────────────────
+
+      // 35.1s - Transition: Scale down Layer 1 intro elements
+      tl.to(["#gemini-card-wrap", "#speed-chart-wrap", "#speed-gauge-wrap"], {
+        scale: 0.6,
+        y: -100,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power2.in"
+      }, 35.1);
+      tl.set(["#gemini-card-wrap", "#speed-chart-wrap", "#speed-gauge-wrap"], { visibility: "hidden" }, 35.9);
+
+      // Switch title headers
+      tl.to("#stat-row-overline", { textContent: "AGENT BENCHMARKS", duration: 0.3 }, 35.1);
+      tl.to("#stat-row-headline", { textContent: "STRONGEST DEVELOPER PERFORMANCE IN WORKLOADS", duration: 0.3 }, 35.1);
+
+      // 35.8s - Reveal Benchmark Grid container and dimmed wireframe standby cards
+      tl.set("#benchmark-grid", { visibility: "visible" }, 35.8);
+      tl.fromTo("#benchmark-grid",
+        { scale: 0.95, opacity: 0 },
+        { scale: 1.0, opacity: 1, duration: 0.8, ease: "power2.out", immediateRender: false },
+        35.8
+      );
+
+      // Continuous slow 3D camera drift on grid starting at 35.8s to keep perspective dynamic
+      tl.fromTo("#benchmark-grid",
+        { rotateY: -3, rotateX: 1 },
+        { rotateY: 3, rotateX: -1, duration: 8.0, ease: "sine.inOut", yoyo: true, repeat: 2, immediateRender: false },
+        35.8
+      );
+
+      // Staggered reveal of benchmark cards in a dimmed "standby" slot state with scores hidden
+      tl.fromTo(".bench-card",
+        { scale: 0.95, opacity: 0 },
+        { scale: 0.98, opacity: 0.22, stagger: 0.15, duration: 0.8, ease: "power2.out", immediateRender: false },
+        35.8
+      );
+      tl.set(".bench-card .bench-num-wrap", { opacity: 0, scale: 0.7 }, 35.8);
+
+      // Diagnostic glowing scanline/border sweeps to build anticipation during narration
+      tl.to("#bench-card-1 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 36.8);
+      tl.to("#bench-card-2 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 38.3);
+      tl.to("#bench-card-3 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 39.8);
+      tl.to("#bench-card-4 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 41.3);
+
+      // 44.25s - Power Up/Power Reveal Card 1: 76.2% Terminal-Bench 2.1
+      tl.to("#bench-card-1", {
+        scale: 1.05,
+        opacity: 1,
+        duration: 0.4,
+        ease: "back.out(1.5)",
+        overwrite: "auto"
+      }, 44.25);
+      tl.to("#bench-card-1", {
+        scale: 1.0,
+        duration: 0.5,
+        ease: "power2.out"
+      }, 44.65);
+      tl.fromTo("#bench-card-1 .bench-num-wrap",
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
+        44.25
+      );
+      tl.fromTo("#bench-card-1 .card-border-glow-svg",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
+        44.25
+      );
+      tl.fromTo("#bench-card-1 .glow-rect-blur, #bench-card-1 .glow-rect-sharp",
+        { strokeDashoffset: 1900 },
+        { strokeDashoffset: -11400, duration: 17.5, ease: "none", immediateRender: false },
+        44.25
+      );
+
+      // 47.07s - Power Up/Power Reveal Card 2: 1656 Elo GDP Val
+      tl.to("#bench-card-2", {
+        scale: 1.05,
+        opacity: 1,
+        duration: 0.4,
+        ease: "back.out(1.5)",
+        overwrite: "auto"
+      }, 47.07);
+      tl.to("#bench-card-2", {
+        scale: 1.0,
+        duration: 0.5,
+        ease: "power2.out"
+      }, 47.47);
+      tl.fromTo("#bench-card-2 .bench-num-wrap",
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
+        47.07
+      );
+      tl.fromTo("#bench-card-2 .card-border-glow-svg",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
+        47.07
+      );
+      tl.fromTo("#bench-card-2 .glow-rect-blur, #bench-card-2 .glow-rect-sharp",
+        { strokeDashoffset: 1900 },
+        { strokeDashoffset: -9500, duration: 15.0, ease: "none", immediateRender: false },
+        47.07
+      );
+
+      // 51.87s - Power Up/Power Reveal Card 3: 83.6% MCP Atlas
+      tl.to("#bench-card-3", {
+        scale: 1.05,
+        opacity: 1,
+        duration: 0.4,
+        ease: "back.out(1.5)",
+        overwrite: "auto"
+      }, 51.87);
+      tl.to("#bench-card-3", {
+        scale: 1.0,
+        duration: 0.5,
+        ease: "power2.out"
+      }, 52.27);
+      tl.fromTo("#bench-card-3 .bench-num-wrap",
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
+        51.87
+      );
+      tl.fromTo("#bench-card-3 .card-border-glow-svg",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
+        51.87
+      );
+      tl.fromTo("#bench-card-3 .glow-rect-blur, #bench-card-3 .glow-rect-sharp",
+        { strokeDashoffset: 1900 },
+        { strokeDashoffset: -5700, duration: 10.0, ease: "none", immediateRender: false },
+        51.87
+      );
+
+      // 55.07s - Power Up/Power Reveal Card 4: 84.2% Char-Xiv Reasoning
+      tl.to("#bench-card-4", {
+        scale: 1.05,
+        opacity: 1,
+        duration: 0.4,
+        ease: "back.out(1.5)",
+        overwrite: "auto"
+      }, 55.07);
+      tl.to("#bench-card-4", {
+        scale: 1.0,
+        duration: 0.5,
+        ease: "power2.out"
+      }, 55.47);
+      tl.fromTo("#bench-card-4 .bench-num-wrap",
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
+        55.07
+      );
+      tl.fromTo("#bench-card-4 .card-border-glow-svg",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
+        55.07
+      );
+      tl.fromTo("#bench-card-4 .glow-rect-blur, #bench-card-4 .glow-rect-sharp",
+        { strokeDashoffset: 1900 },
+        { strokeDashoffset: -3800, duration: 7.5, ease: "none", immediateRender: false },
+        55.07
+      );
+
+      // Fade out glows at app shelf transition
+      tl.to(".card-border-glow-svg", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 60.3);
+
+      // Stage slow rotate while grid is up
+      tl.to("#benchmark-grid", {
+        rotateY: 4,
+        rotateX: -1.5,
+        duration: 8.0,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 1
+      }, 44.25);
+
+      // ─────────────────────────────────────────────────────
+      // STAGE 4: APP SHELF LIGHTING (60.3s - 75.19s)
+      // ─────────────────────────────────────────────────────
+
+      // 60.3s - Transition: Shrink & translate benchmark grid upwards, dim title slightly
+      tl.to("#benchmark-grid", {
+        scale: 0.85,
+        y: -60,
+        opacity: 0.45,
+        rotateY: 0,
+        rotateX: 0,
+        duration: 0.8,
+        ease: "power2.inOut",
+        overwrite: "auto"
+      }, 60.3);
+
+      // Update titles
+      tl.to("#stat-row-overline", { textContent: "DEPLOYMENT READY", duration: 0.3 }, 60.3);
+      tl.to("#stat-row-headline", { textContent: "IMMEDIATELY AVAILABLE ACROSS GOOGLE ECOSYSTEM", duration: 0.3 }, 60.3);
+
+      // Slide in App Shelf
+      tl.set("#app-shelf", { visibility: "visible" }, 60.3);
+      tl.fromTo("#app-shelf",
+        { y: 80, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.2)", immediateRender: false },
+        60.3
+      );
+
+      // 61.57s - Light up App 1: Gemini App
+      tl.to("#app-item-1", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 61.57);
+
+      // 62.47s - Light up App 2: AI Mode in Search
+      tl.to("#app-item-2", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 62.47);
+
+      // 63.97s - Light up App 3: Google Antigravity
+      tl.to("#app-item-3", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 63.97);
+
+      // 65.67s - Light up App 4: AI Studio Gemini API
+      tl.to("#app-item-4", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 65.67);
+
+      // 67.47s - Light up App 5: Android Studio
+      tl.to("#app-item-5", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 67.47);
+
+      // 69.07s - Light up App 6: Enterprise Agent Platform
+      tl.to("#app-item-6", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 69.07);
+
+      // 70.97s - Light up App 7: Gemini Enterprise
+      tl.to("#app-item-7", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 70.97);
+
+      // Final camera zoom-out sweep
+      tl.to(".stage-viewport", {
+        scale: 0.98,
+        z: -30,
+        duration: 3.5,
+        ease: "sine.inOut"
+      }, 71.0);
+
+      window.__timelines["scene-stat-pill-row"] = tl;
+    </script>
+  </div>
+</template>

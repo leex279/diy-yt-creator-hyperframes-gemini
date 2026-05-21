@@ -1,0 +1,476 @@
+<!--
+  captions.html — Cinematic Keyword Overlays (NOT always-on subtitles)
+
+  Strategy: Instead of 447 continuous subtitle clips, we use ~30 sparse,
+  high-impact "cinematic callout" moments that punctuate key revelations.
+  Each callout is a bold keyword or short phrase that slams in, holds
+  briefly, then fades — positioned cinematically at various screen zones
+  (top-left badge, center-screen slam, bottom-right accent, etc.)
+
+  Framework-required attributes:
+    data-timeline-role="captions"
+    data-caption-root="true"
+-->
+<template id="captions-template">
+  <div data-composition-id="captions"
+       data-start="0"
+       data-timeline-role="captions"
+       data-caption-root="true"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; pointer-events:none;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #caption-area {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      /* Hide all clips from framework — we handle rendering ourselves */
+      #caption-area .clip {
+        display: none !important;
+      }
+
+      /* ── Cinematic Callout Base ───────────────────────────── */
+      .co {
+        position: absolute;
+        visibility: hidden;         /* framework controls show/hide */
+        pointer-events: none;
+        opacity: 0;
+        will-change: opacity, transform;
+      }
+
+      /* STYLE 1: Giant slam word — dead center */
+      .co-slam {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.7);
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 160px;
+        letter-spacing: -4px;
+        text-transform: uppercase;
+        color: #ffffff;
+        text-shadow:
+          0 0 80px rgba(66,133,244,0.6),
+          0 8px 32px rgba(0,0,0,0.9);
+        white-space: nowrap;
+        text-align: center;
+        transition: none;
+      }
+
+      /* STYLE 2: Top-left overline badge */
+      .co-badge-tl {
+        top: 60px;
+        left: 80px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #4285F4;
+        background: rgba(10,10,20,0.85);
+        border: 1.5px solid rgba(66,133,244,0.5);
+        border-radius: 8px;
+        padding: 10px 22px;
+        backdrop-filter: blur(8px);
+        transform: translateY(-10px);
+        white-space: nowrap;
+      }
+
+      /* STYLE 3: Bottom-center stat bar */
+      .co-stat-bar {
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 52px;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+        color: #ffffff;
+        text-shadow: 0 4px 24px rgba(0,0,0,0.9);
+        white-space: nowrap;
+        text-align: center;
+        background: rgba(8,8,15,0.8);
+        border-top: 2px solid rgba(66,133,244,0.5);
+        padding: 18px 60px;
+        backdrop-filter: blur(12px);
+      }
+
+      /* STYLE 4: Right-side vertical accent */
+      .co-right-accent {
+        right: 80px;
+        top: 50%;
+        transform: translateY(-50%) translateX(30px);
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.9);
+        text-align: right;
+        white-space: nowrap;
+        writing-mode: horizontal-tb;
+      }
+
+      /* STYLE 5: Bottom-left emphasis phrase */
+      .co-bl-phrase {
+        bottom: 100px;
+        left: 80px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 38px;
+        letter-spacing: -0.5px;
+        color: #ffffff;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.95);
+        transform: translateX(-20px);
+        max-width: 800px;
+        line-height: 1.2;
+      }
+
+      /* STYLE 6: Mid-right number/stat callout */
+      .co-stat-right {
+        right: 100px;
+        top: 50%;
+        transform: translateY(-50%) scale(0.8);
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 88px;
+        letter-spacing: -3px;
+        color: #FBBC05;
+        text-shadow: 0 0 60px rgba(251,188,5,0.4), 0 6px 24px rgba(0,0,0,0.9);
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      /* STYLE 7: Google color top-right chip */
+      .co-chip-tr {
+        top: 60px;
+        right: 80px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        padding: 10px 24px;
+        border-radius: 100px;
+        background: rgba(10,10,20,0.9);
+        border: 1.5px solid;
+        transform: translateY(-12px);
+        white-space: nowrap;
+        backdrop-filter: blur(8px);
+      }
+      .co-chip-tr.green  { color: #81C995; border-color: rgba(52,168,83,0.5); }
+      .co-chip-tr.yellow { color: #FDD663; border-color: rgba(251,188,5,0.5); }
+      .co-chip-tr.red    { color: #F28B82; border-color: rgba(234,67,53,0.5); }
+      .co-chip-tr.blue   { color: #8AB4F8; border-color: rgba(66,133,244,0.5); }
+    </style>
+
+    <div id="caption-area">
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 1: HOOK (0s – 39.43s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "DISMANTLED" slam at 17.26s -->
+      <div class="clip co co-slam" id="co-dismantled"
+           data-start="17.26" data-duration="1.8" data-track-index="9">
+        DISMANTLED
+      </div>
+
+      <!-- "AGENT OS" badge at 37.08s — "new agent operating system" -->
+      <div class="clip co co-badge-tl" id="co-agent-os"
+           data-start="37.08" data-duration="2.5" data-track-index="9">
+        🤖 &nbsp;AGENT OPERATING SYSTEM
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 2: GEMINI 3.5 FLASH RECEIPTS (39.43s – 114.62s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "4× FASTER" stat at 78.05s — "running four times faster" -->
+      <div class="clip co co-stat-right" id="co-4x-faster"
+           data-start="78.05" data-duration="3.2" data-track-index="9">
+        4×<br>FASTER
+      </div>
+
+      <!-- "76.2%" stat at 83.68s — Terminal-Bench -->
+      <div class="clip co co-stat-bar" id="co-bench-1"
+           data-start="83.68" data-duration="3.5" data-track-index="9">
+        76.2% &nbsp;·&nbsp; Terminal-Bench 2.1
+      </div>
+
+      <!-- "83.6%" stat at 91.30s — MCP Atlas -->
+      <div class="clip co co-stat-bar" id="co-bench-2"
+           data-start="91.30" data-duration="3.2" data-track-index="9">
+        83.6% &nbsp;·&nbsp; MCP Atlas
+      </div>
+
+      <!-- "84.2%" stat at 94.52s — Char-Xiv Reasoning -->
+      <div class="clip co co-stat-bar" id="co-bench-3"
+           data-start="94.52" data-duration="2.8" data-track-index="9">
+        84.2% &nbsp;·&nbsp; Char-Xiv Reasoning
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 3: GEMINI OMNI LAUNCH (114.62s – 174.01s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "VEO + REASONING + EDITING" badge at 125.25s -->
+      <div class="clip co co-badge-tl" id="co-veo-combo"
+           data-start="125.25" data-duration="2.5" data-track-index="9">
+        ⚡ &nbsp;VEO + REASONING + EDITING
+      </div>
+
+      <!-- "CONVERSATIONAL" slam at 136.40s (track 9) -->
+      <div class="clip co co-slam" id="co-conversational"
+           data-start="136.40" data-duration="1.15" data-track-index="9"
+           style="font-size:100px; color:#8AB4F8; text-shadow: 0 0 80px rgba(66,133,244,0.8), 0 8px 32px rgba(0,0,0,0.9);">
+        CONVERSATIONAL
+      </div>
+
+      <!-- "EDITABLE" slam at 137.56s — track 8 to avoid same-track overlap -->
+      <div class="clip co co-slam" id="co-editable"
+           data-start="137.56" data-duration="1.5" data-track-index="8"
+           style="font-size:120px; color:#81C995; text-shadow: 0 0 80px rgba(52,168,83,0.8), 0 8px 32px rgba(0,0,0,0.9);">
+        EDITABLE
+      </div>
+
+      <!-- "AI Plus · Pro · Ultra" chips — staggered on alternating tracks to avoid overlap -->
+      <div class="clip co co-chip-tr blue" id="co-plus-tier"
+           data-start="156.40" data-duration="0.72" data-track-index="9">
+        ✦ &nbsp;AI PLUS
+      </div>
+      <div class="clip co co-chip-tr green" id="co-pro-tier"
+           data-start="157.13" data-duration="0.78" data-track-index="8">
+        ✦ &nbsp;AI PRO
+      </div>
+      <div class="clip co co-chip-tr red" id="co-ultra-tier"
+           data-start="157.92" data-duration="1.0" data-track-index="9">
+        ✦ &nbsp;AI ULTRA
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 4: GEMINI SPARK / CONSUMER (174.01s – 245.14s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "900M USERS" at 193.31s -->
+      <div class="clip co co-stat-right" id="co-900m"
+           data-start="193.31" data-duration="3.5" data-track-index="9"
+           style="font-size:70px; color:#34A853;">
+        900M+<br><span style="font-size:28px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,0.6)">MONTHLY USERS</span>
+      </div>
+
+      <!-- "24/7 PERSONAL AGENT" badge at 184.60s -->
+      <div class="clip co co-badge-tl" id="co-24-7"
+           data-start="184.60" data-duration="3.0" data-track-index="9">
+        🕐 &nbsp;24/7 PERSONAL AGENT
+      </div>
+
+      <!-- "ASKS FIRST" bl-phrase at 224.47s — "ask first before high-stakes actions" -->
+      <div class="clip co co-bl-phrase" id="co-asks-first"
+           data-start="224.47" data-duration="3.5" data-track-index="9"
+           style="color: #FBBC05;">
+        "Asks before taking<br>high-stakes actions"
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 5: ANTIGRAVITY 2.0 (245.14s – 309.06s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "ANTIGRAVITY 2.0" badge at 247.87s -->
+      <div class="clip co co-badge-tl" id="co-antigravity"
+           data-start="247.87" data-duration="2.5" data-track-index="9"
+           style="color: #FBBC05; border-color: rgba(251,188,5,0.5);">
+        🔬 &nbsp;ANTIGRAVITY 2.0
+      </div>
+
+      <!-- "$2M PRIZE" slam at 296.09s — "two million dollar prize pool" -->
+      <div class="clip co co-stat-right" id="co-2m-prize"
+           data-start="296.09" data-duration="3.2" data-track-index="9"
+           style="color: #FBBC05; font-size:72px;">
+        $2M<br><span style="font-size:22px;letter-spacing:3px;color:rgba(255,255,255,0.6)">PRIZE POOL</span>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 6: AI STUDIO (309.06s – 361.38s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "PROMPT-TO-APP" badge at 316.28s -->
+      <div class="clip co co-badge-tl" id="co-prompt-to-app"
+           data-start="316.28" data-duration="2.5" data-track-index="9"
+           style="color: #81C995; border-color: rgba(52,168,83,0.5);">
+        🏗️ &nbsp;PROMPT → APP
+      </div>
+
+      <!-- "ZERO COST" chip at 341.95s — "no cost and without a credit card" -->
+      <div class="clip co co-chip-tr yellow" id="co-zero-cost"
+           data-start="341.95" data-duration="2.8" data-track-index="9">
+        ✓ &nbsp;ZERO COST DEPLOY
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 7: GOOGLE SEARCH (361.38s – 416.73s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "1B USERS" at 383.43s — "one billion monthly users" -->
+      <div class="clip co co-stat-right" id="co-1b-users"
+           data-start="383.43" data-duration="3.0" data-track-index="9"
+           style="color: #4285F4; font-size:70px;">
+        1B+<br><span style="font-size:24px;letter-spacing:3px;color:rgba(255,255,255,0.6)">MONTHLY USERS</span>
+      </div>
+
+      <!-- "GENERATIVE UI" badge at 401.34s -->
+      <div class="clip co co-badge-tl" id="co-gen-ui"
+           data-start="401.34" data-duration="2.5" data-track-index="9"
+           style="color: #8AB4F8; border-color: rgba(66,133,244,0.5);">
+        🎨 &nbsp;GENERATIVE UI
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 8: WORKSPACE (416.73s – 488.76s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "4B USERS" at 432.29s -->
+      <div class="clip co co-stat-right" id="co-4b-users"
+           data-start="432.29" data-duration="3.0" data-track-index="9"
+           style="color: #34A853; font-size:70px;">
+        4B+<br><span style="font-size:24px;letter-spacing:3px;color:rgba(255,255,255,0.6)">WORKSPACE USERS</span>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 9: CHROME / WEB MCP (488.76s – 545.32s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "WEB MCP" badge at 498.52s -->
+      <div class="clip co co-badge-tl" id="co-web-mcp"
+           data-start="498.52" data-duration="2.5" data-track-index="9"
+           style="color: #F28B82; border-color: rgba(234,67,53,0.5);">
+        🌐 &nbsp;WEB MCP STANDARD
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 10: YOUTUBE (545.32s – 606.41s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "ASK YOUTUBE" badge at 553.51s -->
+      <div class="clip co co-badge-tl" id="co-ask-yt"
+           data-start="553.51" data-duration="2.5" data-track-index="9"
+           style="color: #F28B82; border-color: rgba(234,67,53,0.5);">
+        ▶ &nbsp;ASK YOUTUBE
+      </div>
+
+      <!-- "WATERMARKED" chip at 575.96s -->
+      <div class="clip co co-chip-tr red" id="co-watermark"
+           data-start="575.96" data-duration="3.0" data-track-index="9">
+        🔏 &nbsp;SYNTHID WATERMARK
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 11: SYNTHID TRUST (606.41s – 659.86s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "100B WATERMARKED" stat at 630.38s -->
+      <div class="clip co co-stat-right" id="co-100b"
+           data-start="630.38" data-duration="3.5" data-track-index="9"
+           style="font-size:64px; color: rgba(255,255,255,0.9);">
+        100B+<br><span style="font-size:22px;letter-spacing:3px;color:rgba(255,255,255,0.5)">WATERMARKED</span>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           SCENE 12: PRICING / CTA (659.86s – 743.96s)
+           ════════════════════════════════════════════════════ -->
+
+      <!-- "$100/mo" stat at 664.84s -->
+      <div class="clip co co-stat-right" id="co-price"
+           data-start="664.84" data-duration="3.0" data-track-index="9"
+           style="font-size:72px; color: #FBBC05;">
+        $100<br><span style="font-size:22px;letter-spacing:3px;color:rgba(255,255,255,0.5)">PER MONTH ULTRA</span>
+      </div>
+
+      <!-- "ACCESS STORY" bl-phrase at 707.58s -->
+      <div class="clip co co-bl-phrase" id="co-access-story"
+           data-start="707.58" data-duration="3.5" data-track-index="9"
+           style="color: #F28B82; font-size:44px;">
+        "Not just a technology story.<br>It's an access story."
+      </div>
+
+    </div><!-- #caption-area -->
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+    (function() {
+      // Cinematic callout animation configs per element
+      // The framework sets visibility:visible when a .clip is "active".
+      // We drive opacity + transform with GSAP by listening to a MutationObserver.
+
+      const CONFIGS = {
+        // SLAM style: scale punch in from tiny, hold, scale out
+        slam: {
+          in:  { opacity: 1, scale: 1.0, duration: 0.22, ease: "back.out(1.8)" },
+          out: { opacity: 0, scale: 1.08, duration: 0.25, ease: "power2.in" }
+        },
+        // BADGE style: slide in from left
+        badge: {
+          in:  { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.4)" },
+          out: { opacity: 0, y: -8, duration: 0.25, ease: "power2.in" }
+        },
+        // STAT BAR: slide up from bottom
+        statbar: {
+          in:  { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.3)" },
+          out: { opacity: 0, y: 12, duration: 0.28, ease: "power2.in" }
+        },
+        // CHIP: drop in from top
+        chip: {
+          in:  { opacity: 1, y: 0, duration: 0.32, ease: "back.out(1.5)" },
+          out: { opacity: 0, y: -10, duration: 0.22, ease: "power2.in" }
+        },
+        // PHRASE/STAT-RIGHT: slide in from side
+        side: {
+          in:  { opacity: 1, x: 0, scale: 1.0, duration: 0.38, ease: "back.out(1.4)" },
+          out: { opacity: 0, scale: 0.95, duration: 0.25, ease: "power2.in" }
+        }
+      };
+
+      function getConfig(el) {
+        if (el.classList.contains('co-slam')) return CONFIGS.slam;
+        if (el.classList.contains('co-badge-tl')) return CONFIGS.badge;
+        if (el.classList.contains('co-stat-bar')) return CONFIGS.statbar;
+        if (el.classList.contains('co-chip-tr')) return CONFIGS.chip;
+        return CONFIGS.side;
+      }
+
+      // Watch for visibility changes driven by the HyperFrames framework
+      const area = document.getElementById('caption-area');
+      if (!area) return;
+
+      const observer = new MutationObserver((mutations) => {
+        for (const mut of mutations) {
+          if (mut.type !== 'attributes' || mut.attributeName !== 'style') continue;
+          const el = mut.target;
+          if (!el.classList.contains('co')) continue;
+          const cfg = getConfig(el);
+          const visible = el.style.visibility !== 'hidden';
+          if (visible) {
+            gsap.killTweensOf(el);
+            gsap.to(el, cfg.in);
+          } else {
+            gsap.killTweensOf(el);
+            gsap.to(el, cfg.out);
+          }
+        }
+      });
+
+      observer.observe(area, { attributes: true, subtree: true,
+                               attributeFilter: ['style'] });
+
+      // Register paused timeline as required by HyperFrames
+      window.__timelines = window.__timelines || {};
+      window.__timelines["captions"] = gsap.timeline({ paused: true });
+    })();
+    </script>
+
+  </div>
+</template>

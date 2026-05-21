@@ -1,0 +1,383 @@
+<!--
+  scene-video-embed-10.html — Premium Bento Split-Screen showcase for YouTube AI.
+
+  Structure:
+    Background: Frosted glass stage.
+    Foreground: 1560px-wide glass card with display: flex holding two gorgeous bento columns.
+      - Left column: "Shorts Remix" with red border-top highlight, dynamic copy, and capability badges.
+      - Right column: "Likeness Protection" with green border-top highlight, dynamic copy, and capability badges.
+-->
+<template id="scene-video-embed-template">
+  <div data-composition-id="scene-video-embed-10"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #scene-video-embed-content {
+        width:100%; height:100%;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap: 36px;
+        box-sizing:border-box;
+      }
+      #scene-video-embed-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-video-embed-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #8ab4f8;
+        text-shadow: 0 0 12px rgba(138, 180, 248, 0.45);
+      }
+      #scene-video-embed-content .caption {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.1;
+        letter-spacing: -1.5px;
+        color: #ffffff;
+      }
+      
+      #video-frame-wrapper {
+        width: 1560px;
+        height: 720px;
+        border-radius: 32px;
+        overflow: hidden;
+        position: relative;
+        transform-style: preserve-3d;
+        opacity: 0;
+        background: rgba(15, 15, 20, 0.45);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      #vembed-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 32px;
+        padding: 40px;
+        box-sizing: border-box;
+        background: rgba(10, 10, 12, 0.5);
+      }
+
+      /* Bento column cards */
+      .vembed-col-card {
+        flex: 1;
+        border-radius: 24px;
+        background: rgba(20, 20, 25, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        box-sizing: border-box;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .vembed-col-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 100%;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+      }
+
+      /* Colored Top Borders */
+      .card-left {
+        border-top: 4px solid #ea4335;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 20px 20px -20px rgba(234, 67, 53, 0.15);
+      }
+      .card-right {
+        border-top: 4px solid #34a853;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 20px 20px -20px rgba(52, 168, 83, 0.15);
+      }
+
+      /* Column Typography */
+      .vembed-title {
+        opacity: 0;
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        letter-spacing: -0.5px;
+        text-transform: none;
+      }
+      .vembed-title-l {
+        color: #ff8a80;
+        text-shadow: 0 0 15px rgba(234, 67, 53, 0.25);
+      }
+      .vembed-title-r {
+        color: #a7f3d0;
+        text-shadow: 0 0 15px rgba(52, 168, 83, 0.25);
+      }
+
+      .vembed-body {
+        opacity: 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 20px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.85);
+        flex-grow: 1;
+      }
+
+      /* Badges shelf inside bento column cards */
+      .embed-badges-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: auto;
+      }
+      .embed-badge {
+        opacity: 0; /* Animated in by GSAP */
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        padding: 8px 16px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+      }
+      
+      .eb-blue {
+        background: rgba(66, 133, 244, 0.15);
+        color: #8ab4f8;
+        border: 1px solid rgba(66, 133, 244, 0.3);
+      }
+      .eb-red {
+        background: rgba(234, 67, 53, 0.15);
+        color: #ff8a80;
+        border: 1px solid rgba(234, 67, 53, 0.3);
+      }
+      .eb-yellow {
+        background: rgba(251, 188, 5, 0.12);
+        color: #fdd663;
+        border: 1px solid rgba(251, 188, 5, 0.25);
+      }
+      .eb-green {
+        background: rgba(52, 168, 83, 0.15);
+        color: #81c995;
+        border: 1px solid rgba(52, 168, 83, 0.3);
+      }
+    </style>
+ 
+    <div id="scene-video-embed-content" class="perspective-stage">
+      <div class="header-block">
+        <div class="overline" id="vembed-overline">YOUTUBE AI</div>
+        <div class="caption"  id="vembed-caption">REMIX SHORTS & LIKENESS PROTECTION</div>
+      </div>
+ 
+      <div id="video-frame-wrapper" class="glass-premium glow-blue">
+        <div id="vembed-placeholder">
+          <!-- Left Column (Shorts Remix) -->
+          <div class="vembed-col-card card-left">
+            <div id="vembed-title-left" class="vembed-title vembed-title-l">Shorts Remix</div>
+            <div id="vembed-body-left" class="vembed-body">Remix scenes, apply 90's vibe filters, and insert yourself into videos while preserving context using Gemini Omni. Remixed Shorts include digital watermarks and links back to the original video.</div>
+            <div class="embed-badges-container">
+              <div class="embed-badge eb-red eb-left-badge">🔌 GEMINI OMNI</div>
+              <div class="embed-badge eb-yellow eb-left-badge">🎨 90S FILTERS</div>
+              <div class="embed-badge eb-blue eb-left-badge">🏷️ WATERMARKED</div>
+            </div>
+          </div>
+          <!-- Right Column (Likeness Protection) -->
+          <div class="vembed-col-card card-right">
+            <div id="vembed-title-right" class="vembed-title vembed-title-r">Likeness Protection</div>
+            <div id="vembed-body-right" class="vembed-body">Likeness detection expanded to all creators aged 18 and older. Standard C2PA Content Credentials coming to Pixel 8, 9, and 10 devices. Creators can opt out of remixing.</div>
+            <div class="embed-badges-container">
+              <div class="embed-badge eb-green eb-right-badge">🔒 OPT-OUT</div>
+              <div class="embed-badge eb-blue eb-right-badge">🛡️ C2PA DEVICE</div>
+              <div class="embed-badge eb-yellow eb-right-badge">🔞 18+ PROTECTED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+ 
+      tl.from("#vembed-overline",       { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      tl.from("#vembed-caption",        { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+      
+      // Video Frame Wrapper Entrance
+      tl.fromTo("#video-frame-wrapper", {
+        scale: 0.86,
+        rotateX: 14,
+        rotateY: -8,
+        z: -100,
+        opacity: 0
+      }, {
+        scale: 1,
+        rotateX: 0,
+        rotateY: 0,
+        z: 0,
+        opacity: 1,
+        duration: 0.85,
+        ease: "back.out(1.3)",
+        immediateRender: false
+      }, 0.7);
+ 
+      // Staggered columns reveals inside the placeholder wrapper
+      // 4.0s: Slide in Left Column Title
+      tl.fromTo("#vembed-title-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 4.0);
+ 
+      // 7.0s: Slide in Left Column Body
+      tl.fromTo("#vembed-body-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 7.0);
+
+      // 9.5s: Staggered reveal for Left Column Badges
+      tl.fromTo(".eb-left-badge", {
+        scale: 0.7,
+        opacity: 0,
+        y: 10
+      }, {
+        scale: 1,
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.12,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 9.5);
+ 
+      // 12.0s: Slide in Right Column Title
+      tl.fromTo("#vembed-title-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 12.0);
+ 
+      // 15.0s: Slide in Right Column Body
+      tl.fromTo("#vembed-body-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 15.0);
+
+      // 17.5s: Staggered reveal for Right Column Badges
+      tl.fromTo(".eb-right-badge", {
+        scale: 0.7,
+        opacity: 0,
+        y: 10
+      }, {
+        scale: 1,
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.12,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 17.5);
+ 
+      // 20.0s: Glow pulse the video editor frame wrapper
+      tl.to("#video-frame-wrapper", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.6)",
+        duration: 0.6
+      }, 20.0);
+      tl.to("#video-frame-wrapper", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+        duration: 0.8
+      }, 20.6);
+ 
+      // 24.0s: Slow 3D tilt shift on frame wrapper to the left
+      tl.to("#video-frame-wrapper", {
+        rotateY: -6,
+        rotateX: 2,
+        duration: 2.0,
+        ease: "power1.inOut"
+      }, 24.0);
+ 
+      // 28.0s: Left column highlights with a red volumetric glow
+      tl.to("#vembed-title-left", {
+        color: "#ff5252",
+        textShadow: "0 0 30px rgba(234, 67, 53, 0.9)",
+        scale: 1.05,
+        duration: 0.5
+      }, 28.0);
+      tl.to("#vembed-title-left", {
+        color: "#ff8a80",
+        textShadow: "0 0 15px rgba(234, 67, 53, 0.25)",
+        scale: 1.0,
+        duration: 0.6
+      }, 29.5);
+ 
+      // 32.0s: Right column highlights with a green volumetric glow
+      tl.to("#vembed-title-right", {
+        color: "#69f0ae",
+        textShadow: "0 0 30px rgba(52, 168, 83, 0.9)",
+        scale: 1.05,
+        duration: 0.5
+      }, 32.0);
+      tl.to("#vembed-title-right", {
+        color: "#a7f3d0",
+        textShadow: "0 0 15px rgba(52, 168, 83, 0.25)",
+        scale: 1.0,
+        duration: 0.6
+      }, 33.5);
+ 
+      // 36.0s: Parallax zoom-in on the wrapper
+      tl.to("#video-frame-wrapper", {
+        scale: 1.04,
+        duration: 3.5,
+        ease: "sine.inOut"
+      }, 36.0);
+ 
+      // 40.0s: Soft hover tilt shift to the right
+      tl.to("#video-frame-wrapper", {
+        rotateY: 6,
+        rotateX: -2,
+        duration: 2.0,
+        ease: "power1.inOut"
+      }, 40.0);
+ 
+      // 44.0s: Left Column Title highlights with a text glow sweep
+      tl.to("#vembed-title-left", {
+        textShadow: "0 0 35px rgba(234, 67, 53, 0.9)",
+        duration: 0.4
+      }, 44.0);
+      tl.to("#vembed-title-left", {
+        textShadow: "0 0 15px rgba(234, 67, 53, 0.25)",
+        duration: 0.5
+      }, 45.0);
+ 
+      // 48.0s: Right Column Title highlights with a text glow sweep
+      tl.to("#vembed-title-right", {
+        textShadow: "0 0 35px rgba(52, 168, 83, 0.9)",
+        duration: 0.4
+      }, 48.0);
+      tl.to("#vembed-title-right", {
+        textShadow: "0 0 15px rgba(52, 168, 83, 0.25)",
+        duration: 0.5
+      }, 49.0);
+ 
+      // 52.0s: Float wobble wrapper in Y
+      tl.to("#video-frame-wrapper", {
+        y: -15,
+        duration: 1.8,
+        ease: "sine.inOut"
+      }, 52.0);
+ 
+      // 56.0s: Settle wrapper back to center
+      tl.to("#video-frame-wrapper", {
+        rotateY: 0,
+        rotateX: 0,
+        scale: 1.0,
+        y: 0,
+        duration: 2.2,
+        ease: "power2.out"
+      }, 56.0);
+ 
+      window.__timelines["scene-video-embed-10"] = tl;
+    </script>
+  </div>
+</template>

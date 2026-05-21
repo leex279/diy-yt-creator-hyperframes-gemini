@@ -1,0 +1,1993 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Google — Gemini Agent OS</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="tokens/long-form.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+  /* ──────────────────────────────────────────────────
+     CANVAS — 1920x1080 Google brand cinematic stage.
+     Comprehensive 25-phase showcase ported from the
+     canonical google_v2 Shorts source — every visual
+     archetype Google content might need, presented
+     phase-mutex (only one phase visible per frame;
+     blur+crossfade between).
+
+     For a real long-form video (4-15 min), operators
+     subset the 25 phases to ~6-10 and stretch each
+     phase's duration. The bare template demos all 25
+     at 5s each (125s total).
+     ────────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ──────────────────────────────────────────────────
+     THEME BACKGROUNDS (cinematic / spotlight / editorial)
+     Set the theme by changing the class on #root
+     (theme-cinematic | theme-spotlight | theme-editorial).
+     ────────────────────────────────────────────────── */
+  #root.theme-cinematic {
+    background:
+      radial-gradient(circle at 20% 18%, rgba(66,133,244,0.22) 0%, transparent 38%),
+      radial-gradient(circle at 82% 32%, rgba(234,67,53,0.16) 0%, transparent 36%),
+      radial-gradient(circle at 50% 75%, rgba(52,168,83,0.18) 0%, transparent 42%),
+      radial-gradient(circle at 90% 90%, rgba(251,188,5,0.12) 0%, transparent 36%),
+      linear-gradient(180deg, #06080F 0%, #0A0F1F 50%, #06080F 100%);
+  }
+  #root.theme-spotlight {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, var(--accent-glow) 0%, transparent 60%),
+      radial-gradient(ellipse 120% 50% at 50% 110%, rgba(255,255,255,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #07090F 0%, #050810 100%);
+  }
+  #root.theme-editorial {
+    background: linear-gradient(180deg, #0A0E1A 0%, #060912 100%);
+  }
+  #root.theme-editorial::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Cinematic vignette + floor */
+  #root.theme-cinematic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 90% 30% at 50% 100%, rgba(52,168,83,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Inner safe-area card stroke */
+  #slide-frame {
+    position: absolute;
+    inset: 32px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Top accent line — Google green→yellow ramp at top-left */
+  #top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    width: 18%;
+    background: linear-gradient(90deg, var(--g-green), var(--g-yellow));
+    z-index: 4;
+  }
+
+  /* Particle field — 60 dots, deterministic seeded scatter.
+     Each particle drifts on its own GSAP yoyo (see script tag),
+     plus a global breathing scale. Bigger radii (3-9px) read at
+     1080x1920 better than the original 1-4px. */
+  #particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+  }
+  #particles circle { will-change: transform, opacity; }
+
+  /* Google logo (top-right watermark — V2 Remotion reference convention).
+     180×180 PNG with built-in transparent margin; top:-20 docks it to
+     the top edge. Operators can swap to assets/google-g-logo.png for
+     just the G mark, or to a sub-brand wordmark per video. */
+  #glogo {
+    position: absolute;
+    top: -20px;
+    right: 30px;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+  }
+  #glogo img {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Slim progress bar — bottom edge (long-form has no SETUP/CREATE/EVAL
+     /DEPLOY/PUBLISH 5-dot rail like the Shorts variant — long-form uses
+     chapters in YouTube and a single linear progress bar). */
+  #progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1920px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 10;
+  }
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--g-blue) 0%, #00BCD4 100%);
+    box-shadow: 0 0 12px rgba(66, 133, 244, 0.55);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASES — full-bleed, layered. Phase 1 visible by
+     default; phases 2-4 start at opacity 0.
+     ────────────────────────────────────────────────── */
+  .phase {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1;
+  }
+  #phase1 { opacity: 1; visibility: visible; }
+
+  .phase-content {
+    position: relative;
+    width: 100%;
+    height: 1080px;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .phase-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .phase-body {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+  }
+
+  .phase-footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    position: relative;
+  }
+
+  /* Eyebrow / headline / subhead common blocks */
+  .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--accent);
+    margin-bottom: 32px;
+  }
+  .headline {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -2px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 32px;
+  }
+  /* Long-form has shorter canvas (1080 vs 1920) — scale headlines down ~30% */
+  .headline.xl { font-size: 116px; }
+  .headline.l  { font-size: 96px; }
+  .headline.m  { font-size: 76px; }
+  .headline.s  { font-size: 60px; }
+  .subhead {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-60);
+    margin: 0 0 40px;
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 1 — HERO (eyebrow + xl headline + subhead)
+     Pattern: scroll-stop hook, no rail, accent on eyebrow.
+     ────────────────────────────────────────────────── */
+
+  /* ──────────────────────────────────────────────────
+     PHASE 2 — TERMINAL / CLI moment (eyebrow + m headline + 2 terminal blocks)
+     ────────────────────────────────────────────────── */
+  #phase2 .phase-content {
+    gap: 36px;
+  }
+  .terminal {
+    position: relative;
+    width: 920px;
+    background: #0A0E18;
+    border: 1px solid var(--border-bright);
+    border-radius: 18px;
+    padding: 36px 40px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 38px;
+    line-height: 1.5;
+    color: var(--ink-80);
+    overflow: hidden;
+    text-align: left;
+  }
+  .terminal.with-rim::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+  }
+  .terminal .prompt { color: var(--ink-40); margin-right: 12px; }
+  .terminal .cmd    { color: var(--g-green); }
+  .terminal .arg    { color: var(--ink-100); }
+  .terminal .flag   { color: var(--g-yellow); }
+  .terminal .kw     { color: var(--g-blue); }
+  .terminal .str    { color: #FFB66E; }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 3 — INFO GRID (eyebrow + m headline + 2x2 chip grid)
+     ────────────────────────────────────────────────── */
+  #phase3 .phase-content {
+    gap: 36px;
+  }
+  .chip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    width: 920px;
+  }
+  .chip {
+    position: relative;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    padding: 28px 32px;
+    background: var(--card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    text-align: left;
+  }
+  .chip::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 18px; bottom: 18px;
+    width: 4px;
+    background: var(--chip-color, var(--g-blue));
+    border-radius: 0 4px 4px 0;
+  }
+  .chip[data-color="blue"]   { --chip-color: var(--g-blue); }
+  .chip[data-color="red"]    { --chip-color: var(--g-red); }
+  .chip[data-color="yellow"] { --chip-color: var(--g-yellow); }
+  .chip[data-color="green"]  { --chip-color: var(--g-green); }
+  .chip .chip-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--chip-color, var(--g-blue));
+    margin-bottom: 8px;
+  }
+  .chip .chip-value {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 50px;
+    font-weight: 700;
+    color: var(--ink-100);
+    line-height: 1.05;
+  }
+
+  /* Big stat (alternate Phase 3 archetype) */
+  .bigstat {
+    text-align: center;
+  }
+  .bigstat .num {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 360px;
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -10px;
+    background: linear-gradient(135deg, var(--g-blue) 0%, var(--g-green) 50%, var(--g-yellow) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(66,133,244,0.25));
+  }
+  .bigstat .num-suffix {
+    font-size: 140px;
+    font-weight: 700;
+  }
+  .bigstat .label {
+    margin-top: 20px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 34px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+  }
+
+  /* ──────────────────────────────────────────────────
+     PHASE 4 — SHIFT / CTA (light theme variant + quote + CTA pill)
+     Toggle: add class theme-light on #phase4 to use the bright
+     "the shift" surface, or leave default for cinematic dark.
+     ────────────────────────────────────────────────── */
+  #phase4.phase {
+    background: transparent;
+  }
+  #phase4.theme-light {
+    background:
+      radial-gradient(circle at 25% 20%, rgba(66,133,244,0.10) 0%, transparent 35%),
+      radial-gradient(circle at 80% 30%, rgba(234,67,53,0.07) 0%, transparent 35%),
+      radial-gradient(circle at 50% 80%, rgba(52,168,83,0.10) 0%, transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(251,188,5,0.08) 0%, transparent 35%),
+      linear-gradient(180deg, #F4F6FB 0%, #EAEEF7 100%);
+  }
+  #phase4.theme-light .headline { color: var(--ink-on-light); }
+  #phase4.theme-light .subhead  { color: #4A536C; }
+
+  #phase4 .phase-content {
+    gap: 36px;
+  }
+  .quote {
+    position: relative;
+    padding: 6px 0 6px 24px;
+    border-left: 4px solid var(--accent);
+    text-align: left;
+    width: 920px;
+  }
+  .quote .q-mark {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 200px;
+    font-weight: 800;
+    line-height: 0.5;
+    color: var(--accent);
+    opacity: 0.3;
+  }
+  .quote .q-text {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink-100);
+    text-wrap: balance;
+  }
+  #phase4.theme-light .quote .q-text { color: var(--ink-on-light); }
+  #phase4.theme-light .quote .q-mark { color: var(--accent); opacity: 0.4; }
+
+  .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 32px 64px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    border: 1.5px solid var(--accent);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--ink-100);
+    box-shadow: 0 0 60px -10px var(--accent);
+  }
+  .cta-pill .cta-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 24px;
+    letter-spacing: 5px;
+    color: var(--ink-40);
+    text-transform: uppercase;
+    display: block;
+  }
+  .cta-pill .cta-value { color: var(--ink-100); font-size: 40px; }
+
+
+
+  /* ──────────────────────────────────────────────────
+     OPT-IN PATTERN: Hero figure card (Phase 1 image moments).
+     Use to feature a screenshot / tweet / reference image in
+     the hero phase. Replace the .subhead with .hero-figure:
+       <figure class="hero-figure" id="p1-figure">
+         <img src="assets/source-shot.png" alt="…" />
+         <figcaption><span class="src-handle">@source</span> · DATE</figcaption>
+       </figure>
+     Animate with: tl.from('#p1-figure', {y:40, scale:0.94, opacity:0,
+     duration:0.8, ease:"power3.out"}, 1.7);
+     ────────────────────────────────────────────────── */
+  .hero-figure {
+    position: relative;
+    width: 920px;
+    margin: 16px auto 0;
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 28px 100px -20px rgba(66,133,244,0.45),
+      0 0 80px rgba(66,133,244,0.18);
+    background: var(--card-bright);
+  }
+  .hero-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .hero-figure img { width: 100%; height: auto; display: block; }
+  .hero-figure figcaption {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-60);
+    padding: 16px 28px 18px;
+    text-align: left;
+    border-top: 1px solid var(--border);
+    background: rgba(10,14,26,0.85);
+  }
+  .hero-figure figcaption .src-handle { color: var(--accent); }
+
+  /* ──────────────────────────────────────────────────
+     OPT-IN PATTERN: Multi-sub-slide stage (any phase).
+     Use when a phase has 2+ distinct content beats that should
+     crossfade. Wrap the phase-content with .pX-stage and put
+     each beat in its own .pX-slide block. Add .is-default-visible
+     to the first sub-slide so it shows on first paint.
+     Sub-slides are mutually exclusive (z-stacked, opacity-toggled).
+     Naming: p2-stage / p3-stage / p4-stage etc. — phase-scoped.
+     The shared base is .pX-slide { opacity:0; visibility:hidden; }
+     plus colored variants via [data-color="blue|red|yellow|green"].
+     ────────────────────────────────────────────────── */
+  .p2-stage, .p3-stage, .p4-stage { position: relative; padding: 0; }
+  .p2-slide, .p3-slide, .p4-slide {
+    position: absolute;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: var(--pad-top);
+    bottom: var(--pad-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform, filter;
+  }
+  .p2-slide.is-default-visible,
+  .p3-slide.is-default-visible,
+  .p4-slide.is-default-visible { opacity: 1; visibility: visible; }
+  .p2-slide[data-color="blue"]   .p2-b-eyebrow,
+  .p3-slide[data-color="blue"]   { --slot-color: var(--g-blue);   --slot-glow: rgba(66,133,244,0.45); }
+  .p3-slide[data-color="yellow"] { --slot-color: var(--g-yellow); --slot-glow: rgba(251,188,5,0.45); }
+  .p3-slide[data-color="green"]  { --slot-color: var(--g-green);  --slot-glow: rgba(52,168,83,0.45); }
+  .p3-slide[data-color="red"]    { --slot-color: var(--g-red);    --slot-glow: rgba(234,67,53,0.45); }
+
+  /* OPT-IN: numbered slot (Phase 3 sub-slides "01 / FEATURE NAME") */
+  .p3-slot-num {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 96px;
+    font-weight: 800;
+    color: var(--slot-color, var(--accent));
+    line-height: 1;
+    letter-spacing: -2px;
+    text-shadow: 0 0 50px var(--slot-glow, var(--accent-glow));
+    margin-bottom: -8px;
+  }
+  .p3-slide .p3-eyebrow {
+    color: var(--slot-color, var(--accent));
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .p3-slide .p3-headline,
+  .p2-slide .p2-c-headline,
+  .p4-slide .p4-perf-headline {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 88px;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -1.5px;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--ink-100);
+    margin: 0 0 12px;
+  }
+  .p3-slide .p3-headline { font-size: 92px; }
+
+  /* OPT-IN: bullet/pill list (used by Phase 2C, 3, and 4A) */
+  .p3-bullets, .p2-c-bullets, .p4-pills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+  }
+  .p3-bullets li, .p2-c-bullets li, .p4-pills li {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 18px 28px;
+    background: var(--card-bright);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--slot-color, var(--accent));
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    will-change: opacity, transform;
+  }
+  .p4-pills li[data-color="blue"]   { --slot-color: var(--g-blue); }
+  .p4-pills li[data-color="yellow"] { --slot-color: var(--g-yellow); }
+  .p4-pills li[data-color="green"]  { --slot-color: var(--g-green); }
+  .p4-pills li[data-color="red"]    { --slot-color: var(--g-red); }
+  .bullet-tag, .pill-tag {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--slot-color, var(--accent));
+    min-width: 140px;
+  }
+  .bullet-detail, .pill-detail {
+    flex: 1;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--ink-100);
+    line-height: 1.25;
+  }
+  .p3-bullets code, .p2-c-bullets code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink-80);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+
+  /* OPT-IN: Phase 4A pill-list eyebrow (mono-blue, distinct from Phase 3) */
+  .p4-perf-eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 6.5px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--g-blue);
+  }
+
+  /* OPT-IN: Phase 2B settings-screenshot card (reuse pattern for any
+     UI screenshot card — same shape as hero-figure, slightly different
+     framing for code-style settings demonstrations).
+     Sized to fill ~95% of canvas width — screenshots are the proof, give
+     them real estate. max-height auto-fits portrait-aspect screenshots so
+     they scale down rather than overflowing the sub-slide. */
+  .settings-figure {
+    position: relative;
+    width: 960px;
+    max-height: 1280px;
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow:
+      0 24px 80px -20px rgba(66,133,244,0.45),
+      0 0 60px rgba(66,133,244,0.18);
+    background: var(--card-bright);
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-figure::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 2;
+  }
+  .settings-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    flex: 0 1 auto;
+    min-height: 0;
+    object-fit: contain;
+  }
+  .settings-figure figcaption {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink-100);
+    padding: 22px 32px 24px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: rgba(10,14,26,0.9);
+  }
+  .inline-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    color: var(--g-blue);
+    background: rgba(66,133,244,0.12);
+    padding: 2px 12px;
+    border-radius: 8px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     LANDSCAPE OVERRIDES — content was authored for 1080×1920 vertical
+     and the inherited widths (~920px) leave a horizontal canvas looking
+     small + centered with empty sides. Everything here widens / re-flows
+     for the 1920×1080 landscape canvas. Active area: 1760×880 after pads.
+     ════════════════════════════════════════════════════════════════════ */
+
+  /* Headlines — the vertical Shorts canvas is 1920px tall so headlines
+     can be 148px. Landscape is only 1080px tall, so cap headlines at sizes
+     that don't crowd the figure / body content below them. */
+  .headline.xl { font-size: 92px; line-height: 0.98; margin: 0 0 18px; }
+  .headline.l  { font-size: 78px; line-height: 1.0; margin: 0 0 18px; }
+  .headline.m  { font-size: 62px; line-height: 1.02; margin: 0 0 18px; }
+  .headline.s  { font-size: 52px; line-height: 1.04; margin: 0 0 16px; }
+  .eyebrow { font-size: 26px; letter-spacing: 5px; margin-bottom: 14px; }
+  .subhead { font-size: 30px; margin: 0 0 28px; }
+
+  /* Phase content — go to flex-row patterns where it makes sense */
+  .phase-content {
+    height: 1080px;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    gap: 24px;
+  }
+  .phase-header { gap: 8px; }
+  .phase-body   { width: 100%; }
+
+  /* Two-column landscape pattern — for hero phases with figure + copy */
+  .landscape-split {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 64px;
+    align-items: center;
+    width: 100%;
+    max-width: 1720px;
+  }
+  .landscape-split .ls-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 18px;
+  }
+  .landscape-split .ls-copy .eyebrow,
+  .landscape-split .ls-copy .headline { text-align: left; }
+  .landscape-split .ls-figure {
+    width: 100%;
+  }
+
+  /* WIDER cards / containers — most were sized for 1080-wide canvas. */
+  .terminal              { width: 1500px; font-size: 30px; }
+  .chip-grid             { grid-template-columns: repeat(4, 1fr); width: 1700px; gap: 22px; }
+  .chip                  { padding: 22px 26px; }
+  .chip .chip-value      { font-size: 36px; }
+  .chip .chip-label      { font-size: 20px; }
+  .editor-panel          { width: 1500px; }
+  .editor-body           { font-size: 26px; padding: 20px 28px; }
+  .chart-container       { width: 1500px; gap: 18px; padding: 26px; }
+  .chart-label           { font-size: 28px; width: 260px; }
+  .chart-bar-bg          { height: 56px; }
+  .chart-val             { font-size: 30px; width: 120px; }
+  .compare-container     { width: 1500px; gap: 36px; }
+  .compare-card          { padding: 44px 52px; }
+  .compare-header        { font-size: 28px; margin-bottom: 18px; }
+  .radial-container      { width: 460px; height: 460px; }
+  .radial-val            { font-size: 132px; }
+  .chat-container        { width: 1500px; gap: 24px; }
+  .chat-bubble           { max-width: 1100px; font-size: 28px; padding: 22px 30px; }
+  .chat-bubble-sender    { font-size: 22px; }
+  .timeline-vertical     { width: 1700px; flex-direction: row; gap: 0; padding: 0; align-items: flex-start; justify-content: space-between; }
+  .timeline-connector    { left: 80px; right: 80px; top: 50px; bottom: auto; width: auto; height: 4px; }
+  .timeline-connector-fill { left: 80px; right: auto; top: 50px; width: 0%; height: 4px; background: linear-gradient(90deg, var(--g-blue), var(--g-green)); }
+  .timeline-row          { flex-direction: column; align-items: center; gap: 14px; flex: 1; text-align: center; }
+  .timeline-indicator    { width: auto; }
+  .timeline-meta         { text-align: center; max-width: 320px; }
+  .timeline-title        { font-size: 30px; }
+  .timeline-desc         { font-size: 22px; }
+  .dir-tree              { width: 1100px; font-size: 26px; padding: 32px 48px; }
+  .pricing-grid          { width: 1600px; gap: 28px; }
+  .price-card            { padding: 32px 28px; }
+  .price-num             { font-size: 64px; }
+  .git-grid-container    { width: 1600px; }
+  .tweet-container       { width: 1300px; max-width: 1300px; gap: 22px; }
+  .tweet-card            { padding: 28px 36px; }
+  .tweet-body            { font-size: 30px; }
+  .marquee-wrap          { width: 1920px; }
+  .premium-quote-block   { width: 1500px; gap: 24px; }
+  .quote-text-premium    { font-size: 38px; }
+  .quote-card-premium    { padding: 40px 48px 32px; }
+  .tier-ladder-grid      { width: 1600px; }
+  .verdict-grid          { width: 1500px; gap: 22px; }
+  .verdict-tile          { padding: 28px 22px; }
+  .lock-chips-container  { width: 1500px; }
+  .quote                 { width: 1500px; padding: 6px 0 6px 32px; }
+  .quote .q-text         { font-size: 52px; }
+  .quote .q-mark         { font-size: 160px; }
+  .hero-figure           { max-width: 100%; }
+  .settings-figure       { width: 1200px; max-height: 720px; }
+  .node-stage            { width: 1500px; height: 480px; }
+
+  /* Big stat — landscape can fit even bigger digits */
+  .bigstat .num          { font-size: 320px; line-height: 0.85; }
+  .bigstat .num-suffix   { font-size: 120px; }
+  .bigstat .label        { font-size: 32px; margin-top: 16px; }
+
+  /* Phase 1 hero — landscape split layout. Overrides applied on the phase-content directly. */
+  #phase1 .phase-content {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 28px;
+    padding: var(--pad-top) 100px 80px;
+  }
+  #phase1 .p1-headline-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 4px;
+    padding-right: 60px;
+  }
+  #phase1 .p1-headline-row .eyebrow,
+  #phase1 .p1-headline-row .headline { text-align: left; }
+  #phase1 .p1-headline-row .headline.xl { font-size: 84px; line-height: 0.98; margin: 0; }
+  #phase1 .p1-landscape {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 60px;
+    align-items: center;
+    width: 100%;
+  }
+  #phase1 .p1-figure-side {
+    width: 100%;
+  }
+  #phase1 .p1-figure-side .hero-figure {
+    width: 100%;
+    margin: 0;
+    border-radius: 22px;
+  }
+  #phase1 .p1-figure-side .hero-figure img {
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+  #phase1 .p1-figure-side .hero-figure figcaption {
+    font-size: 22px;
+    padding: 16px 24px;
+  }
+  #phase1 .p1-copy-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 18px;
+  }
+  #phase1 .p1-copy-side .badges-row {
+    justify-content: flex-start !important;
+    gap: 16px;
+  }
+  #phase1 .p1-copy-side .receipt-badge,
+  #phase1 .p1-copy-side .confirm-badge {
+    font-size: 22px !important;
+    padding: 8px 18px;
+  }
+  #phase1 .p1-copy-side .price-collapse-pill {
+    width: 100% !important;
+    align-items: flex-start;
+    text-align: left;
+    padding: 20px 28px !important;
+  }
+  #phase1 .p1-copy-side .price-collapse-label {
+    font-size: 22px !important;
+    text-align: left;
+    width: 100%;
+  }
+  #phase1 .p1-copy-side .price-collapse-row {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 24px !important;
+  }
+  #phase1 .p1-copy-side .price-collapse-old { font-size: 56px !important; }
+  #phase1 .p1-copy-side .price-collapse-new { font-size: 88px !important; }
+
+  /* Phase 6 — perspective tilt card: pull stage to a wider stance */
+  #phase6 .perspective-stage { perspective: 2000px; }
+  .tilt-card { width: 1100px; height: 560px; }
+
+  /* Phase 14 — when in horizontal mode, give each step its own column */
+  .timeline-row .timeline-circle { width: 48px; height: 48px; }
+
+  /* Phase 15 — image carousel grid (replaces text marquee). 8 cards in 2 rows of 4. */
+  .image-carousel {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 22px;
+    width: 1700px;
+  }
+  .image-carousel .card {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    background: var(--card-bright);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+    aspect-ratio: 16/9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .image-carousel .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--card-accent, var(--g-blue));
+  }
+  .image-carousel .card[data-color="blue"]   { --card-accent: var(--g-blue);   }
+  .image-carousel .card[data-color="red"]    { --card-accent: var(--g-red);    }
+  .image-carousel .card[data-color="yellow"] { --card-accent: var(--g-yellow); }
+  .image-carousel .card[data-color="green"]  { --card-accent: var(--g-green);  }
+  .image-carousel .card-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--card-accent) 0%, transparent 60%);
+    opacity: 0.18;
+  }
+  .image-carousel .card-overline {
+    position: absolute;
+    top: 18px;
+    left: 22px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--card-accent);
+  }
+  .image-carousel .card-title {
+    position: relative;
+    z-index: 2;
+    padding: 18px 22px 20px;
+    background: linear-gradient(0deg, rgba(6,8,15,0.92) 0%, rgba(6,8,15,0) 100%);
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.18;
+    color: var(--text);
+    text-align: left;
+  }
+  .image-carousel .card-num {
+    position: absolute;
+    bottom: 14px;
+    right: 22px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--card-accent);
+    z-index: 3;
+    text-shadow: 0 0 18px var(--card-accent);
+    opacity: 0.92;
+  }
+
+  /* Phase 18 testimonial — wider */
+  #phase18 .premium-quote-block { width: 1500px; }
+  /* Phase 20 git grid — give it 24 columns instead of 18 to use width */
+  #phase20 .git-grid { grid-template-columns: repeat(24, 1fr); gap: 8px; }
+
+  /* Phase 22 CTA — beefier landscape CTA pill */
+  .cta-pill { padding: 28px 56px; font-size: 32px; }
+  .cta-pill .cta-label { font-size: 20px; }
+  .cta-pill .cta-value { font-size: 34px; }
+
+  /* ════════════════════════════════════════════════════════════════════
+     IMAGE-CONTENT PRESETS (Phases 26-35) — fillable templates with image
+     slots + content + reveal animations. Each preset has:
+       - .photo-placeholder divs that operators replace with <img src="…">
+       - Clear content slots (eyebrow, headline, body, captions)
+       - A reveal animation built into the GSAP timeline
+     ════════════════════════════════════════════════════════════════════ */
+
+  /* Universal image placeholder — Google brand gradient + label. Replace
+     each <div class="photo-placeholder" data-color="…">…</div> with
+     <img src="assets/preset-images/photo-01.jpg"> when shipping a video. */
+  .photo-placeholder {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.45);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .photo-placeholder::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg, var(--ph-color, var(--g-blue)) 0%, transparent 60%),
+      radial-gradient(circle at 70% 30%, rgba(255,255,255,0.10) 0%, transparent 50%),
+      linear-gradient(180deg, rgba(10,14,26,0.55) 0%, rgba(6,8,15,0.85) 100%);
+    z-index: 0;
+  }
+  .photo-placeholder::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(255,255,255,0.02) 0,
+        rgba(255,255,255,0.02) 2px,
+        transparent 2px,
+        transparent 14px);
+    z-index: 1;
+  }
+  .photo-placeholder span { position: relative; z-index: 2; }
+  .photo-placeholder[data-color="blue"]   { --ph-color: var(--g-blue);   }
+  .photo-placeholder[data-color="red"]    { --ph-color: var(--g-red);    }
+  .photo-placeholder[data-color="yellow"] { --ph-color: var(--g-yellow); }
+  .photo-placeholder[data-color="green"]  { --ph-color: var(--g-green);  }
+  .photo-placeholder[data-color="cyan"]   { --ph-color: #00BCD4;         }
+
+  /* PRESET 26 — photo-fullbleed-headline.
+     Full-screen image background with Ken Burns zoom + centered headline
+     overlay + corner brand accent + bottom caption. */
+  .preset-fullbleed {
+    position: relative;
+    width: 1760px;
+    height: 880px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  }
+  .preset-fullbleed .pf-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .preset-fullbleed .pf-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(6,8,15,0.30) 0%, rgba(6,8,15,0.75) 100%),
+      radial-gradient(ellipse 60% 70% at 50% 50%, transparent 30%, rgba(6,8,15,0.6) 100%);
+    z-index: 1;
+  }
+  .preset-fullbleed .pf-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .preset-fullbleed .pf-eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--g-yellow);
+    margin-bottom: 18px;
+  }
+  .preset-fullbleed .pf-headline {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 110px;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -2px;
+    color: #ffffff;
+    text-shadow: 0 8px 32px rgba(0,0,0,0.8);
+    max-width: 1400px;
+    text-wrap: balance;
+  }
+  .preset-fullbleed .pf-caption {
+    position: absolute;
+    bottom: 28px;
+    left: 36px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+  }
+  .preset-fullbleed .pf-corner {
+    position: absolute;
+    top: 0; right: 0;
+    width: 220px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+    z-index: 3;
+  }
+
+  /* PRESET 27 — photo-split-narrative.
+     50/50 image-text split. Image left (16:9, Ken Burns), copy right
+     (eyebrow + 60px headline + 28px body + bullet pills). */
+  .preset-split {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 56px;
+    width: 1760px;
+    height: 760px;
+    align-items: center;
+  }
+  .preset-split .ps-photo-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .preset-split .ps-photo {
+    position: absolute;
+    inset: 0;
+  }
+  .preset-split .ps-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 18px;
+  }
+  .preset-split .ps-eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--g-blue);
+  }
+  .preset-split .ps-headline {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -1px;
+    color: #ffffff;
+  }
+  .preset-split .ps-body {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--ink-60);
+    max-width: 720px;
+  }
+  .preset-split .ps-bullets {
+    list-style: none;
+    padding: 0;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .preset-split .ps-bullets li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .preset-split .ps-bullets li::before {
+    content: "→";
+    color: var(--g-green);
+    font-weight: 900;
+    font-size: 28px;
+  }
+
+  /* PRESET 28 — photo-trio-grid. 3 large 16:9 images side by side. */
+  .preset-trio {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    width: 1760px;
+  }
+  .preset-trio .pt-card {
+    position: relative;
+    aspect-ratio: 16/9;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .preset-trio .pt-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--pt-accent, var(--g-blue));
+    z-index: 3;
+  }
+  .preset-trio .pt-card[data-color="blue"]   { --pt-accent: var(--g-blue);   }
+  .preset-trio .pt-card[data-color="red"]    { --pt-accent: var(--g-red);    }
+  .preset-trio .pt-card[data-color="yellow"] { --pt-accent: var(--g-yellow); }
+  .preset-trio .pt-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .preset-trio .pt-meta {
+    position: relative;
+    z-index: 2;
+    padding: 20px 26px 22px;
+    background: linear-gradient(0deg, rgba(6,8,15,0.95) 0%, rgba(6,8,15,0) 100%);
+    text-align: left;
+  }
+  .preset-trio .pt-overline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--pt-accent, var(--g-blue));
+    margin-bottom: 8px;
+  }
+  .preset-trio .pt-title {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.18;
+    color: #ffffff;
+  }
+
+  /* PRESET 29 — photo-sextet-grid. 6 cards in 3×2 (V2 Scene02Grid style). */
+  .preset-sextet {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 22px;
+    width: 1700px;
+  }
+  .preset-sextet .ps6-card {
+    position: relative;
+    aspect-ratio: 16/10;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .preset-sextet .ps6-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 5px;
+    height: 100%;
+    background: var(--ps6-accent, var(--g-blue));
+    z-index: 3;
+  }
+  .preset-sextet .ps6-card[data-color="blue"]   { --ps6-accent: var(--g-blue);   }
+  .preset-sextet .ps6-card[data-color="red"]    { --ps6-accent: var(--g-red);    }
+  .preset-sextet .ps6-card[data-color="yellow"] { --ps6-accent: var(--g-yellow); }
+  .preset-sextet .ps6-card[data-color="green"]  { --ps6-accent: var(--g-green);  }
+  .preset-sextet .ps6-card .ps6-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .preset-sextet .ps6-card .ps6-meta {
+    position: relative;
+    z-index: 2;
+    padding: 16px 20px 18px 26px;
+    background: linear-gradient(0deg, rgba(6,8,15,0.95) 0%, rgba(6,8,15,0) 100%);
+    text-align: left;
+  }
+  .preset-sextet .ps6-overline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ps6-accent);
+    margin-bottom: 5px;
+  }
+  .preset-sextet .ps6-title {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.18;
+    color: #ffffff;
+  }
+
+  /* PRESET 30 — photo-comparison. Before/After w/ arrow + delta chip. */
+  .preset-compare {
+    display: grid;
+    grid-template-columns: 1fr 110px 1fr;
+    gap: 24px;
+    width: 1760px;
+    align-items: center;
+  }
+  .preset-compare .pc-card {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid var(--border-bright);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .preset-compare .pc-card.before { border-color: rgba(234,67,53,0.55); }
+  .preset-compare .pc-card.after  { border-color: rgba(52,168,83,0.65); box-shadow: 0 24px 60px rgba(52,168,83,0.12), 0 24px 60px rgba(0,0,0,0.5); }
+  .preset-compare .pc-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .preset-compare .pc-label {
+    position: absolute;
+    top: 20px; left: 24px;
+    z-index: 2;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(6,8,15,0.85);
+    border: 1.5px solid currentColor;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .preset-compare .pc-card.before .pc-label { color: var(--g-red); }
+  .preset-compare .pc-card.after  .pc-label { color: var(--g-green); }
+  .preset-compare .pc-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--g-green);
+    font-size: 80px;
+    font-weight: 900;
+    text-shadow: 0 0 24px rgba(52,168,83,0.5);
+  }
+  .preset-compare .pc-delta {
+    position: absolute;
+    bottom: 20px; right: 24px;
+    z-index: 2;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--g-green);
+    text-shadow: 0 4px 18px rgba(52,168,83,0.5);
+  }
+  .preset-compare .pc-card.before .pc-delta { color: var(--g-red); text-shadow: 0 4px 18px rgba(234,67,53,0.5); }
+
+  /* PRESET 31 — photo-callout-pins. Hero image + numbered pins. */
+  .preset-callouts {
+    position: relative;
+    width: 1500px;
+    height: 800px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+  }
+  .preset-callouts .pco-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .preset-callouts .pco-pin {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .preset-callouts .pco-pin-dot {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--pco-color, var(--g-blue));
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 32px var(--pco-color, var(--g-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+  .preset-callouts .pco-pin-label {
+    padding: 10px 18px;
+    background: rgba(6,8,15,0.92);
+    border: 1.5px solid var(--pco-color, var(--g-blue));
+    border-radius: 12px;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .preset-callouts .pco-pin[data-color="blue"]   { --pco-color: var(--g-blue);   }
+  .preset-callouts .pco-pin[data-color="red"]    { --pco-color: var(--g-red);    }
+  .preset-callouts .pco-pin[data-color="yellow"] { --pco-color: var(--g-yellow); }
+  .preset-callouts .pco-pin[data-color="green"]  { --pco-color: var(--g-green);  }
+
+  /* PRESET 32 — photo-portrait-trio. 3 circular portraits + names. */
+  .preset-portraits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 64px;
+    width: 1600px;
+  }
+  .preset-portraits .pp-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    text-align: center;
+  }
+  .preset-portraits .pp-photo {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--pp-color, var(--g-blue));
+    box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 36px var(--pp-color, var(--g-blue));
+    position: relative;
+  }
+  .preset-portraits .pp-card[data-color="blue"]   { --pp-color: var(--g-blue);   }
+  .preset-portraits .pp-card[data-color="red"]    { --pp-color: var(--g-red);    }
+  .preset-portraits .pp-card[data-color="yellow"] { --pp-color: var(--g-yellow); }
+  .preset-portraits .pp-name {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.1;
+  }
+  .preset-portraits .pp-title {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--pp-color, var(--g-blue));
+  }
+
+  /* PRESET 33 — photo-mosaic-irregular. 7 images, varied sizes. */
+  .preset-mosaic {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(3, 240px);
+    gap: 16px;
+    width: 1760px;
+  }
+  .preset-mosaic .pm-tile {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+  }
+  .preset-mosaic .pm-tile .pm-photo { position: absolute; inset: 0; }
+  .preset-mosaic .pm-tile[data-pos="1"] { grid-column: 1 / 3; grid-row: 1 / 3; } /* big left */
+  .preset-mosaic .pm-tile[data-pos="2"] { grid-column: 3 / 5; grid-row: 1 / 2; }
+  .preset-mosaic .pm-tile[data-pos="3"] { grid-column: 5 / 7; grid-row: 1 / 3; } /* big right */
+  .preset-mosaic .pm-tile[data-pos="4"] { grid-column: 3 / 4; grid-row: 2 / 3; }
+  .preset-mosaic .pm-tile[data-pos="5"] { grid-column: 4 / 5; grid-row: 2 / 3; }
+  .preset-mosaic .pm-tile[data-pos="6"] { grid-column: 1 / 4; grid-row: 3 / 4; }
+  .preset-mosaic .pm-tile[data-pos="7"] { grid-column: 4 / 7; grid-row: 3 / 4; }
+
+  /* PRESET 34 — photo-stack-parallax. 3 layered images. */
+  .preset-stack {
+    position: relative;
+    width: 1200px;
+    height: 720px;
+    margin: 0 auto;
+  }
+  .preset-stack .pst-card {
+    position: absolute;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 2px solid var(--border-bright);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.7);
+    aspect-ratio: 16/9;
+  }
+  .preset-stack .pst-card .pst-photo { position: absolute; inset: 0; }
+  .preset-stack .pst-card.back {
+    width: 70%;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-30px) rotate(-3deg);
+    opacity: 0.7;
+    filter: blur(2px);
+  }
+  .preset-stack .pst-card.mid {
+    width: 78%;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) rotate(1.5deg);
+    opacity: 0.88;
+  }
+  .preset-stack .pst-card.front {
+    width: 85%;
+    top: 140px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-1deg);
+    z-index: 3;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 60px rgba(66,133,244,0.18);
+  }
+
+  /* PRESET 35 — photo-logo-wall. 12 logo placeholder cards 4×3. */
+  .preset-logowall {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 22px;
+    width: 1600px;
+    height: 720px;
+  }
+  .preset-logowall .plw-tile {
+    position: relative;
+    border-radius: 16px;
+    border: 1.5px solid var(--border-bright);
+    background: rgba(10,14,26,0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
+  .preset-logowall .plw-tile .plw-photo { position: absolute; inset: 0; }
+  .preset-logowall .plw-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--plw-color, var(--g-blue)) 0%, transparent 70%);
+    opacity: 0.10;
+    z-index: 0;
+  }
+  .preset-logowall .plw-tile[data-color="blue"]   { --plw-color: var(--g-blue);   }
+  .preset-logowall .plw-tile[data-color="red"]    { --plw-color: var(--g-red);    }
+  .preset-logowall .plw-tile[data-color="yellow"] { --plw-color: var(--g-yellow); }
+  .preset-logowall .plw-tile[data-color="green"]  { --plw-color: var(--g-green);  }
+  .preset-logowall .plw-tile .plw-label {
+    position: relative;
+    z-index: 2;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<script src="video.config.js"></script>
+<div id="root"
+     class="theme-cinematic"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="743.96"
+     data-width="1920"
+     data-height="1080">
+
+  <!-- Particle dust layer (deterministic 60-dot seeded scatter, animated drift) -->
+  <svg id="particles"
+       width="100%" height="100%"
+       preserveAspectRatio="none"
+       data-layout-allow-overflow="true"
+       xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <!-- Inner safe-area card stroke -->
+  <div id="slide-frame"></div>
+
+  <!-- Top accent line (Google green→yellow ramp) -->
+  <div id="top-line"></div>
+
+  <!-- Persistent Google logo (top-right watermark, V2 Remotion reference).
+       180×180 PNG with built-in transparent margin — top:-20 docks it to
+       the top edge. Swap to assets/google-g-logo.png for the G-only mark
+       on busy hero scenes. Sub-brand swaps (Gemini / DeepMind / Workspace)
+       drop a new file into assets/ and update the src below. -->
+  <div id="glogo">
+    <img src="assets/google-logo.png" alt="Google" />
+  </div>
+
+  <!-- Slim progress bar at the very bottom -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       PHASE 1 — HERO (0-6s)
+       ═══════════════════════════════════════════════════════ -->
+  
+  <!-- Sub-Compositions -->
+  <div id="scene-1-wrap"
+       class="phase clip"
+       data-composition-id="scene-hook"
+       data-composition-src="compositions/scene-hook.html"
+       data-start="0"
+       data-duration="39.43"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"
+       style="opacity:1; visibility:visible;"></div>
+  
+  <div id="scene-2-wrap"
+       class="phase clip"
+       data-composition-id="scene-stat-pill-row"
+       data-composition-src="compositions/scene-stat-pill-row.html"
+       data-start="39.43"
+       data-duration="75.19"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-3-wrap"
+       class="phase clip"
+       data-composition-id="scene-image-hero"
+       data-composition-src="compositions/scene-image-hero.html"
+       data-start="114.62"
+       data-duration="59.39"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-4-wrap"
+       class="phase clip"
+       data-composition-id="scene-source-cards"
+       data-composition-src="compositions/scene-source-cards.html"
+       data-start="174.01"
+       data-duration="71.53"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-5-wrap"
+       class="phase clip"
+       data-composition-id="scene-architecture-stack"
+       data-composition-src="compositions/scene-architecture-stack.html"
+       data-start="245.54"
+       data-duration="63.92"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-6-wrap"
+       class="phase clip"
+       data-composition-id="scene-video-embed"
+       data-composition-src="compositions/scene-video-embed.html"
+       data-start="309.46"
+       data-duration="52.32"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-7-wrap"
+       class="phase clip"
+       data-composition-id="scene-side-by-side"
+       data-composition-src="compositions/scene-side-by-side.html"
+       data-start="361.78"
+       data-duration="55.35"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-8-wrap"
+       class="phase clip"
+       data-composition-id="scene-source-cards-8"
+       data-composition-src="compositions/scene-source-cards-8.html"
+       data-start="417.13"
+       data-duration="72.03"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-9-wrap"
+       class="phase clip"
+       data-composition-id="scene-image-hero-9"
+       data-composition-src="compositions/scene-image-hero-9.html"
+       data-start="489.16"
+       data-duration="56.56"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-10-wrap"
+       class="phase clip"
+       data-composition-id="scene-video-embed-10"
+       data-composition-src="compositions/scene-video-embed-10.html"
+       data-start="545.72"
+       data-duration="61.08"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-11-wrap"
+       class="phase clip"
+       data-composition-id="scene-stat-pill-row-11"
+       data-composition-src="compositions/scene-stat-pill-row-11.html"
+       data-start="606.81"
+       data-duration="53.45"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-12-wrap"
+       class="phase clip"
+       data-composition-id="scene-side-by-side-12"
+       data-composition-src="compositions/scene-side-by-side-12.html"
+       data-start="660.26"
+       data-duration="52.79"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+  
+  <div id="scene-13-wrap"
+       class="phase clip"
+       data-composition-id="scene-cta"
+       data-composition-src="compositions/scene-cta.html"
+       data-start="713.06"
+       data-duration="30.91"
+       data-track-index="1"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <!-- Captions Overlay -->
+  <div id="captions-wrap"
+       class="clip"
+       data-composition-id="captions"
+       data-composition-src="compositions/captions.html"
+       data-start="0"
+       data-duration="743.96"
+       data-track-index="9"
+       data-width="1920"
+       data-height="1080"></div>
+
+  <!-- Narration Track -->
+  <audio id="narration" class="clip" src="audio/narration.wav"
+         data-start="0" data-duration="743.96"
+         data-track-index="2" data-volume="1"></audio>
+
+  <!-- Transition SFX (Whooshes) -->
+  <audio id="whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="39.03" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-2" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="114.22" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-3" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="173.61" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-4" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="245.14" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-5" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="309.06" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-6" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="361.38" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-7" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="416.73" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-8" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="488.76" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-9" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="545.32" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-10" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="606.41" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-11" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="659.86" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+  <audio id="whoosh-12" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="712.65" data-duration="1.5" data-track-index="4" data-volume="0.14"></audio>
+
+  <!-- Scene 1 Intro SFX and Background Music -->
+  <audio id="bg-music-hook" class="clip" src="audio/bg-music-hook.mp3" data-start="0" data-duration="39.43" data-track-index="3" data-volume="0.18"></audio>
+  <audio id="sfx-slam-not-model" class="clip" src="assets/sfx/impact-slam.mp3" data-start="1.77" data-duration="2.0" data-track-index="5" data-volume="0.22"></audio>
+  <audio id="sfx-core-pop" class="clip" src="assets/sfx/spring-pop.mp3" data-start="4.16" data-duration="2.0" data-track-index="5" data-volume="0.20"></audio>
+  <audio id="sfx-chatbot-in" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="10.39" data-duration="1.5" data-track-index="5" data-volume="0.15"></audio>
+  <audio id="sfx-user-pop" class="clip" src="assets/sfx/pop.mp3" data-start="11.34" data-duration="1.0" data-track-index="6" data-volume="0.18"></audio>
+  <audio id="sfx-ai-pop" class="clip" src="assets/sfx/pop.mp3" data-start="12.50" data-duration="1.0" data-track-index="5" data-volume="0.18"></audio>
+  <audio id="sfx-shatter" class="clip" src="assets/sfx/impact-slam.mp3" data-start="17.26" data-duration="3.0" data-track-index="5" data-volume="0.25"></audio>
+  <audio id="sfx-carousel-1" class="clip" src="assets/sfx/cyber-rotate.mp3" data-start="22.17" data-duration="1.2" data-track-index="6" data-volume="0.14"></audio>
+  <audio id="sfx-carousel-2" class="clip" src="assets/sfx/cyber-rotate.mp3" data-start="23.23" data-duration="1.2" data-track-index="7" data-volume="0.14"></audio>
+  <audio id="sfx-carousel-3" class="clip" src="assets/sfx/cyber-rotate.mp3" data-start="25.42" data-duration="1.2" data-track-index="6" data-volume="0.14"></audio>
+  <audio id="sfx-carousel-4" class="clip" src="assets/sfx/cyber-rotate.mp3" data-start="27.11" data-duration="1.2" data-track-index="7" data-volume="0.14"></audio>
+  <audio id="sfx-carousel-5" class="clip" src="assets/sfx/cyber-rotate.mp3" data-start="28.97" data-duration="1.2" data-track-index="6" data-volume="0.14"></audio>
+  <audio id="sfx-carousel-6" class="clip" src="assets/sfx/cyber-rotate.mp3" data-start="31.15" data-duration="1.2" data-track-index="7" data-volume="0.14"></audio>
+  <audio id="sfx-morph-os" class="clip" src="assets/sfx/scale-slam.mp3" data-start="35.23" data-duration="2.0" data-track-index="5" data-volume="0.22"></audio>
+
+  <!-- ──────────────────────────────────────────────────
+       SCENE 2 SFX CUES (Receipts & Benchmarks: 39.43s - 114.62s)
+       ────────────────────────────────────────────────── -->
+  <audio id="sfx-s2-brand-pop" class="clip" src="assets/sfx/spring-pop.mp3" data-start="47.73" data-duration="1.5" data-track-index="5" data-volume="0.20"></audio>
+  <audio id="sfx-s2-stamp-internal" class="clip" src="assets/sfx/impact-slam.mp3" data-start="52.14" data-duration="1.5" data-track-index="5" data-volume="0.22"></audio>
+  <audio id="sfx-s2-stamp-next-month" class="clip" src="assets/sfx/impact-slam.mp3" data-start="54.21" data-duration="1.5" data-track-index="7" data-volume="0.22"></audio>
+  <audio id="sfx-s2-speed-whoosh" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="54.83" data-duration="1.5" data-track-index="6" data-volume="0.12"></audio>
+  <audio id="sfx-s2-speed-gauge" class="clip" src="assets/sfx/pop.mp3" data-start="69.43" data-duration="1.0" data-track-index="5" data-volume="0.18"></audio>
+  <audio id="sfx-s2-count-slam" class="clip" src="assets/sfx/scale-slam.mp3" data-start="76.43" data-duration="2.0" data-track-index="5" data-volume="0.22"></audio>
+  <audio id="sfx-s2-bench-trans" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="74.53" data-duration="1.5" data-track-index="6" data-volume="0.14"></audio>
+  
+  <audio id="sfx-s2-bench-1" class="clip" src="assets/sfx/pop.mp3" data-start="83.68" data-duration="1.0" data-track-index="5" data-volume="0.18"></audio>
+  <audio id="sfx-s2-bench-2" class="clip" src="assets/sfx/pop.mp3" data-start="86.50" data-duration="1.0" data-track-index="6" data-volume="0.18"></audio>
+  <audio id="sfx-s2-bench-3" class="clip" src="assets/sfx/pop.mp3" data-start="91.30" data-duration="1.0" data-track-index="5" data-volume="0.18"></audio>
+  <audio id="sfx-s2-bench-4" class="clip" src="assets/sfx/pop.mp3" data-start="94.50" data-duration="1.0" data-track-index="6" data-volume="0.18"></audio>
+  
+  <audio id="sfx-s2-shelf-trans" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="99.67" data-duration="1.5" data-track-index="6" data-volume="0.12"></audio>
+  <audio id="sfx-s2-app-1" class="clip" src="assets/sfx/pop.mp3" data-start="101.00" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s2-app-2" class="clip" src="assets/sfx/pop.mp3" data-start="101.90" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s2-app-3" class="clip" src="assets/sfx/pop.mp3" data-start="103.40" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s2-app-4" class="clip" src="assets/sfx/pop.mp3" data-start="105.10" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s2-app-5" class="clip" src="assets/sfx/pop.mp3" data-start="106.90" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s2-app-6" class="clip" src="assets/sfx/pop.mp3" data-start="108.50" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s2-app-7" class="clip" src="assets/sfx/pop.mp3" data-start="110.40" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+
+  <!-- SCENE 3 SFX CUES (Gemini Omni Launch: 114.62s - 174.01s) -->
+  <audio id="sfx-s3-brand-in" class="clip" src="assets/sfx/spring-pop.mp3" data-start="114.92" data-duration="1.5" data-track-index="5" data-volume="0.20"></audio>
+  <audio id="sfx-s3-model-slam" class="clip" src="assets/sfx/scale-slam.mp3" data-start="118.17" data-duration="2.0" data-track-index="5" data-volume="0.22"></audio>
+  <audio id="sfx-s3-sub-pop" class="clip" src="assets/sfx/pop.mp3" data-start="120.35" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-badge-img" class="clip" src="assets/sfx/pop.mp3" data-start="128.78" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-badge-aud" class="clip" src="assets/sfx/pop.mp3" data-start="129.52" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-badge-vid" class="clip" src="assets/sfx/pop.mp3" data-start="130.24" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-badge-txt" class="clip" src="assets/sfx/pop.mp3" data-start="131.02" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-flow-in" class="clip" src="assets/sfx/cinematic-whoosh.mp3" data-start="136.40" data-duration="1.5" data-track-index="5" data-volume="0.14"></audio>
+  <audio id="sfx-s3-msg-u1" class="clip" src="assets/sfx/pop.mp3" data-start="138.62" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-msg-a1" class="clip" src="assets/sfx/pop.mp3" data-start="141.12" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-msg-u2" class="clip" src="assets/sfx/pop.mp3" data-start="144.62" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-msg-a2" class="clip" src="assets/sfx/pop.mp3" data-start="147.62" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-tier-plus" class="clip" src="assets/sfx/pop.mp3" data-start="156.40" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-tier-pro" class="clip" src="assets/sfx/pop.mp3" data-start="157.13" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-tier-ultra" class="clip" src="assets/sfx/pop.mp3" data-start="157.92" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-tier-free" class="clip" src="assets/sfx/pop.mp3" data-start="158.82" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-pillar-1" class="clip" src="assets/sfx/pop.mp3" data-start="168.93" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-pillar-2" class="clip" src="assets/sfx/pop.mp3" data-start="169.67" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+  <audio id="sfx-s3-pillar-3" class="clip" src="assets/sfx/pop.mp3" data-start="170.39" data-duration="1.0" data-track-index="5" data-volume="0.16"></audio>
+  <audio id="sfx-s3-pillar-4" class="clip" src="assets/sfx/pop.mp3" data-start="173.50" data-duration="1.0" data-track-index="6" data-volume="0.16"></audio>
+
+<!-- ═══════════════════════════════════════════════════════
+       AUDIO BED — operator wires when narration + bg-music files exist.
+       Bare template ships silent so render works without external media.
+
+       When you spawn a video from this template:
+       1. Drop narration at audio/narration.wav
+       2. Uncomment the narration block below
+       3. Optionally drop bg-music-{hook,body,cta}.mp3 at audio/ and
+          uncomment those blocks too. Volumes per .claude/rules/audio-design.md
+       4. Run `bash scripts/sync-video-sfx.sh videos/<slug>` to bring
+          cinematic-whoosh.mp3 into assets/sfx/, then uncomment the
+          whoosh audio elements at their phase-transition timestamps.
+
+  Narration (track 2):
+    audio name="narration" class="clip" src="audio/narration.wav"
+           data-start="0" data-duration="743.96"
+           data-track-index="2" data-volume="1"
+
+  Cinematic whoosh per phase transition (track 4, every 5s):
+    audio id="sfx-whoosh-1" class="clip" src="assets/sfx/cinematic-whoosh.mp3"
+           data-start="4.6" data-duration="1.5"
+           data-track-index="4" data-volume="0.14"
+    (34 whooshes total — every 5s through 169.6s for the 35-phase showcase)
+
+  Per-element SFX (impact-slam / scale-slam / spring-pop / pop / strike-cross)
+  go on tracks 5+. Hard volume cap 0.25.
+       ═══════════════════════════════════════════════════════ -->
+
+
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // Particles — 60 deterministic dots in 4 Google colors.
+  // xmur3-style hash, no Math.random / Date.now.
+  // ─────────────────────────────────────────────────────
+  function seedHash(seed) {
+    let h = 1779033703 ^ seed.length;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function spawnParticles(seedPrefix, container, count) {
+    const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853'];
+    const ns = 'http://www.w3.org/2000/svg';
+    const nodes = [];
+    for (let i = 0; i < count; i++) {
+      const x = seedHash(seedPrefix + '-x-' + i) * 100;
+      const y = seedHash(seedPrefix + '-y-' + i) * 100;
+      const r = 3 + seedHash(seedPrefix + '-r-' + i) * 6;
+      const op = 0.25 + seedHash(seedPrefix + '-o-' + i) * 0.55;
+      const ci = Math.floor(seedHash(seedPrefix + '-c-' + i) * colors.length);
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('cx', x + '%');
+      c.setAttribute('cy', y + '%');
+      c.setAttribute('r', String(r));
+      c.setAttribute('fill', colors[ci]);
+      c.setAttribute('opacity', String(op));
+      c.dataset.dx  = String((seedHash(seedPrefix + '-dx-' + i) - 0.5) * 80);
+      c.dataset.dy  = String((seedHash(seedPrefix + '-dy-' + i) - 0.5) * 80);
+      c.dataset.dur = String(8 + seedHash(seedPrefix + '-dt-' + i) * 8);
+      c.dataset.del = String(seedHash(seedPrefix + '-de-' + i) * 4);
+      container.appendChild(c);
+      nodes.push(c);
+    }
+    return nodes;
+  }
+  const PARTICLE_NODES = spawnParticles('google-short', document.getElementById('particles'), 60);
+
+  // ─────────────────────────────────────────────────────
+  // Root timeline construction
+  // ─────────────────────────────────────────────────────
+  window.__timelines = window.__timelines || {};
+  const TOTAL_DURATION = 743.96;
+  const tl = gsap.timeline({ paused: true });
+
+  // Particle drift — global breathing yoyo
+  tl.fromTo("#particles",
+    { opacity: 0.55, scale: 1.0, transformOrigin: "50% 50%" },
+    { opacity: 0.75, scale: 1.04, duration: 12, ease: "sine.inOut", yoyo: true, repeat: Math.ceil(TOTAL_DURATION / 12) },
+    0);
+
+  // Per-particle drift
+  PARTICLE_NODES.forEach(function (c) {
+    var dx  = parseFloat(c.dataset.dx);
+    var dy  = parseFloat(c.dataset.dy);
+    var dur = parseFloat(c.dataset.dur);
+    var del = parseFloat(c.dataset.del);
+    var cycles = Math.max(1, Math.floor((TOTAL_DURATION - del) / dur));
+    if (cycles % 2 === 1) cycles += 1;
+    tl.to(c, {
+      x: dx, y: dy,
+      duration: dur,
+      ease: "sine.inOut",
+      yoyo: true, repeat: cycles
+    }, del);
+  });
+
+  // Reposition particles per phase
+  function repositionParticlesPerPhase(tl, particleNodes, seedPrefix, phaseStartTimes) {
+    if (!particleNodes.length || !phaseStartTimes.length) return;
+    phaseStartTimes.forEach(function (sceneT, sceneIdx) {
+      var positions = particleNodes.map(function (_, i) {
+        var seed = seedPrefix + '-phase' + sceneIdx + '-' + i;
+        return {
+          cx: seedHash(seed + '-x') * 100,
+          cy: seedHash(seed + '-y') * 100,
+        };
+      });
+      particleNodes.forEach(function (c, i) {
+        tl.to(c, {
+          attr: {
+            cx: positions[i].cx + '%',
+            cy: positions[i].cy + '%',
+          },
+          duration: 1.0,
+          ease: 'power2.inOut',
+        }, sceneT - 0.3);
+      });
+    });
+  }
+
+  // Progress bar fills linearly across the 1920px canvas width
+  tl.fromTo("#progress-fill",
+    { width: 0 },
+    { width: 1920, duration: TOTAL_DURATION, ease: "none" },
+    0);
+
+  // Top-line + Google logo entrance
+  tl.from("#top-line", { scaleX: 0, transformOrigin: "0 50%", duration: 0.7, ease: "power3.out" }, 0.2);
+  tl.from("#glogo",    { y: -20, opacity: 0, duration: 0.6, ease: "power2.out" }, 0.3);
+
+  // ═══════════════════════════════════════════════════════
+  // DYNAMIC PHASE CROSSFADES (Scenes 1-13)
+  // ═══════════════════════════════════════════════════════
+  const sceneStarts = [0.0, 39.43, 114.62, 174.01, 245.54, 309.46, 361.78, 417.13, 489.16, 545.72, 606.81, 660.26, 713.05];
+  
+  for (let i = 0; i < sceneStarts.length - 1; i++) {
+    const currentId = `#scene-${i + 1}-wrap`;
+    const nextId = `#scene-${i + 2}-wrap`;
+    const transitionStart = sceneStarts[i + 1] - 0.4;
+
+    // Fade out current phase
+    tl.to(currentId, { filter: "blur(20px)", scale: 1.04, duration: 0.5, ease: "power1.in" }, transitionStart);
+    tl.to(currentId, { opacity: 0, duration: 0.4, ease: "power1.in" }, transitionStart + 0.3);
+    tl.set(currentId, { visibility: "hidden" }, transitionStart + 0.7);
+
+    // Fade in next phase
+    tl.set(nextId, { filter: "blur(20px)", scale: 0.97, opacity: 0, visibility: "visible" }, transitionStart + 0.4);
+    tl.to(nextId, { opacity: 1, duration: 0.3, ease: "power1.inOut", overwrite: "auto" }, transitionStart + 0.4);
+    tl.to(nextId, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power1.out", overwrite: "auto" }, transitionStart + 0.6);
+  }
+
+  // Particle repositions at transitions
+  const transitionStarts = sceneStarts.slice(1).map(t => t - 0.4);
+  repositionParticlesPerPhase(tl, PARTICLE_NODES, 'google-short', transitionStarts);
+
+  window.__timelines["main"] = tl;
+
+  </script>
+</body>
+</html>

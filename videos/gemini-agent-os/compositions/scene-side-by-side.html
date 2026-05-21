@@ -1,0 +1,261 @@
+<!--
+  scene-side-by-side.html — A vs B comparison.
+
+  Two glassmorphic panels, max-width 720px each, centered with a
+  40px gap. Card A uses accent-1 (blue); card B uses accent-3 (yellow).
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #scene-side-by-side-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:48px;
+        box-sizing:border-box;
+      }
+      #scene-side-by-side-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-side-by-side-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #scene-side-by-side-content .headline {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      #scene-side-by-side-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 40px;
+        perspective: 1500px;
+        transform-style: preserve-3d;
+      }
+      .sbs-card {
+        width: 720px;
+        padding: 36px 40px;
+        border-radius: 24px;
+        display:flex; flex-direction:column;
+        gap: 18px;
+        transform-style: preserve-3d;
+        opacity: 0; /* Hidden initially, animated via gsap */
+      }
+      .sbs-card .label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .sbs-card.a .label { color: #4285F4; }
+      .sbs-card.b .label { color: #FBBC05; }
+      .sbs-card .title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        line-height: 1.15;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        will-change: color;
+      }
+      .sbs-card .body {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 22px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .sbs-card .stat {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 84px;
+        line-height: 1;
+        letter-spacing: -3px;
+        font-variant-numeric: tabular-nums lining-nums;
+        margin-top: 8px;
+      }
+      .sbs-card.a .stat {
+        color: #4285F4;
+        text-shadow: 0 0 35px rgba(66, 133, 244, 0.45);
+      }
+      .sbs-card.b .stat {
+        color: #FBBC05;
+        text-shadow: 0 0 35px rgba(251, 188, 5, 0.45);
+      }
+    </style>
+ 
+    <div id="scene-side-by-side-content" class="perspective-stage">
+      <div class="header-block">
+        <div class="overline" id="sbs-overline">GOOGLE SEARCH & WORKSPACE</div>
+        <div class="headline" id="sbs-headline">AI MODE & VOICE-FIRST WORKFLOWS</div>
+      </div>
+ 
+      <div class="row" id="sbs-row">
+        <div class="sbs-card glass-premium glow-blue a" id="sbs-card-a">
+          <div class="label">SEARCH AGENTS</div>
+          <div class="title" id="sbs-ttl-a">Generative UI & Booking</div>
+          <div class="body">Assemble custom layouts, graphs, tables, and mini apps on the fly. Information agents track problems and booking agents automate queries. Surpassed 1 Billion monthly users within one year.</div>
+          <div class="stat" id="sbs-stat-a">1.0B</div>
+        </div>
+        <div class="sbs-card glass-premium glow-yellow b" id="sbs-card-b">
+          <div class="label">WORKSPACE AI</div>
+          <div class="title" id="sbs-ttl-b">Gmail, Docs, and Pics</div>
+          <div class="body">Voice-first Gemini workflows built for Gmail, Docs, and Keep, alongside Google Pics—a collaborative image editing app with object segmentation, translation, and text edits.</div>
+          <div class="stat" id="sbs-stat-b">4.0B</div>
+        </div>
+      </div>
+    </div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+ 
+      // 0.0s - 2.0s: Overline and Headline entrance
+      tl.from("#sbs-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.1);
+      tl.from("#sbs-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.4);
+ 
+      // 4.0s: Left card A enters (Search Agents)
+      tl.fromTo("#sbs-card-a", {
+        x: -120,
+        rotateY: 20,
+        rotateX: 4,
+        scale: 0.88,
+        opacity: 0
+      }, {
+        x: 0,
+        rotateY: -5,
+        rotateX: 2,
+        scale: 1,
+        opacity: 1,
+        duration: 0.95,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 4.0);
+ 
+      // 7.0s: Card A Stat Count-up (val: 0 -> 1.0B)
+      const statAEl = document.getElementById("sbs-stat-a");
+      const statObjA = { val: 0 };
+      tl.to(statObjA, {
+        val: 1.0,
+        duration: 1.5,
+        ease: "power2.out",
+        onUpdate: function() {
+          statAEl.textContent = statObjA.val.toFixed(1) + "B";
+        }
+      }, 7.0);
+
+      // 10.0s: Card A border glow pulse
+      tl.to("#sbs-card-a", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(66, 133, 244, 0.5)",
+        duration: 0.5
+      }, 10.0);
+      tl.to("#sbs-card-a", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.7
+      }, 10.8);
+
+      // 14.0s: Card A soft tilt pivot shift
+      tl.to("#sbs-card-a", { rotateY: 5, rotateX: -2, duration: 1.8, ease: "power1.inOut" }, 14.0);
+
+      // 18.0s: Card A Title Text Glow sweep
+      tl.to("#sbs-ttl-a", { color: "#8AB4F8", scale: 1.03, duration: 0.4 }, 18.0);
+      tl.to("#sbs-ttl-a", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 19.5);
+
+      // 22.0s: Right card B enters (Workspace AI)
+      tl.fromTo("#sbs-card-b", {
+        x: 120,
+        rotateY: -20,
+        rotateX: 4,
+        scale: 0.88,
+        opacity: 0
+      }, {
+        x: 0,
+        rotateY: 5,
+        rotateX: 2,
+        scale: 1,
+        opacity: 1,
+        duration: 0.95,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 22.0);
+
+      // 25.0s: Card B Stat Count-up (val: 0 -> 4.0B)
+      const statBEl = document.getElementById("sbs-stat-b");
+      const statObjB = { val: 0 };
+      tl.to(statObjB, {
+        val: 4.0,
+        duration: 1.5,
+        ease: "power2.out",
+        onUpdate: function() {
+          statBEl.textContent = statObjB.val.toFixed(1) + "B";
+        }
+      }, 25.0);
+
+      // 28.0s: Card B border glow pulse
+      tl.to("#sbs-card-b", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(251, 188, 5, 0.5)",
+        duration: 0.5
+      }, 28.0);
+      tl.to("#sbs-card-b", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.7
+      }, 28.8);
+
+      // 32.0s: Card B soft tilt pivot shift
+      tl.to("#sbs-card-b", { rotateY: -5, rotateX: -2, duration: 1.8, ease: "power1.inOut" }, 32.0);
+
+      // 36.0s: Card B Title Text Glow sweep
+      tl.to("#sbs-ttl-b", { color: "#FBBC05", scale: 1.03, duration: 0.4 }, 36.0);
+      tl.to("#sbs-ttl-b", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 37.5);
+
+      // 40.0s: Dual card 3D tilt shift (parallax breathing)
+      tl.to("#sbs-card-a", { rotateY: -3, rotateX: 3, duration: 2.0, ease: "power1.inOut" }, 40.0);
+      tl.to("#sbs-card-b", { rotateY: 3, rotateX: 3, duration: 2.0, ease: "power1.inOut" }, 40.2);
+
+      // 45.0s: Staggered glow wave on both card borders
+      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 30px rgba(255, 255, 255, 0.15)",
+        duration: 0.6,
+        stagger: 0.2
+      }, 45.0);
+      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6,
+        stagger: 0.2
+      }, 46.0);
+
+      // 50.0s: Settle back to normal
+      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+        rotateY: 0,
+        rotateX: 0,
+        scale: 1.0,
+        duration: 1.5,
+        ease: "power2.out"
+      }, 49.5);
+ 
+      window.__timelines["scene-side-by-side"] = tl;
+    </script>
+  </div>
+</template>

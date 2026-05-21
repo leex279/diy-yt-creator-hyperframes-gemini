@@ -1,0 +1,383 @@
+<!--
+  scene-architecture-stack.html — vertical layer-stack archetype.
+
+  5 horizontal layer bars stacked top-down (Antigravity SDK / CLI → Managed Agents → Antigravity Sandbox → Gemini API Engine →
+  Build with Gemini X-PRIZE). Each layer has an accent-rotated left-border strip. After all
+  5 are visible, a synthesizing 56px headline fades in below.
+-->
+<template id="scene-architecture-stack-template">
+  <div data-composition-id="scene-architecture-stack"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Plus Jakarta Sans', sans-serif; color:var(--text); background:transparent;">
+
+    <style>
+      #scene-architecture-stack-content {
+        width: 100%;
+        height: 100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        box-sizing: border-box;
+      }
+      #scene-architecture-stack-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-3, #FBBC05);
+        text-shadow: 0 0 25px rgba(251, 188, 5, 0.45), 0 0 10px rgba(251, 188, 5, 0.25);
+      }
+      #scene-architecture-stack-content .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        perspective: 1200px;
+        transform-style: preserve-3d;
+      }
+      .arch-layer {
+        width: 1360px;
+        height: 96px;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        padding: 0 48px;
+        gap: 32px;
+        transform-style: preserve-3d;
+        opacity: 0; /* Hidden initially, animated via gsap */
+        background: rgba(10, 12, 22, 0.75);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 
+          0 15px 45px -10px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+        transition: box-shadow 0.5s ease, border-color 0.5s ease;
+      }
+      .arch-layer::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+        pointer-events: none;
+      }
+      
+      /* Premium Top Brand Borders */
+      .arch-layer.l1 { border-top: 4px solid var(--accent-1, #4285F4); }
+      .arch-layer.l2 { border-top: 4px solid var(--accent-2, #EA4335); }
+      .arch-layer.l3 { border-top: 4px solid var(--accent-3, #FBBC05); }
+      .arch-layer.l4 { border-top: 4px solid var(--accent-4, #34A853); }
+      .arch-layer.l5 { border-top: 4px solid #00BCD4; }
+
+      /* Volumetric Neon Ambient Glows */
+      .glow-blue {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(66, 133, 244, 0.18) !important;
+        border-color: rgba(66, 133, 244, 0.3) !important;
+      }
+      .glow-red {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(234, 67, 53, 0.18) !important;
+        border-color: rgba(234, 67, 53, 0.3) !important;
+      }
+      .glow-yellow {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(251, 188, 5, 0.18) !important;
+        border-color: rgba(251, 188, 5, 0.3) !important;
+      }
+      .glow-green {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(52, 168, 83, 0.18) !important;
+        border-color: rgba(52, 168, 83, 0.3) !important;
+      }
+      .glow-cyan {
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(0, 188, 212, 0.18) !important;
+        border-color: rgba(0, 188, 212, 0.3) !important;
+      }
+
+      .arch-layer .label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        width: 80px;
+      }
+      .arch-layer .name {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        color: var(--text);
+        flex: 1;
+      }
+      .arch-layer .meta {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        font-size: 20px;
+        color: var(--text-secondary);
+      }
+      #scene-architecture-stack-content .synth-headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        color: var(--text);
+        text-shadow: 0 0 35px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.6);
+        text-align: center;
+        max-width: 1360px;
+        margin-top: 12px;
+        opacity: 0; /* Hidden initially, animated via gsap */
+      }
+    </style>
+
+    <div id="scene-architecture-stack-content">
+      <div class="overline" id="arch-overline">GOOGLE ANTIGRAVITY 2.0</div>
+
+      <div class="stack" id="arch-stack">
+        <div class="arch-layer glass-premium glow-blue l1" id="arch-layer-1">
+          <span class="label">L1</span>
+          <span class="name">Antigravity SDK / CLI</span>
+          <span class="meta">Command-line tools & developer frameworks</span>
+        </div>
+        <div class="arch-layer glass-premium glow-red l2" id="arch-layer-2">
+          <span class="label">L2</span>
+          <span class="name">Managed Agents</span>
+          <span class="meta">Deploy background tasks & parallel subagents</span>
+        </div>
+        <div class="arch-layer glass-premium glow-yellow l3" id="arch-layer-3">
+          <span class="label">L3</span>
+          <span class="name">Antigravity Sandbox</span>
+          <span class="meta">Persistent, isolated Linux execution runtimes</span>
+        </div>
+        <div class="arch-layer glass-premium glow-green l4" id="arch-layer-4">
+          <span class="label">L4</span>
+          <span class="name">Gemini API Engine</span>
+          <span class="meta">Multi-agent reasoning & native tool calls</span>
+        </div>
+        <div class="arch-layer glass-premium glow-cyan l5" id="arch-layer-5">
+          <span class="label">L5</span>
+          <span class="name">Build with Gemini X-PRIZE</span>
+          <span class="meta">$2M hackathon with final pitches in Sept 2026</span>
+        </div>
+      </div>
+
+      <div class="synth-headline" id="arch-synth">FROM PROMPT TO PRODUCTION-READY APPLICATIONS</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // Continuous finite deterministic 3D parallax float (yoyo loop for 60s total duration)
+      tl.to("#arch-stack", {
+        y: "+=12",
+        rotateY: 2,
+        rotateX: -1,
+        duration: 3.0,
+        yoyo: true,
+        repeat: 19, // 20 half-cycles of 3s = 60s
+        ease: "sine.inOut"
+      }, 0);
+
+      // 0.0s - 2.0s: Overline eyebrow entrance reveal
+      tl.from("#arch-overline", {
+        z: 20,
+        y: 15,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        immediateRender: false
+      }, 0.2);
+
+      // 2.0s: Layer 1 enters
+      tl.fromTo("#arch-layer-1", {
+        y: 30,
+        scale: 0.94,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 2.0);
+
+      // 5.0s: Layer 1 glow wave highlight
+      tl.to("#arch-layer-1", {
+        boxShadow: "0 25px 60px rgba(66, 133, 244, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5
+      }, 5.0);
+      tl.to("#arch-layer-1", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6
+      }, 5.8);
+
+      // 10.0s: Layer 2 enters
+      tl.fromTo("#arch-layer-2", {
+        y: 30,
+        scale: 0.94,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 10.0);
+
+      // 13.0s: Layer 2 glow wave highlight
+      tl.to("#arch-layer-2", {
+        boxShadow: "0 25px 60px rgba(234, 67, 53, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5
+      }, 13.0);
+      tl.to("#arch-layer-2", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6
+      }, 13.8);
+
+      // 18.0s: Dynamic glow flash on Layer 1 & 2
+      tl.to(["#arch-layer-1", "#arch-layer-2"], {
+        boxShadow: "0 25px 60px rgba(255, 255, 255, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5,
+        stagger: 0.15
+      }, 18.0);
+      tl.to(["#arch-layer-1", "#arch-layer-2"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6,
+        stagger: 0.15
+      }, 18.8);
+
+      // 22.0s: Layer 3 enters
+      tl.fromTo("#arch-layer-3", {
+        y: 30,
+        scale: 0.94,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 22.0);
+
+      // 25.0s: Layer 3 glow wave highlight
+      tl.to("#arch-layer-3", {
+        boxShadow: "0 25px 60px rgba(251, 188, 5, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5
+      }, 25.0);
+      tl.to("#arch-layer-3", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6
+      }, 25.8);
+
+      // 30.0s: Layer 4 enters
+      tl.fromTo("#arch-layer-4", {
+        y: 30,
+        scale: 0.94,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 30.0);
+
+      // 33.0s: Layer 4 glow wave highlight
+      tl.to("#arch-layer-4", {
+        boxShadow: "0 25px 60px rgba(52, 168, 83, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5
+      }, 33.0);
+      tl.to("#arch-layer-4", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6
+      }, 33.8);
+
+      // 36.0s: Dynamic glow flash on Layer 3 & 4
+      tl.to(["#arch-layer-3", "#arch-layer-4"], {
+        boxShadow: "0 25px 60px rgba(255, 255, 255, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5,
+        stagger: 0.15
+      }, 36.0);
+      tl.to(["#arch-layer-3", "#arch-layer-4"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6,
+        stagger: 0.15
+      }, 36.8);
+
+      // 40.0s: Layer 5 enters
+      tl.fromTo("#arch-layer-5", {
+        y: 30,
+        scale: 0.94,
+        rotationX: -6,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 40.0);
+
+      // 43.0s: Layer 5 glow wave highlight
+      tl.to("#arch-layer-5", {
+        boxShadow: "0 25px 60px rgba(0, 188, 212, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.5
+      }, 43.0);
+      tl.to("#arch-layer-5", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6
+      }, 43.8);
+
+      // 48.0s: Key synthesizing headline enters with back spring
+      tl.fromTo("#arch-synth", {
+        y: 25,
+        opacity: 0
+      }, {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 48.0);
+
+      // 53.0s: Staggered volumetric border pulse across all layers L1 to L5
+      tl.to(["#arch-layer-1", "#arch-layer-2", "#arch-layer-3", "#arch-layer-4", "#arch-layer-5"], {
+        boxShadow: "0 25px 60px rgba(255, 255, 255, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6,
+        stagger: 0.12
+      }, 53.0);
+      tl.to(["#arch-layer-1", "#arch-layer-2", "#arch-layer-3", "#arch-layer-4", "#arch-layer-5"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.6,
+        stagger: 0.12
+      }, 54.0);
+
+      window.__timelines["scene-architecture-stack"] = tl;
+    </script>
+  </div>
+</template>

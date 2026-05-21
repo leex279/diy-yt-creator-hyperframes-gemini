@@ -1,0 +1,307 @@
+<!--
+  scene-source-cards.html — 3 photo + overline + title cards in a row.
+
+  Each card: top half is a 16:9 photo crop, bottom half is a meta block
+  with mono overline + sans title. Cards stagger in with 0.5s offset and
+  rotate accents (blue → cyan → purple).
+
+  Operator drops their own assets/screenshots/source-{1,2,3}.png. Lint
+  warns (not errors) until they ship. Wrapper card div carries class="clip"
+  AND the inner <img> also carries class="clip" — both get framework
+  visibility control.
+-->
+<template id="scene-source-cards-template">
+  <div data-composition-id="scene-source-cards"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #scene-source-cards-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:48px;
+        box-sizing:border-box;
+      }
+      #scene-source-cards-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-source-cards-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-1);
+      }
+      #scene-source-cards-content .headline {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      #scene-source-cards-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 32px;
+        perspective: 1200px;
+        transform-style: preserve-3d;
+      }
+      .source-card {
+        width: 520px;
+        height: 540px;
+        border-radius: 24px;
+        overflow: hidden;
+        display:flex; flex-direction:column;
+        transform-style: preserve-3d;
+        opacity: 0; /* Hidden initially, animated via gsap */
+      }
+      .source-card .photo-wrap {
+        width: 100%;
+        height: 62%;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .source-card .photo-wrap img,
+      .source-card .photo-wrap video {
+        display:block;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transform-origin: center center;
+      }
+      .source-card .meta {
+        padding: 24px 28px;
+        display:flex; flex-direction:column;
+        gap: 8px;
+        flex: 1;
+      }
+      .source-card .meta .ovl {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      /* Brighter accent variants for AA contrast at 18px on translucent
+         gradient card backgrounds (the dim accents fail AA at small sizes).
+         Google palette → lightened tints: blue → #8AB4F8 (Google's mat-design
+         accent-light), red → #F6AEA8 (50% mix red+text), yellow stays as
+         FBBC04 (already AAA at 18px on dark). */
+      .source-card.a .meta .ovl { color: #8AB4F8; }
+      .source-card.b .meta .ovl { color: #F6AEA8; }
+      .source-card.c .meta .ovl { color: #FBBC04; }
+      .source-card .meta .ttl {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1.15;
+        color: var(--text);
+        will-change: color;
+      }
+    </style>
+
+    <div id="scene-source-cards-content">
+      <div class="header-block">
+        <div class="overline" id="src-overline">GEMINI SPARK</div>
+        <div class="headline" id="src-headline">YOUR 24/7 PERSONAL AGENT</div>
+      </div>
+
+      <div class="row">
+        <div class="source-card glass-premium glow-blue a" id="src-card-1">
+          <div class="photo-wrap" data-layout-allow-overflow="true">
+            <img id="src-img-1"
+                 src="assets/screenshots/source-1.png"
+                 alt="Daily Brief"
+                 data-layout-allow-overflow="true" />
+          </div>
+          <div class="meta">
+            <div class="ovl">DAILY BRIEF</div>
+            <div class="ttl" id="src-ttl-1">Morning audio digest of schedule & news</div>
+          </div>
+        </div>
+        <div class="source-card glass-premium glow-red b" id="src-card-2">
+          <div class="photo-wrap" data-layout-allow-overflow="true">
+            <img id="src-img-2"
+                 src="assets/screenshots/source-2.png"
+                 alt="Persistent Runtime"
+                 data-layout-allow-overflow="true" />
+          </div>
+          <div class="meta">
+            <div class="ovl">PERSISTENT RUNTIME</div>
+            <div class="ttl" id="src-ttl-2">Continues working in background when phone is locked</div>
+          </div>
+        </div>
+        <div class="source-card glass-premium glow-yellow c" id="src-card-3">
+          <div class="photo-wrap" data-layout-allow-overflow="true">
+            <img id="src-img-3"
+                 src="assets/screenshots/source-3.png"
+                 alt="Safe Autonomy"
+                 data-layout-allow-overflow="true" />
+          </div>
+          <div class="meta">
+            <div class="ovl">SAFE AUTONOMY</div>
+            <div class="ttl" id="src-ttl-3">Asks first before spending money or sending emails</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+
+      // 0.0s - 2.0s: Overline and Headline entrance
+      tl.from("#src-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.1);
+      tl.from("#src-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.4);
+
+      // 4.0s: Card 1 enters Snappy & 3D Spatial
+      tl.fromTo("#src-card-1", {
+        y: 60,
+        scale: 0.86,
+        rotationX: -10,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.9,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 4.0);
+
+      // 7.0s: Card 1 border glow pulse
+      tl.to("#src-card-1", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(66, 133, 244, 0.5)",
+        duration: 0.6
+      }, 7.0);
+      tl.to("#src-card-1", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.8
+      }, 8.0);
+
+      // 10.0s: Card 1 photo Ken Burns zoom
+      tl.to("#src-img-1", {
+        scale: 1.08,
+        duration: 4.5,
+        ease: "sine.out"
+      }, 10.0);
+
+      // 15.0s: Card 2 enters Snappy & 3D Spatial
+      tl.fromTo("#src-card-2", {
+        y: 60,
+        scale: 0.86,
+        rotationX: -10,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.9,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 15.0);
+
+      // 18.0s: Card 2 border glow pulse
+      tl.to("#src-card-2", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(234, 67, 53, 0.5)",
+        duration: 0.6
+      }, 18.0);
+      tl.to("#src-card-2", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.8
+      }, 19.2);
+
+      // 21.0s: Card 2 photo Ken Burns zoom
+      tl.to("#src-img-2", {
+        scale: 1.08,
+        duration: 4.5,
+        ease: "sine.out"
+      }, 21.0);
+
+      // 26.0s: Card 3 enters Snappy & 3D Spatial
+      tl.fromTo("#src-card-3", {
+        y: 60,
+        scale: 0.86,
+        rotationX: -10,
+        opacity: 0
+      }, {
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        opacity: 1,
+        duration: 0.9,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 26.0);
+
+      // 29.0s: Card 3 border glow pulse
+      tl.to("#src-card-3", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(251, 188, 5, 0.5)",
+        duration: 0.6
+      }, 29.0);
+      tl.to("#src-card-3", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.8
+      }, 30.2);
+
+      // 32.0s: Card 3 photo Ken Burns zoom
+      tl.to("#src-img-3", {
+        scale: 1.08,
+        duration: 4.5,
+        ease: "sine.out"
+      }, 32.0);
+
+      // 38.0s: Staggered tilt shift of cards row
+      tl.to("#src-card-1", { rotateY: 5, rotateX: -2, duration: 2.0, ease: "power1.inOut" }, 38.0);
+      tl.to("#src-card-2", { rotateY: 0, rotateX: 3, duration: 2.0, ease: "power1.inOut" }, 38.2);
+      tl.to("#src-card-3", { rotateY: -5, rotateX: -2, duration: 2.0, ease: "power1.inOut" }, 38.4);
+
+      // 44.0s: Card 1 title text glow/color highlight
+      tl.to("#src-ttl-1", { color: "#8AB4F8", scale: 1.03, duration: 0.4 }, 44.0);
+      tl.to("#src-ttl-1", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 45.5);
+
+      // 48.0s: Card 2 title text glow/color highlight
+      tl.to("#src-ttl-2", { color: "#F6AEA8", scale: 1.03, duration: 0.4 }, 48.0);
+      tl.to("#src-ttl-2", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 49.5);
+
+      // 52.0s: Card 3 title text glow/color highlight
+      tl.to("#src-ttl-3", { color: "#FBBC04", scale: 1.03, duration: 0.4 }, 52.0);
+      tl.to("#src-ttl-3", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 53.5);
+
+      // 58.0s: Staggered row zoom-in and hover drift
+      tl.to(".row", { scale: 1.04, duration: 5.0, ease: "sine.inOut" }, 58.0);
+
+      // 64.0s: Final border pulse on all 3 cards
+      tl.to(["#src-card-1", "#src-card-2", "#src-card-3"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 25px rgba(255, 255, 255, 0.15)",
+        duration: 0.8,
+        stagger: 0.15
+      }, 64.0);
+      tl.to(["#src-card-1", "#src-card-2", "#src-card-3"], {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.8,
+        stagger: 0.15
+      }, 65.2);
+
+      // Settle row back to 1.0
+      tl.to(".row", { scale: 1.0, duration: 1.5, ease: "power2.out" }, 68.0);
+      tl.to(["#src-card-1", "#src-card-3"], { rotateY: 0, rotateX: 0, duration: 1.5 }, 68.0);
+
+      window.__timelines["scene-source-cards"] = tl;
+    </script>
+  </div>
+</template>

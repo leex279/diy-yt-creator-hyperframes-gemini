@@ -1,0 +1,319 @@
+<!--
+  scene-side-by-side.html — A vs B comparison.
+
+  Two LiquidGlassCard-style panels, max-width 720px each, centered with a
+  40px gap. Card A uses accent-1 (blue); card B uses accent-3 (purple).
+  Cards enter from opposite sides simultaneously (back.out(1.4)).
+
+  Above the row: overline + headline. Each card holds a title, a body
+  paragraph, and an optional huge stat at the bottom.
+-->
+<template id="scene-side-by-side-template">
+  <div data-composition-id="scene-side-by-side-12"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      #scene-side-by-side-content {
+        width:100%; height:100%;
+        padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        gap:48px;
+        box-sizing:border-box;
+      }
+      #scene-side-by-side-content .header-block {
+        display:flex; flex-direction:column;
+        align-items:center; gap:16px;
+        text-align:center;
+      }
+      #scene-side-by-side-content .overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-2);
+      }
+      #scene-side-by-side-content .headline {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        color: var(--text);
+      }
+      #scene-side-by-side-content .row {
+        display:flex; flex-direction:row;
+        align-items:stretch; justify-content:center;
+        gap: 40px;
+        perspective: 1500px;
+        transform-style: preserve-3d;
+      }
+      .sbs-card {
+        width: 720px;
+        padding: 36px 40px;
+        border-radius: 24px;
+        display:flex; flex-direction:column;
+        gap: 18px;
+        transform-style: preserve-3d;
+        opacity: 0;
+      }
+      .sbs-card .label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .sbs-card.a .label { color: #4285F4; }
+      .sbs-card.b .label { color: #FBBC05; }
+      .sbs-card .title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 32px;
+        line-height: 1.15;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .sbs-card .body {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 22px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+      .sbs-card .stat {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 84px;
+        line-height: 1;
+        letter-spacing: -3px;
+        font-variant-numeric: tabular-nums lining-nums;
+        margin-top: 8px;
+      }
+      .sbs-card.a .stat {
+        color: #4285F4;
+        text-shadow: 0 0 35px rgba(66, 133, 244, 0.45);
+      }
+      .sbs-card.b .stat {
+        color: #FBBC05;
+        text-shadow: 0 0 35px rgba(251, 188, 5, 0.45);
+      }
+    </style>
+ 
+    <div id="scene-side-by-side-content" class="perspective-stage">
+      <div class="header-block">
+        <div class="overline" id="sbs-overline">AI SUBSCRIPTIONS</div>
+        <div class="headline" id="sbs-headline">THE RESTRUCTURED ACCESS PLAN</div>
+      </div>
+ 
+      <div class="row">
+        <div class="sbs-card glass-premium glow-blue a" id="sbs-card-a">
+          <div class="label">ULTRA BASIC</div>
+          <div class="title">5X Compute Limits</div>
+          <div class="body">AI Ultra plan at $100 per month. Features 5 times higher compute limits than AI Pro in the Gemini app and Antigravity. Includes 20 Terabytes of cloud storage and YouTube Premium.</div>
+          <div class="stat">100</div>
+        </div>
+        <div class="sbs-card glass-premium glow-yellow b" id="sbs-card-b">
+          <div class="label">ULTRA ADVANCED</div>
+          <div class="title">20X Compute Limits</div>
+          <div class="body">Top Ultra tier reduced from $250 to $200 per month. Features 20 times higher compute limits. Compute resets every 5 hours with a weekly cap.</div>
+          <div class="stat">200</div>
+        </div>
+      </div>
+    </div>
+     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out", duration: 0.6 }
+      });
+ 
+      // 0.0s: Overline enters
+      tl.from("#sbs-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
+      
+      // 0.3s: Headline enters
+      tl.from("#sbs-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+
+      // 2.0s: Headline text glow sweep (blue/cyan)
+      tl.to("#sbs-headline", { textShadow: "0 0 25px rgba(66, 133, 244, 0.5)", duration: 0.6 }, 2.0);
+      tl.to("#sbs-headline", { textShadow: "none", duration: 0.6 }, 2.6);
+ 
+      // 4.0s: Card A enters (Ultra Basic)
+      tl.fromTo("#sbs-card-a", {
+        x: -160,
+        rotateY: 28,
+        rotateX: 6,
+        scale: 0.82,
+        opacity: 0
+      }, {
+        x: 0,
+        rotateY: -6,
+        rotateX: 3,
+        scale: 1,
+        opacity: 1,
+        duration: 0.95,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 4.0);
+ 
+      // 7.0s: Card A Stat Count-up (val: 0 -> 100)
+      const statAEl = document.querySelector("#sbs-card-a .stat");
+      const statObjA = { val: 0 };
+      tl.fromTo(statObjA, { val: 0 }, {
+        val: 100,
+        duration: 1.5,
+        ease: "power3.out",
+        immediateRender: false,
+        onUpdate: function() {
+          statAEl.textContent = Math.round(statObjA.val);
+        }
+      }, 7.0);
+
+      // 10.0s: Card A border glow pulse (blue)
+      tl.to("#sbs-card-a", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.65)",
+        duration: 0.65
+      }, 10.0);
+      tl.to("#sbs-card-a", {
+        boxShadow: "none",
+        duration: 0.8
+      }, 10.65);
+
+      // 13.0s: Card A soft tilt pivot shift
+      tl.to("#sbs-card-a", {
+        rotateY: -12,
+        rotateX: 6,
+        duration: 1.8,
+        ease: "power2.inOut"
+      }, 13.0);
+
+      // 16.0s: Card A title text glow sweep
+      tl.to("#sbs-card-a .title", {
+        color: "#8AB4F8",
+        textShadow: "0 0 20px rgba(66, 133, 244, 0.65)",
+        duration: 0.6
+      }, 16.0);
+      tl.to("#sbs-card-a .title", {
+        color: "var(--text)",
+        textShadow: "none",
+        duration: 0.6
+      }, 16.6);
+
+      // 19.0s: Subtle stage scale-up zoom on row
+      tl.to(".row", {
+        scale: 1.02,
+        duration: 1.5,
+        ease: "sine.inOut"
+      }, 19.0);
+
+      // 22.0s: Right Card B enters (Ultra Advanced)
+      tl.fromTo("#sbs-card-b", {
+        x: 160,
+        rotateY: -28,
+        rotateX: 6,
+        scale: 0.82,
+        opacity: 0
+      }, {
+        x: 0,
+        rotateY: 6,
+        rotateX: 3,
+        scale: 1,
+        opacity: 1,
+        duration: 0.95,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 22.0);
+
+      // 25.0s: Card B Stat Count-up (val: 0 -> 200)
+      const statBEl = document.querySelector("#sbs-card-b .stat");
+      const statObjB = { val: 0 };
+      tl.fromTo(statObjB, { val: 0 }, {
+        val: 200,
+        duration: 1.5,
+        ease: "power3.out",
+        immediateRender: false,
+        onUpdate: function() {
+          statBEl.textContent = Math.round(statObjB.val);
+        }
+      }, 25.0);
+
+      // 28.0s: Card B border glow pulse (yellow)
+      tl.to("#sbs-card-b", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(251, 188, 5, 0.65)",
+        duration: 0.65
+      }, 28.0);
+      tl.to("#sbs-card-b", {
+        boxShadow: "none",
+        duration: 0.8
+      }, 28.65);
+
+      // 32.0s: Card B soft tilt pivot shift
+      tl.to("#sbs-card-b", {
+        rotateY: 12,
+        rotateX: 6,
+        duration: 1.8,
+        ease: "power2.inOut"
+      }, 32.0);
+
+      // 36.0s: Card B title text glow sweep
+      tl.to("#sbs-card-b .title", {
+        color: "#FBBC05",
+        textShadow: "0 0 20px rgba(251, 188, 5, 0.65)",
+        duration: 0.6
+      }, 36.0);
+      tl.to("#sbs-card-b .title", {
+        color: "var(--text)",
+        textShadow: "none",
+        duration: 0.6
+      }, 36.6);
+
+      // 40.0s: Dual card 3D tilt shift
+      tl.to("#sbs-card-a", {
+        rotateY: -4,
+        rotateX: 2,
+        duration: 1.8,
+        ease: "power2.inOut"
+      }, 40.0);
+      tl.to("#sbs-card-b", {
+        rotateY: 4,
+        rotateX: 2,
+        duration: 1.8,
+        ease: "power2.inOut"
+      }, 40.0);
+
+      // 44.0s: Staggered glow wave on both card borders
+      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255,255,255,0.25)",
+        stagger: 0.2,
+        duration: 0.7
+      }, 44.0);
+      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+        boxShadow: "none",
+        stagger: 0.2,
+        duration: 0.8
+      }, 44.7);
+
+      // 48.0s: Settle both cards and row back to center
+      tl.to(".row", {
+        scale: 1.0,
+        duration: 1.8,
+        ease: "power2.out"
+      }, 48.0);
+      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+        rotateY: 0,
+        rotateX: 0,
+        x: 0,
+        duration: 1.8,
+        ease: "power2.out"
+      }, 48.0);
+ 
+      window.__timelines["scene-side-by-side-12"] = tl;
+    </script>
+  </div>
+</template>

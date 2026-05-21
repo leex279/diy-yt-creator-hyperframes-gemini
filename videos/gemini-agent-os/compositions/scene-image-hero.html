@@ -1,0 +1,1057 @@
+<!--
+  scene-image-hero.html — Scene 3: Gemini Omni Launch
+  Duration: 59.39s (114.62s → 174.01s absolute)
+
+  Stage 1 (0.0s – 5.73s):  Model branding card "GEMINI OMNI FLASH" slams in
+  Stage 2 (5.73s – 21.78s): Input-mode badges pop in when each input is spoken
+                             IMAGE @ 14.16s, AUDIO @ 14.9s, VIDEO @ 15.62s, TEXT @ 16.4s
+  Stage 3 (21.78s – 41.78s): Conversational/Editable mid-card animates in
+  Stage 4 (41.78s – 54.31s): Subscriber tier cards slide in (AI Plus, Pro, Ultra)
+  Stage 5 (54.31s – 59.39s): Workflow pillar tags stagger in (PROMPT, REVISE, PRESERVE, COHERENT)
+
+  All timestamps relative to scene start (subtract 114.62s from absolute).
+-->
+<template id="scene-image-hero-template">
+  <div data-composition-id="scene-image-hero"
+       data-start="0"
+       data-width="1920"
+       data-height="1080"
+       style="position:absolute; inset:0; overflow:hidden;
+              font-family:'Inter', sans-serif; color:var(--text);">
+
+    <style>
+      /* ── Background ─────────────────────────────────── */
+      #sih-bg {
+        position: absolute; inset: 0; z-index: 0;
+      }
+      #sih-bg-img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transform-origin: center center;
+      }
+      #sih-bg-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(8, 8, 12, 0.88) 0%,
+          rgba(10, 10, 18, 0.70) 50%,
+          rgba(8, 8, 12, 0.88) 100%
+        );
+      }
+      #sih-bg-grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(66,133,244,0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(66,133,244,0.04) 1px, transparent 1px);
+        background-size: 80px 80px;
+        opacity: 0.6;
+      }
+
+      /* ── Stage container ─────────────────────────────── */
+      #sih-stage {
+        position: relative; z-index: 1;
+        width: 1920px; height: 1080px;
+      }
+
+      /* ── Stage 1: Model branding card ─────────────────── */
+      #sih-brand-card {
+        position: absolute;
+        top: 120px; left: 120px;
+        width: 780px;
+        background: rgba(15,15,25,0.85);
+        border: 1.5px solid rgba(66,133,244,0.35);
+        border-radius: 24px;
+        padding: 44px 56px;
+        box-sizing: border-box;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(66,133,244,0.15);
+        backdrop-filter: blur(20px);
+        opacity: 0;
+        transform-style: preserve-3d;
+      }
+      #sih-model-overline {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #4285F4;
+        margin-bottom: 14px;
+        opacity: 0;
+      }
+      #sih-model-name {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 52px;
+        line-height: 1.0;
+        letter-spacing: -1.5px;
+        color: #ffffff;
+        margin-bottom: 10px;
+        opacity: 0;
+      }
+      #sih-model-sub {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 22px;
+        color: rgba(255,255,255,0.6);
+        line-height: 1.5;
+        opacity: 0;
+      }
+      #sih-model-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        background: rgba(66,133,244,0.15);
+        border: 1px solid rgba(66,133,244,0.4);
+        border-radius: 100px;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #8AB4F8;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0;
+      }
+      #sih-model-pill .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #34A853;
+        box-shadow: 0 0 8px rgba(52,168,83,0.8);
+      }
+
+      /* ── Stage 2: Input mode badges row ──────────────── */
+      #sih-input-section {
+        position: absolute;
+        top: 460px; left: 120px;
+        opacity: 0;
+      }
+      #sih-input-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 4px;
+        color: rgba(255,255,255,0.4);
+        text-transform: uppercase;
+        margin-bottom: 18px;
+        opacity: 0;
+      }
+      #sih-badges-row {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        align-items: center;
+      }
+      .sih-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 28px;
+        background: rgba(15,15,25,0.9);
+        border: 1.5px solid rgba(255,255,255,0.12);
+        border-radius: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.9);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        opacity: 0;
+        transform: translateY(20px) scale(0.85);
+      }
+      .sih-badge .badge-icon { font-size: 22px; }
+      .sih-badge.image-badge { border-color: rgba(234,67,53,0.5); color: #F28B82; }
+      .sih-badge.audio-badge { border-color: rgba(251,188,5,0.5); color: #FDD663; }
+      .sih-badge.video-badge { border-color: rgba(52,168,83,0.5); color: #81C995; }
+      .sih-badge.text-badge  { border-color: rgba(66,133,244,0.5); color: #8AB4F8; }
+
+      /* ── Stage 3: Conversational flow diagram ─────────── */
+      #sih-flow-card {
+        position: absolute;
+        top: 120px; left: 980px;
+        width: 820px;
+        background: rgba(15,15,25,0.85);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
+        padding: 36px 48px;
+        box-sizing: border-box;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+        backdrop-filter: blur(20px);
+        opacity: 0;
+      }
+      #sih-flow-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        letter-spacing: 4px;
+        color: #4285F4;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+        opacity: 0;
+      }
+      .sih-chat-msg {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      .sih-chat-msg.user-msg { flex-direction: row-reverse; }
+      .sih-chat-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: rgba(66,133,244,0.3);
+        border: 1.5px solid rgba(66,133,244,0.5);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; flex-shrink: 0;
+      }
+      .sih-chat-avatar.ai-avatar {
+        background: rgba(234,67,53,0.2);
+        border-color: rgba(234,67,53,0.4);
+      }
+      .sih-chat-bubble {
+        max-width: 560px;
+        padding: 12px 18px;
+        border-radius: 14px;
+        font-size: 17px;
+        line-height: 1.5;
+        font-weight: 500;
+      }
+      .user-msg .sih-chat-bubble {
+        background: rgba(66,133,244,0.2);
+        border: 1px solid rgba(66,133,244,0.35);
+        color: #e8eaed;
+        border-radius: 14px 4px 14px 14px;
+      }
+      .ai-msg .sih-chat-bubble {
+        background: rgba(30,30,45,0.9);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: rgba(255,255,255,0.8);
+        border-radius: 4px 14px 14px 14px;
+      }
+      /* Cursor blinking for typing effect */
+      .typing-cursor {
+        display: inline-block;
+        width: 2px;
+        height: 1em;
+        background: #8AB4F8;
+        margin-left: 2px;
+        vertical-align: middle;
+        animation: cursor-blink 0.8s step-end infinite;
+      }
+      @keyframes cursor-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+
+      /* Video preview thumb inside flow card */
+      #sih-video-thumb {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        height: 280px;
+        background: #08080f;
+        border: 2.5px solid rgba(66, 133, 244, 0.4);
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 24px;
+        opacity: 0;
+        box-shadow: 
+          0 16px 48px rgba(0, 0, 0, 0.6),
+          0 0 35px rgba(66, 133, 244, 0.25),
+          inset 0 0 24px rgba(0, 0, 0, 0.85);
+      }
+      
+      /* HUD badges & stats */
+      .sih-hud-container {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        z-index: 5;
+        pointer-events: none;
+      }
+      .hud-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(8, 8, 12, 0.75);
+        border: 1px solid rgba(66, 133, 244, 0.35);
+        padding: 6px 14px;
+        border-radius: 100px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+      .hud-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #34a853;
+        box-shadow: 0 0 8px #34a853;
+      }
+      .hud-dot.pulsing {
+        animation: hud-pulse 1.2s infinite ease-in-out;
+      }
+      @keyframes hud-pulse {
+        0%, 100% { opacity: 0.4; transform: scale(0.95); }
+        50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 12px #34a853; }
+      }
+      .hud-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #e8eaed;
+      }
+      .hud-stats {
+        display: flex;
+        gap: 8px;
+      }
+      .hud-stat-item {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.6);
+        background: rgba(8, 8, 12, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-transform: uppercase;
+      }
+      
+      /* Progress bar */
+      #sih-video-progress-container {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.15);
+        z-index: 5;
+      }
+      #sih-video-progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #4285F4 0%, #34A853 100%);
+        box-shadow: 0 0 8px rgba(66, 133, 244, 0.6);
+      }
+      
+      /* VFX Scanner Sweep */
+      #sih-video-vfx-sweep {
+        position: absolute;
+        top: 0; bottom: 0;
+        left: -15%;
+        width: 15%;
+        background: linear-gradient(90deg, transparent, rgba(52, 168, 83, 0.6), transparent);
+        filter: blur(4px);
+        z-index: 6;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      /* ── Stage 4: Subscriber tier cards ──────────────── */
+      #sih-tier-section {
+        position: absolute;
+        top: 260px; left: 120px;
+        width: 1680px;
+        height: 520px;
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+        align-items: stretch;
+        opacity: 0;
+        z-index: 10;
+        transform-style: preserve-3d;
+      }
+      .sih-tier-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: rgba(10, 10, 18, 0.75);
+        border: 1.5px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 44px 32px;
+        box-sizing: border-box;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(24px);
+        opacity: 0;
+        transform: translateY(40px) scale(0.92);
+        transition: border-color 0.4s ease, box-shadow 0.4s ease;
+      }
+      .sih-tier-card.plus {
+        border-color: rgba(52, 168, 83, 0.35);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(52, 168, 83, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      }
+      .sih-tier-card.pro {
+        border-color: rgba(66, 133, 244, 0.35);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(66, 133, 244, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      }
+      .sih-tier-card.ultra {
+        border-color: rgba(234, 67, 53, 0.35);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(234, 67, 53, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      }
+      .sih-tier-card.free {
+        border-color: rgba(251, 188, 5, 0.35);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(251, 188, 5, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      }
+      
+      .sih-tier-card-top {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .sih-tier-icon {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 20px;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .plus .sih-tier-icon  { filter: drop-shadow(0 0 12px rgba(52, 168, 83, 0.6)); }
+      .pro  .sih-tier-icon  { filter: drop-shadow(0 0 12px rgba(66, 133, 244, 0.6)); }
+      .ultra .sih-tier-icon { filter: drop-shadow(0 0 12px rgba(234, 67, 53, 0.6)); }
+      .free .sih-tier-icon  { filter: drop-shadow(0 0 12px rgba(251, 188, 5, 0.6)); }
+      
+      .sih-tier-divider {
+        height: 1px;
+        width: 100%;
+        margin: 24px 0;
+      }
+      .plus .sih-tier-divider { background: linear-gradient(90deg, transparent, rgba(52, 168, 83, 0.4), transparent); }
+      .pro .sih-tier-divider { background: linear-gradient(90deg, transparent, rgba(66, 133, 244, 0.4), transparent); }
+      .ultra .sih-tier-divider { background: linear-gradient(90deg, transparent, rgba(234, 67, 53, 0.4), transparent); }
+      .free .sih-tier-divider { background: linear-gradient(90deg, transparent, rgba(251, 188, 5, 0.4), transparent); }
+
+      .sih-tier-name {
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .plus .sih-tier-name  { color: #81C995; text-shadow: 0 0 15px rgba(52,168,83,0.3); }
+      .pro  .sih-tier-name  { color: #8AB4F8; text-shadow: 0 0 15px rgba(66,133,244,0.3); }
+      .ultra .sih-tier-name { color: #F28B82; text-shadow: 0 0 15px rgba(234,67,53,0.3); }
+      .free .sih-tier-name { color: #FDD663; text-shadow: 0 0 15px rgba(251,188,5,0.3); }
+      
+      .sih-tier-desc {
+        font-size: 16px;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.6;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+      }
+      
+      .sih-tier-access {
+        align-self: center;
+        width: 100%;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        padding: 14px 24px;
+        border-radius: 100px;
+        border: 1px solid;
+        box-sizing: border-box;
+      }
+      .plus .sih-tier-access  { color: #81C995; border-color: rgba(52,168,83,0.45); background: rgba(52,168,83,0.12); box-shadow: inset 0 0 12px rgba(52,168,83,0.15); }
+      .pro  .sih-tier-access  { color: #8AB4F8; border-color: rgba(66,133,244,0.45); background: rgba(66,133,244,0.12); box-shadow: inset 0 0 12px rgba(66,133,244,0.15); }
+      .ultra .sih-tier-access { color: #F28B82; border-color: rgba(234,67,53,0.45); background: rgba(234,67,53,0.12); box-shadow: inset 0 0 12px rgba(234,67,53,0.15); }
+      .free .sih-tier-access  { color: #FDD663; border-color: rgba(251,188,5,0.45); background: rgba(251,188,5,0.12); box-shadow: inset 0 0 12px rgba(251,188,5,0.15); }
+
+      /* ── Stage 5: Workflow pillar tags ───────────────── */
+      #sih-pillars-row {
+        position: absolute;
+        bottom: 80px; left: 120px;
+        width: 1680px;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        opacity: 0;
+        z-index: 12;
+      }
+      .sih-pillar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 28px;
+        background: rgba(10, 10, 18, 0.9);
+        border: 1.5px solid rgba(255,255,255,0.12);
+        border-radius: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.9);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+      }
+      .sih-pillar .pillar-num {
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.3);
+        letter-spacing: 0;
+      }
+      .sih-pillar.p1 { border-color: rgba(66,133,244,0.5); color: #8AB4F8; box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 15px rgba(66,133,244,0.15); }
+      .sih-pillar.p2 { border-color: rgba(251,188,5,0.5);  color: #FDD663; box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 15px rgba(251,188,5,0.15); }
+      .sih-pillar.p3 { border-color: rgba(52,168,83,0.5);  color: #81C995; box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 15px rgba(52,168,83,0.15); }
+      .sih-pillar.p4 { border-color: rgba(234,67,53,0.5);  color: #F28B82; box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 15px rgba(234,67,53,0.15); }
+    </style>
+
+    <!-- Background -->
+    <div id="sih-bg">
+      <img id="sih-bg-img"
+           class="clip"
+           data-start="0"
+           data-duration="59.39"
+           data-track-index="0"
+           src="assets/blog/gemini-omni.webp"
+           alt="Gemini Omni backdrop" />
+      <div id="sih-bg-overlay"></div>
+      <div id="sih-bg-grid"></div>
+    </div>
+
+    <!-- ── STAGE 1: Model Brand Card ───────────────────────── -->
+    <div id="sih-stage">
+      <div id="sih-brand-card">
+        <div id="sih-model-overline">Google I/O 2026 · New Model</div>
+        <div id="sih-model-name">GEMINI OMNI<br>FLASH</div>
+        <div id="sih-model-sub">Video generation, now conversational and editable</div>
+        <div id="sih-model-pill">
+          <span class="dot"></span>
+          <span>ROLLING OUT GLOBALLY</span>
+        </div>
+      </div>
+
+      <!-- ── STAGE 2: Input Mode Badges ─────────────────────── -->
+      <div id="sih-input-section">
+        <div id="sih-input-label">Multimodal Inputs Supported</div>
+        <div id="sih-badges-row">
+          <div class="sih-badge image-badge" id="sih-badge-image">
+            <span class="badge-icon">📷</span>
+            <span>IMAGE</span>
+          </div>
+          <div class="sih-badge audio-badge" id="sih-badge-audio">
+            <span class="badge-icon">🎵</span>
+            <span>AUDIO</span>
+          </div>
+          <div class="sih-badge video-badge" id="sih-badge-video">
+            <span class="badge-icon">🎥</span>
+            <span>VIDEO</span>
+          </div>
+          <div class="sih-badge text-badge" id="sih-badge-text">
+            <span class="badge-icon">✍️</span>
+            <span>TEXT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STAGE 3: Conversational Flow Card ──────────────── -->
+      <div id="sih-flow-card">
+        <div id="sih-flow-title">Google Flow · Conversational Editor</div>
+
+        <!-- Widescreen Cinematic Video Player with active video layers and HUD details -->
+        <div id="sih-video-thumb" data-layout-allow-overflow="true">
+          <!-- Video layers -->
+          <video id="sih-video-1" src="assets/clips/astronaut.mp4" data-start="22.94" data-duration="36.45" data-track-index="2" muted playsinline loop style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; z-index:1;"></video>
+          <video id="sih-video-2" src="assets/clips/montage.mp4" data-start="22.94" data-duration="36.45" data-track-index="3" muted playsinline loop style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; z-index:2;"></video>
+          
+          <!-- Holographic scanner VFX sweep scanline -->
+          <div id="sih-video-vfx-sweep"></div>
+          
+          <!-- High-tech HUD Overlay -->
+          <div class="sih-hud-container">
+            <div class="hud-badge">
+              <span class="hud-dot pulsing" id="hud-status-dot"></span>
+              <span class="hud-text" id="hud-status">✦ AI RENDER · IDLE</span>
+            </div>
+            <div class="hud-stats">
+              <span class="hud-stat-item">8K UHD</span>
+              <span class="hud-stat-item">60 FPS</span>
+              <span class="hud-stat-item" id="hud-clip-id">ID: Mars_Rover_Sunset</span>
+            </div>
+          </div>
+          
+          <!-- Cinematic Playback Progress Bar -->
+          <div id="sih-video-progress-container">
+            <div id="sih-video-progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Chat turn 1: user prompt -->
+        <div class="sih-chat-msg user-msg" id="sih-msg-user-1">
+          <div class="sih-chat-avatar">👤</div>
+          <div class="sih-chat-bubble">"Generate a space rover exploring Mars at sunset."</div>
+        </div>
+
+        <!-- Chat turn 2: AI response -->
+        <div class="sih-chat-msg ai-msg" id="sih-msg-ai-1">
+          <div class="sih-chat-avatar ai-avatar">✦</div>
+          <div class="sih-chat-bubble">Generated 12s clip · Stable physics · Character consistent</div>
+        </div>
+
+        <!-- Chat turn 3: user edit -->
+        <div class="sih-chat-msg user-msg" id="sih-msg-user-2">
+          <div class="sih-chat-avatar">👤</div>
+          <div class="sih-chat-bubble">"Make it a low-angle sweep with dust blowing across the lens."</div>
+        </div>
+
+        <!-- Chat turn 4: AI response -->
+        <div class="sih-chat-msg ai-msg" id="sih-msg-ai-2">
+          <div class="sih-chat-avatar ai-avatar">✦</div>
+          <div class="sih-chat-bubble">Scene updated · Context preserved · Dust VFX applied ✓</div>
+        </div>
+      </div>
+
+      <!-- ── STAGE 5: Workflow Pillars ─────────────────────── -->
+      <div id="sih-pillars-row" style="--hf-studio-offset-x: 4px; --hf-studio-offset-y: -136px; translate: var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" data-hf-studio-path-offset="true" data-hf-studio-original-translate="" data-hf-studio-original-inline-translate="">
+        <div class="sih-pillar p1" id="sih-pillar-1">
+          <span class="pillar-num">01</span>
+          <span>PROMPT</span>
+        </div>
+        <div class="sih-pillar p2" id="sih-pillar-2">
+          <span class="pillar-num">02</span>
+          <span>REVISE</span>
+        </div>
+        <div class="sih-pillar p3" id="sih-pillar-3">
+          <span class="pillar-num">03</span>
+          <span>PRESERVE</span>
+        </div>
+        <div class="sih-pillar p4" id="sih-pillar-4">
+          <span class="pillar-num">04</span>
+          <span>COHERENT</span>
+        </div>
+      </div>
+
+      <!-- ── STAGE 4: Subscriber Tier Cards ────────────────── -->
+      <div id="sih-tier-section">
+        <div class="sih-tier-card plus" id="sih-tier-plus">
+          <div class="sih-tier-card-top">
+            <svg class="sih-tier-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="plus-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#A7F3D0" />
+                  <stop offset="100%" stop-color="#059669" />
+                </linearGradient>
+              </defs>
+              <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="url(#plus-grad)" stroke-width="1.5" stroke-dasharray="2 2" />
+              <circle cx="12" cy="12" r="6" stroke="url(#plus-grad)" stroke-width="1" opacity="0.3" />
+              <path d="M12 8V16M8 12H16" stroke="url(#plus-grad)" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+            <div class="sih-tier-name">AI Plus</div>
+            <div class="sih-tier-divider"></div>
+          </div>
+          <div class="sih-tier-desc">Gemini Omni Flash in Gemini app &amp; Google Flow. Standard compute quota.</div>
+          <span class="sih-tier-access">Included</span>
+        </div>
+        <div class="sih-tier-card pro" id="sih-tier-pro">
+          <div class="sih-tier-card-top">
+            <svg class="sih-tier-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pro-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#C3DDFF" />
+                  <stop offset="100%" stop-color="#1A73E8" />
+                </linearGradient>
+              </defs>
+              <path d="M8 2H16L22 8V16L16 22H8L2 16V8L8 2Z" stroke="url(#pro-grad)" stroke-width="1.5" />
+              <path d="M12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18" stroke="url(#pro-grad)" stroke-width="1" stroke-dasharray="3 1" opacity="0.5" />
+              <path d="M12 7L16 12L12 17L8 12L12 7Z" fill="url(#pro-grad)" />
+            </svg>
+            <div class="sih-tier-name">AI Pro</div>
+            <div class="sih-tier-divider"></div>
+          </div>
+          <div class="sih-tier-desc">Higher compute limits &amp; priority access to new Omni Flash features as released.</div>
+          <span class="sih-tier-access">Pro &amp; Above</span>
+        </div>
+        <div class="sih-tier-card ultra" id="sih-tier-ultra">
+          <div class="sih-tier-card-top">
+            <svg class="sih-tier-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ultra-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FCA5A5" />
+                  <stop offset="100%" stop-color="#DC2626" />
+                </linearGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" stroke="url(#ultra-grad)" stroke-width="1.5" stroke-dasharray="4 2" />
+              <path d="M12 4L20 18H4L12 4Z" stroke="url(#ultra-grad)" stroke-width="1.5" />
+              <circle cx="12" cy="12.5" r="3" fill="url(#ultra-grad)" />
+            </svg>
+            <div class="sih-tier-name">AI Ultra</div>
+            <div class="sih-tier-divider"></div>
+          </div>
+          <div class="sih-tier-desc">20× higher compute limits · Early access to Gemini Omni Pro when available.</div>
+          <span class="sih-tier-access">Ultra Only</span>
+        </div>
+        <div class="sih-tier-card free" id="sih-tier-free">
+          <div class="sih-tier-card-top">
+            <svg class="sih-tier-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="free-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FDE68A" />
+                  <stop offset="100%" stop-color="#D97706" />
+                </linearGradient>
+              </defs>
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="url(#free-grad)" opacity="0.3" />
+              <path d="M12 6L13.8 10.2L18 12L13.8 13.8L12 18L10.2 13.8L6 12L10.2 10.2L12 6Z" fill="url(#free-grad)" />
+            </svg>
+            <div class="sih-tier-name">Free</div>
+            <div class="sih-tier-divider"></div>
+          </div>
+          <div class="sih-tier-desc">Gemini Omni Flash at no cost in YouTube Shorts and YouTube Create starting this week.</div>
+          <span class="sih-tier-access">YouTube Free</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out" }
+      });
+
+      // ── BG REVEAL ───────────────────────────────────────────
+      // Slow Ken Burns zoom across full 59s
+      tl.fromTo("#sih-bg-img",
+        { opacity: 0, scale: 1.0 },
+        { opacity: 0.22, scale: 1.22, duration: 59.0, ease: "power1.out",
+          immediateRender: false },
+        0
+      );
+
+      // ── STAGE 1: MODEL BRAND CARD (0.3s – 5.73s) ────────────
+      // Card slams in with 3D spring tilt
+      tl.fromTo("#sih-brand-card",
+        { opacity: 0, x: -60, rotateY: 18, rotateX: 4, scale: 0.88 },
+        { opacity: 1, x: 0, rotateY: -4, rotateX: 2, scale: 1.0,
+          duration: 0.85, ease: "back.out(1.6)", immediateRender: false },
+        0.3
+      );
+
+      // Overline fades in
+      tl.to("#sih-model-overline", {
+        opacity: 1, y: 0, duration: 0.5, ease: "power2.out"
+      }, 0.7);
+
+      // "Gemini Omni" spoken at 3.55s rel — model name slams
+      tl.to("#sih-model-name", {
+        opacity: 1, duration: 0.6, ease: "power3.out",
+        textShadow: "0 0 30px rgba(66,133,244,0.5)"
+      }, 3.55);
+
+      // "Gemini Omni Flash" at 5.73s rel — subtitle + pill
+      tl.to("#sih-model-sub", {
+        opacity: 1, y: 0, duration: 0.5, ease: "power2.out"
+      }, 5.73);
+      tl.to("#sih-model-pill", {
+        opacity: 1, y: 0, duration: 0.55, ease: "back.out(1.4)"
+      }, 6.1);
+
+      // Card border glow pulse at 7s
+      tl.to("#sih-brand-card", {
+        boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 80px rgba(66,133,244,0.35)",
+        duration: 0.5
+      }, 7.0);
+      tl.to("#sih-brand-card", {
+        boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 30px rgba(66,133,244,0.12)",
+        duration: 0.9
+      }, 7.8);
+
+      // ── STAGE 2: INPUT MODE SECTION (13.5s – 17.5s) ─────────
+      // Section label fades in at 13.5s
+      tl.to("#sih-input-section", {
+        opacity: 1, duration: 0.4, ease: "power2.out"
+      }, 13.5);
+      tl.to("#sih-input-label", {
+        opacity: 1, duration: 0.5, ease: "power2.out"
+      }, 13.6);
+
+      // "images" spoken at 14.16s rel — IMAGE badge pops
+      tl.to("#sih-badge-image", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.45,
+        ease: "back.out(1.8)"
+      }, 14.16);
+
+      // "audio" at 14.9s rel
+      tl.to("#sih-badge-audio", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.45,
+        ease: "back.out(1.8)"
+      }, 14.9);
+
+      // "video" at 15.62s rel
+      tl.to("#sih-badge-video", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.45,
+        ease: "back.out(1.8)"
+      }, 15.62);
+
+      // "text" at 16.4s rel
+      tl.to("#sih-badge-text", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.45,
+        ease: "back.out(1.8)"
+      }, 16.4);
+
+      // ── STAGE 3: CONVERSATIONAL FLOW CARD (21.78s – 41s) ────
+      // "conversational" spoken at 21.78s rel — flow card slides in
+      tl.fromTo("#sih-flow-card",
+        { opacity: 0, x: 80, scale: 0.92 },
+        { opacity: 1, x: 0, scale: 1.0, duration: 0.85,
+          ease: "back.out(1.4)", immediateRender: false },
+        21.78
+      );
+
+      tl.to("#sih-flow-title", {
+        opacity: 1, duration: 0.5, ease: "power2.out"
+      }, 22.2);
+
+      // Video thumb container appears at 22.94s ("editable")
+      tl.to("#sih-video-thumb", {
+        opacity: 1, duration: 0.5, ease: "power2.out"
+      }, 22.94);
+      
+      // Video 1 (astronaut Mars sunset) fades in to start playing
+      tl.to("#sih-video-1", {
+        opacity: 1, duration: 0.6, ease: "power2.out"
+      }, 22.94);
+      
+      // Animate progress bar looping playback
+      tl.fromTo("#sih-video-progress-fill",
+        { width: "0%" },
+        { width: "100%", duration: 10.0, ease: "none", repeat: 3 },
+        22.94
+      );
+      
+      // Update HUD status text at 22.94s
+      tl.call(() => {
+        const hud = document.getElementById("hud-status");
+        const dot = document.getElementById("hud-status-dot");
+        const id = document.getElementById("hud-clip-id");
+        if (hud) {
+          hud.textContent = "✦ AI RENDER · INITIALIZING";
+          hud.style.color = "#8ab4f8";
+        }
+        if (dot) {
+          dot.style.backgroundColor = "#4285F4";
+          dot.style.boxShadow = "0 0 10px #4285F4";
+        }
+        if (id) {
+          id.textContent = "ID: Mars_Rover_Sunset";
+        }
+      }, null, 22.94);
+      
+      // 24.0s UserPrompt 1: HUD status changes to QUEUED
+      tl.call(() => {
+        const hud = document.getElementById("hud-status");
+        const dot = document.getElementById("hud-status-dot");
+        if (hud) {
+          hud.textContent = "✦ AI RENDER · QUEUED";
+          hud.style.color = "#fdd663";
+        }
+        if (dot) {
+          dot.style.backgroundColor = "#fbbc05";
+          dot.style.boxShadow = "0 0 10px #fbbc05";
+        }
+      }, null, 24.0);
+
+      // 26.5s AI confirms: HUD status changes to STABLE
+      tl.call(() => {
+        const hud = document.getElementById("hud-status");
+        const dot = document.getElementById("hud-status-dot");
+        if (hud) {
+          hud.textContent = "✦ SYSTEM STABLE";
+          hud.style.color = "#81c995";
+        }
+        if (dot) {
+          dot.style.backgroundColor = "#34a853";
+          dot.style.boxShadow = "0 0 10px #34a853";
+        }
+      }, null, 26.5);
+      
+      // 30.0s UserPrompt 2: HUD status changes to QUEUED
+      tl.call(() => {
+        const hud = document.getElementById("hud-status");
+        const dot = document.getElementById("hud-status-dot");
+        if (hud) {
+          hud.textContent = "✦ AI RENDER · EDIT QUEUED";
+          hud.style.color = "#fdd663";
+        }
+        if (dot) {
+          dot.style.backgroundColor = "#fbbc05";
+          dot.style.boxShadow = "0 0 10px #fbbc05";
+        }
+      }, null, 30.0);
+
+      // 33.0s AI confirms: VFX Scanline sweep + Video crossfade + HUD stable
+      // Scan sweep left to right
+      tl.fromTo("#sih-video-vfx-sweep",
+        { left: "-15%", opacity: 0 },
+        { left: "115%", opacity: 1, duration: 1.0, ease: "power2.inOut" },
+        33.0
+      );
+      
+      // Video 1 crossfades to Video 2
+      tl.to("#sih-video-1", {
+        opacity: 0, duration: 0.6, ease: "power2.inOut"
+      }, 33.0);
+      tl.to("#sih-video-2", {
+        opacity: 1, duration: 0.6, ease: "power2.inOut"
+      }, 33.0);
+      
+      // HUD updates at 33.0s
+      tl.call(() => {
+        const hud = document.getElementById("hud-status");
+        const dot = document.getElementById("hud-status-dot");
+        const id = document.getElementById("hud-clip-id");
+        if (hud) {
+          hud.textContent = "✦ STABLE PHYSICS ✓";
+          hud.style.color = "#81c995";
+        }
+        if (dot) {
+          dot.style.backgroundColor = "#34a853";
+          dot.style.boxShadow = "0 0 10px #34a853";
+        }
+        if (id) {
+          id.textContent = "ID: Mars_Rover_DustSweep";
+        }
+      }, null, 33.0);
+
+      // First chat pair appears 24s–26s
+      tl.to("#sih-msg-user-1", {
+        opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
+      }, 24.0);
+      tl.to("#sih-msg-ai-1", {
+        opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
+      }, 26.5);
+
+      // Second chat pair appears 30s–34s
+      tl.to("#sih-msg-user-2", {
+        opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
+      }, 30.0);
+      tl.to("#sih-msg-ai-2", {
+        opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
+      }, 33.0);
+
+      // Glow wave on flow card at 36s
+      tl.to("#sih-flow-card", {
+        boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(52,168,83,0.25)",
+        duration: 0.5
+      }, 36.0);
+      tl.to("#sih-flow-card", {
+        boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+        duration: 0.8
+      }, 37.0);
+
+      // ── STAGE 4: SUBSCRIBER TIER CARDS (41.78s – 54s) ───────
+      // At 41.4s rel, clear the stage by fading and scaling down the background elements
+      tl.to("#sih-brand-card", {
+        opacity: 0.05, scale: 0.9, x: -30, duration: 0.8, ease: "power3.inOut"
+      }, 41.4);
+      tl.to("#sih-input-section", {
+        opacity: 0.05, scale: 0.9, x: -30, duration: 0.8, ease: "power3.inOut"
+      }, 41.4);
+      tl.to("#sih-flow-card", {
+        opacity: 0.05, scale: 0.9, x: 30, duration: 0.8, ease: "power3.inOut"
+      }, 41.4);
+
+      // Fade in the tier container
+      tl.to("#sih-tier-section", {
+        opacity: 1, duration: 0.3, ease: "power2.out"
+      }, 41.4);
+
+      // Staggered entry for individual vertical plates with beautiful 3D bounce
+      tl.to("#sih-tier-plus", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.7,
+        ease: "back.out(1.4)"
+      }, 41.78);
+
+      // "Pro" at 42.51s rel
+      tl.to("#sih-tier-pro", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.7,
+        ease: "back.out(1.4)"
+      }, 42.51);
+
+      // "Ultra" at 43.3s rel
+      tl.to("#sih-tier-ultra", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.7,
+        ease: "back.out(1.4)"
+      }, 43.3);
+
+      // Free tier slides in at 44.2s
+      tl.to("#sih-tier-free", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.7,
+        ease: "back.out(1.4)"
+      }, 44.2);
+
+      // ── STAGE 5: WORKFLOW PILLARS (54.31s – 58.88s) ─────────
+      // Slide back and dim subscription tiers to focus on the final pillars
+      tl.to("#sih-tier-section", {
+        opacity: 0.35, scale: 0.95, y: -20, duration: 0.8, ease: "power3.inOut"
+      }, 53.8);
+
+      // Show pillars container
+      tl.to("#sih-pillars-row", {
+        opacity: 1, duration: 0.3, ease: "power2.out"
+      }, 53.8);
+
+      // "prompt" at 54.31s rel
+      tl.to("#sih-pillar-1", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.5,
+        ease: "back.out(1.8)"
+      }, 54.31);
+
+      // "revise" at 55.05s rel
+      tl.to("#sih-pillar-2", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.5,
+        ease: "back.out(1.8)"
+      }, 55.05);
+
+      // "preserve" at 55.77s rel
+      tl.to("#sih-pillar-3", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.5,
+        ease: "back.out(1.8)"
+      }, 55.77);
+
+      // "coherent" at 58.88s rel
+      tl.to("#sih-pillar-4", {
+        opacity: 1, y: 0, scale: 1.0, duration: 0.45,
+        ease: "back.out(1.8)"
+      }, 58.88);
+
+      // ── CONTINUOUS MICRO-ANIMATIONS ──────────────────────────
+      // Brand card subtle 3D breathing (10s loop)
+      tl.to("#sih-brand-card", {
+        rotateY: 3, rotateX: -1, duration: 4.0, ease: "sine.inOut"
+      }, 10.0);
+      tl.to("#sih-brand-card", {
+        rotateY: -4, rotateX: 2, duration: 4.0, ease: "sine.inOut"
+      }, 14.0);
+
+      // Input section glow sweep at 18s
+      tl.to("#sih-badge-image", {
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(234,67,53,0.4)",
+        duration: 0.4
+      }, 18.0);
+      tl.to("#sih-badge-audio", {
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(251,188,5,0.4)",
+        duration: 0.4
+      }, 18.4);
+      tl.to("#sih-badge-video", {
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(52,168,83,0.4)",
+        duration: 0.4
+      }, 18.8);
+      tl.to("#sih-badge-text", {
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(66,133,244,0.4)",
+        duration: 0.4
+      }, 19.2);
+
+      window.__timelines["scene-image-hero"] = tl;
+    </script>
+  </div>
+</template>
