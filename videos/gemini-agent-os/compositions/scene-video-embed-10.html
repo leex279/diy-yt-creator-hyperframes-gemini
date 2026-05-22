@@ -77,14 +77,30 @@
         border-radius: 24px;
         background: rgba(20, 20, 25, 0.7);
         border: 1px solid rgba(255, 255, 255, 0.06);
-        padding: 48px;
+        padding: 32px;
         display: flex;
         flex-direction: column;
-        gap: 28px;
+        gap: 20px;
         box-sizing: border-box;
         text-align: left;
         position: relative;
         overflow: hidden;
+      }
+      .card-media-wrap {
+        width: 100%;
+        height: 240px;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        opacity: 0;
+      }
+      .card-media-wrap video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
 
       .vembed-col-card::before {
@@ -126,8 +142,8 @@
       .vembed-body {
         opacity: 0;
         font-family: 'Inter', sans-serif;
-        font-size: 20px;
-        line-height: 1.6;
+        font-size: 18px;
+        line-height: 1.5;
         color: rgba(255, 255, 255, 0.85);
         flex-grow: 1;
       }
@@ -185,6 +201,9 @@
         <div id="vembed-placeholder">
           <!-- Left Column (Shorts Remix) -->
           <div class="vembed-col-card card-left">
+            <div class="card-media-wrap" id="media-wrap-left">
+              <video id="shorts-remix-video" class="clip" src="assets/clips/shorts-remix-official.mp4" data-start="0" data-duration="62.382" data-track-index="2" muted playsinline loop autoplay></video>
+            </div>
             <div id="vembed-title-left" class="vembed-title vembed-title-l">Shorts Remix</div>
             <div id="vembed-body-left" class="vembed-body">Remix scenes, apply 90's vibe filters, and insert yourself into videos while preserving context using Gemini Omni. Remixed Shorts include digital watermarks and links back to the original video.</div>
             <div class="embed-badges-container">
@@ -195,6 +214,9 @@
           </div>
           <!-- Right Column (Likeness Protection) -->
           <div class="vembed-col-card card-right">
+            <div class="card-media-wrap" id="media-wrap-right">
+              <video id="likeness-protection-video" class="clip" src="assets/clips/likeness-protection-official.mp4" data-start="0" data-duration="62.382" data-track-index="3" muted playsinline loop autoplay></video>
+            </div>
             <div id="vembed-title-right" class="vembed-title vembed-title-r">Likeness Protection</div>
             <div id="vembed-body-right" class="vembed-body">Likeness detection expanded to all creators aged 18 and older. Standard C2PA Content Credentials coming to Pixel 8, 9, and 10 devices. Creators can opt out of remixing.</div>
             <div class="embed-badges-container">
@@ -237,6 +259,9 @@
       }, 0.7);
  
       // Staggered columns reveals inside the placeholder wrapper
+      // 18.00s: Slide in Left Video Wrap
+      tl.fromTo("#media-wrap-left", { scale: 0.9, opacity: 0, y: 15 }, { scale: 1, opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)" }, 18.00);
+
       // 18.63s: Slide in Left Column Title (spoken: "Gemini Omni in Shorts Remix")
       tl.fromTo("#vembed-title-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 18.63);
  
@@ -258,6 +283,9 @@
         immediateRender: false
       }, 22.25);
  
+      // 38.50s: Slide in Right Video Wrap
+      tl.fromTo("#media-wrap-right", { scale: 0.9, opacity: 0, y: 15 }, { scale: 1, opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)" }, 38.50);
+
       // 39.16s: Slide in Right Column Title (spoken: "expanded its likeness detection tool")
       tl.fromTo("#vembed-title-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 39.16);
  
