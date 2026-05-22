@@ -7,11 +7,7 @@
   and micro-UI visual overlays as they are spoken about.
 -->
 <template id="scene-source-cards-template">
-  <div data-composition-id="scene-source-cards-8"
-       data-start="0"
-       data-width="1920"
-       data-height="1080"
-       style="position:absolute; inset:0; overflow:hidden;
+  <div data-composition-id="scene-source-cards-8" data-start="0" data-width="1920" data-height="1080" style="position:absolute; inset:0; overflow:hidden;
               font-family:'Inter', sans-serif; color:var(--text);">
 
     <style>
@@ -232,8 +228,8 @@
 
     <div id="scene-source-cards-content">
       <div class="header-block">
-        <div class="overline" id="src-overline">WORKSPACE & FLOW</div>
-        <div class="headline" id="src-headline">AGENTS IN GOOGLE WORKSPACE & FLOW</div>
+        <div class="overline" id="src-overline">WORKSPACE &amp; FLOW</div>
+        <div class="headline" id="src-headline">AGENTS IN GOOGLE WORKSPACE &amp; FLOW</div>
       </div>
 
       <div id="carousel-container">
@@ -243,10 +239,7 @@
           <div class="carousel-slide" id="carousel-slide-1" style="transform: rotateY(0deg) translateZ(550px);">
             <div class="source-card glass-premium glow-blue a" id="src-card-1">
               <div class="photo-wrap" data-layout-allow-overflow="true">
-                <img id="src-img-1"
-                     src="assets/blog/workspace-workflows.png"
-                     alt="Source 1"
-                     data-layout-allow-overflow="true" />
+                <img id="src-img-1" src="assets/blog/workspace-workflows.png" alt="Source 1" data-layout-allow-overflow="true">
                 
                 <!-- Visual aids stack for Card 1 -->
                 <div class="visual-aid-overlay" id="visual-aid-1">
@@ -272,16 +265,31 @@
           <div class="carousel-slide" id="carousel-slide-2" style="transform: rotateY(120deg) translateZ(550px);">
             <div class="source-card glass-premium glow-red b" id="src-card-2">
               <div class="photo-wrap" data-layout-allow-overflow="true">
-                <img id="src-img-2"
-                     src="assets/blog/google-pics-ai.png"
-                     alt="Source 2"
-                     data-layout-allow-overflow="true" />
+                <img id="src-img-2" src="assets/blog/google-pics-ai.png" alt="Source 2" data-layout-allow-overflow="true">
                 
                 <!-- Visual aids for Card 2 -->
                 <div class="visual-aid-overlay" id="visual-aid-2">
                   <svg class="lasso-svg" viewBox="0 0 520 334">
-                    <path id="lasso-path" d="M 140 190 Q 220 70 400 130 T 460 230 T 280 290 Z" fill="rgba(234, 67, 53, 0.15)" stroke="#EA4335" stroke-width="3" />
+                    <!-- High-fidelity precision selection lasso path -->
+                    <path id="lasso-path" d="M 190 240 L 170 160 L 230 110 L 310 90 L 350 150 L 330 230 L 260 260 Z" fill="rgba(234, 67, 53, 0.12)" stroke="#EA4335" stroke-width="2" style="opacity: 0;" />
+                    
+                    <!-- Circular selection anchors (Figma style) -->
+                    <circle cx="190" cy="240" r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    <circle cx="170" cy="160" r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    <circle cx="230" cy="110" r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    <circle cx="310" cy="90"  r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    <circle cx="350" cy="150" r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    <circle cx="330" cy="230" r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    <circle cx="260" cy="260" r="4" fill="#ffffff" stroke="#EA4335" stroke-width="2" class="lasso-node" style="opacity: 0;" />
+                    
+                    <!-- Precision Crosshair at Active Anchor Pt 5 (350, 150) -->
+                    <g class="lasso-cursor" style="opacity: 0; transform-origin: 350px 150px;">
+                      <circle cx="350" cy="150" r="8" fill="none" stroke="#EA4335" stroke-width="1.5" />
+                      <line x1="338" y1="150" x2="362" y2="150" stroke="#EA4335" stroke-width="1.5" />
+                      <line x1="350" y1="138" x2="350" y2="162" stroke="#EA4335" stroke-width="1.5" />
+                    </g>
                   </svg>
+                  
                   <div class="tool-panel">
                     <div class="tool-item" id="tool-segment">
                       <span class="dot"></span> Segment Object ✂️
@@ -297,7 +305,7 @@
               </div>
               <div class="meta">
                 <div class="ovl">GOOGLE PICS AI</div>
-                <div class="ttl">Object segmentation & transformations in shared images</div>
+                <div class="ttl">Object segmentation &amp; transformations in shared images</div>
               </div>
             </div>
           </div>
@@ -306,10 +314,7 @@
           <div class="carousel-slide" id="carousel-slide-3" style="transform: rotateY(240deg) translateZ(550px);">
             <div class="source-card glass-premium glow-yellow c" id="src-card-3">
               <div class="photo-wrap" data-layout-allow-overflow="true">
-                <img id="src-img-3"
-                     src="assets/blog/google-flow-agent.png"
-                     alt="Source 3"
-                     data-layout-allow-overflow="true" />
+                <img id="src-img-3" src="assets/blog/google-flow-agent.png" alt="Source 3" data-layout-allow-overflow="true">
                 
                 <!-- Visual aids graph for Card 3 -->
                 <div class="visual-aid-overlay" id="visual-aid-3">
@@ -335,7 +340,7 @@
               </div>
               <div class="meta">
                 <div class="ovl">GOOGLE FLOW AGENT</div>
-                <div class="ttl">Brainstorm dialogue, edit section music & batch assets</div>
+                <div class="ttl">Brainstorm dialogue, edit section music &amp; batch assets</div>
               </div>
             </div>
           </div>
@@ -453,7 +458,9 @@
       tl.to("#visual-aid-2", { opacity: 1, duration: 0.4 }, 11.2);
       
       // SVG Lasso Draw Animation
-      tl.fromTo("#lasso-path", { strokeDashoffset: 1000, strokeDasharray: 1000 }, { strokeDashoffset: 0, duration: 2.2, ease: "sine.inOut" }, 11.5);
+      tl.fromTo("#lasso-path", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "power2.out" }, 11.5);
+      tl.fromTo(".lasso-node", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.08 }, 11.8);
+      tl.fromTo(".lasso-cursor", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 12.5);
       
       // Editor tool items slide & activate stagger
       tl.to("#tool-segment", {

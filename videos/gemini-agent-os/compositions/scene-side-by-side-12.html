@@ -147,13 +147,13 @@
       // 5.37s: Card A enters (Ultra Basic) (spoken: "introducing")
       tl.fromTo("#sbs-card-a", {
         x: -160,
-        rotateY: 28,
+        rotateY: -28,
         rotateX: 6,
         scale: 0.82,
         opacity: 0
       }, {
         x: 0,
-        rotateY: -6,
+        rotateY: 6,
         rotateX: 3,
         scale: 1,
         opacity: 1,
@@ -190,13 +190,13 @@
       // 9.48s: Right Card B enters (Ultra Advanced) (spoken: "reducing")
       tl.fromTo("#sbs-card-b", {
         x: 160,
-        rotateY: -28,
+        rotateY: 28,
         rotateX: 6,
         scale: 0.82,
         opacity: 0
       }, {
         x: 0,
-        rotateY: 6,
+        rotateY: -6,
         rotateX: 3,
         scale: 1,
         opacity: 1,
@@ -220,7 +220,7 @@
 
       // 13.0s: Card A soft tilt pivot shift
       tl.to("#sbs-card-a", {
-        rotateY: -12,
+        rotateY: 12,
         rotateX: 6,
         duration: 1.8,
         ease: "power2.inOut"
@@ -259,7 +259,7 @@
 
       // 32.0s: Card B soft tilt pivot shift
       tl.to("#sbs-card-b", {
-        rotateY: 12,
+        rotateY: -12,
         rotateX: 6,
         duration: 1.8,
         ease: "power2.inOut"
@@ -279,13 +279,13 @@
 
       // 40.0s: Dual card 3D tilt shift
       tl.to("#sbs-card-a", {
-        rotateY: -4,
+        rotateY: 4,
         rotateX: 2,
         duration: 1.8,
         ease: "power2.inOut"
       }, 40.0);
       tl.to("#sbs-card-b", {
-        rotateY: 4,
+        rotateY: -4,
         rotateX: 2,
         duration: 1.8,
         ease: "power2.inOut"
