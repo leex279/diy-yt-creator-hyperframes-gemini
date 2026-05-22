@@ -50,7 +50,7 @@
         position: relative;
         width: 100%;
         height: 640px;
-        perspective: 2000px;
+        perspective: 2500px;
         transform-style: preserve-3d;
         display: flex;
         align-items: center;
@@ -62,6 +62,7 @@
         width: 520px;
         height: 540px;
         transform-style: preserve-3d;
+        transform: translateZ(-150px);
       }
       .carousel-slide {
         position: absolute;
@@ -82,7 +83,7 @@
         transform-style: preserve-3d;
         opacity: 0;
         filter: blur(6px);
-        transform: scale(0.85);
+        transform: scale(0.82);
         box-shadow: 0 12px 30px rgba(0,0,0,0.5);
       }
       .source-card .photo-wrap {
@@ -239,7 +240,7 @@
         <div id="carousel-track">
           
           <!-- Slide 1 (Workspace Workflows) -->
-          <div class="carousel-slide" id="carousel-slide-1" style="transform: rotateY(0deg) translateZ(450px);">
+          <div class="carousel-slide" id="carousel-slide-1" style="transform: rotateY(0deg) translateZ(550px);">
             <div class="source-card glass-premium glow-blue a" id="src-card-1">
               <div class="photo-wrap" data-layout-allow-overflow="true">
                 <img id="src-img-1"
@@ -268,7 +269,7 @@
           </div>
           
           <!-- Slide 2 (Google Pics AI) -->
-          <div class="carousel-slide" id="carousel-slide-2" style="transform: rotateY(120deg) translateZ(450px);">
+          <div class="carousel-slide" id="carousel-slide-2" style="transform: rotateY(120deg) translateZ(550px);">
             <div class="source-card glass-premium glow-red b" id="src-card-2">
               <div class="photo-wrap" data-layout-allow-overflow="true">
                 <img id="src-img-2"
@@ -302,7 +303,7 @@
           </div>
           
           <!-- Slide 3 (Google Flow Agent) -->
-          <div class="carousel-slide" id="carousel-slide-3" style="transform: rotateY(240deg) translateZ(450px);">
+          <div class="carousel-slide" id="carousel-slide-3" style="transform: rotateY(240deg) translateZ(550px);">
             <div class="source-card glass-premium glow-yellow c" id="src-card-3">
               <div class="photo-wrap" data-layout-allow-overflow="true">
                 <img id="src-img-3"
@@ -346,6 +347,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script>
       window.__timelines = window.__timelines || {};
+      gsap.set("#carousel-track", { translateZ: -150 });
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out", duration: 0.55 }
@@ -371,11 +373,11 @@
 
       // 1.71s: Card 1 becomes active in 3D center
       tl.fromTo("#src-card-1", {
-        scale: 0.85,
+        scale: 0.82,
         opacity: 0,
         filter: "blur(6px)"
       }, {
-        scale: 1.15,
+        scale: 1.10,
         opacity: 1,
         filter: "blur(0px)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.65)",
@@ -386,11 +388,11 @@
 
       // Introduce Card 2 and Card 3 as dimmed inactive slides in 3D space
       tl.fromTo(["#src-card-2", "#src-card-3"], {
-        scale: 0.85,
+        scale: 0.82,
         opacity: 0,
         filter: "blur(6px)"
       }, {
-        scale: 0.85,
+        scale: 0.82,
         opacity: 0.25,
         filter: "blur(6px)",
         duration: 0.8,
@@ -425,11 +427,11 @@
 
       // 10.50s: Rotate to Card 2 (Google Pics AI)
       // Carousel rotation to Slide 2
-      tl.to("#carousel-track", { rotateY: -120, duration: 0.85, ease: "power3.inOut" }, 10.50);
+      tl.to("#carousel-track", { rotateY: -120, translateZ: -150, duration: 0.85, ease: "power3.inOut" }, 10.50);
       
       // Card 1 dims down
       tl.to("#src-card-1", {
-        scale: 0.85,
+        scale: 0.82,
         opacity: 0.25,
         filter: "blur(6px)",
         boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
@@ -439,7 +441,7 @@
       
       // Card 2 activates
       tl.to("#src-card-2", {
-        scale: 1.15,
+        scale: 1.10,
         opacity: 1,
         filter: "blur(0px)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(234, 67, 53, 0.65)",
@@ -514,11 +516,11 @@
 
       // 43.14s: Rotate to Card 3 (Google Flow Agent)
       // Carousel rotation to Slide 3
-      tl.to("#carousel-track", { rotateY: -240, duration: 0.85, ease: "power3.inOut" }, 43.14);
+      tl.to("#carousel-track", { rotateY: -240, translateZ: -150, duration: 0.85, ease: "power3.inOut" }, 43.14);
       
       // Card 2 dims down
       tl.to("#src-card-2", {
-        scale: 0.85,
+        scale: 0.82,
         opacity: 0.25,
         filter: "blur(6px)",
         boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
@@ -528,7 +530,7 @@
       
       // Card 3 activates
       tl.to("#src-card-3", {
-        scale: 1.15,
+        scale: 1.10,
         opacity: 1,
         filter: "blur(0px)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(251, 188, 4, 0.65)",
