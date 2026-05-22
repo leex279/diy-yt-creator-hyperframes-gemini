@@ -176,6 +176,15 @@ def main() -> int:
         help=f"Silence between chunks in ms (default: {DEFAULT_INTER_CHUNK_SILENCE_MS})",
     )
     parser.add_argument(
+        "--min-chunk-chars",
+        type=int,
+        default=10,
+        help="Minimum chunk length in chars. Sentences shorter than this merge "
+             "forward to avoid prosody issues on tiny fragments. Default 10 "
+             "(one-sentence-per-chunk for normal sentences). Set higher (e.g. 40) "
+             "to reproduce pre-2026-05-19 chunking behavior.",
+    )
+    parser.add_argument(
         "--env-file",
         type=Path,
         default=None,
@@ -239,7 +248,7 @@ def main() -> int:
         print("[tts] pronunciation_dictionary=<none>")
     print(f"[tts] text chars={len(text)}")
     print(f"[tts] mode={'single-call' if args.no_chunk else 'chunked'}"
-          + ("" if args.no_chunk else f" silence_ms={args.inter_chunk_silence_ms}")
+          + ("" if args.no_chunk else f" min_chunk_chars={args.min_chunk_chars} silence_ms={args.inter_chunk_silence_ms}")
           + (" force=true" if args.force and not args.no_chunk else ""))
 
     api_key = os.environ.get("ELEVENLABS_API_KEY")
@@ -262,26 +271,38 @@ def main() -> int:
             pronunciation_dictionary_locators=locators,
             output_format=output_format,
         )
-        return 0
+    else:
+        summary = generate_chunked(
+            text=text,
+            narration_wav=narration_wav,
+            transcript_json=transcript_json,
+            client=client,
+            voice_id=voice_id,
+            model_id=model_id,
+            voice_settings=settings,
+            pronunciation_dictionary_locators=locators,
+            inter_chunk_silence_ms=args.inter_chunk_silence_ms,
+            force=args.force,
+            output_format=output_format,
+            min_chunk_chars=args.min_chunk_chars,
+        )
+        print(f"[tts] wrote {narration_wav}  "
+              f"({summary['duration_s']:.2f}s, {narration_wav.stat().st_size} bytes)")
+        print(f"[tts] wrote {transcript_json}  ({summary['words']} words)")
+        print(f"[tts] chunks={summary['chunks']} changed={summary['changed']} "
+              f"unchanged={summary['unchanged']}")
 
-    summary = generate_chunked(
-        text=text,
-        narration_wav=narration_wav,
-        transcript_json=transcript_json,
-        client=client,
-        voice_id=voice_id,
-        model_id=model_id,
-        voice_settings=settings,
-        pronunciation_dictionary_locators=locators,
-        inter_chunk_silence_ms=args.inter_chunk_silence_ms,
-        force=args.force,
-        output_format=output_format,
-    )
-    print(f"[tts] wrote {narration_wav}  "
-          f"({summary['duration_s']:.2f}s, {narration_wav.stat().st_size} bytes)")
-    print(f"[tts] wrote {transcript_json}  ({summary['words']} words)")
-    print(f"[tts] chunks={summary['chunks']} changed={summary['changed']} "
-          f"unchanged={summary['unchanged']}")
+    # Automatically convert WAV to MP3
+    mp3_path = narration_wav.with_suffix('.mp3')
+    import subprocess
+    try:
+        subprocess.run([
+            'ffmpeg', '-y', '-i', str(narration_wav),
+            '-codec:a', 'libmp3lame', '-qscale:a', '2', str(mp3_path)
+        ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print(f"[tts] successfully compressed WAV to {mp3_path}")
+    except Exception as e:
+        print(f"[tts] ERROR converting WAV to MP3: {e}", file=sys.stderr)
     return 0
 
 

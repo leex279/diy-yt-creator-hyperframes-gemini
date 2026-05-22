@@ -190,7 +190,7 @@ The chrome reserves space — content must stay within:
 
 Canonical rules: [`.claude/rules/audio-design.md`](../../../.claude/rules/audio-design.md).
 
-**DEFAULT: transition whooshes only.** One `cinematic-whoosh` per phase boundary, nothing else. The whoosh `data-start` MUST equal `sceneT - 0.4` (matching the shape-backdrop reposition tween start), not `sceneT`.
+**DEFAULT: transition whooshes only.** One `cinematic-whoosh` per phase boundary, nothing else. The whoosh `data-start` MUST equal `sceneT` exactly (the visual phase-transition moment), with `data-duration="1.5"` for the natural decay tail. See `.claude/rules/audio-design.md` § "Whoosh placement on phase transitions" — the older `sceneT - 0.4` pattern is deprecated.
 
 V2's cinematic chrome adds *visual* punctuation; do NOT add corresponding SFX (no REC-blip, no timecode-tick, no scan-beam-whoosh). Per-cue SFX read as cluttered against the calm dark-stage aesthetic.
 
@@ -201,9 +201,9 @@ V2's cinematic chrome adds *visual* punctuation; do NOT add corresponding SFX (n
 | `scale-slam` | Stat-pill entrance | 0.15 | OFF — opt-in |
 | `screen-shake` | Hero word inline shake | 0.11 | OFF — opt-in |
 | `spring-pop` | Card or chip entrance | 0.11 | OFF — opt-in |
-| `sonic-logo` | Composition start | 0.45 | OFF — never on by default |
+| `sonic-logo` | Composition start | 0.45 | **NEVER auto-add** — user-request only (see audio-design.md § Sonic-logo NEVER auto-add) |
 
-Hard cap: never exceed `0.25` on a per-cue SFX (sonic-logo `0.45` is the only exception).
+Hard cap: never exceed `0.25` on a per-cue SFX. The sonic-logo at `0.45` is the **only** exception, and it is **off by default** — only wire it when the user explicitly asks for "the intro stinger" / "sonic logo" / "brand bumper" on a specific video.
 
 ## What NOT to Do
 

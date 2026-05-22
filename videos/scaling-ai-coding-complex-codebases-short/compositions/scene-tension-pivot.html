@@ -92,19 +92,21 @@
       tl.set("#tp-bold",    { y: 60, autoAlpha: 0, scale: 0.95 }, 0);
 
       tl.to("#tp-eyebrow", { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
-      tl.to("#tp-light",   { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.5);
+      tl.to("#tp-light",   { y: 0, autoAlpha: 1, duration: 0.55, ease: "power2.out" }, 0.3);
 
-      // Strike across the light line
+      // Strike across the light line — narrator says "isn't the metric" while sweep happens
       tl.to("#tp-strike", { width: "100%", duration: 0.5, ease: "power3.out" }, 1.5);
 
-      // Slam the bold line
-      tl.to("#tp-bold", { y: 0, scale: 1, autoAlpha: 1, duration: 0.65, ease: "back.out(1.5)" }, 2.1);
+      // Mid-hold beat — strike glow pulse before bold lands
+      tl.to("#tp-strike", { boxShadow: "0 0 36px rgba(239, 68, 68, 0.95)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.7);
 
-      // Mid-hold beats
-      tl.to("#tp-bold", { scale: 1.03, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.2);
-      tl.to("#tp-strike", { boxShadow: "0 0 36px rgba(239, 68, 68, 0.95)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.4);
+      // Slam the bold "COUPLING" — narrator says "Coupling" at scene-rel ~5.13s
+      tl.to("#tp-bold", { y: 0, scale: 1, autoAlpha: 1, duration: 0.65, ease: "back.out(1.5)" }, 5.0);
 
-      tl.set({}, {}, 8);
+      // Mid-hold scale pulse on the bold word
+      tl.to("#tp-bold", { scale: 1.03, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.9);
+
+      tl.set({}, {}, 6.98);
       window.__timelines["scene-tension-pivot"] = tl;
     </script>
   </div>

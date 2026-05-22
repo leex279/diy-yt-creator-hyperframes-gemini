@@ -741,19 +741,19 @@
         opacity: 1, y: 0, duration: 0.5, ease: "power2.out"
       }, 0.7);
 
-      // "Gemini Omni" spoken at 3.55s rel — model name slams
+      // "Gemini Omni" spoken at 1.90s rel — model name slams
       tl.to("#sih-model-name", {
         opacity: 1, duration: 0.6, ease: "power3.out",
         textShadow: "0 0 30px rgba(66,133,244,0.5)"
-      }, 3.55);
+      }, 1.90);
 
-      // "Gemini Omni Flash" at 5.73s rel — subtitle + pill
+      // "Gemini Omni Flash" at 4.71s rel — subtitle + pill
       tl.to("#sih-model-sub", {
         opacity: 1, y: 0, duration: 0.5, ease: "power2.out"
-      }, 5.73);
+      }, 4.71);
       tl.to("#sih-model-pill", {
         opacity: 1, y: 0, duration: 0.55, ease: "back.out(1.4)"
-      }, 6.1);
+      }, 5.10);
 
       // Card border glow pulse at 7s
       tl.to("#sih-brand-card", {
@@ -774,61 +774,60 @@
         opacity: 1, duration: 0.5, ease: "power2.out"
       }, 13.6);
 
-      // "images" spoken at 14.16s rel — IMAGE badge pops
+      // "images" spoken at 14.58s rel — IMAGE badge pops
       tl.to("#sih-badge-image", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.45,
         ease: "back.out(1.8)"
-      }, 14.16);
+      }, 14.58);
 
-      // "audio" at 14.9s rel
+      // "audio" at 15.12s rel
       tl.to("#sih-badge-audio", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.45,
         ease: "back.out(1.8)"
-      }, 14.9);
+      }, 15.12);
 
-      // "video" at 15.62s rel
+      // "video" at 15.60s rel
       tl.to("#sih-badge-video", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.45,
         ease: "back.out(1.8)"
-      }, 15.62);
+      }, 15.60);
 
-      // "text" at 16.4s rel
+      // "text" at 16.31s rel
       tl.to("#sih-badge-text", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.45,
         ease: "back.out(1.8)"
-      }, 16.4);
+      }, 16.31);
 
-      // ── STAGE 3: CONVERSATIONAL FLOW CARD (21.78s – 41s) ────
-      // "conversational" spoken at 21.78s rel — flow card slides in
+      // "conversational" spoken at 21.50s rel — flow card slides in
       tl.fromTo("#sih-flow-card",
         { opacity: 0, x: 80, scale: 0.92 },
         { opacity: 1, x: 0, scale: 1.0, duration: 0.85,
           ease: "back.out(1.4)", immediateRender: false },
-        21.78
+        21.50
       );
 
       tl.to("#sih-flow-title", {
         opacity: 1, duration: 0.5, ease: "power2.out"
-      }, 22.2);
+      }, 22.00);
 
-      // Video thumb container appears at 22.94s ("editable")
+      // Video thumb container appears at 22.50s ("editable")
       tl.to("#sih-video-thumb", {
         opacity: 1, duration: 0.5, ease: "power2.out"
-      }, 22.94);
+      }, 22.50);
       
       // Video 1 (astronaut Mars sunset) fades in to start playing
       tl.to("#sih-video-1", {
         opacity: 1, duration: 0.6, ease: "power2.out"
-      }, 22.94);
+      }, 22.50);
       
       // Animate progress bar looping playback
       tl.fromTo("#sih-video-progress-fill",
         { width: "0%" },
         { width: "100%", duration: 10.0, ease: "none", repeat: 3 },
-        22.94
+        22.50
       );
       
-      // Update HUD status text at 22.94s
+      // Update HUD status text at 22.50s
       tl.call(() => {
         const hud = document.getElementById("hud-status");
         const dot = document.getElementById("hud-status-dot");
@@ -844,9 +843,9 @@
         if (id) {
           id.textContent = "ID: Mars_Rover_Sunset";
         }
-      }, null, 22.94);
+      }, null, 22.50);
       
-      // 24.0s UserPrompt 1: HUD status changes to QUEUED
+      // 24.54s UserPrompt 1: HUD status changes to QUEUED
       tl.call(() => {
         const hud = document.getElementById("hud-status");
         const dot = document.getElementById("hud-status-dot");
@@ -858,9 +857,9 @@
           dot.style.backgroundColor = "#fbbc05";
           dot.style.boxShadow = "0 0 10px #fbbc05";
         }
-      }, null, 24.0);
+      }, null, 24.54);
 
-      // 26.5s AI confirms: HUD status changes to STABLE
+      // 26.24s AI confirms: HUD status changes to STABLE
       tl.call(() => {
         const hud = document.getElementById("hud-status");
         const dot = document.getElementById("hud-status-dot");
@@ -872,9 +871,9 @@
           dot.style.backgroundColor = "#34a853";
           dot.style.boxShadow = "0 0 10px #34a853";
         }
-      }, null, 26.5);
+      }, null, 26.24);
       
-      // 30.0s UserPrompt 2: HUD status changes to QUEUED
+      // 30.04s UserPrompt 2: HUD status changes to QUEUED
       tl.call(() => {
         const hud = document.getElementById("hud-status");
         const dot = document.getElementById("hud-status-dot");
@@ -886,25 +885,25 @@
           dot.style.backgroundColor = "#fbbc05";
           dot.style.boxShadow = "0 0 10px #fbbc05";
         }
-      }, null, 30.0);
+      }, null, 30.04);
 
-      // 33.0s AI confirms: VFX Scanline sweep + Video crossfade + HUD stable
+      // 32.65s AI confirms: VFX Scanline sweep + Video crossfade + HUD stable
       // Scan sweep left to right
       tl.fromTo("#sih-video-vfx-sweep",
         { left: "-15%", opacity: 0 },
         { left: "115%", opacity: 1, duration: 1.0, ease: "power2.inOut" },
-        33.0
+        32.65
       );
       
       // Video 1 crossfades to Video 2
       tl.to("#sih-video-1", {
         opacity: 0, duration: 0.6, ease: "power2.inOut"
-      }, 33.0);
+      }, 32.65);
       tl.to("#sih-video-2", {
         opacity: 1, duration: 0.6, ease: "power2.inOut"
-      }, 33.0);
+      }, 32.65);
       
-      // HUD updates at 33.0s
+      // HUD updates at 32.65s
       tl.call(() => {
         const hud = document.getElementById("hud-status");
         const dot = document.getElementById("hud-status-dot");
@@ -920,23 +919,23 @@
         if (id) {
           id.textContent = "ID: Mars_Rover_DustSweep";
         }
-      }, null, 33.0);
+      }, null, 32.65);
 
-      // First chat pair appears 24s–26s
+      // First chat pair appears 24.54s–26.24s
       tl.to("#sih-msg-user-1", {
         opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
-      }, 24.0);
+      }, 24.54);
       tl.to("#sih-msg-ai-1", {
         opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
-      }, 26.5);
+      }, 26.24);
 
-      // Second chat pair appears 30s–34s
+      // Second chat pair appears 30.04s–32.65s
       tl.to("#sih-msg-user-2", {
         opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
-      }, 30.0);
+      }, 30.04);
       tl.to("#sih-msg-ai-2", {
         opacity: 1, y: 0, duration: 0.5, ease: "power3.out"
-      }, 33.0);
+      }, 32.65);
 
       // Glow wave on flow card at 36s
       tl.to("#sih-flow-card", {
@@ -948,81 +947,81 @@
         duration: 0.8
       }, 37.0);
 
-      // ── STAGE 4: SUBSCRIBER TIER CARDS (41.78s – 54s) ───────
-      // At 41.4s rel, clear the stage by fading and scaling down the background elements
+      // ── STAGE 4: SUBSCRIBER TIER CARDS (42.80s – 54s) ───────
+      // At 42.3s rel, clear the stage by fading and scaling down the background elements
       tl.to("#sih-brand-card", {
         opacity: 0.05, scale: 0.9, x: -30, duration: 0.8, ease: "power3.inOut"
-      }, 41.4);
+      }, 42.3);
       tl.to("#sih-input-section", {
         opacity: 0.05, scale: 0.9, x: -30, duration: 0.8, ease: "power3.inOut"
-      }, 41.4);
+      }, 42.3);
       tl.to("#sih-flow-card", {
         opacity: 0.05, scale: 0.9, x: 30, duration: 0.8, ease: "power3.inOut"
-      }, 41.4);
+      }, 42.3);
 
       // Fade in the tier container
       tl.to("#sih-tier-section", {
         opacity: 1, duration: 0.3, ease: "power2.out"
-      }, 41.4);
+      }, 42.3);
 
       // Staggered entry for individual vertical plates with beautiful 3D bounce
       tl.to("#sih-tier-plus", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.7,
         ease: "back.out(1.4)"
-      }, 41.78);
+      }, 42.80);
 
-      // "Pro" at 42.51s rel
+      // "Pro" at 43.28s rel
       tl.to("#sih-tier-pro", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.7,
         ease: "back.out(1.4)"
-      }, 42.51);
+      }, 43.28);
 
-      // "Ultra" at 43.3s rel
+      // "Ultra" at 44.06s rel
       tl.to("#sih-tier-ultra", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.7,
         ease: "back.out(1.4)"
-      }, 43.3);
+      }, 44.06);
 
-      // Free tier slides in at 44.2s
+      // Free tier slides in at 48.27s
       tl.to("#sih-tier-free", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.7,
         ease: "back.out(1.4)"
-      }, 44.2);
+      }, 48.27);
 
-      // ── STAGE 5: WORKFLOW PILLARS (54.31s – 58.88s) ─────────
+      // ── STAGE 5: WORKFLOW PILLARS (56.74s – 61.79s) ─────────
       // Slide back and dim subscription tiers to focus on the final pillars
       tl.to("#sih-tier-section", {
         opacity: 0.35, scale: 0.95, y: -20, duration: 0.8, ease: "power3.inOut"
-      }, 53.8);
+      }, 56.2);
 
       // Show pillars container
       tl.to("#sih-pillars-row", {
         opacity: 1, duration: 0.3, ease: "power2.out"
-      }, 53.8);
+      }, 56.2);
 
-      // "prompt" at 54.31s rel
+      // "prompt" at 56.74s rel
       tl.to("#sih-pillar-1", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.5,
         ease: "back.out(1.8)"
-      }, 54.31);
+      }, 56.74);
 
-      // "revise" at 55.05s rel
+      // "revise" at 57.41s rel
       tl.to("#sih-pillar-2", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.5,
         ease: "back.out(1.8)"
-      }, 55.05);
+      }, 57.41);
 
-      // "preserve" at 55.77s rel
+      // "preserve" at 58.12s rel
       tl.to("#sih-pillar-3", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.5,
         ease: "back.out(1.8)"
-      }, 55.77);
+      }, 58.12);
 
-      // "coherent" at 58.88s rel
+      // "coherent" at 61.79s rel
       tl.to("#sih-pillar-4", {
         opacity: 1, y: 0, scale: 1.0, duration: 0.45,
         ease: "back.out(1.8)"
-      }, 58.88);
+      }, 61.79);
 
       // ── CONTINUOUS MICRO-ANIMATIONS ──────────────────────────
       // Brand card subtle 3D breathing (10s loop)

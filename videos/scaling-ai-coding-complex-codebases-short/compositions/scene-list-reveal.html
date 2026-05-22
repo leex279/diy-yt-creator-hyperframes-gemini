@@ -175,31 +175,31 @@
       tl.to("#lr-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
 
       // Step-by-step reveal — retimed to transcript word-anchors.
-      // Scene starts at 27.43s; row times below are scene-relative.
-      //   r1 "vertical"   abs 29.50 → scene-rel 2.07
-      //   r2 "brownfield" abs 33.20 → scene-rel 5.77
-      //   r3 "Three"      abs 36.74 → scene-rel 9.31
-      //   r4 "focused"    abs 41.03 → scene-rel 13.60
-      //   r5 "parallel"   abs 44.21 → scene-rel 16.78
-      //   r6 "size"       abs 47.97 → scene-rel 20.54
-      const rowTimes = [2.07, 5.77, 9.31, 13.60, 16.78, 20.54];
+      // Scene starts at 30.83s; row times below are scene-relative.
+      //   r1 "vertical"   abs 32.65 → scene-rel 1.82
+      //   r2 "brownfield" abs 36.99 → scene-rel 6.16
+      //   r3 "Three"      abs 41.10 → scene-rel 10.27
+      //   r4 "focused"    abs 45.75 → scene-rel 14.92
+      //   r5 "parallel"   abs 49.38 → scene-rel 18.55
+      //   r6 "size"       abs 53.76 → scene-rel 22.93
+      const rowTimes = [1.82, 6.16, 10.27, 14.92, 18.55, 22.93];
       ["#lr-r1","#lr-r2","#lr-r3","#lr-r4","#lr-r5","#lr-r6"].forEach((sel, i) => {
         tl.to(sel, { x: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)" }, rowTimes[i]);
         tl.to(sel + " .marker", { width: "100%", duration: 0.55, ease: "power2.out" }, rowTimes[i] + 0.3);
       });
 
-      // Brownfield diagram callout — enters with row 2, fades when row 3 reveals
+      // Brownfield diagram callout — enters just before row 2, fades just before row 3
       tl.to("#lr-callout",
-        { autoAlpha: 1, scale: 1, y: 0, rotation: -1.5, duration: 0.7, ease: "back.out(1.5)" }, 5.50);
+        { autoAlpha: 1, scale: 1, y: 0, rotation: -1.5, duration: 0.7, ease: "back.out(1.5)" }, 5.85);
       tl.to("#lr-callout",
-        { rotation: 1.0, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 6.6);
+        { rotation: 1.0, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.0);
       tl.to("#lr-callout",
-        { autoAlpha: 0, scale: 0.94, y: -20, duration: 0.5, ease: "power2.in" }, 9.10);
+        { autoAlpha: 0, scale: 0.94, y: -20, duration: 0.5, ease: "power2.in" }, 9.95);
 
-      // Tail-hold settle pulse — fills the gap from last row entrance to scene exit (23.27s)
-      tl.to("#lr-rows", { scale: 1.01, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 21.6);
+      // Tail-hold settle pulse — fills the gap from last row entrance to scene exit (25.42s)
+      tl.to("#lr-rows", { scale: 1.01, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 23.8);
 
-      tl.set({}, {}, 23.28);
+      tl.set({}, {}, 25.42);
       window.__timelines["scene-list-reveal"] = tl;
     </script>
   </div>

@@ -221,6 +221,24 @@
       #tb-n2 { top: 47%; right: 0; transform: translateY(-50%); }
       #tb-n3 { bottom: 4%; left: 50%; transform: translateX(-50%); }
       #tb-n4 { top: 47%; left: 0; transform: translateY(-50%); }
+
+      .key-chip {
+        position: absolute;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 1700px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1.5px solid rgba(96, 165, 250, 0.55);
+        border-radius: 999px;
+        padding: 16px 38px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 30px;
+        color: #f1f5f9;
+        white-space: nowrap;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 40px rgba(59, 130, 246, 0.30);
+      }
     </style>
 
     <div id="bt-content">
@@ -305,6 +323,16 @@
         </div>
 
       </div>
+
+      <!-- Floating key-phrase chips — content events throughout the 67.8s scene -->
+      <div class="key-chip" id="bt-chip-1" style="opacity:0;visibility:hidden;">Type A &mdash; no AI Layer yet</div>
+      <div class="key-chip" id="bt-chip-2" style="opacity:0;visibility:hidden;">5 explorers for small, 8&ndash;10 for monorepos</div>
+      <div class="key-chip" id="bt-chip-3" style="opacity:0;visibility:hidden;">10 minutes &mdash; done forever</div>
+      <div class="key-chip" id="bt-chip-4" style="opacity:0;visibility:hidden;">Type B &mdash; AI Layer exists, new epic incoming</div>
+      <div class="key-chip" id="bt-chip-5" style="opacity:0;visibility:hidden;">Read the layer &middot; edit where reality drifted</div>
+      <div class="key-chip" id="bt-chip-6" style="opacity:0;visibility:hidden;">95% of the time you live in Type B</div>
+      <div class="key-chip" id="bt-chip-7" style="opacity:0;visibility:hidden;">Fill-gaps audit &mdash; same pattern, different goal</div>
+      <div class="key-chip" id="bt-chip-8" style="opacity:0;visibility:hidden;">Surface drift &middot; close gaps</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
@@ -417,6 +445,23 @@
       tl.to("#bt-typeb", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 61.60);
       tl.to("#bt-headline", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 64.10);
       tl.to("#bt-typea", { boxShadow: "0 0 60px rgba(96, 165, 250, 0.35)", duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 66.60);
+
+      // Floating key-phrase chips — distinct content events throughout the 67.8s scene
+      const chips = [
+        { sel: "#bt-chip-1", in_:  3.0, out:  9.0 },
+        { sel: "#bt-chip-2", in_: 10.0, out: 17.0 },
+        { sel: "#bt-chip-3", in_: 18.0, out: 25.0 },
+        { sel: "#bt-chip-4", in_: 29.0, out: 37.0 },
+        { sel: "#bt-chip-5", in_: 38.0, out: 46.0 },
+        { sel: "#bt-chip-6", in_: 47.0, out: 54.0 },
+        { sel: "#bt-chip-7", in_: 55.0, out: 61.0 },
+        { sel: "#bt-chip-8", in_: 62.0, out: 67.0 },
+      ];
+      chips.forEach(c => {
+        tl.fromTo(c.sel, { y: 12, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.45, ease: "back.out(1.4)" }, c.in_);
+        tl.to(c.sel, { y: -10, autoAlpha: 0, duration: 0.35, ease: "power2.in" }, c.out);
+      });
 
 
       tl.set({}, {}, 67.8);

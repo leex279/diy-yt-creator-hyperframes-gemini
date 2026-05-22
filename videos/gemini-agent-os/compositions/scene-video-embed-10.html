@@ -237,13 +237,13 @@
       }, 0.7);
  
       // Staggered columns reveals inside the placeholder wrapper
-      // 4.0s: Slide in Left Column Title
-      tl.fromTo("#vembed-title-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 4.0);
+      // 18.63s: Slide in Left Column Title (spoken: "Gemini Omni in Shorts Remix")
+      tl.fromTo("#vembed-title-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 18.63);
  
-      // 7.0s: Slide in Left Column Body
-      tl.fromTo("#vembed-body-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 7.0);
-
-      // 9.5s: Staggered reveal for Left Column Badges
+      // 20.25s: Slide in Left Column Body (spoken: "Shorts Remix")
+      tl.fromTo("#vembed-body-left", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 20.25);
+ 
+      // 22.25s: Staggered reveal for Left Column Badges
       tl.fromTo(".eb-left-badge", {
         scale: 0.7,
         opacity: 0,
@@ -256,15 +256,15 @@
         stagger: 0.12,
         ease: "back.out(1.4)",
         immediateRender: false
-      }, 9.5);
+      }, 22.25);
  
-      // 12.0s: Slide in Right Column Title
-      tl.fromTo("#vembed-title-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 12.0);
+      // 39.16s: Slide in Right Column Title (spoken: "expanded its likeness detection tool")
+      tl.fromTo("#vembed-title-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 39.16);
  
-      // 15.0s: Slide in Right Column Body
-      tl.fromTo("#vembed-body-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 15.0);
-
-      // 17.5s: Staggered reveal for Right Column Badges
+      // 41.37s: Slide in Right Column Body (spoken: "likeness detection")
+      tl.fromTo("#vembed-body-right", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 41.37);
+ 
+      // 43.37s: Staggered reveal for Right Column Badges
       tl.fromTo(".eb-right-badge", {
         scale: 0.7,
         opacity: 0,
@@ -277,105 +277,105 @@
         stagger: 0.12,
         ease: "back.out(1.4)",
         immediateRender: false
-      }, 17.5);
+      }, 43.37);
  
-      // 20.0s: Glow pulse the video editor frame wrapper
+      // 45.5s: Glow pulse the video editor frame wrapper
       tl.to("#video-frame-wrapper", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.6)",
         duration: 0.6
-      }, 20.0);
+      }, 45.5);
       tl.to("#video-frame-wrapper", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
         duration: 0.8
-      }, 20.6);
+      }, 46.1);
  
-      // 24.0s: Slow 3D tilt shift on frame wrapper to the left
+      // 48.0s: Slow 3D tilt shift on frame wrapper to the left
       tl.to("#video-frame-wrapper", {
         rotateY: -6,
         rotateX: 2,
         duration: 2.0,
         ease: "power1.inOut"
-      }, 24.0);
+      }, 48.0);
  
-      // 28.0s: Left column highlights with a red volumetric glow
+      // 51.0s: Left column highlights with a red volumetric glow (spoken: "Omni is rolling out...")
       tl.to("#vembed-title-left", {
         color: "#ff5252",
         textShadow: "0 0 30px rgba(234, 67, 53, 0.9)",
         scale: 1.05,
         duration: 0.5
-      }, 28.0);
+      }, 51.0);
       tl.to("#vembed-title-left", {
         color: "#ff8a80",
         textShadow: "0 0 15px rgba(234, 67, 53, 0.25)",
         scale: 1.0,
         duration: 0.6
-      }, 29.5);
+      }, 52.5);
  
-      // 32.0s: Right column highlights with a green volumetric glow
+      // 54.0s: Right column highlights with a green volumetric glow (spoken: "The platform is adding watermarks...")
       tl.to("#vembed-title-right", {
         color: "#69f0ae",
         textShadow: "0 0 30px rgba(52, 168, 83, 0.9)",
         scale: 1.05,
         duration: 0.5
-      }, 32.0);
+      }, 54.0);
       tl.to("#vembed-title-right", {
         color: "#a7f3d0",
         textShadow: "0 0 15px rgba(52, 168, 83, 0.25)",
         scale: 1.0,
         duration: 0.6
-      }, 33.5);
+      }, 55.5);
  
-      // 36.0s: Parallax zoom-in on the wrapper
+      // 57.0s: Parallax zoom-in on the wrapper
       tl.to("#video-frame-wrapper", {
         scale: 1.04,
         duration: 3.5,
         ease: "sine.inOut"
-      }, 36.0);
+      }, 57.0);
  
-      // 40.0s: Soft hover tilt shift to the right
+      // 58.0s: Soft hover tilt shift to the right
       tl.to("#video-frame-wrapper", {
         rotateY: 6,
         rotateX: -2,
         duration: 2.0,
         ease: "power1.inOut"
-      }, 40.0);
+      }, 58.0);
  
-      // 44.0s: Left Column Title highlights with a text glow sweep
+      // 58.5s: Left Column Title highlights with a text glow sweep
       tl.to("#vembed-title-left", {
         textShadow: "0 0 35px rgba(234, 67, 53, 0.9)",
         duration: 0.4
-      }, 44.0);
+      }, 58.5);
       tl.to("#vembed-title-left", {
         textShadow: "0 0 15px rgba(234, 67, 53, 0.25)",
         duration: 0.5
-      }, 45.0);
+      }, 59.0);
  
-      // 48.0s: Right Column Title highlights with a text glow sweep
+      // 59.5s: Right Column Title highlights with a text glow sweep
       tl.to("#vembed-title-right", {
         textShadow: "0 0 35px rgba(52, 168, 83, 0.9)",
         duration: 0.4
-      }, 48.0);
+      }, 59.5);
       tl.to("#vembed-title-right", {
         textShadow: "0 0 15px rgba(52, 168, 83, 0.25)",
         duration: 0.5
-      }, 49.0);
+      }, 60.0);
  
-      // 52.0s: Float wobble wrapper in Y
+      // 60.2s: Float wobble wrapper in Y
       tl.to("#video-frame-wrapper", {
         y: -15,
-        duration: 1.8,
+        duration: 0.8,
         ease: "sine.inOut"
-      }, 52.0);
+      }, 60.2);
  
-      // 56.0s: Settle wrapper back to center
+      // 61.0s: Settle wrapper back to center
       tl.to("#video-frame-wrapper", {
         rotateY: 0,
         rotateX: 0,
         scale: 1.0,
         y: 0,
-        duration: 2.2,
+        duration: 1.1,
         ease: "power2.out"
-      }, 56.0);
+      }, 61.0);
  
       window.__timelines["scene-video-embed-10"] = tl;
     </script>

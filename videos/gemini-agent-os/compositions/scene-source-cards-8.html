@@ -1,14 +1,10 @@
 <!--
-  scene-source-cards.html — 3 photo + overline + title cards in a row.
+  scene-source-cards-8.html — 3D Carousel of Workspace & Flow agent cards.
 
-  Each card: top half is a 16:9 photo crop, bottom half is a meta block
-  with mono overline + sans title. Cards stagger in with 0.5s offset and
-  rotate accents (blue → cyan → purple).
-
-  Operator drops their own assets/screenshots/source-{1,2,3}.png. Lint
-  warns (not errors) until they ship. Wrapper card div carries class="clip"
-  AND the inner <img> also carries class="clip" — both get framework
-  visibility control.
+  The cards are arranged in a 3D triangle space, rotating to focus the center
+  active card, which scales up to 1.15, blurs and dims the other cards to 0.85
+  scale, 0.25 opacity, and 6px blur. Each card displays high-retention keyword
+  and micro-UI visual overlays as they are spoken about.
 -->
 <template id="scene-source-cards-template">
   <div data-composition-id="scene-source-cards-8"
@@ -24,7 +20,7 @@
         padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
         display:flex; flex-direction:column;
         align-items:center; justify-content:center;
-        gap:48px;
+        gap:40px;
         box-sizing:border-box;
       }
       #scene-source-cards-content .header-block {
@@ -48,23 +44,49 @@
         letter-spacing: -1px;
         color: var(--text);
       }
-      #scene-source-cards-content .row {
-        display:flex; flex-direction:row;
-        align-items:stretch; justify-content:center;
-        gap: 32px;
-        perspective: 1200px;
+      
+      /* 3D Carousel Container and Track */
+      #carousel-container {
+        position: relative;
+        width: 100%;
+        height: 640px;
+        perspective: 2000px;
         transform-style: preserve-3d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
       }
-      .source-card {
+      #carousel-track {
+        position: absolute;
         width: 520px;
         height: 540px;
+        transform-style: preserve-3d;
+      }
+      .carousel-slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+      }
+      
+      .source-card {
+        width: 100%;
+        height: 100%;
         border-radius: 24px;
         overflow: hidden;
         display:flex; flex-direction:column;
         transform-style: preserve-3d;
         opacity: 0;
+        filter: blur(6px);
+        transform: scale(0.85);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.5);
       }
       .source-card .photo-wrap {
+        position: relative;
         width: 100%;
         height: 62%;
         overflow: hidden;
@@ -76,14 +98,12 @@
         object-fit: cover;
         transition: transform 0.8s ease;
       }
-      .source-card:hover .photo-wrap img {
-        transform: scale(1.05);
-      }
       .source-card .meta {
         padding: 24px 28px;
         display:flex; flex-direction:column;
         gap: 8px;
         flex: 1;
+        background: rgba(10, 11, 16, 0.95);
       }
       .source-card .meta .ovl {
         font-family: 'JetBrains Mono', monospace;
@@ -92,11 +112,8 @@
         letter-spacing: 0.14em;
         text-transform: uppercase;
       }
-      /* Brighter accent variants for AA contrast at 18px on translucent
-         gradient card backgrounds (the dim accents fail AA at small sizes).
-         Google palette → lightened tints: blue → #8AB4F8 (Google's mat-design
-         accent-light), red → #F6AEA8 (50% mix red+text), yellow stays as
-         FBBC04 (already AAA at 18px on dark). */
+      
+      /* Accent colors */
       .source-card.a .meta .ovl { color: #8AB4F8; }
       .source-card.b .meta .ovl { color: #F6AEA8; }
       .source-card.c .meta .ovl { color: #FBBC04; }
@@ -107,50 +124,221 @@
         line-height: 1.15;
         color: var(--text);
       }
+      
+      /* Visual Keyword Overlays */
+      .visual-aid-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      /* Card 1 - Workspace Workflows overlays */
+      #visual-aid-1 {
+        padding: 24px;
+        gap: 12px;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+      .task-chip {
+        background: rgba(10, 25, 47, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(66, 133, 244, 0.4);
+        box-shadow: 0 8px 24px rgba(66, 133, 244, 0.25);
+        border-radius: 12px;
+        padding: 10px 16px;
+        color: #8AB4F8;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      .task-chip .icon {
+        font-size: 18px;
+      }
+      
+      /* Card 2 - Google Pics overlays */
+      #visual-aid-2 {
+        position: absolute;
+        inset: 0;
+      }
+      .lasso-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      #lasso-path {
+        stroke-dasharray: 8, 8;
+        animation: hf_lasso_dash 15s linear infinite;
+      }
+      @keyframes hf_lasso_dash {
+        to {
+          stroke-dashoffset: -100;
+        }
+      }
+      .tool-panel {
+        position: absolute;
+        left: 20px;
+        bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .tool-item {
+        background: rgba(20, 10, 10, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 8px 14px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0;
+        transform: translateY(15px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      .tool-item .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+      }
+      
+      /* Card 3 - Google Flow overlays */
+      #visual-aid-3 {
+        position: absolute;
+        inset: 0;
+      }
+      .flow-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
     </style>
 
     <div id="scene-source-cards-content">
       <div class="header-block">
-        <div class="overline" id="src-overline">CHROME & FLOW</div>
-        <div class="headline" id="src-headline">STRUCTURED HANDLES FOR WEB AGENTS</div>
+        <div class="overline" id="src-overline">WORKSPACE & FLOW</div>
+        <div class="headline" id="src-headline">AGENTS IN GOOGLE WORKSPACE & FLOW</div>
       </div>
 
-      <div class="row">
-        <div class="source-card glass-premium glow-blue a" id="src-card-1">
-          <div class="photo-wrap" data-layout-allow-overflow="true">
-            <img id="src-img-1"
-                 src="assets/blog/io-collection.webp"
-                 alt="Source 1"
-                 data-layout-allow-overflow="true" />
+      <div id="carousel-container">
+        <div id="carousel-track">
+          
+          <!-- Slide 1 (Workspace Workflows) -->
+          <div class="carousel-slide" id="carousel-slide-1" style="transform: rotateY(0deg) translateZ(450px);">
+            <div class="source-card glass-premium glow-blue a" id="src-card-1">
+              <div class="photo-wrap" data-layout-allow-overflow="true">
+                <img id="src-img-1"
+                     src="assets/blog/workspace-workflows.png"
+                     alt="Source 1"
+                     data-layout-allow-overflow="true" />
+                
+                <!-- Visual aids stack for Card 1 -->
+                <div class="visual-aid-overlay" id="visual-aid-1">
+                  <div class="task-chip font-mono" id="chip-gmail">
+                    <span class="icon">✉️</span> Voice Task: Send Email
+                  </div>
+                  <div class="task-chip font-mono" id="chip-docs">
+                    <span class="icon">📄</span> Docs Summary: Draft Proposal
+                  </div>
+                  <div class="task-chip font-mono" id="chip-keep">
+                    <span class="icon">📝</span> Keep: Checklist Sync
+                  </div>
+                </div>
+              </div>
+              <div class="meta">
+                <div class="ovl">WORKSPACE WORKFLOWS</div>
+                <div class="ttl">Voice-first Gemini tasks in Gmail, Docs, and Keep</div>
+              </div>
+            </div>
           </div>
-          <div class="meta">
-            <div class="ovl">WEBMCP STANDARD</div>
-            <div class="ttl">Expose structured functions & HTML forms to browser agents</div>
+          
+          <!-- Slide 2 (Google Pics AI) -->
+          <div class="carousel-slide" id="carousel-slide-2" style="transform: rotateY(120deg) translateZ(450px);">
+            <div class="source-card glass-premium glow-red b" id="src-card-2">
+              <div class="photo-wrap" data-layout-allow-overflow="true">
+                <img id="src-img-2"
+                     src="assets/blog/google-pics-ai.png"
+                     alt="Source 2"
+                     data-layout-allow-overflow="true" />
+                
+                <!-- Visual aids for Card 2 -->
+                <div class="visual-aid-overlay" id="visual-aid-2">
+                  <svg class="lasso-svg" viewBox="0 0 520 334">
+                    <path id="lasso-path" d="M 140 190 Q 220 70 400 130 T 460 230 T 280 290 Z" fill="rgba(234, 67, 53, 0.15)" stroke="#EA4335" stroke-width="3" />
+                  </svg>
+                  <div class="tool-panel">
+                    <div class="tool-item" id="tool-segment">
+                      <span class="dot"></span> Segment Object ✂️
+                    </div>
+                    <div class="tool-item" id="tool-transform">
+                      <span class="dot"></span> Transform Element 🪄
+                    </div>
+                    <div class="tool-item" id="tool-translate">
+                      <span class="dot"></span> Translate Text 🌐
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="meta">
+                <div class="ovl">GOOGLE PICS AI</div>
+                <div class="ttl">Object segmentation & transformations in shared images</div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="source-card glass-premium glow-red b" id="src-card-2">
-          <div class="photo-wrap" data-layout-allow-overflow="true">
-            <img id="src-img-2"
-                 src="assets/blog/gemini-app-bento.webp"
-                 alt="Source 2"
-                 data-layout-allow-overflow="true" />
+          
+          <!-- Slide 3 (Google Flow Agent) -->
+          <div class="carousel-slide" id="carousel-slide-3" style="transform: rotateY(240deg) translateZ(450px);">
+            <div class="source-card glass-premium glow-yellow c" id="src-card-3">
+              <div class="photo-wrap" data-layout-allow-overflow="true">
+                <img id="src-img-3"
+                     src="assets/blog/google-flow-agent.png"
+                     alt="Source 3"
+                     data-layout-allow-overflow="true" />
+                
+                <!-- Visual aids graph for Card 3 -->
+                <div class="visual-aid-overlay" id="visual-aid-3">
+                  <svg class="flow-svg" viewBox="0 0 520 334">
+                    <!-- Connection Lines -->
+                    <line id="line-1" x1="260" y1="167" x2="130" y2="90" stroke="#FBBC04" stroke-width="2.5" />
+                    <line id="line-2" x1="260" y1="167" x2="390" y2="90" stroke="#FBBC04" stroke-width="2.5" />
+                    <line id="line-3" x1="260" y1="167" x2="260" y2="260" stroke="#FBBC04" stroke-width="2.5" />
+                    
+                    <!-- Nodes -->
+                    <circle id="node-center" cx="260" cy="167" r="44" fill="rgba(251, 188, 4, 0.25)" stroke="#FBBC04" stroke-width="2.5" />
+                    <circle id="node-dial" cx="130" cy="90" r="34" fill="rgba(10, 11, 16, 0.9)" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1.5" />
+                    <circle id="node-music" cx="390" cy="90" r="34" fill="rgba(10, 11, 16, 0.9)" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1.5" />
+                    <circle id="node-assets" cx="260" cy="260" r="34" fill="rgba(10, 11, 16, 0.9)" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1.5" />
+                    
+                    <!-- Node Text Labels -->
+                    <text id="txt-center" x="260" y="172" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle" font-family="'JetBrains Mono', monospace">FLOW AGENT</text>
+                    <text id="txt-dial" x="130" y="94" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle" font-family="'Inter', sans-serif">DIALOGUE 💬</text>
+                    <text id="txt-music" x="390" y="94" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle" font-family="'Inter', sans-serif">MUSIC 🎵</text>
+                    <text id="txt-assets" x="260" y="264" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle" font-family="'Inter', sans-serif">BATCH 📦</text>
+                  </svg>
+                </div>
+              </div>
+              <div class="meta">
+                <div class="ovl">GOOGLE FLOW AGENT</div>
+                <div class="ttl">Brainstorm dialogue, edit section music & batch assets</div>
+              </div>
+            </div>
           </div>
-          <div class="meta">
-            <div class="ovl">WEBMCP STANDARD</div>
-            <div class="ttl">Console & accessibility tree access in Chrome DevTools for Agents</div>
-          </div>
-        </div>
-        <div class="source-card glass-premium glow-yellow c" id="src-card-3">
-          <div class="photo-wrap" data-layout-allow-overflow="true">
-            <img id="src-img-3"
-                 src="assets/blog/tpu-8-chips.webp"
-                 alt="Source 3"
-                 data-layout-allow-overflow="true" />
-          </div>
-          <div class="meta">
-            <div class="ovl">WEBMCP STANDARD</div>
-            <div class="ttl">Brainstorm dialogue & edit video section-by-section in Google Flow</div>
-          </div>
+          
         </div>
       </div>
     </div>
@@ -163,198 +351,288 @@
         defaults: { ease: "power3.out", duration: 0.55 }
       });
 
+      // Header entrances
       tl.from("#src-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0);
       tl.from("#src-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
 
-      // 4.0s: Card 1 enters
-      tl.fromTo("#src-card-1", {
-        y: 60,
-        scale: 0.88,
-        rotationX: -8,
-        opacity: 0
+      // Carousel Container Entrances
+      tl.fromTo("#carousel-container", {
+        scale: 0.85,
+        opacity: 0,
+        y: 50
       }, {
-        y: 0,
         scale: 1.0,
-        rotationX: 0,
         opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "back.out(1.2)",
+        immediateRender: false
+      }, 1.0);
+
+      // 1.71s: Card 1 becomes active in 3D center
+      tl.fromTo("#src-card-1", {
+        scale: 0.85,
+        opacity: 0,
+        filter: "blur(6px)"
+      }, {
+        scale: 1.15,
+        opacity: 1,
+        filter: "blur(0px)",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.65)",
         duration: 0.8,
         ease: "back.out(1.4)",
         immediateRender: false
-      }, 4.0);
+      }, 1.71);
 
-      // 7.0s: Card 1 border glow pulse (blue)
-      tl.to("#src-card-1", {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.65)",
-        duration: 0.6
-      }, 7.0);
-      tl.to("#src-card-1", {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
-        duration: 0.8
-      }, 7.6);
+      // Introduce Card 2 and Card 3 as dimmed inactive slides in 3D space
+      tl.fromTo(["#src-card-2", "#src-card-3"], {
+        scale: 0.85,
+        opacity: 0,
+        filter: "blur(6px)"
+      }, {
+        scale: 0.85,
+        opacity: 0.25,
+        filter: "blur(6px)",
+        duration: 0.8,
+        ease: "power2.out",
+        immediateRender: false
+      }, 2.5);
 
-      // 10.0s: Card 1 photo zoom
+      // Workspace Workflows (Card 1) Visual Aid Overlay Entrances
+      tl.to("#visual-aid-1", { opacity: 1, duration: 0.4 }, 2.8);
+      tl.to("#chip-gmail", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.2)" }, 3.0);
+      tl.to("#chip-docs", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.2)" }, 4.0);
+      tl.to("#chip-keep", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.2)" }, 5.0);
+
+      // Card 1 photo zoom
       tl.to("#src-img-1", {
         scale: 1.08,
         duration: 1.5,
         ease: "sine.inOut"
-      }, 10.0);
+      }, 7.71);
 
-      // 13.5s: Highlight title text glow for Card 1 (blue)
+      // Highlight title text glow for Card 1 (blue)
       tl.to("#src-card-1 .meta .ttl", {
         color: "#8AB4F8",
         textShadow: "0 0 20px rgba(66, 133, 244, 0.65)",
         duration: 0.5
-      }, 13.5);
+      }, 9.0);
       tl.to("#src-card-1 .meta .ttl", {
         color: "var(--text)",
         textShadow: "none",
         duration: 0.6
-      }, 14.5);
+      }, 10.0);
 
-      // 17.0s: Card 2 enters
-      tl.fromTo("#src-card-2", {
-        y: 60,
-        scale: 0.88,
-        rotationX: -8,
-        opacity: 0
-      }, {
-        y: 0,
-        scale: 1.0,
-        rotationX: 0,
-        opacity: 1,
+      // 10.50s: Rotate to Card 2 (Google Pics AI)
+      // Carousel rotation to Slide 2
+      tl.to("#carousel-track", { rotateY: -120, duration: 0.85, ease: "power3.inOut" }, 10.50);
+      
+      // Card 1 dims down
+      tl.to("#src-card-1", {
+        scale: 0.85,
+        opacity: 0.25,
+        filter: "blur(6px)",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
         duration: 0.8,
-        ease: "back.out(1.4)",
-        immediateRender: false
-      }, 17.0);
-
-      // 20.0s: Card 2 border glow pulse (red)
+        ease: "power2.inOut"
+      }, 10.50);
+      
+      // Card 2 activates
       tl.to("#src-card-2", {
+        scale: 1.15,
+        opacity: 1,
+        filter: "blur(0px)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(234, 67, 53, 0.65)",
-        duration: 0.6
-      }, 20.0);
-      tl.to("#src-card-2", {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
-        duration: 0.8
-      }, 20.6);
+        duration: 0.8,
+        ease: "back.out(1.2)"
+      }, 10.50);
 
-      // 23.0s: Card 2 photo zoom
+      // Google Pics AI (Card 2) Visual Aid Overlay Entrances
+      tl.to("#visual-aid-2", { opacity: 1, duration: 0.4 }, 11.2);
+      
+      // SVG Lasso Draw Animation
+      tl.fromTo("#lasso-path", { strokeDashoffset: 1000, strokeDasharray: 1000 }, { strokeDashoffset: 0, duration: 2.2, ease: "sine.inOut" }, 11.5);
+      
+      // Editor tool items slide & activate stagger
+      tl.to("#tool-segment", {
+        y: 0,
+        opacity: 1,
+        borderColor: "rgba(234, 67, 53, 0.4)",
+        color: "#F6AEA8",
+        boxShadow: "0 4px 12px rgba(234, 67, 53, 0.25)",
+        duration: 0.5,
+        ease: "back.out(1.2)"
+      }, 11.5);
+      tl.to("#tool-segment .dot", { backgroundColor: "#EA4335", boxShadow: "0 0 8px #EA4335", duration: 0.3 }, 11.5);
+
+      tl.to("#tool-transform", {
+        y: 0,
+        opacity: 1,
+        borderColor: "rgba(234, 67, 53, 0.4)",
+        color: "#F6AEA8",
+        boxShadow: "0 4px 12px rgba(234, 67, 53, 0.25)",
+        duration: 0.5,
+        ease: "back.out(1.2)"
+      }, 13.5);
+      // Segment deactivated, Transform activated
+      tl.to("#tool-segment", { borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", boxShadow: "0 4px 12px rgba(0,0,0,0.3)", duration: 0.3 }, 13.5);
+      tl.to("#tool-segment .dot", { backgroundColor: "rgba(255,255,255,0.4)", boxShadow: "none", duration: 0.3 }, 13.5);
+      tl.to("#tool-transform .dot", { backgroundColor: "#EA4335", boxShadow: "0 0 8px #EA4335", duration: 0.3 }, 13.5);
+
+      tl.to("#tool-translate", {
+        y: 0,
+        opacity: 1,
+        borderColor: "rgba(234, 67, 53, 0.4)",
+        color: "#F6AEA8",
+        boxShadow: "0 4px 12px rgba(234, 67, 53, 0.25)",
+        duration: 0.5,
+        ease: "back.out(1.2)"
+      }, 15.5);
+      // Transform deactivated, Translate activated
+      tl.to("#tool-transform", { borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", boxShadow: "0 4px 12px rgba(0,0,0,0.3)", duration: 0.3 }, 15.5);
+      tl.to("#tool-transform .dot", { backgroundColor: "rgba(255,255,255,0.4)", boxShadow: "none", duration: 0.3 }, 15.5);
+      tl.to("#tool-translate .dot", { backgroundColor: "#EA4335", boxShadow: "0 0 8px #EA4335", duration: 0.3 }, 15.5);
+
+      // Card 2 photo zoom
       tl.to("#src-img-2", {
         scale: 1.08,
         duration: 1.5,
         ease: "sine.inOut"
-      }, 23.0);
+      }, 16.50);
 
-      // 26.5s: Highlight title text glow for Card 2 (red)
+      // Highlight title text glow for Card 2 (red)
       tl.to("#src-card-2 .meta .ttl", {
         color: "#F6AEA8",
         textShadow: "0 0 20px rgba(234, 67, 53, 0.65)",
         duration: 0.5
-      }, 26.5);
+      }, 18.50);
       tl.to("#src-card-2 .meta .ttl", {
         color: "var(--text)",
         textShadow: "none",
         duration: 0.6
-      }, 27.5);
+      }, 19.50);
 
-      // 30.0s: Card 3 enters
-      tl.fromTo("#src-card-3", {
-        y: 60,
-        scale: 0.88,
-        rotationX: -8,
-        opacity: 0
-      }, {
-        y: 0,
-        scale: 1.0,
-        rotationX: 0,
-        opacity: 1,
+      // 43.14s: Rotate to Card 3 (Google Flow Agent)
+      // Carousel rotation to Slide 3
+      tl.to("#carousel-track", { rotateY: -240, duration: 0.85, ease: "power3.inOut" }, 43.14);
+      
+      // Card 2 dims down
+      tl.to("#src-card-2", {
+        scale: 0.85,
+        opacity: 0.25,
+        filter: "blur(6px)",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
         duration: 0.8,
-        ease: "back.out(1.4)",
-        immediateRender: false
-      }, 30.0);
-
-      // 33.0s: Card 3 border glow pulse (yellow)
+        ease: "power2.inOut"
+      }, 43.14);
+      
+      // Card 3 activates
       tl.to("#src-card-3", {
+        scale: 1.15,
+        opacity: 1,
+        filter: "blur(0px)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(251, 188, 4, 0.65)",
-        duration: 0.6
-      }, 33.0);
-      tl.to("#src-card-3", {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
-        duration: 0.8
-      }, 33.6);
+        duration: 0.8,
+        ease: "back.out(1.2)"
+      }, 43.14);
 
-      // 36.0s: Card 3 photo zoom
+      // Google Flow Agent (Card 3) Visual Aid Overlay Entrances
+      tl.to("#visual-aid-3", { opacity: 1, duration: 0.4 }, 43.8);
+      
+      // Graph draw animations
+      // Central node & text scales in
+      tl.fromTo(["#node-center", "#txt-center"], { scale: 0, transformOrigin: "260px 167px" }, { scale: 1, duration: 0.6, ease: "back.out(1.2)" }, 44.2);
+      
+      // Staggered node connection drawing
+      // 1. Dialogue Node
+      tl.fromTo("#line-1", { strokeDashoffset: 200, strokeDasharray: 200 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, 45.8);
+      tl.fromTo(["#node-dial", "#txt-dial"], { scale: 0, transformOrigin: "130px 90px" }, { scale: 1, duration: 0.5, ease: "back.out(1.2)" }, 46.2);
+      
+      // 2. Music Node
+      tl.fromTo("#line-2", { strokeDashoffset: 200, strokeDasharray: 200 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, 47.8);
+      tl.fromTo(["#node-music", "#txt-music"], { scale: 0, transformOrigin: "390px 90px" }, { scale: 1, duration: 0.5, ease: "back.out(1.2)" }, 48.2);
+      
+      // 3. Assets Node
+      tl.fromTo("#line-3", { strokeDashoffset: 200, strokeDasharray: 200 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, 49.8);
+      tl.fromTo(["#node-assets", "#txt-assets"], { scale: 0, transformOrigin: "260px 260px" }, { scale: 1, duration: 0.5, ease: "back.out(1.2)" }, 50.2);
+
+      // Card 3 photo zoom
       tl.to("#src-img-3", {
         scale: 1.08,
         duration: 1.5,
         ease: "sine.inOut"
-      }, 36.0);
+      }, 49.14);
 
-      // 39.5s: Highlight title text glow for Card 3 (yellow)
+      // Highlight title text glow for Card 3 (yellow) before "section-by-section"
       tl.to("#src-card-3 .meta .ttl", {
         color: "#FBBC04",
         textShadow: "0 0 20px rgba(251, 188, 4, 0.65)",
         duration: 0.5
-      }, 39.5);
+      }, 56.0);
       tl.to("#src-card-3 .meta .ttl", {
         color: "var(--text)",
         textShadow: "none",
         duration: 0.6
-      }, 40.5);
+      }, 57.0);
 
-      // 43.0s: Subtle 3D tilt shift on all cards in row
-      tl.to(".row", {
+      // Dynamic tilt-shifts on the carousel container to simulate premium camera motion
+      tl.to("#carousel-container", {
         rotateY: -5,
         rotateX: 2,
         duration: 2.0,
         ease: "power2.inOut"
       }, 43.0);
 
-      // 47.0s: Row scaling zoom
-      tl.to(".row", {
+      // Container scale zoom
+      tl.to("#carousel-container", {
         scale: 1.04,
         duration: 3.5,
         ease: "sine.inOut"
       }, 47.0);
 
-      // 52.0s: Tilt shift card row back to the right
-      tl.to(".row", {
+      // Tilt shift container back to the right
+      tl.to("#carousel-container", {
         rotateY: 5,
         rotateX: -2,
         duration: 2.5,
         ease: "power2.inOut"
       }, 52.0);
 
-      // 57.0s: Glow wave pulse on Card 1 & Card 2
+      // Glow wave pulses on Card 1 & Card 2, settling back to their permanent colored glows
       tl.to(["#src-card-1", "#src-card-2"], {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255,255,255,0.2)",
-        duration: 0.6,
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 60px rgba(255,255,255,0.45)",
+        duration: 0.55,
         stagger: 0.15
       }, 57.0);
-      tl.to(["#src-card-1", "#src-card-2"], {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
-        duration: 0.8,
-        stagger: 0.15
+      tl.to("#src-card-1", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.65)",
+        duration: 0.8
       }, 57.6);
+      tl.to("#src-card-2", {
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(234, 67, 53, 0.65)",
+        duration: 0.8
+      }, 57.75);
 
-      // 61.0s: Glow wave pulse on Card 3
+      // Glow wave pulse on Card 3, settling back to its permanent yellow glow
       tl.to("#src-card-3", {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255,255,255,0.2)",
-        duration: 0.6
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 60px rgba(255,255,255,0.45)",
+        duration: 0.5
       }, 61.0);
       tl.to("#src-card-3", {
-        boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
-        duration: 0.8
-      }, 61.6);
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(251, 188, 4, 0.65)",
+        duration: 0.8,
+        overwrite: "auto"
+      }, 61.8);
 
-      // 65.0s: Wobble float in Y direction on all cards
-      tl.to(".row", {
+      // Wobble float in Y direction on carousel container
+      tl.to("#carousel-container", {
         y: -15,
         duration: 1.8,
         ease: "sine.inOut"
       }, 65.0);
 
-      // 68.0s: Settle row back to center
-      tl.to(".row", {
+      // Settle container back to center
+      tl.to("#carousel-container", {
         y: 0,
         scale: 1.0,
         rotateY: 0,

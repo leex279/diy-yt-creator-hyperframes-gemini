@@ -29,7 +29,7 @@ def strip_punctuation(word: str) -> str:
 
 async def synthesize(text: str, voice: str, rate: str, out_mp3: Path) -> list[dict]:
     """Run edge-tts streaming, capture WordBoundary events, write MP3, return words."""
-    communicate = edge_tts.Communicate(text, voice, rate=rate)
+    communicate = edge_tts.Communicate(text, voice, rate=rate, boundary="WordBoundary")
     words: list[dict] = []
     with open(out_mp3, "wb") as f:
         async for chunk in communicate.stream():

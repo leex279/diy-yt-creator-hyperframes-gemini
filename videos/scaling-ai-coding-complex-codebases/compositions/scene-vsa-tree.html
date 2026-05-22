@@ -85,6 +85,28 @@
       }
       #vsa-tree .row.feature .path { color: var(--accent); font-weight: 600; }
       #vsa-tree .row.indent .path { padding-left: 0; }
+
+      /* Floating key-phrase chips — new content events every ~5s during the long tail */
+      .key-chip {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 1600px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1.5px solid rgba(96, 165, 250, 0.55);
+        border-radius: 999px;
+        padding: 18px 42px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 32px;
+        color: #f1f5f9;
+        letter-spacing: -0.005em;
+        white-space: nowrap;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.55),
+          0 0 40px rgba(59, 130, 246, 0.30);
+      }
     </style>
 
     <div id="vsa-content">
@@ -106,6 +128,14 @@
         <div class="row" id="vsa-r6" style="opacity:0;visibility:hidden;"><span class="path">&#9500;&#9472;&#9472; service.py</span><span class="label">business logic</span></div>
         <div class="row" id="vsa-r7" style="opacity:0;visibility:hidden;"><span class="path">&#9492;&#9472;&#9472; tests/</span><span class="label">all tests for this feature</span></div>
       </div>
+
+      <!-- Floating key-phrase chips — new content events through the scene's 61s -->
+      <div class="key-chip" id="vsa-chip-1" style="opacity:0;visibility:hidden;">Organized by layer &mdash; 4 folders, 1 feature</div>
+      <div class="key-chip" id="vsa-chip-2" style="opacity:0;visibility:hidden;">Tokens burn at every hop</div>
+      <div class="key-chip" id="vsa-chip-3" style="opacity:0;visibility:hidden;">One folder. One feature. Everything it needs.</div>
+      <div class="key-chip" id="vsa-chip-4" style="opacity:0;visibility:hidden;">Load the slice &mdash; full feature in context</div>
+      <div class="key-chip" id="vsa-chip-5" style="opacity:0;visibility:hidden;">Start with the next new feature</div>
+      <div class="key-chip" id="vsa-chip-6" style="opacity:0;visibility:hidden;">Six months later &mdash; quietly migrated</div>
 
     </div>
 
@@ -174,6 +204,22 @@
       tl.to(["#vsa-r1","#vsa-r2","#vsa-r3","#vsa-r4","#vsa-r5","#vsa-r6","#vsa-r7"],
         { scale: 1.015, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.06,
           transformOrigin: "left center" }, 59.0);
+
+      // Floating key-phrase chips — new content events every ~8-10s
+      // Each chip fades in, holds, fades out before the next arrives.
+      const chips = [
+        { sel: "#vsa-chip-1", in_:  3.5, out:  9.5 },   // "Organized by layer..."
+        { sel: "#vsa-chip-2", in_: 10.5, out: 17.5 },   // "Tokens burn at every hop"
+        { sel: "#vsa-chip-3", in_: 19.0, out: 27.0 },   // "One folder. One feature."
+        { sel: "#vsa-chip-4", in_: 36.0, out: 43.5 },   // "Load the slice"
+        { sel: "#vsa-chip-5", in_: 44.5, out: 52.0 },   // "Start with the next new feature"
+        { sel: "#vsa-chip-6", in_: 53.0, out: 60.5 },   // "Quietly migrated"
+      ];
+      chips.forEach(c => {
+        tl.fromTo(c.sel, { y: 12, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.45, ease: "back.out(1.4)" }, c.in_);
+        tl.to(c.sel, { y: -10, autoAlpha: 0, duration: 0.35, ease: "power2.in" }, c.out);
+      });
 
       // Extend timeline to full slot duration
       tl.set({}, {}, 61.2);

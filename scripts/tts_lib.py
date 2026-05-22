@@ -51,13 +51,22 @@ _SENTENCE_BOUNDARY = re.compile(r'(?<=[.!?])(\s+)(?=[A-Z0-9"\'])')
 _SECONDARY_BOUNDARY = re.compile(r'(?<=[;:])\s+')
 
 
-def split_into_chunks(text: str, min_chars: int = 40, max_chars: int = 400) -> list[str]:
+def split_into_chunks(text: str, min_chars: int = 10, max_chars: int = 400) -> list[str]:
     """Split text into sentence-sized chunks for per-chunk TTS generation.
 
-    Sentences shorter than ``min_chars`` merge forward (TTS prosody degrades
-    on tiny fragments). Sentences longer than ``max_chars`` split on ``;`` or
-    ``:`` to keep per-chunk regen cheap. Abbreviations from
-    ``_ABBREVIATIONS`` are protected from false splits.
+    One-sentence-per-chunk is the default. Sentences shorter than
+    ``min_chars`` (very short fragments like "OK.", "Six.") merge forward
+    because TTS prosody degrades on tiny fragments. Sentences longer than
+    ``max_chars`` split on ``;`` or ``:`` to keep per-chunk regen cheap.
+    Abbreviations from ``_ABBREVIATIONS`` are protected from false splits.
+
+    Default ``min_chars=10`` (was 40 pre-2026-05-19): the 40-char threshold
+    grouped many natural sentence breaks into single chunks, which made
+    ElevenLabs read them back-to-back with no breath between periods.
+    Lowering to 10 keeps tiny fragments grouped (they still need prosody
+    context) but lets natural sentence boundaries become chunk boundaries
+    where the fixed inter-chunk silence applies. Pair with
+    ``DEFAULT_INTER_CHUNK_SILENCE_MS=380`` for natural sentence-end breath.
     """
     sentinel = "\x00"
     protected = text
@@ -156,8 +165,12 @@ def clean_sync_data(words_data: list[dict]) -> list[dict]:
 # Audio I/O
 # ---------------------------------------------------------------------------
 
-# Calibrated against single-call ElevenLabs output — see module docstring.
-DEFAULT_INTER_CHUNK_SILENCE_MS = 650
+# Inter-chunk silence in milliseconds. Calibrated against single-call ElevenLabs
+# output — see module docstring. Lowered from 650 → 380 (2026-05-19) to match
+# the new one-sentence-per-chunk default (split_into_chunks min_chars=10). The
+# old 650ms value made paragraph-level breaks land at every sentence boundary
+# under the new chunking and sounded draggy; 380ms = natural sentence-end breath.
+DEFAULT_INTER_CHUNK_SILENCE_MS = 380
 
 # ElevenLabs output format → PCM sample rate mapping. The Pro-tier-only
 # pcm_44100 default stays backwards-compatible; per-creator .env files can opt
@@ -409,6 +422,7 @@ def generate_chunked(
     force: bool = False,
     log: callable = print,
     output_format: str = DEFAULT_OUTPUT_FORMAT,
+    min_chunk_chars: int = 10,
 ) -> dict:
     """Full chunked-generation pipeline with auto-detect delta regen.
 
@@ -428,7 +442,7 @@ def generate_chunked(
     chunks_dir.mkdir(parents=True, exist_ok=True)
     history_path = history_path_for(transcript_json)
 
-    new_chunks = split_into_chunks(text)
+    new_chunks = split_into_chunks(text, min_chars=min_chunk_chars)
     if not new_chunks:
         raise ValueError("split_into_chunks returned no chunks for input text")
 

@@ -35,27 +35,66 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | audio/sfx/sonic-logo.mp3 |  | _TBD_ (added by sync — please fill) |
 | audio/sfx/spring-pop.mp3 |  | _TBD_ (added by sync — please fill) |
 | audio/sfx/strike-cross.mp3 |  | _TBD_ (added by sync — please fill) |
+| audio/voice/hostinger-midroll-narration-transcript.json |  | _TBD_ (added by sync — please fill) |
+| audio/voice/hostinger-midroll-narration.wav |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/cinema-title-slam/block.html |  | _TBD_ (added by sync — please fill) |
 | lib/blocks/dynamous-endcard/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/dynamous-midroll/block.html |  | _TBD_ (added by sync — please fill) |
 | lib/blocks/dynamous-module-interstitial/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/hostinger-banner-vertical/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/hostinger-midroll/block.html |  | _TBD_ (added by sync — please fill) |
+| lib/blocks/ranking-podium-rise/block.html |  | _TBD_ (added by sync — please fill) |
 | lib/blocks/stat-pill-row/block.html |  | _TBD_ (added by sync — please fill) |
 | lib/blocks/timeline-cards/block.html |  | _TBD_ (added by sync — please fill) |
 | lib/blocks/url-cta/block.html |  | _TBD_ (added by sync — please fill) |
 | lib/components/ambient-radial/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/bar-fill-pulse/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/burst-rays/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/camera-flash-pop/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/checkbox-tick/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/cinematic-letterbox-reveal/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/circular-progress-wave/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/confetti-burst/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/counter-blast/component.html |  | _TBD_ (added by sync — please fill) |
 | lib/components/dynamous-badge/component.html |  | _TBD_ (added by sync — please fill) |
 | lib/components/dynamous-data/dynamous-modules.json |  | _TBD_ (added by sync — please fill) |
 | lib/components/dynamous-discount-bubble/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/ember-rise/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/film-strip-reveal/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/glitch-text-reveal/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/heartbeat-pulse/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/highlight-marker-sweep/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/hostinger-banner/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/kinetic-typography-stack/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/lightning-strike/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/liquid-reveal/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/magnet-snap-letters/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/notification-toast-stack/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/portal-ring/component.html |  | _TBD_ (added by sync — please fill) |
 | lib/components/progress-bar/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/rubber-band-snap/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/shockwave-ring/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/subscribe-banner/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/support-banner/component.html |  | _TBD_ (added by sync — please fill) |
 | lib/components/top-banner-wordmark/component.html |  | _TBD_ (added by sync — please fill) |
+| lib/components/typewriter-line/component.html |  | _TBD_ (added by sync — please fill) |
 | lib/effects/hero-slam-shake.js |  | _TBD_ (added by sync — please fill) |
 | lib/effects/phase-crossfade.js |  | _TBD_ (added by sync — please fill) |
+| lib/effects/shake-reject.js |  | _TBD_ (added by sync — please fill) |
 | lib/effects/stat-pill-pop.js |  | _TBD_ (added by sync — please fill) |
 | lib/tokens/anthropic-dark.css |  | _TBD_ (added by sync — please fill) |
 | lib/tokens/claude-code-dark.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/dynamous-deep-navy.css |  | _TBD_ (added by sync — please fill) |
 | lib/tokens/dynamous-modern.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/editorial-short.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/google-cinematic.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/long-form-anthropic.css |  | _TBD_ (added by sync — please fill) |
 | lib/tokens/long-form-standard.css |  | _TBD_ (added by sync — please fill) |
+| lib/tokens/openai-mono.css |  | _TBD_ (added by sync — please fill) |
 | lib/tokens/standard-short.css |  | _TBD_ (added by sync — please fill) |
 | logos/aider-logo.png | AI coding | Aider — terminal-based AI pair programmer |
 | logos/aisi-logo.svg | AI safety | _TBD_ (UK AI Safety Institute? — please confirm) |
+| logos/akamai-logo.svg |  | _TBD_ (added by sync — please fill) |
 | logos/amd-logo.svg | Hardware | AMD — chipmaker (CPUs, GPUs) |
 | logos/android-logo.svg | Platform | Android operating system |
 | logos/anthropic-logo-dark.svg | AI lab | Anthropic wordmark — dark variant (use on light canvases) |
@@ -72,6 +111,7 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/canva-logo.png | Design | Canva — design / decks / social graphics |
 | logos/chatgpt-logo.svg | AI product | ChatGPT (OpenAI consumer product) |
 | logos/chrome-logo.svg | Browser | Google Chrome |
+| logos/cisco-logo.svg |  | _TBD_ (added by sync — please fill) |
 | logos/claude-code-logo-dark.svg | AI coding | Claude Code wordmark — dark variant |
 | logos/claude-code-logo-light.svg | AI coding | Claude Code wordmark — light variant |
 | logos/claude-icon.svg | AI product | Claude icon (square mark, not full wordmark) |
@@ -81,6 +121,7 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/cloudflare-logo-color.png | Cloud | Cloudflare — color/orange variant |
 | logos/cloudflare-logo-white.png | Cloud | Cloudflare — white variant (for dark canvases) |
 | logos/cloudflare-logo.png | Cloud | Cloudflare — default variant |
+| logos/conductor-logo.png |  | _TBD_ (added by sync — please fill) |
 | logos/cursor-logo.png | AI coding | Cursor — AI-first IDE (VS Code fork) |
 | logos/datadog-logo.png | Observability | Datadog — APM / monitoring / logs |
 | logos/deepseek-logo.png | AI lab | DeepSeek — Chinese AI lab (DeepSeek-V3, R1) |
@@ -90,7 +131,9 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/dynamous-ai-mastery-white.svg |  | _TBD_ (added by sync — please fill) |
 | logos/dynamous-logo.png |  | _TBD_ (added by sync — please fill) |
 | logos/earendil-logo.png | Project | _TBD_ (Eärendil — please confirm) |
+| logos/emergent-logo-white.svg |  | _TBD_ (added by sync — please fill) |
 | logos/flask-logo.png | Web framework | Flask — Python web microframework |
+| logos/fortinet-logo.svg |  | _TBD_ (added by sync — please fill) |
 | logos/gemini-logo.svg | AI product | Google Gemini |
 | logos/gemma-logo.png | AI model | Google Gemma — open-weight model family |
 | logos/gitea-logo.png | DevOps | Gitea — self-hosted git service |
@@ -101,6 +144,15 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/google-g-logo.png | Brand | Google "G" mark only |
 | logos/google-logo.png | Brand | Google full wordmark |
 | logos/groq-logo.png | Hardware / inference | Groq — LPU inference provider |
+| logos/hostinger-brand/Hostinger_Horizontal_Black.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Horizontal_Purple.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Horizontal_White.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Icon_Black.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Icon_Purple.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Icon_White.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Vertical_Black.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Vertical_Purple.svg |  | _TBD_ (added by sync — please fill) |
+| logos/hostinger-brand/Hostinger_Vertical_White.svg |  | _TBD_ (added by sync — please fill) |
 | logos/hostinger-logo.png | Hosting | Hostinger — web hosting |
 | logos/huggingface-logo.png | AI infrastructure | Hugging Face — model hub |
 | logos/jetbrains-logo.png | DevTools | JetBrains — IntelliJ / PyCharm / WebStorm parent |
@@ -123,7 +175,11 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/openclaw-logo-text.svg | Project | _TBD_ (Openclaw — text variant — please confirm) |
 | logos/openclaw-logo.png | Project | _TBD_ (Openclaw — please confirm) |
 | logos/opencode-logo.png | AI coding | OpenCode — open-source AI coding agent |
+| logos/openrouter-logo-light.svg |  | _TBD_ (added by sync — please fill) |
+| logos/oracle-logo.svg |  | _TBD_ (added by sync — please fill) |
+| logos/palo-alto-networks-logo.svg |  | _TBD_ (added by sync — please fill) |
 | logos/qwen-logo.png | AI model | Qwen — Alibaba's open-weight model family |
+| logos/reliaquest-logo-light.svg |  | _TBD_ (added by sync — please fill) |
 | logos/remotion-logo.png | Video framework | Remotion — React-based programmatic video |
 | logos/revolut-logo.png | Fintech | Revolut |
 | logos/salesforce-logo.png | SaaS | Salesforce — CRM |
@@ -141,6 +197,10 @@ Single source of truth for what's in `shared/` and what each asset is for. Auto-
 | logos/wordpress-logo.png | CMS | WordPress |
 | logos/yc-logo.png | Brand | Y Combinator |
 | logos/yc-logo.svg | Brand | Y Combinator — vector |
+| screenshots/hostinger/ai-website-builder.png |  | _TBD_ (added by sync — please fill) |
+| screenshots/hostinger/openclaw.png |  | _TBD_ (added by sync — please fill) |
+| screenshots/hostinger/vps-hosting.png |  | _TBD_ (added by sync — please fill) |
+| screenshots/hostinger/web-hosting.png |  | _TBD_ (added by sync — please fill) |
 <!-- ASSETS:END -->
 
 ## Adding a new asset manually

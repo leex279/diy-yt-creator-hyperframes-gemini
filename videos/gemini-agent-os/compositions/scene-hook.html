@@ -239,6 +239,20 @@
            STAGE 1: GOOGLE I/O 2026 OPENER + MAP
            ========================================== -->
       <div id="stage-opener" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;">
+        <!-- AI Credit Badge (Top Left) -->
+        <div id="ai-credit-badge" class="glass-premium" style="position: absolute; top: 44px; left: 64px; display: flex; align-items: center; gap: 16px; padding: 12px 24px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15); font-family: 'JetBrains Mono', monospace; font-size: 18px; letter-spacing: 0.5px; opacity: 0; transform-style: preserve-3d; backface-visibility: hidden; flex-shrink: 0; box-sizing: border-box; background-image: linear-gradient(135deg, rgba(12, 12, 14, 0.65) 0%, rgba(255, 255, 255, 0.04) 100%)">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" style="filter: drop-shadow(0 0 12px #00E5FF); flex-shrink: 0;">
+            <path d="M12 2C12 7.5 7.5 12 2 12C7.5 12 12 16.5 12 22C12 16.5 16.5 12 22 12C16.5 12 12 7.5 12 2Z" fill="url(#badge-gemini-grad)"/>
+            <defs>
+              <linearGradient id="badge-gemini-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00E5FF" />
+                <stop offset="50%" stop-color="#A259FF" />
+                <stop offset="100%" stop-color="#FF5B99" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span style="color: rgba(255, 255, 255, 0.85); font-weight: 500;">Created using <span style="background: linear-gradient(135deg, #00E5FF, #4285F4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">Antigravity 2.0</span> + <span style="background: linear-gradient(135deg, #9BC5FF, #A259FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">Gemini 3.5 Flash</span></span>
+        </div>
         <img src="assets/google-logo.png" style="height:72px; opacity:0.95; filter:drop-shadow(0 0 25px rgba(255,255,255,0.15));" id="opener-logo" />
         <div class="overline-premium" id="opener-overline">GOOGLE I/O 2026</div>
         <h1 class="headline-premium" id="opener-headline">
@@ -627,6 +641,7 @@
       
       // Snappy spring entrance for the opening stage blocks
       tl.fromTo("#opener-logo", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, 0.09);
+      tl.fromTo("#ai-credit-badge", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, 0.15);
       tl.fromTo("#opener-overline", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, 0.25);
       tl.fromTo("#opener-headline", { y: 40, opacity: 0, filter: "blur(10px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.9 }, 0.42);
 
@@ -643,10 +658,10 @@
         z: 0,
         duration: 0.85,
         ease: "back.out(1.2)"
-      }, 1.77);
+      }, 1.91);
 
       // Red strikeout line draws across text at 2.10s
-      tl.fromTo("#strikethrough-line", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.inOut" }, 2.10);
+      tl.fromTo("#strikethrough-line", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.inOut" }, 2.65);
 
       // Warning card flies off rapidly at 3.10s
       tl.to("#opener-not-model-card", {
@@ -657,7 +672,7 @@
         filter: "blur(12px)",
         duration: 0.6,
         ease: "power3.in"
-      }, 3.10);
+      }, 3.30);
 
       // Staggered entry for app connection grid icons at 3.37s
       tl.fromTo("#opener-app-grid .app-icon", {
@@ -673,7 +688,7 @@
         stagger: 0.1,
         duration: 0.85,
         ease: "back.out(1.6)"
-      }, 3.37);
+      }, 3.50);
 
       // Central core pop entrance at 4.15s (SFX: spring-pop.mp3)
       tl.fromTo("#opener-gemini-core-container", {
@@ -686,7 +701,7 @@
         z: 0,
         duration: 0.9,
         ease: "back.out(1.5)"
-      }, 4.15);
+      }, 4.40);
 
       // Active border glowing laser connection rays to app icons
       tl.to("#opener-gemini-core", {
@@ -695,14 +710,14 @@
         duration: 0.6,
         yoyo: true,
         repeat: 3
-      }, 4.80);
+      }, 5.00);
 
       // Staggered color lighting of the service app nodes on core ray connect
-      tl.to("#app-search", { boxShadow: "0 15px 40px rgba(66, 133, 244, 0.6)", borderColor: "rgba(66, 133, 244, 0.7)", scale: 1.05, duration: 0.5 }, 5.10);
-      tl.to("#app-chrome", { boxShadow: "0 15px 40px rgba(234, 67, 53, 0.6)", borderColor: "rgba(234, 67, 53, 0.7)", scale: 1.05, duration: 0.5 }, 5.30);
-      tl.to("#app-android", { boxShadow: "0 15px 40px rgba(52, 168, 83, 0.6)", borderColor: "rgba(52, 168, 83, 0.7)", scale: 1.05, duration: 0.5 }, 5.50);
-      tl.to("#app-youtube", { boxShadow: "0 15px 40px rgba(234, 67, 53, 0.6)", borderColor: "rgba(234, 67, 53, 0.7)", scale: 1.05, duration: 0.5 }, 5.70);
-      tl.to("#app-workspace", { boxShadow: "0 15px 40px rgba(0, 229, 255, 0.6)", borderColor: "rgba(0, 229, 255, 0.7)", scale: 1.05, duration: 0.5 }, 5.90);
+      tl.to("#app-search", { boxShadow: "0 15px 40px rgba(66, 133, 244, 0.6)", borderColor: "rgba(66, 133, 244, 0.7)", scale: 1.05, duration: 0.5 }, 5.60);
+      tl.to("#app-chrome", { boxShadow: "0 15px 40px rgba(234, 67, 53, 0.6)", borderColor: "rgba(234, 67, 53, 0.7)", scale: 1.05, duration: 0.5 }, 5.60);
+      tl.to("#app-android", { boxShadow: "0 15px 40px rgba(52, 168, 83, 0.6)", borderColor: "rgba(52, 168, 83, 0.7)", scale: 1.05, duration: 0.5 }, 6.50);
+      tl.to("#app-youtube", { boxShadow: "0 15px 40px rgba(234, 67, 53, 0.6)", borderColor: "rgba(234, 67, 53, 0.7)", scale: 1.05, duration: 0.5 }, 6.20);
+      tl.to("#app-workspace", { boxShadow: "0 15px 40px rgba(0, 229, 255, 0.6)", borderColor: "rgba(0, 229, 255, 0.7)", scale: 1.05, duration: 0.5 }, 6.50);
 
       // Stage 1 Fade out to transition
       tl.to("#stage-opener", {
@@ -711,7 +726,7 @@
         y: -50,
         duration: 0.75,
         ease: "power2.inOut"
-      }, 7.20);
+      }, 7.60);
 
 
       // ==========================================
@@ -723,7 +738,7 @@
         opacity: 1,
         duration: 0.6,
         pointerEvents: "auto"
-      }, 7.80);
+      }, 8.40);
 
       tl.fromTo("#paradigm-shift-warning", {
         opacity: 0,
@@ -732,7 +747,7 @@
         opacity: 1,
         y: 0,
         duration: 0.6
-      }, 8.20);
+      }, 8.70);
 
       // Chatbot window slides in at 10.39s (SFX: whoosh)
       tl.fromTo("#chatbot-window", {
@@ -749,7 +764,7 @@
         ease: "back.out(0.8)"
       }, 10.39);
 
-      // Chat user bubble types/slides in at 11.34s (SFX: pop)
+      // Chat user bubble types/slides in at 12.15s (SFX: pop)
       tl.fromTo(".chat-bubble-user", {
         y: 40,
         opacity: 0,
@@ -760,9 +775,9 @@
         scale: 1,
         duration: 0.6,
         ease: "back.out(1.2)"
-      }, 11.34);
+      }, 12.15);
 
-      // AI legacy response bubble slides/types in at 12.50s (SFX: pop)
+      // AI legacy response bubble slides/types in at 13.87s (SFX: pop)
       tl.fromTo(".chat-bubble-ai", {
         y: 40,
         opacity: 0,
@@ -773,9 +788,9 @@
         scale: 1,
         duration: 0.6,
         ease: "back.out(1.2)"
-      }, 12.50);
+      }, 13.87);
 
-      // "PARADIGM SHIFT" warning indicator lights up at 15.01s
+      // "PARADIGM SHIFT" warning indicator lights up at 17.28s (aligned to "entire paradigm")
       tl.to("#paradigm-shift-warning", {
         text: "PARADIGM SHIFT INBOUND",
         color: "#EA4335",
@@ -783,13 +798,13 @@
         duration: 0.45,
         yoyo: true,
         repeat: 3
-      }, 15.01);
+      }, 17.28);
 
-      // Neon-red diagonal slash strikes at 15.70s
+      // Neon-red diagonal slash strikes at 19.31s (right before "dismantled" slam)
       tl.fromTo("#dismantle-slash", 
         { rotation: -15, scaleX: 0 },
         { scaleX: 1, duration: 0.3, ease: "power2.out" },
-        15.70
+        19.31
       );
 
       // Chatbot Window Tilted / Stressed by laser slice
@@ -800,20 +815,21 @@
         boxShadow: "0 0 50px rgba(234,67,53,0.35)",
         borderColor: "rgba(234,67,53,0.5)",
         duration: 0.6
-      }, 15.85);
+      }, 19.45);
 
       // ──────────────────────────────────────────
-      // BLOCKBUSTER 3D EXPLOSIVE SHATTERING (17.26s) (SFX: impact-slam, screen-shake)
+      // BLOCKBUSTER 3D EXPLOSIVE SHATTERING (19.51s) (SFX: impact-slam, screen-shake)
       // ──────────────────────────────────────────
       
       // 1. Instantly hide regular window and show shattered shards
-      tl.to("#chatbot-window", { opacity: 0, duration: 0 }, 17.26);
-      tl.to("#chatbot-shattered-grid", { opacity: 1, duration: 0 }, 17.26);
+      tl.to("#chatbot-window", { opacity: 0, duration: 0 }, 19.51);
+      tl.to("#chatbot-shattered-grid", { opacity: 1, duration: 0 }, 19.51);
 
       // 2. Perform camera shake on the parent stage container
-      tl.to("#stage-chatbot", { x: "-=25", y: "+=15", duration: 0.04, yoyo: true, repeat: 12 }, 17.26);
+      tl.to("#stage-chatbot", { x: "-=25", y: "+=15", duration: 0.04, yoyo: true, repeat: 12 }, 19.51);
 
-      // 3. Explode individual shards outwards with deterministic 3D trajectories
+
+      // 3. Explode individual shards outwards with deterministic 3D trajectories (starting at 19.51s slam)
       const shards = document.querySelectorAll(".shard");
       shards.forEach((shard, idx) => {
         const row = Math.floor(idx / 4);
@@ -839,30 +855,30 @@
           opacity: 0, filter: "blur(12px)", scale: 0.35,
           duration: 1.45,
           ease: "power2.out"
-        }, 17.26);
+        }, 19.51);
       });
 
-      // Clear slash and warnings
-      tl.to("#dismantle-slash", { opacity: 0, duration: 0.2 }, 17.26);
-      tl.to("#paradigm-shift-warning", { opacity: 0, scale: 0.5, filter: "blur(10px)", duration: 0.45 }, 17.26);
+      // Clear slash and warnings at 19.51s
+      tl.to("#dismantle-slash", { opacity: 0, duration: 0.2 }, 19.51);
+      tl.to("#paradigm-shift-warning", { opacity: 0, scale: 0.5, filter: "blur(10px)", duration: 0.45 }, 19.51);
 
-      // Stage 2 Fade out fully
+      // Stage 2 Fade out fully at 21.00s to allow shatter dispersion
       tl.to("#stage-chatbot", {
         opacity: 0,
         pointerEvents: "none",
         duration: 0.65
-      }, 18.00);
+      }, 21.00);
 
 
       // ==========================================
       // STAGE 3: THE 6 AGENTIC PILLARS (3D CAROUSEL)
       // ==========================================
       
-      // Stage 3 Header Entrance at 18.28s
+      // Stage 3 Header Entrance at 21.00s
       tl.to("#stage-agents", {
         opacity: 1,
         duration: 0.6
-      }, 18.00);
+      }, 21.00);
 
       tl.fromTo("#stage-agents-header", 
         { y: 30, opacity: 0 },
@@ -872,10 +888,10 @@
           duration: 0.8,
           ease: "power3.out"
         }, 
-        18.28
+        21.30
       );
 
-      // 3D Carousel container slides in from bottom with perspective tilt at 20.50s
+      // 3D Carousel container slides in from bottom with perspective tilt at 22.50s
       tl.fromTo("#agents-carousel-container", 
         { y: 100, rotateX: -15, opacity: 0 },
         {
@@ -885,9 +901,10 @@
           duration: 1.25,
           ease: "back.out(0.8)"
         }, 
-        20.50
+        22.50
       );
 
+      // Carousel active slide helper function
       // Carousel active slide helper function
       function focusSlide(activeIndex) {
         for (let i = 1; i <= 6; i++) {
@@ -899,7 +916,7 @@
               filter: "blur(0px)",
               duration: 0.8,
               overwrite: "auto"
-            }, activeIndex === 1 ? 22.17 : activeIndex === 2 ? 23.23 : activeIndex === 3 ? 25.42 : activeIndex === 4 ? 27.11 : activeIndex === 5 ? 28.97 : 31.15);
+            }, activeIndex === 1 ? 24.16 : activeIndex === 2 ? 25.44 : activeIndex === 3 ? 27.87 : activeIndex === 4 ? 29.99 : activeIndex === 5 ? 32.46 : 34.81);
           } else {
             tl.to(inner, {
               scale: 0.85,
@@ -907,38 +924,38 @@
               filter: "blur(6px)",
               duration: 0.8,
               overwrite: "auto"
-            }, activeIndex === 1 ? 22.17 : activeIndex === 2 ? 23.23 : activeIndex === 3 ? 25.42 : activeIndex === 4 ? 27.11 : activeIndex === 5 ? 28.97 : 31.15);
+            }, activeIndex === 1 ? 24.16 : activeIndex === 2 ? 25.44 : activeIndex === 3 ? 27.87 : activeIndex === 4 ? 29.99 : activeIndex === 5 ? 32.46 : 34.81);
           }
         }
       }
 
       // Carousel rotations syncing with the 6 named pillars
       
-      // 1. Models that Act (22.17s)
-      tl.to("#carousel-track", { rotateY: 0, duration: 0.85, ease: "power3.inOut" }, 22.17);
+      // 1. Models that Act (24.16s)
+      tl.to("#carousel-track", { rotateY: 0, duration: 0.85, ease: "power3.inOut" }, 24.16);
       focusSlide(1);
 
-      // 2. Consumer Agents (23.23s)
-      tl.to("#carousel-track", { rotateY: -60, duration: 0.85, ease: "power3.inOut" }, 23.23);
+      // 2. Consumer Agents (25.44s)
+      tl.to("#carousel-track", { rotateY: -60, duration: 0.85, ease: "power3.inOut" }, 25.44);
       focusSlide(2);
 
-      // 3. Coding Agents (25.42s)
-      tl.to("#carousel-track", { rotateY: -120, duration: 0.85, ease: "power3.inOut" }, 25.42);
+      // 3. Coding Agents (27.87s)
+      tl.to("#carousel-track", { rotateY: -120, duration: 0.85, ease: "power3.inOut" }, 27.87);
       focusSlide(3);
 
-      // 4. Search Agents (27.11s)
-      tl.to("#carousel-track", { rotateY: -180, duration: 0.85, ease: "power3.inOut" }, 27.11);
+      // 4. Search Agents (29.99s)
+      tl.to("#carousel-track", { rotateY: -180, duration: 0.85, ease: "power3.inOut" }, 29.99);
       focusSlide(4);
 
-      // 5. Creator Tools (28.97s)
-      tl.to("#carousel-track", { rotateY: -240, duration: 0.85, ease: "power3.inOut" }, 28.97);
+      // 5. Creator Tools (32.46s)
+      tl.to("#carousel-track", { rotateY: -240, duration: 0.85, ease: "power3.inOut" }, 32.46);
       focusSlide(5);
 
-      // 6. Trust Tools (31.15s)
-      tl.to("#carousel-track", { rotateY: -300, duration: 0.85, ease: "power3.inOut" }, 31.15);
+      // 6. Trust Tools (34.81s)
+      tl.to("#carousel-track", { rotateY: -300, duration: 0.85, ease: "power3.inOut" }, 34.81);
       focusSlide(6);
 
-      // Stage 3 Exit: Carousel slides collapse and fade out at 33.49s ("pieces are connected")
+      // Stage 3 Exit: Carousel slides collapse and fade out at 37.67s ("pieces are connected")
       tl.to("#agents-carousel-container", {
         scale: 0.65,
         rotateX: 45,
@@ -946,24 +963,24 @@
         y: -100,
         duration: 0.95,
         ease: "power2.in"
-      }, 33.49);
+      }, 37.67);
 
       tl.to("#stage-agents-header", {
         opacity: 0,
         y: -60,
         filter: "blur(8px)",
         duration: 0.75
-      }, 33.49);
+      }, 37.67);
 
       tl.to("#stage-agents", {
         opacity: 0,
         pointerEvents: "none",
         duration: 0.85
-      }, 33.49);
+      }, 37.67);
 
 
       // ==========================================
-      // STAGE 4: UNIFIED AGENT OS BENTO (33.48s - 39.43s)
+      // STAGE 4: UNIFIED AGENT OS BENTO (37.68s - 39.43s)
       // ==========================================
       
       // Stage 4 Fade In
@@ -971,13 +988,13 @@
         opacity: 1,
         pointerEvents: "auto",
         duration: 0.6
-      }, 33.50);
+      }, 37.68);
 
-      // Dash headers enter at 33.60s
-      tl.fromTo("#dash-overline", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65 }, 33.60);
-      tl.fromTo("#dash-headline", { y: -30, opacity: 0, filter: "blur(8px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.75 }, 33.85);
+      // Dash headers enter at 37.78s
+      tl.fromTo("#dash-overline", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65 }, 37.78);
+      tl.fromTo("#dash-headline", { y: -30, opacity: 0, filter: "blur(8px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.75 }, 38.03);
 
-      // Bento Panel pop spring entry at 34.20s
+      // Bento Panel pop spring entry at 38.38s
       tl.fromTo("#dash-bento", {
         scale: 0.82,
         opacity: 0,
@@ -988,27 +1005,27 @@
         rotateX: 0,
         duration: 1.15,
         ease: "back.out(1.15)"
-      }, 34.20);
+      }, 38.38);
 
-      // Circular SVG Progress loader fill at 35.23s ("emergence") (SFX: scale-slam)
+      // Circular SVG Progress loader fill at 42.13s ("emergence") (SFX: scale-slam)
       tl.fromTo("#dash-circle-progress", {
         strokeDashoffset: 251.2
       }, {
         strokeDashoffset: 0,
-        duration: 3.2,
+        duration: 2.6,
         ease: "power1.inOut"
-      }, 35.23);
+      }, 42.13);
 
       // Synchronized counter text percentage from 0 to 100%
       const counterVal = { val: 0 };
       tl.to(counterVal, {
         val: 100,
-        duration: 3.2,
+        duration: 2.6,
         ease: "power1.inOut",
         onUpdate: () => {
           document.getElementById("dash-sync-pct").innerText = Math.round(counterVal.val) + "%";
         }
-      }, 35.23);
+      }, 42.13);
 
       // Workflow Bento Image slow Ken Burns float
       tl.fromTo("#dash-workflow-img", {
@@ -1017,7 +1034,7 @@
         scale: 1.18,
         duration: 5.0,
         ease: "sine.inOut"
-      }, 34.40);
+      }, 38.57);
 
       // Dashboard 3D camera sway to feel extremely state-of-the-art
       tl.to("#stage-dashboard", {
@@ -1025,14 +1042,14 @@
         rotateX: 2.5,
         duration: 2.2,
         ease: "sine.inOut"
-      }, 35.00);
+      }, 39.17);
 
       tl.to("#stage-dashboard", {
         rotateY: 4,
         rotateX: -2.5,
         duration: 2.2,
         ease: "sine.inOut"
-      }, 37.20);
+      }, 41.37);
 
       window.__timelines["scene-hook"] = tl;
     </script>

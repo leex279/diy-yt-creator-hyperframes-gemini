@@ -16,7 +16,37 @@
               font-family:'Inter', sans-serif; color:var(--text);">
 
     <style>
+      /* ── Background ─────────────────────────────────── */
+      #vembed-bg {
+        position: absolute; inset: 0; z-index: 0;
+      }
+      #vembed-bg-img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transform-origin: center center;
+      }
+      #vembed-bg-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(8, 8, 12, 0.88) 0%,
+          rgba(10, 10, 18, 0.70) 50%,
+          rgba(8, 8, 12, 0.88) 100%
+        );
+      }
+      #vembed-bg-grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(66,133,244,0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(66,133,244,0.04) 1px, transparent 1px);
+        background-size: 80px 80px;
+        opacity: 0.6;
+      }
+
       #scene-video-embed-content {
+        position: relative; z-index: 1;
         width:100%; height:100%;
         display:flex; flex-direction:column;
         align-items:center; justify-content:center;
@@ -309,6 +339,19 @@
       }
     </style>
  
+    <!-- Background -->
+    <div id="vembed-bg">
+      <img id="vembed-bg-img"
+           class="clip"
+           data-start="0"
+           data-duration="55.79"
+           data-track-index="0"
+           src="assets/studio-ui-bg.png"
+           alt="Google AI Studio Workspace Backdrop" />
+      <div id="vembed-bg-overlay"></div>
+      <div id="vembed-bg-grid"></div>
+    </div>
+
     <div id="scene-video-embed-content" class="perspective-stage">
       <div class="header-block">
         <div class="overline" id="vembed-overline">GOOGLE AI STUDIO</div>
@@ -399,6 +442,14 @@
         paused: true,
         defaults: { ease: "power3.out", duration: 0.6 }
       });
+
+      // ── BG REVEAL ───────────────────────────────────────────
+      // Slow Ken Burns zoom across full 55.79s
+      tl.fromTo("#vembed-bg-img",
+        { opacity: 0, scale: 1.0 },
+        { opacity: 0.22, scale: 1.22, duration: 55.79, ease: "power1.out", immediateRender: false },
+        0
+      );
  
       // 0.0s - 2.0s: Heading elements entrance
       tl.from("#vembed-overline",       { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.1);
@@ -430,7 +481,7 @@
       // DETAILED VISUAL CHOREOGRAPHY SYNC'D TO NARRATION TIMINGS
       // ========================================================
  
-      // 10.04s: "deep Workspace integration"
+      // 8.04s: "deep Workspace integration"
       tl.to("#vembed-side-item-1", { 
         opacity: 1, 
         x: 8, 
@@ -438,10 +489,10 @@
         backgroundColor: "rgba(66, 133, 244, 0.15)",
         borderColor: "rgba(66, 133, 244, 0.45)",
         duration: 0.4 
-      }, 10.04);
-      tl.to("#list-bullet-1", { backgroundColor: "#8ab4f8", boxShadow: "0 0 12px #8ab4f8", duration: 0.4 }, 10.04);
+      }, 8.04);
+      tl.to("#list-bullet-1", { backgroundColor: "#8ab4f8", boxShadow: "0 0 12px #8ab4f8", duration: 0.4 }, 8.04);
  
-      // 11.56s: "Antigravity export"
+      // 9.46s: "Antigravity export"
       tl.to("#vembed-side-item-2", { 
         opacity: 1, 
         x: 8, 
@@ -449,10 +500,10 @@
         backgroundColor: "rgba(168, 85, 247, 0.15)",
         borderColor: "rgba(168, 85, 247, 0.45)",
         duration: 0.4 
-      }, 11.56);
-      tl.to("#list-bullet-2", { backgroundColor: "#d2a8ff", boxShadow: "0 0 12px #d2a8ff", duration: 0.4 }, 11.56);
+      }, 9.46);
+      tl.to("#list-bullet-2", { backgroundColor: "#d2a8ff", boxShadow: "0 0 12px #d2a8ff", duration: 0.4 }, 9.46);
  
-      // 12.96s: "custom asset generation with Nano Banana"
+      // 12.68s: "custom asset generation with Nano Banana" — ElevenLabs: "Nano Banana" local 12.683s
       tl.to("#vembed-side-item-3", { 
         opacity: 1, 
         x: 8, 
@@ -460,10 +511,10 @@
         backgroundColor: "rgba(251, 188, 5, 0.12)",
         borderColor: "rgba(251, 188, 5, 0.4)",
         duration: 0.4 
-      }, 12.96);
-      tl.to("#list-bullet-3", { backgroundColor: "#fdd663", boxShadow: "0 0 12px #fdd663", duration: 0.4 }, 12.96);
+      }, 12.68);
+      tl.to("#list-bullet-3", { backgroundColor: "#fdd663", boxShadow: "0 0 12px #fdd663", duration: 0.4 }, 12.68);
  
-      // 15.52s: "a new in-preview edit tool"
+      // 14.13s: "a new in-preview edit tool" — ElevenLabs: "in-preview" local 14.134s
       tl.to("#vembed-side-item-4", { 
         opacity: 1, 
         x: 8, 
@@ -471,10 +522,10 @@
         backgroundColor: "rgba(234, 67, 53, 0.15)",
         borderColor: "rgba(234, 67, 53, 0.45)",
         duration: 0.4 
-      }, 15.52);
-      tl.to("#list-bullet-4", { backgroundColor: "#ff8a80", boxShadow: "0 0 12px #ff8a80", duration: 0.4 }, 15.52);
+      }, 14.13);
+      tl.to("#list-bullet-4", { backgroundColor: "#ff8a80", boxShadow: "0 0 12px #ff8a80", duration: 0.4 }, 14.13);
  
-      // 17.38s: "an AI Studio mobile app"
+      // 16.61s: "an AI Studio mobile app" — ElevenLabs: "mobile" local 16.607s
       tl.to("#vembed-side-item-5", { 
         opacity: 1, 
         x: 8, 
@@ -482,10 +533,10 @@
         backgroundColor: "rgba(0, 188, 212, 0.15)",
         borderColor: "rgba(0, 188, 212, 0.45)",
         duration: 0.4 
-      }, 17.38);
-      tl.to("#list-bullet-5", { backgroundColor: "#80deea", boxShadow: "0 0 12px #80deea", duration: 0.4 }, 17.38);
-
-      // 19.08s: "and native Android building"
+      }, 16.61);
+      tl.to("#list-bullet-5", { backgroundColor: "#80deea", boxShadow: "0 0 12px #80deea", duration: 0.4 }, 16.61);
+ 
+      // 18.24s: "and native Android building" — ElevenLabs: "Android" local 18.244s
       tl.to("#vembed-side-item-6", { 
         opacity: 1, 
         x: 8, 
@@ -493,16 +544,16 @@
         backgroundColor: "rgba(52, 168, 83, 0.15)",
         borderColor: "rgba(52, 168, 83, 0.45)",
         duration: 0.4 
-      }, 19.08);
-      tl.to("#list-bullet-6", { backgroundColor: "#81c995", boxShadow: "0 0 12px #81c995", duration: 0.4 }, 19.08);
+      }, 18.24);
+      tl.to("#list-bullet-6", { backgroundColor: "#81c995", boxShadow: "0 0 12px #81c995", duration: 0.4 }, 18.24);
  
-      // 21.41s: "generate production-quality native Kotlin code" (Glow IDE & start typing)
+      // 20.63s: "generate production-quality native Kotlin code" — ElevenLabs: "generate" local 20.633s
       tl.to("#vembed-code-panel", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.65), 0 0 40px rgba(138, 180, 248, 0.25)",
         borderColor: "rgba(138, 180, 248, 0.4)",
         duration: 0.6
-      }, 21.41);
-
+      }, 20.63);
+ 
       // Stagger reveal of Kotlin code lines simulating real-time AI code generation
       for (let i = 1; i <= 10; i++) {
         tl.to(`#line-${i}`, {
@@ -510,74 +561,74 @@
           y: 0,
           duration: 0.35,
           ease: "power2.out"
-        }, 21.5 + (i * 0.25));
+        }, 20.63 + (i * 0.25));
       }
-
-      // 27.05s: "without requiring any local SDK setup" (Highlight Green status badge in editor header)
+ 
+      // 26.95s: "without requiring any local SDK setup" — ElevenLabs: "without" local 26.949s
       // Resolved GSAP-CSS scale conflict by using direct fromTo
       tl.fromTo("#sdk-badge", 
         { scale: 0.8, opacity: 0 },
         { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" },
-        27.05
+        26.95
       );
       tl.to("#vembed-code-panel", {
         borderColor: "rgba(52, 168, 83, 0.4)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.65), 0 0 45px rgba(52, 168, 83, 0.25)",
         duration: 0.5
-      }, 27.05);
+      }, 26.95);
       tl.to("#vembed-code-panel", {
         borderColor: "rgba(255, 255, 255, 0.1)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
         duration: 0.8
-      }, 28.5);
-
-      // 30.58s: "deploy their first two apps to Google Cloud" (Slide in bottom callout)
+      }, 28.44);
+ 
+      // 30.86s: "deploy their first two apps to Google Cloud" — ElevenLabs: "deploy" local 30.858s
       // Resolved GSAP-CSS translateY conflict by using direct fromTo
       tl.fromTo("#vembed-callout",
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
-        30.58
+        30.86
       );
-
-      // 34.20s: "at no cost and without a credit card" (Pulse/Glow gold highlights in callout)
+ 
+      // 33.35s: "at no cost and without a credit card" — ElevenLabs: "at" local 33.354s
       tl.to(".highlight-gold", {
         fontWeight: "900",
         duration: 0.3
-      }, 34.20);
+      }, 33.35);
       tl.to("#vembed-callout", {
         boxShadow: "0 0 25px rgba(251, 188, 5, 0.2)",
         borderColor: "rgba(251, 188, 5, 0.4)",
         duration: 0.4
-      }, 34.20);
+      }, 33.35);
       tl.to("#vembed-callout", {
         boxShadow: "0 0 15px rgba(52, 168, 83, 0.08)",
         borderColor: "rgba(52, 168, 83, 0.25)",
         duration: 0.6
-      }, 35.5);
-
-      // 36.58s: "exported to Antigravity" (Trigger floating deployment dashboard)
+      }, 34.64);
+ 
+      // 38.09s: "exported to Antigravity" — ElevenLabs: "exported" local 38.089s
       // Resolved GSAP-CSS translate conflict by using direct fromTo with xPercent/yPercent
       tl.fromTo("#vembed-export-panel",
         { xPercent: -50, yPercent: -50, scale: 0.9, y: 0, opacity: 0 },
         { xPercent: -50, yPercent: -50, scale: 1, y: -40, opacity: 1, pointerEvents: "auto", duration: 0.7, ease: "back.out(1.2)" },
-        36.58
+        38.09
       );
-
-      // 37.70s - 39.30s: "with conversation history, project files, and secrets preserved" (Stagger item checks)
-      tl.to("#export-item-1", { opacity: 1, duration: 0.4 }, 37.70);
-      tl.to("#export-item-2", { opacity: 1, duration: 0.4 }, 38.50);
-      tl.to("#export-item-3", { opacity: 1, duration: 0.4 }, 39.30);
-
-      // 40.50s: Blinking loop animation for export production footer status
+ 
+      // 39.67s - 42.40s: "with conversation history, project files, and secrets preserved" — ElevenLabs list items
+      tl.to("#export-item-1", { opacity: 1, duration: 0.4 }, 39.67);
+      tl.to("#export-item-2", { opacity: 1, duration: 0.4 }, 41.08);
+      tl.to("#export-item-3", { opacity: 1, duration: 0.4 }, 42.40);
+ 
+      // Blinking loop animation for export production footer status
       tl.to("#export-status-footer", {
         boxShadow: "0 0 20px rgba(52, 168, 83, 0.4)",
         borderColor: "rgba(52, 168, 83, 0.5)",
         duration: 0.4,
         yoyo: true,
         repeat: 3
-      }, 40.50);
-
-      // 43.37s: "no-install, browser-based path" (Volumetric stage zoom and pulse)
+      }, 43.20);
+ 
+      // 45.17s: "no-install, browser-based path" — ElevenLabs: "no-install" local 45.171s
       tl.to("#video-frame-wrapper", {
         scale: 1.03,
         rotateY: 5,
@@ -585,9 +636,9 @@
         boxShadow: "0 30px 70px rgba(0,0,0,0.65), 0 0 50px rgba(168, 85, 247, 0.25)",
         duration: 2.0,
         ease: "power2.inOut"
-      }, 43.37);
-
-      // 49.66s: "needs to turn into a real, managed codebase" (Settle cleanly for transition)
+      }, 45.17);
+ 
+      // 51.48s: "needs to turn into a real, managed codebase" — ElevenLabs: "needs" local 51.475s
       tl.to("#video-frame-wrapper", {
         scale: 1.0,
         rotateY: 0,
@@ -595,13 +646,13 @@
         boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
         duration: 1.5,
         ease: "power3.out"
-      }, 49.66);
+      }, 51.48);
       tl.to("#vembed-export-panel", {
         scale: 0.95,
         opacity: 0,
         duration: 0.6
-      }, 51.0);
-
+      }, 52.82);
+ 
       window.__timelines["scene-video-embed"] = tl;
     </script>
   </div>

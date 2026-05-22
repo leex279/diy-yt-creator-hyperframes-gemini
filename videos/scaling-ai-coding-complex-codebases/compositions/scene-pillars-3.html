@@ -99,6 +99,24 @@
         color: var(--muted);
         margin-top: -8px;
       }
+    
+      .key-chip {
+        position: absolute;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 1700px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1.5px solid rgba(96, 165, 250, 0.55);
+        border-radius: 999px;
+        padding: 16px 38px;
+        font-family: 'Montserrat', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 30px;
+        color: #f1f5f9;
+        white-space: nowrap;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 40px rgba(59, 130, 246, 0.30);
+      }
     </style>
 
     <div id="pillars-content">
@@ -126,6 +144,13 @@
       </div>
     </div>
 
+      <!-- Floating key-phrase chips -->
+      <div class="key-chip" id="pl-chip-1" style="opacity:0;visibility:hidden;">Three moves &middot; one ticket</div>
+      <div class="key-chip" id="pl-chip-2" style="opacity:0;visibility:hidden;">Plan &mdash; spec in its own session</div>
+      <div class="key-chip" id="pl-chip-3" style="opacity:0;visibility:hidden;">Implement &mdash; fresh session, only the plan</div>
+      <div class="key-chip" id="pl-chip-4" style="opacity:0;visibility:hidden;">Validate &mdash; lint, type-check, e2e, manual</div>
+      <div class="key-chip" id="pl-chip-5" style="opacity:0;visibility:hidden;">Five steps. Not eight. Not twelve.</div>
+      <div class="key-chip" id="pl-chip-6" style="opacity:0;visibility:hidden;">Anything past five is over-engineering</div>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script>
       window.__timelines = window.__timelines || {};
@@ -175,6 +200,21 @@
       // Extend timeline to full slot duration
       // tail-pacing bridge beats — ensure no gap > 3s through scene end
       tl.to("#pl-p1", { scale: 1.025, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 1 }, 24.50);
+      // Floating key-phrase chips — new content events through the scene
+      const _chips_pl_chip = [
+        { sel: "#pl-chip-1", in_: 1.50, out: 6.00 },
+        { sel: "#pl-chip-2", in_: 6.50, out: 11.00 },
+        { sel: "#pl-chip-3", in_: 11.50, out: 15.50 },
+        { sel: "#pl-chip-4", in_: 16.00, out: 20.00 },
+        { sel: "#pl-chip-5", in_: 20.50, out: 24.00 },
+        { sel: "#pl-chip-6", in_: 24.50, out: 27.20 },
+      ];
+      _chips_pl_chip.forEach(c => {
+        tl.fromTo(c.sel, { y: 12, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.45, ease: "back.out(1.4)" }, c.in_);
+        tl.to(c.sel, { y: -10, autoAlpha: 0, duration: 0.35, ease: "power2.in" }, c.out);
+      });
+
 
       tl.set({}, {}, 27.6);
       window.__timelines["scene-pillars-3"] = tl;

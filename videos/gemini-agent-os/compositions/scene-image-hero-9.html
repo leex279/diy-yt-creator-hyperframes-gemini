@@ -192,14 +192,13 @@
       .function { color: #d2a8ff; }
       .params { color: #ffa657; }
     </style>
- 
     <div id="scene-image-hero-bg">
       <img class="clip"
            id="image-hero-bg-photo"
            data-start="0"
-           data-duration="60"
+           data-duration="80"
            data-track-index="0"
-           src="assets/blog/io-collection.webp"
+           src="assets/blog/gemini-omni.webp"
            alt="Hero backdrop" />
       <div class="overlay-gradient"></div>
     </div>
@@ -250,19 +249,19 @@
         defaults: { ease: "power3.out", duration: 0.6 }
       });
  
-      // 0.0s: Stretch backdrop photo zoom over the full duration (56.56s)
+      // 0.0s: Stretch backdrop photo zoom over the full duration (80.0s)
       tl.fromTo("#image-hero-bg-photo", {
         scale: 1.0,
         opacity: 0
       }, {
         scale: 1.15,
         opacity: 0.22,
-        duration: 56.56,
+        duration: 80.0,
         ease: "linear",
         immediateRender: false
       }, 0);
  
-      // 0.3s: 3.5D spatial depth entry for the glass card
+      // 0.50s: 3.5D spatial depth entry for the glass card (narration starts immediately)
       tl.fromTo("#image-hero-card", {
         x: -80,
         rotateY: 18,
@@ -278,19 +277,19 @@
         duration: 0.9,
         ease: "back.out(1.3)",
         immediateRender: false
-      }, 0.3);
- 
+      }, 0.50);
+  
       // Staggered reveals of elements inside the card
-      // 0.5s: Overline slides in
-      tl.from("#image-hero-overline", { y: 15, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.5);
- 
-      // 3.5s: Headline slides in
-      tl.from("#image-hero-headline", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 3.5);
- 
-      // 7.0s: Body slides in
-      tl.from("#image-hero-body",     { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 7.0);
- 
-      // 10.0s: JS Code Editor panel slides in from the right with a 3D rotation
+      // Overline slides in at 0.70s
+      tl.from("#image-hero-overline", { y: 15, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.70);
+  
+      // Headline slides in at 2.73s
+      tl.from("#image-hero-headline", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 2.73);
+  
+      // Body slides in at 4.73s
+      tl.from("#image-hero-body",     { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 4.73);
+  
+      // JS Code Editor panel slides in from the right with a 3D rotation at 6.23s
       tl.fromTo("#image-hero-code", {
         x: 100,
         opacity: 0,
@@ -304,9 +303,9 @@
         duration: 1.2,
         ease: "power3.out",
         immediateRender: false
-      }, 10.0);
-
-      // 11.5s: Technical badges stagger fade/scale in
+      }, 6.23);
+ 
+      // Technical badges stagger fade/scale in at 8.23s
       tl.fromTo(".mcp-badge", {
         scale: 0.7,
         opacity: 0,
@@ -319,98 +318,98 @@
         stagger: 0.15,
         ease: "back.out(1.5)",
         immediateRender: false
-      }, 11.5);
-
-      // 13.0s: Card border volumetric glow pulse (blue/cyan)
+      }, 8.23);
+  
+      // Card border volumetric glow pulse (blue/cyan) at 9.73s
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(66, 133, 244, 0.6)",
         duration: 0.6
-      }, 13.0);
+      }, 9.73);
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
         duration: 0.8
-      }, 13.6);
- 
-      // 17.0s: Slow 3D tilt shift of the card to the right
+      }, 10.33);
+  
+      // Slow 3D tilt shift of the card to the right at 12.23s
       tl.to("#image-hero-card", {
         rotateY: 6,
         rotateX: -2,
         duration: 2.0,
         ease: "power1.inOut"
-      }, 17.0);
- 
-      // 21.0s: Highlight key terms in the headline (text-shadow sweep)
+      }, 12.23);
+  
+      // 29.46s: Sweep text shadow to highlight DevTools (spoken: "Chrome DevTools for Agents")
       tl.to("#image-hero-headline", {
         color: "#8AB4F8",
         textShadow: "0 0 25px rgba(66, 133, 244, 0.6)",
         duration: 0.4
-      }, 21.0);
+      }, 29.46);
       tl.to("#image-hero-headline", {
         color: "var(--text)",
         textShadow: "none",
         duration: 0.5
-      }, 22.5);
- 
-      // 25.0s: Card volumetric glow pulse (green/yellow)
+      }, 30.96);
+  
+      // Card volumetric glow pulse (green/yellow) at 33.0s
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(52, 168, 83, 0.6)",
         duration: 0.6
-      }, 25.0);
+      }, 33.0);
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
         duration: 0.8
-      }, 25.6);
- 
-      // 29.0s: Soft hover tilt shift of the card to the left
+      }, 33.6);
+  
+      // Soft hover tilt shift of the card to the left at 36.0s
       tl.to("#image-hero-card", {
         rotateY: -6,
         rotateX: 3,
         duration: 2.0,
         ease: "power1.inOut"
-      }, 29.0);
- 
-      // 33.0s: Highlight key term in body "WebMCP" (glows yellow/red)
+      }, 36.0);
+  
+      // 42.91s: Highlight key term in body "WebMCP" (spoken: "Prompt API is now stable")
       tl.to("#image-hero-body", {
         color: "#FBBC05",
         textShadow: "0 0 15px rgba(251, 188, 5, 0.4)",
         duration: 0.4
-      }, 33.0);
+      }, 42.91);
       tl.to("#image-hero-body", {
         color: "var(--text-secondary)",
         textShadow: "none",
         duration: 0.5
-      }, 34.5);
- 
-      // 37.0s: Parallax card zoom
+      }, 44.41);
+  
+      // 45.0s: Parallax card zoom
       tl.to("#image-hero-card", {
         scale: 1.04,
         duration: 3.5,
         ease: "sine.inOut"
-      }, 37.0);
- 
-      // 41.0s: Float wobble card in Y direction
+      }, 45.0);
+  
+      // 47.0s: Float wobble card in Y direction
       tl.to("#image-hero-card", {
         y: -15,
         duration: 1.8,
         ease: "sine.inOut"
-      }, 41.0);
+      }, 47.0);
       tl.to("#image-hero-card", {
         y: 0,
         duration: 1.8,
         ease: "sine.inOut"
-      }, 42.8);
- 
-      // 45.0s: Volumetric glow wave on card border
+      }, 48.8);
+  
+      // 50.90s: Volumetric glow wave on card border
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 45px rgba(255, 255, 255, 0.2)",
         duration: 0.6
-      }, 45.0);
+      }, 50.90);
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
         duration: 0.8
-      }, 45.6);
- 
-      // 49.0s: Settle card back to center
+      }, 51.50);
+  
+      // 54.16s: Settle card back to center
       tl.to("#image-hero-card", {
         rotateY: 0,
         rotateX: 0,
@@ -418,17 +417,17 @@
         y: 0,
         duration: 2.0,
         ease: "power2.out"
-      }, 49.0);
- 
-      // 53.0s: Final soft border glow wave
+      }, 54.16);
+  
+      // Final soft border glow wave at 58.0s
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 35px rgba(66, 133, 244, 0.3)",
         duration: 0.6
-      }, 53.0);
+      }, 58.0);
       tl.to("#image-hero-card", {
         boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
         duration: 0.8
-      }, 53.6);
+      }, 58.6);
  
       window.__timelines["scene-image-hero-9"] = tl;
     </script>

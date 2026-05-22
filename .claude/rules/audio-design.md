@@ -53,6 +53,31 @@ They are opt-in for a single deliberate moment when a stat / pivot / hero word
 unambiguously needs the punctuation. This is enforced in `templates/shorts/anthropic/DESIGN.md`
 § Audio / SFX Cues and in the `new-anthropic-short` playbook step 14.
 
+### Sonic-logo at composition start — NEVER auto-add (HARD)
+
+The 1.5s `sonic-logo` brand stinger at composition cold-open is **never** part of
+the default cue set, is **never** auto-wired by any playbook, and must **never**
+be added unless the user has explicitly asked for "the intro stinger" / "sonic
+logo" / "brand bumper" on that specific video. User feedback (2026-05-20):
+*"remove the intro sfx. we never want that."* — applies to every Short and
+every long-form, every template.
+
+Practical implications:
+
+- Do NOT include `<audio id="sfx-sonic-logo">` in any new composition by default.
+- Do NOT add `sonic-logo` to `sfx-cues.txt` by default.
+- Do NOT sync `sonic-logo` into `videos/<slug>/assets/sfx/` via
+  `scripts/sync-video-sfx.sh` unless the user explicitly requested it for that
+  video. The "Generation & Wiring" cheat sheet at the bottom of this file lists
+  it in its example call — that example is illustrative only, not a default.
+- The template (`templates/shorts/anthropic/index.html`) does NOT ship a
+  sonic-logo `<audio>` element — keep it that way. If a forked video has one,
+  delete it on sight.
+- The "Sonic Logo (OPTIONAL)" section below documents the snippet **for
+  archaeology** when a user does explicitly opt in — it is not a default-on
+  affordance. The word "OPTIONAL" in that section means "off by default,
+  user-request only", not "consider adding it if it would sound nice".
+
 ### Whoosh placement on phase transitions (HARD)
 
 Every `cinematic-whoosh` MUST fire at the **visual phase transition moment** — the
@@ -129,7 +154,7 @@ file in `shared/audio/sfx/<cue>.mp3`, copied into a video via
 | `pop`              | `pop.mp3`             | **0.10**      | Small chip / list item                            |
 | `glitch-zap`       | `glitch-zap.mp3`      | **0.09**      | "BUT…" pivot, regression callout                  |
 | `strike-cross`     | `strike-cross.mp3`    | **0.11**      | Strikethrough moment                              |
-| `sonic-logo`       | `sonic-logo.mp3`      | **0.45**      | Brand stinger at composition start (optional)     |
+| `sonic-logo`       | `sonic-logo.mp3`      | **0.45**      | Brand stinger at composition start — **OFF by default; user-request only** (see § Sonic-logo NEVER auto-add above) |
 | **fallback**       | (any unlisted cue)    | **0.11**      | Hard cap unless explicitly tuned                  |
 
 > **Calibration history**: 2026-04-28 — all SFX volumes reduced 25% from the original calibration (0.20 → 0.15, 0.15 → 0.11, 0.13 → 0.10, 0.12 → 0.09, 0.60 → 0.45). The earlier values still met the 0.25 hard cap but felt too loud relative to narration in the actual mix. The hard cap of 0.25 is unchanged.
@@ -140,10 +165,17 @@ with a helpful message listing the actual library contents.
 
 ---
 
-## Sonic Logo (OPTIONAL)
+## Sonic Logo (OFF BY DEFAULT — user-request only)
 
-If a video uses the sonic-logo brand stinger, place it at composition start on its
-own track:
+The intro sonic-logo stinger is **off by default** on every video, every template
+— see "Sonic-logo at composition start — NEVER auto-add (HARD)" above. The
+snippet below documents the wiring **for archaeology** when a user does
+explicitly request it on a specific video. Do not paste this into a new
+composition unless the user typed "add the sonic logo" / "add the intro stinger"
+on this particular slug.
+
+If the user has explicitly opted in, place it at composition start on its own
+track:
 
 ```html
 <audio id="sonic-logo"

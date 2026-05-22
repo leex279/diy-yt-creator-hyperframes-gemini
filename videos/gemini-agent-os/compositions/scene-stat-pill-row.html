@@ -988,11 +988,11 @@
       tl.to("#pro-card-glow", { opacity: 0.8, duration: 0.38, ease: "power2.out" }, 9.2);
       tl.to("#pro-card-glow", { opacity: 0.2, duration: 0.8, ease: "power2.in", overwrite: "auto" }, 9.6);
 
-      // 12.49s - "INTERNAL" stamp slams down with high-impact shake on narrator cue
+      // 12.15s - "INTERNAL" stamp slams down with high-impact shake on narrator cue (global 58.83)
       tl.fromTo("#stamp-internal",
         { scale: 4.5, rotation: -45, opacity: 0 },
         { scale: 1.0, rotation: -8, opacity: 1, duration: 0.22, ease: "power2.in" },
-        12.49
+        12.15
       );
       tl.to("#pro-card-wrap", {
         scale: 1.13,
@@ -1001,13 +1001,13 @@
         yoyo: true,
         repeat: 1,
         ease: "power1.inOut"
-      }, 12.71);
+      }, 12.37);
       
-      // 14.56s - "NEXT MONTH" stamp slams down with high-impact shake on narrator cue
+      // 14.41s - "NEXT MONTH" stamp slams down with high-impact shake on narrator cue (global 61.066s)
       tl.fromTo("#stamp-next-month",
         { scale: 4.5, rotation: 45, opacity: 0 },
         { scale: 1.0, rotation: 12, opacity: 1, duration: 0.22, ease: "power2.in" },
-        14.56
+        14.41
       );
       tl.to("#pro-card-wrap", {
         scale: 1.13,
@@ -1016,9 +1016,9 @@
         yoyo: true,
         repeat: 1,
         ease: "power1.inOut"
-      }, 14.78);
+      }, 14.63);
 
-      // 15.4s - Animate side-by-side transition: slide brand card left, bring in speed chart right
+      // 16.57s - Animate side-by-side transition: slide brand card left, bring in speed chart right
       tl.to("#pro-card-wrap", {
         scale: 0.7,
         z: -100,
@@ -1026,8 +1026,8 @@
         duration: 0.8,
         ease: "power3.inOut",
         overwrite: "auto"
-      }, 15.4);
-      tl.set("#pro-card-wrap", { visibility: "hidden" }, 16.2);
+      }, 16.57);
+      tl.set("#pro-card-wrap", { visibility: "hidden" }, 17.37);
 
       tl.to("#gemini-card-wrap", {
         x: -770, // Moves Flash Card from 890px to 120px
@@ -1038,15 +1038,15 @@
         duration: 0.8,
         ease: "power3.inOut",
         overwrite: "auto"
-      }, 15.4);
+      }, 16.57);
 
       tl.fromTo("#speed-chart-wrap",
         { x: 500, scale: 0.8, opacity: 0 },
         { x: 0, scale: 1.0, opacity: 1, duration: 0.8, ease: "power3.inOut", immediateRender: false },
-        15.4
+        16.57
       );
 
-      // 16.2s - Subtle yoyo breathing for both side-by-side cards
+      // 17.37s - Subtle yoyo breathing for both side-by-side cards
       tl.to(["#gemini-card-wrap", "#speed-chart-wrap"], {
         y: -8,
         duration: 4.0,
@@ -1054,9 +1054,9 @@
         yoyo: true,
         repeat: 3,
         stagger: 0.2
-      }, 16.2);
+      }, 17.37);
 
-      // 24.8s - Cinematic 3D focus/zoom on the benchmark chart, push brand card into background
+      // 26.0s - Cinematic 3D focus/zoom on the benchmark chart, push brand card into background
       tl.to("#speed-chart-wrap", {
         x: -290,
         y: 0,
@@ -1067,7 +1067,7 @@
         duration: 0.8,
         ease: "power3.out",
         overwrite: "auto"
-      }, 24.8);
+      }, 26.0);
 
       tl.to("#gemini-card-wrap", {
         x: -830, // 890px - 830px = 60px absolute
@@ -1080,9 +1080,9 @@
         duration: 0.8,
         ease: "power3.out",
         overwrite: "auto"
-      }, 24.8);
+      }, 26.0);
 
-      // 30.0s - Speed gauge slides in and centers while cards shift/shrink into 3D space
+      // 32.0s - Speed gauge slides in and centers while cards shift/shrink into 3D space
       tl.to("#gemini-card-wrap", {
         x: -790, // 890px - 790px = 100px absolute
         y: 0,
@@ -1093,7 +1093,7 @@
         opacity: 0.3,
         duration: 0.9,
         ease: "power2.inOut"
-      }, 30.0);
+      }, 32.0);
       
       tl.to("#speed-chart-wrap", {
         x: 180,
@@ -1105,15 +1105,15 @@
         opacity: 0.3,
         duration: 0.9,
         ease: "power2.inOut"
-      }, 30.0);
+      }, 32.0);
 
       tl.fromTo("#speed-gauge-wrap",
         { scale: 0.8, y: 60, opacity: 0 },
         { x: 0, scale: 1.0, y: 0, opacity: 1, duration: 0.9, ease: "back.out(1.4)", immediateRender: false },
-        30.0
+        32.0
       );
 
-      // 35.1s - Count-up animation for Token Speed (1X -> 4X) synced to the "four times faster" claim
+      // 37.6s - Count-up animation for Token Speed (1X -> 4X) synced to the "four times faster" claim (local 39.8 / global 86.48)
       const gaugeValEl = document.getElementById("gauge-value-text");
       const gaugeFillPath = document.getElementById("gauge-fill-path");
       const valObj = { val: 1.0 };
@@ -1130,193 +1130,184 @@
           const dashoffset = 440 - (progress * 330); // Leave a small 1/4 gap at the bottom for aesthetics
           gaugeFillPath.style.strokeDashoffset = dashoffset;
         }
-      }, 35.1);
+      }, 37.6);
 
       // Volumetric glow flash when count hits 4X
       tl.to("#speed-gauge-wrap", {
         boxShadow: "0 25px 60px rgba(234, 67, 53, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
         duration: 0.5
-      }, 37.0);
+      }, 39.8);
       tl.to("#speed-gauge-wrap", {
         boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
         duration: 0.8
-      }, 37.5);
+      }, 40.3);
 
       // ─────────────────────────────────────────────────────
-      // STAGE 3: BENCHMARK GRID (35.1s - 60.2s)
+      // STAGE 3: BENCHMARK GRID (42.5s - 60.2s)
       // ─────────────────────────────────────────────────────
 
-      // 35.1s - Transition: Scale down Layer 1 intro elements
+      // 42.5s - Transition: Scale down Layer 1 intro elements
       tl.to(["#gemini-card-wrap", "#speed-chart-wrap", "#speed-gauge-wrap"], {
         scale: 0.6,
         y: -100,
         opacity: 0,
         duration: 0.8,
         ease: "power2.in"
-      }, 35.1);
-      tl.set(["#gemini-card-wrap", "#speed-chart-wrap", "#speed-gauge-wrap"], { visibility: "hidden" }, 35.9);
+      }, 42.5);
+      tl.set(["#gemini-card-wrap", "#speed-chart-wrap", "#speed-gauge-wrap"], { visibility: "hidden" }, 43.3);
 
       // Switch title headers
-      tl.to("#stat-row-overline", { textContent: "AGENT BENCHMARKS", duration: 0.3 }, 35.1);
-      tl.to("#stat-row-headline", { textContent: "STRONGEST DEVELOPER PERFORMANCE IN WORKLOADS", duration: 0.3 }, 35.1);
+      tl.to("#stat-row-overline", { textContent: "AGENT BENCHMARKS", duration: 0.3 }, 42.5);
+      tl.to("#stat-row-headline", { textContent: "STRONGEST DEVELOPER PERFORMANCE IN WORKLOADS", duration: 0.3 }, 42.5);
 
-      // 35.8s - Reveal Benchmark Grid container and dimmed wireframe standby cards
-      tl.set("#benchmark-grid", { visibility: "visible" }, 35.8);
+      // 43.2s - Reveal Benchmark Grid container and dimmed wireframe standby cards
+      tl.set("#benchmark-grid", { visibility: "visible" }, 43.2);
       tl.fromTo("#benchmark-grid",
         { scale: 0.95, opacity: 0 },
         { scale: 1.0, opacity: 1, duration: 0.8, ease: "power2.out", immediateRender: false },
-        35.8
+        43.2
       );
 
-      // Continuous slow 3D camera drift on grid starting at 35.8s to keep perspective dynamic
-      tl.fromTo("#benchmark-grid",
-        { rotateY: -3, rotateX: 1 },
-        { rotateY: 3, rotateX: -1, duration: 8.0, ease: "sine.inOut", yoyo: true, repeat: 2, immediateRender: false },
-        35.8
+      // Continuous slow 3D camera drift on grid starting at 43.2s to keep perspective dynamic
+      tl.set("#benchmark-grid", { rotateY: -3, rotateX: 1 }, 43.2);
+      tl.to("#benchmark-grid",
+        { rotateY: 3, rotateX: -1, duration: 8.0, ease: "sine.inOut", yoyo: true, repeat: 2 },
+        43.21
       );
 
       // Staggered reveal of benchmark cards in a dimmed "standby" slot state with scores hidden
       tl.fromTo(".bench-card",
         { scale: 0.95, opacity: 0 },
         { scale: 0.98, opacity: 0.22, stagger: 0.15, duration: 0.8, ease: "power2.out", immediateRender: false },
-        35.8
+        43.2
       );
-      tl.set(".bench-card .bench-num-wrap", { opacity: 0, scale: 0.7 }, 35.8);
+      tl.set(".bench-card .bench-num-wrap", { opacity: 0, scale: 0.7 }, 43.2);
 
       // Diagnostic glowing scanline/border sweeps to build anticipation during narration
-      tl.to("#bench-card-1 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 36.8);
-      tl.to("#bench-card-2 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 38.3);
-      tl.to("#bench-card-3 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 39.8);
-      tl.to("#bench-card-4 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 41.3);
+      tl.to("#bench-card-1 .card-border-glow-svg", { opacity: 0.45, duration: 0.35, yoyo: true, repeat: 1 }, 43.5);
+      tl.to("#bench-card-2 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 43.7);
+      tl.to("#bench-card-3 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 43.9);
+      tl.to("#bench-card-4 .card-border-glow-svg", { opacity: 0.45, duration: 0.45, yoyo: true, repeat: 1 }, 44.1);
 
-      // 44.25s - Power Up/Power Reveal Card 1: 76.2% Terminal-Bench 2.1
+      // 45.69s - Power Up/Power Reveal Card 1: 76.2% Terminal-Bench 2.1 (global 92.37)
       tl.to("#bench-card-1", {
         scale: 1.05,
         opacity: 1,
         duration: 0.4,
         ease: "back.out(1.5)",
         overwrite: "auto"
-      }, 44.25);
+      }, 45.69);
       tl.to("#bench-card-1", {
         scale: 1.0,
         duration: 0.5,
         ease: "power2.out"
-      }, 44.65);
+      }, 46.09);
       tl.fromTo("#bench-card-1 .bench-num-wrap",
         { opacity: 0, scale: 0.7 },
         { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
-        44.25
+        45.69
       );
       tl.fromTo("#bench-card-1 .card-border-glow-svg",
         { opacity: 0 },
         { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
-        44.25
+        45.69
       );
       tl.fromTo("#bench-card-1 .glow-rect-blur, #bench-card-1 .glow-rect-sharp",
         { strokeDashoffset: 1900 },
         { strokeDashoffset: -11400, duration: 17.5, ease: "none", immediateRender: false },
-        44.25
+        45.69
       );
 
-      // 47.07s - Power Up/Power Reveal Card 2: 1656 Elo GDP Val
+      // 49.20s - Power Up/Power Reveal Card 2: 1656 Elo GDP Val (global 95.88)
       tl.to("#bench-card-2", {
         scale: 1.05,
         opacity: 1,
         duration: 0.4,
         ease: "back.out(1.5)",
         overwrite: "auto"
-      }, 47.07);
+      }, 49.20);
       tl.to("#bench-card-2", {
         scale: 1.0,
         duration: 0.5,
         ease: "power2.out"
-      }, 47.47);
+      }, 49.60);
       tl.fromTo("#bench-card-2 .bench-num-wrap",
         { opacity: 0, scale: 0.7 },
         { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
-        47.07
+        49.20
       );
       tl.fromTo("#bench-card-2 .card-border-glow-svg",
         { opacity: 0 },
         { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
-        47.07
+        49.20
       );
       tl.fromTo("#bench-card-2 .glow-rect-blur, #bench-card-2 .glow-rect-sharp",
         { strokeDashoffset: 1900 },
         { strokeDashoffset: -9500, duration: 15.0, ease: "none", immediateRender: false },
-        47.07
+        49.20
       );
 
-      // 51.87s - Power Up/Power Reveal Card 3: 83.6% MCP Atlas
+      // 53.35s - Power Up/Power Reveal Card 3: 83.6% MCP Atlas (global 100.03)
       tl.to("#bench-card-3", {
         scale: 1.05,
         opacity: 1,
         duration: 0.4,
         ease: "back.out(1.5)",
         overwrite: "auto"
-      }, 51.87);
+      }, 53.35);
       tl.to("#bench-card-3", {
         scale: 1.0,
         duration: 0.5,
         ease: "power2.out"
-      }, 52.27);
+      }, 53.75);
       tl.fromTo("#bench-card-3 .bench-num-wrap",
         { opacity: 0, scale: 0.7 },
         { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
-        51.87
+        53.35
       );
       tl.fromTo("#bench-card-3 .card-border-glow-svg",
         { opacity: 0 },
         { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
-        51.87
+        53.35
       );
       tl.fromTo("#bench-card-3 .glow-rect-blur, #bench-card-3 .glow-rect-sharp",
         { strokeDashoffset: 1900 },
         { strokeDashoffset: -5700, duration: 10.0, ease: "none", immediateRender: false },
-        51.87
+        53.35
       );
 
-      // 55.07s - Power Up/Power Reveal Card 4: 84.2% Char-Xiv Reasoning
+      // 56.29s - Power Up/Power Reveal Card 4: 84.2% Char-Xiv Reasoning (global 102.97)
       tl.to("#bench-card-4", {
         scale: 1.05,
         opacity: 1,
         duration: 0.4,
         ease: "back.out(1.5)",
         overwrite: "auto"
-      }, 55.07);
+      }, 56.29);
       tl.to("#bench-card-4", {
         scale: 1.0,
         duration: 0.5,
         ease: "power2.out"
-      }, 55.47);
+      }, 56.69);
       tl.fromTo("#bench-card-4 .bench-num-wrap",
         { opacity: 0, scale: 0.7 },
         { opacity: 1, scale: 1.0, duration: 0.6, ease: "back.out(1.6)", immediateRender: false },
-        55.07
+        56.29
       );
       tl.fromTo("#bench-card-4 .card-border-glow-svg",
         { opacity: 0 },
         { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false },
-        55.07
+        56.29
       );
       tl.fromTo("#bench-card-4 .glow-rect-blur, #bench-card-4 .glow-rect-sharp",
         { strokeDashoffset: 1900 },
         { strokeDashoffset: -3800, duration: 7.5, ease: "none", immediateRender: false },
-        55.07
+        56.29
       );
 
       // Fade out glows at app shelf transition
       tl.to(".card-border-glow-svg", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 60.3);
 
-      // Stage slow rotate while grid is up
-      tl.to("#benchmark-grid", {
-        rotateY: 4,
-        rotateX: -1.5,
-        duration: 8.0,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: 1
-      }, 44.25);
 
       // ─────────────────────────────────────────────────────
       // STAGE 4: APP SHELF LIGHTING (60.3s - 75.19s)
@@ -1346,26 +1337,26 @@
         60.3
       );
 
-      // 61.57s - Light up App 1: Gemini App
-      tl.to("#app-item-1", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 61.57);
+      // 62.53s - Light up App 1: Gemini App
+      tl.to("#app-item-1", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 62.53);
 
-      // 62.47s - Light up App 2: AI Mode in Search
-      tl.to("#app-item-2", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 62.47);
+      // 63.66s - Light up App 2: AI Mode in Search
+      tl.to("#app-item-2", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 63.66);
 
-      // 63.97s - Light up App 3: Google Antigravity
-      tl.to("#app-item-3", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 63.97);
+      // 64.99s - Light up App 3: Google Antigravity
+      tl.to("#app-item-3", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 64.99);
 
-      // 65.67s - Light up App 4: AI Studio Gemini API
-      tl.to("#app-item-4", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 65.67);
+      // 67.49s - Light up App 4: AI Studio Gemini API
+      tl.to("#app-item-4", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 67.49);
 
-      // 67.47s - Light up App 5: Android Studio
-      tl.to("#app-item-5", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 67.47);
+      // 68.57s - Light up App 5: Android Studio
+      tl.to("#app-item-5", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 68.57);
 
-      // 69.07s - Light up App 6: Enterprise Agent Platform
-      tl.to("#app-item-6", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 69.07);
+      // 70.20s - Light up App 6: Enterprise Agent Platform
+      tl.to("#app-item-6", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 70.20);
 
-      // 70.97s - Light up App 7: Gemini Enterprise
-      tl.to("#app-item-7", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 70.97);
+      // 71.83s - Light up App 7: Gemini Enterprise
+      tl.to("#app-item-7", { className: "app-item active", duration: 0.4, ease: "power2.out" }, 71.83);
 
       // Final camera zoom-out sweep
       tl.to(".stage-viewport", {

@@ -105,7 +105,7 @@ The shared library at `shared/lib/` is **copy-from**, not reference-from. HyperF
 5. Drop narration at `videos/<slug>/audio/narration.wav`, wire up the `<audio>` element.
 6. Lint, preview, render — always pass the directory: `npx hyperframes lint videos/<slug>`.
 
-Each template's `README.md` has the full spawn instructions specific to that format. The `/diy-yt-creator` skill family (`new-anthropic-short`, `new-archon-short`, `new-long-form-standard`) automates the whole flow from a topic prompt — see `.claude/skills/diy-yt-creator/SKILL.md`.
+Each template's `README.md` has the full spawn instructions specific to that format. The `/diy-yt-creator` skill family (`new-anthropic-short`, `new-archon-short`, `new-long-form-standard`) automates the whole flow from a topic prompt — see `.agents/skills/diy-yt-creator/SKILL.md`.
 
 ## Linting — ALWAYS RUN AFTER CHANGES
 
@@ -140,6 +140,7 @@ Fix all errors before presenting the result. Warnings are informational and usua
 15. **Every video MUST end on a debate-sparking CTA** — see [`.claude/rules/engagement-cta.md`](.claude/rules/engagement-cta.md). A polarizing, easy-to-answer question in THREE places that all agree: (1) the final 3–5s of narration, (2) an on-screen `#cta-question` element in the final phase of `index.html` (persists through the thumbnail-grade final frame), (3) the closing paragraph of `youtube-description.md`. The question MUST be binary-or-short-list answerable, take a polarizing stance, reference a specific claim from the video, and answerable in 5 seconds by both senior and beginner viewers. BANNED closers: "What do you think?", "Let me know in the comments", "Drop your thoughts below", "How would you build this differently?", "Link below". Applies to ALL videos including tutorials — voice_profile does NOT exempt this rule.
 16. **Every on-screen promotion MUST carry a "Werbung" disclosure badge** — see [`.claude/rules/werbung-disclosure.md`](.claude/rules/werbung-disclosure.md). German UWG §5a / RStV §7 compliance — the channel is operated from Germany and is bound for every published video regardless of viewer location. Applies to every commercial relationship: Dynamous endcards, Hostinger banners, midrolls, module interstitials, discount bubbles, and any future affiliate / sponsored partner. The badge is `#ffffff` on `#dc2626`, top-right of the promo card, inline-style mandated for validator parity, fades in WITH the promo (not after), persists for the full visibility window. Editorial coverage of products the channel earns NOTHING from (Anthropic, OpenAI, Google etc. on a news video) does NOT require the badge — the rule triggers on the money relationship, not on the brand appearing. Self-check before declaring any video done: every frame showing a brand-with-money-relationship must also show the Werbung badge.
 17. **Shorts content must stay above the mobile UI dead zone (y < 1280)** — see [`.claude/rules/shorts-safe-zone.md`](.claude/rules/shorts-safe-zone.md). On 1080×1920 vertical, YouTube's mobile Shorts player overlays a ~640px UI panel (title, channel info, like/comment/share stack, ad cards) on the bottom of the frame. ANY information-bearing element (text, card, screenshot, diagram, CTA, URL, debate question) placed below canvas y=1280 is obscured at playback on phone. The studio preview shows the full canvas with no overlay — lint, inspect, and validate ALL pass on layouts that fail at playback. Active content zone is y=240 → 1280 (1040px). Persistent decorative chrome (ambient gradient, shape backdrop, vignette, brand top-banner, progress bar) may live below — the viewer doesn't need to read it. Set `--pad-bottom: 640px` on new templates. Audit every scene before render: no card / callout / CTA / URL / final-frame element below y=1280.
+18. **User-provided X-post screenshot MUST anchor the hook** — see [`.claude/rules/xpost-screenshot-in-hook.md`](.claude/rules/xpost-screenshot-in-hook.md). When the user supplies an X (Twitter) post screenshot in the brief, attachments, or conversation, it becomes the **primary visual anchor of the intro / hook scene** (`#phase1` for Shorts, `scene-01-*.html` for long-form). Verbatim image (NOT a redrawn registry `x-post` block), on screen no later than narration second 2.0, with hook narration audibly referencing the post's content or its author per [`script-quote-attribution.md`](.claude/rules/script-quote-attribution.md) (no spoken "quote" token). X UI chrome (avatar + handle + like count) must stay legible; do not crop it away or restyle to the template palette. Phase 0 logs the asset; Phase 1 pins it to the hook's `visual_concept` + `assets_needed`; Phase 4 wires it into the hook scene's `.ss-frame`. Multiple screenshots → strongest one anchors the hook, the rest may live in body scenes — but at least one is in the hook.
 
 ## Building New Templates — Consistent Workflow
 
@@ -197,14 +198,14 @@ templates/<format>/<style>/
    - `shared/lib/tokens/<name>.css` — byte-identical copy of `templates/<format>/<style>/tokens/<name>.css`. Future variants pick this up via copy-from per the lib consumption rules.
    - Append entries to `shared/lib/MANIFEST.md` under the **Tokens** and **Visual Styles** tables (between the `<!-- LIB:TOKENS:BEGIN -->` / `<!-- LIB:VISUAL-STYLES:BEGIN -->` sentinels).
 
-9. **Create the diy-yt-creator playbook.** Every template MUST have a matching playbook at `.claude/skills/diy-yt-creator/new-<style>.md` (for shorts) or `new-long-form-<style>.md` (for long-form). Mirror an existing playbook (e.g. [`new-archon-short.md`](.claude/skills/diy-yt-creator/new-archon-short.md) is a tight delta-from-`new-anthropic-short.md`). Include:
+9. **Create the diy-yt-creator playbook.** Every template MUST have a matching playbook at `.agents/skills/diy-yt-creator/playbooks/new-<style>.md` (for shorts) or `playbooks/new-long-form-<style>.md` (for long-form). Mirror an existing playbook (e.g. [`new-archon-short.md`](.agents/skills/diy-yt-creator/playbooks/new-archon-short.md) is a tight delta-from-`new-anthropic-short.md`). Include:
    - Inputs (topic / facts / pre-written script)
    - Outputs (the per-video artifacts)
    - 12-step workflow with deltas from the parent template called out
    - Quality bar checklist
    - Don'ts (template-specific)
 
-10. **Register the playbook** by adding a row to the table in [`.claude/skills/diy-yt-creator/SKILL.md`](.claude/skills/diy-yt-creator/SKILL.md) and a trigger phrase to the "When to invoke" list. Without this registration, `/diy-yt-creator` won't route to the new playbook.
+10. **Register the playbook** by adding a row to the table in [`.agents/skills/diy-yt-creator/SKILL.md`](.agents/skills/diy-yt-creator/SKILL.md) and a trigger phrase to the "When to invoke" list. Without this registration, `/diy-yt-creator` won't route to the new playbook.
 
 11. **Update the parent format README** (`templates/shorts/README.md` or `templates/long-form/README.md`) — add a row to the "Available templates" table. Without this, the variant is invisible.
 
@@ -261,8 +262,8 @@ These hit every new template — bake them in from day one:
 - [ ] `shared/lib/visual-styles/<name>.md` exists and mirrors the structure of `anthropic-dark.md`
 - [ ] `shared/lib/tokens/<name>.css` exists as a byte-identical copy of `templates/<format>/<style>/tokens/<name>.css`
 - [ ] `shared/lib/MANIFEST.md` has new rows under Tokens and Visual Styles
-- [ ] `.claude/skills/diy-yt-creator/new-<style>.md` (or `new-long-form-<style>.md`) playbook exists
-- [ ] `.claude/skills/diy-yt-creator/SKILL.md` lists the new playbook in its table AND adds a trigger phrase to the "When to invoke" list
+- [ ] `.agents/skills/diy-yt-creator/playbooks/new-<style>.md` (or `playbooks/new-long-form-<style>.md`) playbook exists
+- [ ] `.agents/skills/diy-yt-creator/SKILL.md` lists the new playbook in its table AND adds a trigger phrase to the "When to invoke" list
 - [ ] `templates/<format>/README.md` "Available templates" table has a row for the new variant
 
 If any item fails, the template is not ready to ship. Don't claim completion on a half-built template — operators downstream will hit the gap and lose trust in the catalog.

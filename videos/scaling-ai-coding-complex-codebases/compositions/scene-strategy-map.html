@@ -457,43 +457,49 @@
       tl.to("#sm-eyebrow",  { y: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
       tl.to("#sm-headline", { y: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 0.5);
 
-      // Six cells reveal one at a time, anchored to the actual narration
-      // ordinal word-starts (scene starts at 67.568s absolute):
+      // All 6 cells reveal EARLY (1.2-3.7s) so the entire 6-strategy map is
+      // visible while narrator introduces the concept. As narrator names each
+      // strategy ("One — vertical slice..."), the corresponding cell gets a
+      // strong scale+glow EMPHASIS so the eye tracks the spoken item.
+      const cells = ["#sm-c1","#sm-c2","#sm-c3","#sm-c4","#sm-c5","#sm-c6"];
+      cells.forEach((sel, i) => {
+        const tEnter = 1.2 + i * 0.4;
+        tl.to(sel, { y: 0, scale: 1, autoAlpha: 1, duration: 0.5, ease: "back.out(1.3)" }, tEnter);
+        tl.to(sel + " .rule", { scaleX: 1, duration: 0.45, ease: "power2.out" }, tEnter + 0.3);
+      });
+
+      // Narration anchors — strong emphasis pulse on each cell when narrator names its strategy
       //   One   →  76.333s → scene_t  8.765
       //   Two   →  82.114s → scene_t 14.546
       //   Three →  88.523s → scene_t 20.955
       //   Four  →  91.541s → scene_t 23.973
       //   Five  →  95.349s → scene_t 27.781
       //   Six   → 101.015s → scene_t 33.447
-      const cellTimes = [8.765, 14.546, 20.955, 23.973, 27.781, 33.447];
-      const cells = ["#sm-c1","#sm-c2","#sm-c3","#sm-c4","#sm-c5","#sm-c6"];
-      cells.forEach((sel, i) => {
-        tl.to(sel, { y: 0, scale: 1, autoAlpha: 1, duration: 0.55, ease: "back.out(1.3)" }, cellTimes[i]);
-        tl.to(sel + " .rule", { scaleX: 1, duration: 0.45, ease: "power2.out" }, cellTimes[i] + 0.3);
-        // subtle glow on the cell border at reveal
-        tl.to(sel, { boxShadow: "0 0 50px rgba(59, 130, 246, 0.40)", duration: 0.5, ease: "sine.out" }, cellTimes[i] + 0.3);
-        tl.to(sel, { boxShadow: "0 0 0px rgba(59, 130, 246, 0.00)", duration: 0.8, ease: "sine.in"  }, cellTimes[i] + 0.9);
+      const emphasis = [
+        { sel: "#sm-c1", t:  8.765 },
+        { sel: "#sm-c2", t: 14.546 },
+        { sel: "#sm-c3", t: 20.955 },
+        { sel: "#sm-c4", t: 23.973 },
+        { sel: "#sm-c5", t: 27.781 },
+        { sel: "#sm-c6", t: 33.447 },
+      ];
+      emphasis.forEach(e => {
+        tl.to(e.sel, { scale: 1.06, boxShadow: "0 0 70px rgba(96, 165, 250, 0.65)",
+          duration: 0.4, ease: "back.out(1.6)" }, e.t);
+        tl.to(e.sel, { scale: 1.0, boxShadow: "0 0 0px rgba(59, 130, 246, 0)",
+          duration: 0.9, ease: "power2.out" }, e.t + 0.4);
+        tl.to(e.sel + " .num", { color: "#60A5FA",
+          duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, e.t);
       });
 
-      // Pre-cell-1 bridge — narrator: "Each one stands alone. Combined, they turn any messy..."
-      tl.to("#sm-headline", { scale: 1.02, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.0);
-      tl.to("#sm-eyebrow", { letterSpacing: "0.40em", duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.5);
-      tl.to("#sm-headline", { scale: 1.015, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.5);
-
-      // Cell-1 → Cell-2 bridge (5.8s gap) — narration "Organize by feature, not by layer."
-      tl.to("#sm-c1", { scale: 1.03, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 11.5);
-      tl.to("#sm-c1 .mini-vsa", { scale: 1.04, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 13.0);
-
-      // Cell-2 → Cell-3 bridge (6.4s gap) — narration "Use parallel sub-agents to derive..."
-      tl.to("#sm-c2", { scale: 1.03, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 16.5);
-      tl.to(["#sm-c1","#sm-c2"], { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.15 }, 18.5);
-
-      // Cell-4 → Cell-5 bridge (3.8s gap)
-      tl.to(["#sm-c3","#sm-c4"], { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 26.0);
-
-      // Cell-5 → Cell-6 bridge (5.7s gap) — narration explains "parallel worktrees"
-      tl.to("#sm-c5", { scale: 1.03, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 30.0);
-      tl.to(["#sm-c4","#sm-c5"], { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 31.8);
+      // Bridge beats — every ~3s when no narration-anchor emphasis is firing
+      tl.to("#sm-headline", { scale: 1.02, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.5);
+      tl.to(["#sm-c1","#sm-c2","#sm-c3","#sm-c4","#sm-c5","#sm-c6"],
+        { scale: 1.015, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.08 }, 11.5);
+      tl.to(["#sm-c1","#sm-c2"],
+        { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 17.5);
+      tl.to(["#sm-c3","#sm-c4","#sm-c5"],
+        { scale: 1.02, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1, stagger: 0.12 }, 30.5);
 
       tl.set({}, {}, 35.2);
       window.__timelines["scene-strategy-map"] = tl;

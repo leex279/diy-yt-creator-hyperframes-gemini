@@ -1,18 +1,9 @@
 <!--
   scene-cta.html — Closing CTA archetype.
 
-  3-phase content (sequential reveals on a single timeline):
-    1. FitHeadline debate question (40-72px Inter 900) at t=0 — expo.out rise
-    2. Comment-prompt pill + subscribe pill at t=2.5 — back.out(1.4)
-    3. Optional next-video thumbnail card at t=5 — pulsing border (FINITE repeat)
-
-  HARD RULE: subscribe pulse uses a FINITE repeat (yoyo:true, repeat:N) — never
-  repeat:-1. The framework requires deterministic timelines. Compute repeat as
-  Math.ceil(scene_duration / pulse_cycle).
-
-  MANDATORY: #cta-debate carries the debate-sparking question per
-  .claude/rules/engagement-cta.md. The wording MUST match the final spoken line
-  of scripts/full-script.md AND the engagement question in youtube-description.md.
+  Dual-phase premium CTA:
+    Phase 1 (0s - 16s): Active debate question + comments/subscribe + watch next.
+    Phase 2 (16s - 36.69s): Premium glassmorphic Dynamous AI Mastery endcard with standard 16:9 glowing, dashed video placeholders.
 -->
 <template id="scene-cta-template">
   <div data-composition-id="scene-cta"
@@ -62,6 +53,16 @@
         top: 55%; left: 30%;
         width: 700px; height: 450px;
         background: radial-gradient(circle, rgba(251, 188, 5, 0.12) 0%, transparent 70%);
+      }
+      .cta-spotlight.purple-spot {
+        top: 25%; left: 25%;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, transparent 70%);
+      }
+      .cta-spotlight.cyan-spot {
+        top: 35%; left: 55%;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
       }
 
       /* ── Content Stage ────────────────────────────────── */
@@ -304,6 +305,213 @@
         color: #e8eaed;
         text-transform: none;
       }
+
+      /* ── Phase 2 Dynamous Endcard ─────────────────────── */
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+
+      #dynamous-endcard-group {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 80px;
+        z-index: 2;
+        perspective: 1200px;
+        transform-style: preserve-3d;
+        box-sizing: border-box;
+      }
+      #endcard-placeholders {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+        margin-top: 0;
+      }
+      .video-placeholder {
+        position: relative;
+        width: 615px;
+        height: 347px;
+        border-radius: 20px;
+        background: rgba(12, 12, 14, 0.75);
+        border: 1.5px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform-style: preserve-3d;
+      }
+      .video-placeholder.left {
+        border-color: rgba(168, 85, 247, 0.25);
+      }
+      .video-placeholder.right {
+        border-color: rgba(6, 182, 212, 0.25);
+      }
+      .video-placeholder .placeholder-glow {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.4;
+      }
+      .video-placeholder.left .placeholder-glow {
+        background: radial-gradient(circle at center, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+      }
+      .video-placeholder.right .placeholder-glow {
+        background: radial-gradient(circle at center, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+      }
+      .video-placeholder .placeholder-dashed-box {
+        position: absolute;
+        inset: 20px;
+        border-radius: 12px;
+        pointer-events: none;
+      }
+      .video-placeholder.left .placeholder-dashed-box {
+        border: 2.5px dashed rgba(168, 85, 247, 0.35);
+      }
+      .video-placeholder.right .placeholder-dashed-box {
+        border: 2.5px dashed rgba(6, 182, 212, 0.35);
+      }
+      .video-placeholder .placeholder-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 2px;
+        z-index: 2;
+      }
+      .video-placeholder.left .placeholder-tag {
+        color: #a855f7;
+        text-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+      }
+      .video-placeholder.right .placeholder-tag {
+        color: #06b6d4;
+        text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+      }
+
+      /* Premium Dynamous CTA Outro Stack Styles */
+      .dec-werbung {
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        background: #dc2626;
+        color: #ffffff;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 6px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        opacity: 0;
+        z-index: 10;
+      }
+      .dec-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 26px;
+        padding: 48px 56px;
+        width: 820px;
+        box-sizing: border-box;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 28px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow:
+          0 16px 64px rgba(0, 0, 0, 0.55),
+          0 0 80px rgba(168, 85, 247, 0.20),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      .dec-wordmark {
+        width: 440px;
+        height: auto;
+        display: block;
+      }
+      .dec-headline {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 48px;
+        font-weight: 900;
+        color: #ffffff;
+        text-align: center;
+        letter-spacing: 0.5px;
+      }
+      .dec-offerings {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-self: stretch;
+      }
+      .dec-offerings li {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #f1f5f9;
+        line-height: 1.2;
+      }
+      .dec-check {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 900;
+        color: #ffffff;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #a855f7, #ec4899);
+        box-shadow: 0 0 16px rgba(236, 72, 153, 0.45);
+      }
+      .dec-button {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 40px;
+        border-radius: 16px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        color: #ffffff;
+        background: linear-gradient(135deg, #a855f7, #ec4899, #a855f7);
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+        box-shadow:
+          0 4px 24px rgba(168, 85, 247, 0.4),
+          0 0 60px rgba(236, 72, 153, 0.15);
+      }
+      .dec-button .dec-arrow {
+        font-size: 32px;
+        line-height: 0.7;
+      }
+      .dec-discount {
+        padding: 10px 24px;
+        border-radius: 12px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 32px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c, #dc2626);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+      }
+      .dec-url {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 24px;
+        font-weight: 600;
+        color: #cbd5e1;
+        letter-spacing: 1px;
+        max-width: 800px;
+        word-break: break-all;
+        text-align: center;
+      }
     </style>
 
     <!-- Background Spotlights & Grid -->
@@ -313,6 +521,8 @@
       <div class="cta-spotlight blue-spot" id="cta-spot-blue"></div>
       <div class="cta-spotlight red-spot" id="cta-spot-red"></div>
       <div class="cta-spotlight yellow-spot" id="cta-spot-yellow"></div>
+      <div class="cta-spotlight purple-spot" id="cta-spot-purple"></div>
+      <div class="cta-spotlight cyan-spot" id="cta-spot-cyan"></div>
     </div>
  
     <div id="scene-cta-content" class="perspective-stage">
@@ -321,7 +531,7 @@
         WILL YOU BUILD ON <span class="g-gradient-text-blue-green" style="font-weight:900; filter: drop-shadow(0 0 20px rgba(66, 133, 244, 0.35));">GOOGLE'S INTEGRATED AGENT OS</span>,<br>OR <span class="g-gradient-text-rainbow" style="background: linear-gradient(90deg, #EA4335 0%, #FBBC05 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(234, 67, 53, 0.35));">MODULAR OPEN TOOLS</span>?
       </div>
  
-      <div class="pills">
+      <div class="pills" id="cta-pills-row">
         <!-- Re-architected Comment Pill with SVG blur/sharp lines and metadata tag -->
         <div class="cta-pill glass-premium comment" id="cta-comment">
           <div class="pill-glow-border blue blur"></div>
@@ -374,6 +584,46 @@
           <span class="nx-title">Google I/O Highlights</span>
         </div>
       </div>
+
+      <!-- ── Phase 2 Dynamous Endcard Layout ──────────────── -->
+      <div id="dynamous-endcard-group" style="visibility: hidden; opacity: 0;">
+        
+        <!-- Left Column: Premium brand-locked glass card -->
+        <div class="dec-card" id="dec-card">
+          <div class="dec-werbung">Werbung</div>
+          <img class="dec-wordmark" src="assets/dynamous-ai-mastery-white.svg" alt="Dynamous AI Mastery" crossorigin="anonymous" />
+          <div class="dec-headline" id="dec-headline">Join the Community</div>
+          
+          <ul class="dec-offerings" id="dec-offerings">
+            <li><span class="dec-check">✓</span><span>Agentic Coding Course</span></li>
+            <li><span class="dec-check">✓</span><span>AI Second Brain (OpenClaw — you own it)</span></li>
+            <li><span class="dec-check">✓</span><span>AI Agent Master Course</span></li>
+            <li><span class="dec-check">✓</span><span>Daily Events + Friday Workshops</span></li>
+          </ul>
+
+          <div class="dec-button" id="dec-button">
+            <span>Link in Description</span>
+            <span class="dec-arrow">↓</span>
+          </div>
+          <div class="dec-discount" id="dec-discount">10% OFF</div>
+          <div class="dec-url" id="dec-url">https://dynamous.ai/?code=646a60</div>
+        </div>
+
+        <!-- Right Column: Standard 16:9 glowing video placeholders stacked vertically -->
+        <div id="endcard-placeholders">
+          <div class="video-placeholder left">
+            <div class="placeholder-glow"></div>
+            <div class="placeholder-tag">RECOMMENDED FOR YOU</div>
+            <div class="placeholder-dashed-box"></div>
+          </div>
+          <div class="video-placeholder right">
+            <div class="placeholder-glow"></div>
+            <div class="placeholder-tag">LATEST VIDEO</div>
+            <div class="placeholder-dashed-box"></div>
+          </div>
+        </div>
+
+      </div>
     </div>
  
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
@@ -384,6 +634,10 @@
         defaults: { ease: "power3.out", duration: 0.6 }
       });
  
+      // ==========================================
+      // PHASE 1: 0s - 16s
+      // ==========================================
+
       // 1. Debate question — expo.out rise at t=0
       tl.from("#cta-debate", { y: 40, opacity: 0, duration: 0.7, ease: "expo.out", immediateRender: false }, 0);
  
@@ -423,12 +677,11 @@
       tl.to(".pill-glow-border.red", { opacity: 1, duration: 0.8 }, 2.25);
       tl.to("#cta-spot-red", { opacity: 1, duration: 1.0 }, 2.25);
       
-      // Snappy arrow slide-in on entry (using set & to for deterministic linter validation)
+      // Snappy arrow slide-in on entry
       tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 2.25);
       tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.35, ease: "back.out(1.5)" }, 2.25);
  
       // Pulsing red glow halo starting after it completes entrance at 3.05s
-      // yoyo iterations beautifully covers the full 30.91s duration.
       tl.fromTo(".pill-glow-border.red.blur", {
         opacity: 0.3,
         scale: 0.95
@@ -438,46 +691,28 @@
         duration: 0.65,
         ease: "sine.inOut",
         yoyo: true,
-        repeat: 42,
+        repeat: 20,
         immediateRender: false
       }, 3.05);
-
+ 
       // Snappy continuous arrow sliding loop (unrolled for perfect static timeline linting and seek-safety)
       tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 3.5);
       tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 3.9);
       tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 3.9);
-
+ 
       tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 6.5);
       tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 6.9);
       tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 6.9);
-
+ 
       tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 9.5);
       tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 9.9);
       tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 9.9);
-
+ 
       tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 12.5);
       tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 12.9);
       tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 12.9);
-
+ 
       tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 15.5);
-      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 15.9);
-      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 15.9);
-
-      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 18.5);
-      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 18.9);
-      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 18.9);
-
-      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 21.5);
-      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 21.9);
-      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 21.9);
-
-      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 24.5);
-      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 24.9);
-      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 24.9);
-
-      tl.to("#cta-sub-arrow", { x: 30, opacity: 0, duration: 0.4, ease: "power2.in" }, 27.5);
-      tl.set("#cta-sub-arrow", { x: -30, opacity: 0 }, 27.9);
-      tl.to("#cta-sub-arrow", { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 27.9);
  
       // 4. Next-video card pop entrance at t=4.1
       tl.fromTo("#cta-next-card", {
@@ -504,14 +739,14 @@
       // Animate next card scanline loop
       tl.fromTo(".cta-card-scanline",
         { top: "0%" },
-        { top: "100%", duration: 3.5, ease: "none", repeat: 8, immediateRender: false },
+        { top: "100%", duration: 3.5, ease: "none", repeat: 3, immediateRender: false },
         4.1
       );
       
       // Animate play button pulse loop
       tl.fromTo(".play-icon-glow",
         { opacity: 0.1, scale: 0.9 },
-        { opacity: 0.8, scale: 1.15, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 26, immediateRender: false },
+        { opacity: 0.8, scale: 1.15, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 11, immediateRender: false },
         4.1
       );
  
@@ -556,43 +791,134 @@
         duration: 0.85,
         ease: "sine.inOut"
       }, 14.75);
- 
-      // 18.0s: Slow 3D tilt shift on all elements in CTA stage
-      tl.to("#scene-cta-content", {
-        rotationY: 8,
-        rotationX: 4,
-        duration: 2.0,
-        ease: "power2.inOut"
-      }, 18.0);
- 
-      // 22.0s: Next-video image Ken Burns zoom
-      tl.to("#cta-next-card img", {
-        scale: 1.12,
-        duration: 3.0,
+
+      // ==========================================
+      // PHASE 2 TRANSITION: 16.0s
+      // ==========================================
+
+      // Fade out all Phase 1 elements
+      tl.to("#cta-debate", { opacity: 0, y: -40, duration: 0.7, ease: "power3.in" }, 16.0);
+      tl.to("#cta-comment", { opacity: 0, y: -30, scale: 0.95, duration: 0.6, ease: "power2.in" }, 16.1);
+      tl.to("#cta-subscribe", { opacity: 0, y: -30, scale: 0.95, duration: 0.6, ease: "power2.in" }, 16.15);
+      tl.to("#cta-next-card", { opacity: 0, y: -50, scale: 0.85, rotateX: -10, duration: 0.8, ease: "power3.in" }, 16.0);
+      
+      // Hide Phase 1 spotlights & Fade up Phase 2 spotlights
+      tl.to(["#cta-spot-blue", "#cta-spot-red", "#cta-spot-yellow"], { opacity: 0, duration: 0.8 }, 16.0);
+      tl.to("#cta-spot-purple", { opacity: 1, duration: 1.2 }, 16.2);
+      tl.to("#cta-spot-cyan", { opacity: 1, duration: 1.2 }, 16.4);
+
+      // Set visibility of Phase 1 to hidden for clean performance
+      tl.set(["#cta-debate", "#cta-comment", "#cta-subscribe", "#cta-next-card", "#cta-pills-row"], { visibility: "hidden" }, 16.8);
+
+      // ==========================================
+      // PHASE 2 REVEALS: 16.8s+
+      // ==========================================
+      
+      // Set endcard group visible
+      tl.set("#dynamous-endcard-group", { visibility: "visible", opacity: 1 }, 16.8);
+
+      // Card scale-in 16.8 - 17.2s
+      tl.fromTo("#dec-card",
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.2)" },
+        16.8
+      );
+
+      // Werbung badge fade-in
+      tl.to(".dec-werbung",
+        { opacity: 1, duration: 0.4, ease: "power2.out" },
+        16.9
+      );
+
+      // side-by-side / stacked placeholders pop-in
+      tl.fromTo(".video-placeholder.left",
+        { scale: 0.8, opacity: 0, rotateY: 15, rotateX: 5, y: 50 },
+        { scale: 1, opacity: 1, rotateY: 0, rotateX: 0, y: 0, duration: 0.9, ease: "back.out(1.3)" },
+        17.1
+      );
+
+      tl.fromTo(".video-placeholder.right",
+        { scale: 0.8, opacity: 0, rotateY: -15, rotateX: 5, y: 50 },
+        { scale: 1, opacity: 1, rotateY: 0, rotateX: 0, y: 0, duration: 0.9, ease: "back.out(1.3)" },
+        17.3
+      );
+
+      // Wordmark entry
+      tl.fromTo(".dec-wordmark",
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+        17.3
+      );
+
+      // Headline entry
+      tl.fromTo(".dec-headline",
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+        17.45
+      );
+
+      // Offerings list stagger entry — each item slides in 0.08s after the previous
+      tl.fromTo(".dec-offerings li",
+        { x: -24, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.45, ease: "power2.out", stagger: 0.08 },
+        17.6
+      );
+
+      // Action button entry
+      tl.fromTo(".dec-button",
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" },
+        18.05
+      );
+
+      // Discount badge entry
+      tl.fromTo(".dec-discount",
+        { scale: 0.5, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" },
+        18.2
+      );
+
+      // URL line entry
+      tl.fromTo(".dec-url",
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
+        18.35
+      );
+
+      // Holding phase: gradient shimmer on CTA button
+      tl.to(".dec-button", {
+        backgroundPosition: "200% 0%",
+        duration: 3.35,
+        ease: "none",
+        repeat: 12
+      }, 18.05);
+
+      // Breathing glow animations on placeholders
+      tl.fromTo(".video-placeholder .placeholder-glow",
+        { opacity: 0.25 },
+        { opacity: 0.8, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: 11, immediateRender: false },
+        18.5
+      );
+
+      // Slow 3D organic floating movement across Phase 2
+      tl.to("#dynamous-endcard-group", {
+        rotationY: -4,
+        rotationX: 2,
+        scale: 1.02,
+        duration: 4.5,
         ease: "sine.inOut"
-      }, 22.0);
- 
-      // 26.0s: Soft float wobble in Y direction on all elements
-      tl.to("#scene-cta-content", {
-        y: -15,
-        duration: 1.8,
-        ease: "sine.inOut"
-      }, 26.0);
- 
-      // 29.5s: Final settle to neutral center
-      tl.to("#scene-cta-content", {
-        rotationY: 0,
-        rotationX: 0,
-        y: 0,
-        duration: 1.2,
-        ease: "power2.out"
-      }, 29.5);
-      tl.to("#cta-next-card img", {
-        scale: 1.0,
-        duration: 1.2,
-        ease: "power2.out"
-      }, 29.5);
- 
+      }, 19.0);
+      
+      tl.to("#dynamous-endcard-group", {
+        rotationY: 4,
+        rotationX: -2,
+        scale: 0.98,
+        duration: 5.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 3
+      }, 23.5);
+
       window.__timelines["scene-cta"] = tl;
     </script>
   </div>

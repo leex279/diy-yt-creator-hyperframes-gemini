@@ -1,8 +1,7 @@
 <!--
-  scene-side-by-side.html — A vs B comparison.
-
-  Two glassmorphic panels, max-width 720px each, centered with a
-  40px gap. Card A uses accent-1 (blue); card B uses accent-3 (yellow).
+  scene-side-by-side.html — Redesigned AI Search and Workspace Agent Simulator.
+  Features a self-assembling generative UI flow, interactive widgets,
+  and floating tech badges synced to word-level narration.
 -->
 <template id="scene-side-by-side-template">
   <div data-composition-id="scene-side-by-side"
@@ -14,22 +13,22 @@
 
     <style>
       #scene-side-by-side-content {
-        width:100%; height:100%;
+        width: 100%; height: 100%;
         padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
-        display:flex; flex-direction:column;
-        align-items:center; justify-content:center;
-        gap:48px;
-        box-sizing:border-box;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 36px;
+        box-sizing: border-box;
       }
       #scene-side-by-side-content .header-block {
-        display:flex; flex-direction:column;
-        align-items:center; gap:16px;
-        text-align:center;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 12px;
+        text-align: center;
       }
       #scene-side-by-side-content .overline {
         font-family: 'JetBrains Mono', monospace;
         font-weight: 700;
-        font-size: 28px;
+        font-size: 26px;
         letter-spacing: 6px;
         text-transform: uppercase;
         color: var(--accent-2);
@@ -37,31 +36,71 @@
       #scene-side-by-side-content .headline {
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        font-size: 56px;
+        font-size: 52px;
         line-height: 1.05;
         letter-spacing: -1px;
         color: var(--text);
       }
       #scene-side-by-side-content .row {
-        display:flex; flex-direction:row;
-        align-items:stretch; justify-content:center;
-        gap: 40px;
-        perspective: 1500px;
+        display: flex; flex-direction: row;
+        align-items: center; justify-content: center;
+        gap: 32px;
+        perspective: 1600px;
         transform-style: preserve-3d;
       }
       .sbs-card {
-        width: 720px;
-        padding: 36px 40px;
-        border-radius: 24px;
-        display:flex; flex-direction:column;
-        gap: 18px;
+        width: 840px;
+        height: 600px;
+        padding: 32px;
+        border-radius: 28px;
+        display: flex; flex-direction: column;
         transform-style: preserve-3d;
         opacity: 0; /* Hidden initially, animated via gsap */
+        box-sizing: border-box;
+        position: relative;
+        will-change: transform, opacity;
+      }
+      .sbs-card.a {
+        border: 1px solid rgba(66, 133, 244, 0.25);
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+        background: linear-gradient(135deg, rgba(66, 133, 244, 0.06) 0%, rgba(10, 12, 18, 0.72) 100%);
+      }
+      .sbs-card.b {
+        border: 1px solid rgba(251, 188, 5, 0.25);
+        box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+        background: linear-gradient(135deg, rgba(251, 188, 5, 0.06) 0%, rgba(10, 12, 18, 0.72) 100%);
+      }
+      .sbs-card-inner {
+        display: flex;
+        flex-direction: row;
+        gap: 28px;
+        height: 100%;
+        width: 100%;
+        align-items: stretch;
+        box-sizing: border-box;
+      }
+      .sbs-text-col {
+        width: 360px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        text-align: left;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+      .sbs-preview-col {
+        flex-grow: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-sizing: border-box;
       }
       .sbs-card .label {
         font-family: 'JetBrains Mono', monospace;
         font-weight: 700;
-        font-size: 22px;
+        font-size: 20px;
         letter-spacing: 4px;
         text-transform: uppercase;
       }
@@ -70,7 +109,7 @@
       .sbs-card .title {
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        font-size: 32px;
+        font-size: 28px;
         line-height: 1.15;
         letter-spacing: -0.5px;
         color: var(--text);
@@ -79,18 +118,32 @@
       .sbs-card .body {
         font-family: 'Inter', sans-serif;
         font-weight: 500;
-        font-size: 22px;
-        line-height: 1.4;
+        font-size: 17px;
+        line-height: 1.35;
         color: var(--text-secondary);
+      }
+      .stat-container {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+      }
+      .stat-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        opacity: 0.7;
       }
       .sbs-card .stat {
         font-family: 'Inter', sans-serif;
         font-weight: 900;
-        font-size: 84px;
+        font-size: 64px;
         line-height: 1;
-        letter-spacing: -3px;
+        letter-spacing: -2px;
         font-variant-numeric: tabular-nums lining-nums;
-        margin-top: 8px;
       }
       .sbs-card.a .stat {
         color: #4285F4;
@@ -99,6 +152,475 @@
       .sbs-card.b .stat {
         color: #FBBC05;
         text-shadow: 0 0 35px rgba(251, 188, 5, 0.45);
+      }
+
+      /* Simulator Styling */
+      .sbs-simulator-canvas {
+        height: 520px;
+        width: 100%;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(10, 12, 18, 0.72);
+        backdrop-filter: blur(12px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6);
+        box-sizing: border-box;
+      }
+      .simulator-header {
+        height: 36px;
+        padding: 0 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(15, 18, 28, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+      .window-controls {
+        display: flex;
+        gap: 6px;
+      }
+      .window-controls .dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        opacity: 0.8;
+      }
+      .dot.red { background: #FF5F56; }
+      .dot.yellow { background: #FFBD2E; }
+      .dot.green { background: #27C93F; }
+      .simulator-address-bar {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 6px;
+        padding: 4px 12px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        font-family: 'JetBrains Mono', monospace;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .icon-lock {
+        width: 10px; height: 10px;
+        color: #27C93F;
+      }
+
+      /* Card A: Search Simulator */
+      .sbs-search-wrap {
+        padding: 16px 14px 8px;
+        flex-shrink: 0;
+      }
+      .sbs-search-box {
+        height: 42px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: border 0.3s, box-shadow 0.3s;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .search-icon {
+        width: 16px; height: 16px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .sbs-search-input {
+        font-size: 13px;
+        color: var(--text);
+        flex-grow: 1;
+        text-align: left;
+        overflow: hidden;
+        white-space: nowrap;
+        font-weight: 500;
+      }
+      .sbs-cursor {
+        animation: sbs-blink 1s step-end infinite;
+        color: #4285F4;
+        font-weight: 700;
+      }
+      @keyframes sbs-blink {
+        50% { opacity: 0; }
+      }
+      .sbs-search-attachments {
+        display: flex;
+        gap: 6px;
+      }
+      .sbs-attach-chip {
+        width: 24px; height: 24px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center; justify-content: center;
+        color: rgba(255, 255, 255, 0.6);
+        opacity: 0;
+        transform: scale(0.6);
+      }
+      .sbs-attach-chip svg {
+        width: 14px; height: 14px;
+      }
+
+      /* Float Badges */
+      .sbs-badge-container {
+        position: absolute;
+        inset: 36px 0 0;
+        padding: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        align-content: center;
+        pointer-events: none;
+        z-index: 5;
+        box-sizing: border-box;
+      }
+      .sbs-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        backdrop-filter: blur(8px);
+        opacity: 0;
+        transform: scale(0.6) translateY(20px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        will-change: transform, opacity;
+      }
+      #sbs-badge-flash { border-color: rgba(66, 133, 244, 0.4); text-shadow: 0 0 10px rgba(66, 133, 244, 0.5); }
+      #sbs-badge-genui { border-color: rgba(251, 188, 5, 0.4); text-shadow: 0 0 10px rgba(251, 188, 5, 0.5); }
+
+      /* Live UI Canvas */
+      .sbs-assembly-canvas {
+        padding: 0 14px 16px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: hidden;
+        z-index: 1;
+        box-sizing: border-box;
+      }
+      .sbs-comp {
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 10px 12px;
+        opacity: 0;
+        transform: scale(0.9) translateY(15px);
+        will-change: transform, opacity;
+        text-align: left;
+        box-sizing: border-box;
+      }
+      .sbs-comp .comp-title {
+        font-size: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      
+      /* Component 1: Flight Table */
+      .flight-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      .flight-table th, .flight-table td {
+        text-align: left;
+        padding: 4px 6px;
+      }
+      .flight-table th {
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 500;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .flight-table td {
+        color: var(--text);
+      }
+      .row-highlight {
+        background: rgba(66, 133, 244, 0.08);
+      }
+      .lowest-price {
+        background: rgba(39, 201, 63, 0.08);
+      }
+      .price-val {
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .status-btn {
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        font-size: 9px;
+        font-weight: 700;
+      }
+      .status-btn.lowest {
+        background: #27C93F;
+        color: #000;
+      }
+
+      /* Component 2: Exp SVG Chart */
+      .chart-wrapper {
+        position: relative;
+        height: 60px;
+        width: 100%;
+      }
+      .spark-chart {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      #chart-bg-path {
+        opacity: 0;
+        will-change: opacity;
+      }
+      #chart-line {
+        stroke-dasharray: 250;
+        stroke-dashoffset: 250;
+        will-change: stroke-dashoffset;
+      }
+      .chart-overlay-text {
+        position: absolute;
+        top: 2px; right: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        color: #4285F4;
+        text-shadow: 0 0 10px rgba(66, 133, 244, 0.4);
+      }
+
+      /* Component 3: Booking App widget */
+      .booking-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-bottom: 6px;
+        color: var(--text-secondary);
+      }
+      .booking-btn-wrap {
+        display: flex;
+      }
+      .booking-btn {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: none;
+        background: #4285F4;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.3s, box-shadow 0.3s;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      }
+
+      /* Conversational Chat */
+      .sbs-chat-area {
+        position: absolute;
+        inset: 36px 0 0;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+        z-index: 3;
+        box-sizing: border-box;
+      }
+      .chat-bubble {
+        max-width: 82%;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(10px);
+        line-height: 1.35;
+        box-sizing: border-box;
+      }
+      .user-bubble {
+        background: rgba(255, 255, 255, 0.08);
+        align-self: flex-end;
+        color: #fff;
+        border-bottom-right-radius: 2px;
+      }
+      .ai-bubble {
+        background: rgba(66, 133, 244, 0.12);
+        align-self: flex-start;
+        color: #8AB4F8;
+        border-bottom-left-radius: 2px;
+        border: 1px solid rgba(66, 133, 244, 0.2);
+        display: flex;
+        gap: 6px;
+      }
+      .gemini-sparkle {
+        color: #4285F4;
+        font-weight: 700;
+        text-shadow: 0 0 8px rgba(66, 133, 244, 0.8);
+      }
+
+      /* Card B: Workspace Simulator */
+      .sbs-workspace-wrap {
+        padding: 16px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        justify-content: center;
+        box-sizing: border-box;
+      }
+      .sbs-ws-comp {
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 8px 12px;
+        opacity: 0;
+        transform: scale(0.9) translateY(15px);
+        text-align: left;
+        box-sizing: border-box;
+        will-change: transform, opacity;
+      }
+      .ws-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      .ws-icon {
+        font-size: 12px;
+      }
+      .ws-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .ws-voice-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-style: italic;
+        color: #FBBC05;
+      }
+      .mic-pulse {
+        animation: sbs-mic-glow 1.5s ease-in-out infinite;
+      }
+      @keyframes sbs-mic-glow {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251, 188, 5, 0.4)); }
+        50% { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(251, 188, 5, 0.8)); }
+      }
+      .ws-result-card {
+        margin-top: 6px;
+        background: rgba(251, 188, 5, 0.08);
+        border: 1px solid rgba(251, 188, 5, 0.2);
+        border-radius: 6px;
+        padding: 6px;
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      .result-title {
+        font-size: 9px;
+        font-weight: 700;
+        color: #FBBC05;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
+      .result-body {
+        font-size: 11px;
+        color: var(--text);
+        font-weight: 600;
+      }
+      
+      /* Workspace Docs Live */
+      .ws-doc-canvas {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 6px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .doc-line {
+        font-size: 9px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .doc-title-line {
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 2px;
+      }
+      .doc-body-line {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 8px;
+        width: 0; /* Animated via GSAP width typing */
+      }
+
+      /* Workspace Pics Segment */
+      .ws-pics-canvas {
+        height: 72px;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+        background: linear-gradient(135deg, #1e1b29 0%, #0e0d16 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pics-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="28" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2" stroke-dasharray="4 4"/></svg>') center/50px;
+        position: relative;
+      }
+      .pics-laser-tracer {
+        position: absolute;
+        border: 1.5px solid #FBBC05;
+        border-radius: 50%;
+        width: 44px; height: 44px;
+        top: 14px; left: calc(50% - 22px);
+        opacity: 0;
+        transform: scale(1.2);
+        box-shadow: 0 0 8px #FBBC05;
+        will-change: transform, opacity;
+      }
+      .segment-highlight {
+        position: absolute;
+        background: rgba(251, 188, 5, 0.15);
+        border-radius: 50%;
+        width: 44px; height: 44px;
+        top: 14px; left: calc(50% - 22px);
+        opacity: 0;
+        transform: scale(1.0);
+        filter: blur(1px);
+        will-change: opacity;
+      }
+      .pics-segment-label {
+        position: absolute;
+        bottom: 4px; right: 8px;
+        background: #FBBC05;
+        color: #000;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8px;
+        font-weight: 700;
+        padding: 2px 4px;
+        border-radius: 3px;
+        opacity: 0;
+        will-change: opacity;
       }
     </style>
  
@@ -109,17 +631,215 @@
       </div>
  
       <div class="row" id="sbs-row">
+        <!-- CARD A: SEARCH AGENTS -->
         <div class="sbs-card glass-premium glow-blue a" id="sbs-card-a">
-          <div class="label">SEARCH AGENTS</div>
-          <div class="title" id="sbs-ttl-a">Generative UI & Booking</div>
-          <div class="body">Assemble custom layouts, graphs, tables, and mini apps on the fly. Information agents track problems and booking agents automate queries. Surpassed 1 Billion monthly users within one year.</div>
-          <div class="stat" id="sbs-stat-a">1.0B</div>
+          <div class="sbs-card-inner">
+            <div class="sbs-text-col">
+              <div class="label">SEARCH AGENTS</div>
+              <div class="title" id="sbs-ttl-a">Generative UI & Booking</div>
+              <div class="body">Assemble custom layouts, graphs, tables, and mini apps on the fly. Information agents track problems and booking agents automate queries.</div>
+              
+              <div class="stat-container">
+                <div class="stat-label">MONTHLY ACTIVE USERS</div>
+                <div class="stat" id="sbs-stat-a">0.0B</div>
+              </div>
+            </div>
+            
+            <div class="sbs-preview-col">
+              <div class="sbs-simulator-canvas" id="sbs-simulator-a">
+                <!-- Browser Header Bar -->
+                <div class="simulator-header">
+                  <div class="window-controls">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <div class="simulator-address-bar">
+                    <svg class="icon-lock" viewBox="0 0 24 24" width="10" height="10"><path fill="currentColor" d="M18,8H17V6A5,5 0 0,0 12,1A5,5 0 0,0 7,6V8H6A2,2 0 0,0 4,10V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V10A2,2 0 0,0 18,8M8.9,6C8.9,4.29 10.29,2.9 12,2.9C13.71,2.9 15.1,4.29 15.1,6V8H8.9V6M18,20H6V10H18V20M12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13Z"/></svg>
+                    ai-mode.google.com
+                  </div>
+                </div>
+
+                <!-- 25-Year Search Box Overhaul -->
+                <div class="sbs-search-wrap">
+                  <div class="sbs-search-box" id="sbs-search-box-a">
+                    <svg class="search-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/></svg>
+                    <div class="sbs-search-input">
+                      <span id="sbs-search-text"></span><span class="sbs-cursor">|</span>
+                    </div>
+                    <div class="sbs-search-attachments">
+                      <div class="sbs-attach-chip" id="sbs-attach-img">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"/></svg>
+                      </div>
+                      <div class="sbs-attach-chip" id="sbs-attach-tab">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M21,3H3C1.9,3 1,3.9 1,5V19C1,20.1 1.9,21 3,21H21C22.1,21 23,20.1 23,19V5C23,3.9 22.1,3 21,3M21,19H3V5H10V7H21V19Z"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Chat Bubble Area (Conversational Exchange) -->
+                <div class="sbs-chat-area" id="sbs-chat-area-a">
+                  <div class="chat-bubble user-bubble" id="sbs-chat-u1">Compare flight options to London for June.</div>
+                  <div class="chat-bubble ai-bubble" id="sbs-chat-a1">
+                    <div class="gemini-sparkle">✦</div>
+                    Analyzing flights... Compiling Generative UI layout.
+                  </div>
+                </div>
+
+                <!-- Badge Area (Announced Keywords) -->
+                <div class="sbs-badge-container" id="sbs-badge-container-a">
+                  <div class="sbs-badge" id="sbs-badge-flash">✦ Gemini 3.5 Flash</div>
+                  <div class="sbs-badge" id="sbs-badge-aimode">💬 AI Mode</div>
+                  <div class="sbs-badge" id="sbs-badge-search">🔍 Search Agents</div>
+                  <div class="sbs-badge" id="sbs-badge-info">📊 Info Agents</div>
+                  <div class="sbs-badge" id="sbs-badge-booking">📅 Booking</div>
+                  <div class="sbs-badge" id="sbs-badge-coding">💻 Coding</div>
+                  <div class="sbs-badge" id="sbs-badge-genui">✨ Generative UI</div>
+                </div>
+
+                <!-- Live Self-Assembling Layout Canvas -->
+                <div class="sbs-assembly-canvas" id="sbs-assembly-canvas-a">
+                  <!-- Custom Layout: Flight Comparison Table -->
+                  <div class="sbs-comp" id="sbs-comp-table">
+                    <div class="comp-title">🔍 Aggregated Flight Options</div>
+                    <table class="flight-table">
+                      <thead>
+                        <tr>
+                          <th>Airline</th>
+                          <th>Price</th>
+                          <th>UCP Direct</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="row-highlight">
+                          <td>✈️ British Airways</td>
+                          <td class="price-val">$480</td>
+                          <td><span class="status-btn">Select</span></td>
+                        </tr>
+                        <tr class="lowest-price">
+                          <td>✈️ Virgin Atlantic</td>
+                          <td class="price-val">$410</td>
+                          <td><span class="status-btn lowest">Lowest</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Interactive Graphic: Exponential Queries Chart -->
+                  <div class="sbs-comp" id="sbs-comp-graph">
+                    <div class="comp-title">📈 Query Volume Growth</div>
+                    <div class="chart-wrapper">
+                      <svg viewBox="0 0 200 80" class="spark-chart">
+                        <defs>
+                          <linearGradient id="chart-glow" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#4285F4" stop-opacity="0.4"/>
+                            <stop offset="100%" stop-color="#4285F4" stop-opacity="0.0"/>
+                          </linearGradient>
+                        </defs>
+                        <path id="chart-bg-path" d="M 10 70 L 10 70 Q 50 65 90 40 T 170 15 L 170 70 Z" fill="url(#chart-glow)"/>
+                        <path id="chart-line" d="M 10 70 Q 50 65 90 40 T 170 15" fill="none" stroke="#4285F4" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="170" cy="15" r="4" fill="#fff" stroke="#4285F4" stroke-width="2"/>
+                      </svg>
+                      <div class="chart-overlay-text">Queries Double 2x</div>
+                    </div>
+                  </div>
+
+                  <!-- Mini App widget: Universal Commerce Checkout -->
+                  <div class="sbs-comp" id="sbs-comp-app">
+                    <div class="comp-title">📅 Universal Booking Checkout</div>
+                    <div class="booking-details">
+                      <div class="flight-info">Virgin Atlantic • Jun 12</div>
+                      <div class="price-summary">$410.00 (All fees incl.)</div>
+                    </div>
+                    <div class="booking-btn-wrap">
+                      <button class="booking-btn" id="sbs-booking-btn">Confirm Reservation</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- CARD B: WORKSPACE AI -->
         <div class="sbs-card glass-premium glow-yellow b" id="sbs-card-b">
-          <div class="label">WORKSPACE AI</div>
-          <div class="title" id="sbs-ttl-b">Gmail, Docs, and Pics</div>
-          <div class="body">Voice-first Gemini workflows built for Gmail, Docs, and Keep, alongside Google Pics—a collaborative image editing app with object segmentation, translation, and text edits.</div>
-          <div class="stat" id="sbs-stat-b">4.0B</div>
+          <div class="sbs-card-inner">
+            <div class="sbs-text-col">
+              <div class="label">WORKSPACE AI</div>
+              <div class="title" id="sbs-ttl-b">Gmail, Docs, and Pics</div>
+              <div class="body">Voice-first Gemini workflows built for Gmail, Docs, and Keep, alongside Google Pics—a collaborative image editing app with object segmentation, translation, and text edits.</div>
+              
+              <div class="stat-container">
+                <div class="stat-label">MONTHLY ACTIVE USERS</div>
+                <div class="stat" id="sbs-stat-b">0.0B</div>
+              </div>
+            </div>
+            
+            <div class="sbs-preview-col">
+              <div class="sbs-simulator-canvas" id="sbs-simulator-b">
+                <!-- Browser Header Bar -->
+                <div class="simulator-header">
+                  <div class="window-controls">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <div class="simulator-address-bar">
+                    <svg class="icon-lock" viewBox="0 0 24 24" width="10" height="10"><path fill="currentColor" d="M18,8H17V6A5,5 0 0,0 12,1A5,5 0 0,0 7,6V8H6A2,2 0 0,0 4,10V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V10A2,2 0 0,0 18,8M8.9,6C8.9,4.29 10.29,2.9 12,2.9C13.71,2.9 15.1,4.29 15.1,6V8H8.9V6M18,20H6V10H18V20M12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13Z"/></svg>
+                    workspace.google.com
+                  </div>
+                </div>
+
+                <!-- Workspace Simulation Container -->
+                <div class="sbs-workspace-wrap">
+                  <!-- Gmail Voice Live Widget -->
+                  <div class="sbs-ws-comp" id="sbs-ws-gmail">
+                    <div class="ws-header">
+                      <span class="ws-icon">✉️</span>
+                      <span class="ws-title">Gmail Live Mode</span>
+                    </div>
+                    <div class="ws-voice-input">
+                      <span class="mic-pulse">🎙️</span>
+                      <span id="gmail-voice-text">"Search gate number..."</span>
+                    </div>
+                    <div class="ws-result-card" id="gmail-result-card">
+                      <div class="result-title">Flight Gate Found</div>
+                      <div class="result-body">Gate B24 - Flight UA108</div>
+                    </div>
+                  </div>
+
+                  <!-- Docs Live Document Widget -->
+                  <div class="sbs-ws-comp" id="sbs-ws-docs">
+                    <div class="ws-header">
+                      <span class="ws-icon">📄</span>
+                      <span class="ws-title">Docs Live Mode</span>
+                    </div>
+                    <div class="ws-doc-canvas">
+                      <div class="doc-line doc-title-line">📝 Agentic Operating System</div>
+                      <div class="doc-line doc-body-line a" id="sbs-doc-body-a">Building a brand new agentic ecosystem...</div>
+                      <div class="doc-line doc-body-line b" id="sbs-doc-body-b">Gemini Spark acts as a 24/7 personal runtime...</div>
+                    </div>
+                  </div>
+
+                  <!-- Google Pics Image Segmentation Widget -->
+                  <div class="sbs-ws-comp" id="sbs-ws-pics">
+                    <div class="ws-header">
+                      <span class="ws-icon">🖼️</span>
+                      <span class="ws-title">Google Pics Segment</span>
+                    </div>
+                    <div class="ws-pics-canvas">
+                      <div class="pics-image-placeholder">
+                        <div class="pics-laser-tracer" id="pics-laser-tracer"></div>
+                        <div class="segment-highlight" id="pics-segment-highlight"></div>
+                        <span class="pics-segment-label" id="pics-segment-label">Object Segment</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -136,56 +856,9 @@
       tl.from("#sbs-overline", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.1);
       tl.from("#sbs-headline", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.4);
  
-      // 4.0s: Left card A enters (Search Agents)
+      // 2.0s: Left card A enters (Search Agents)
       tl.fromTo("#sbs-card-a", {
         x: -120,
-        rotateY: 20,
-        rotateX: 4,
-        scale: 0.88,
-        opacity: 0
-      }, {
-        x: 0,
-        rotateY: -5,
-        rotateX: 2,
-        scale: 1,
-        opacity: 1,
-        duration: 0.95,
-        ease: "back.out(1.4)",
-        immediateRender: false
-      }, 4.0);
- 
-      // 7.0s: Card A Stat Count-up (val: 0 -> 1.0B)
-      const statAEl = document.getElementById("sbs-stat-a");
-      const statObjA = { val: 0 };
-      tl.to(statObjA, {
-        val: 1.0,
-        duration: 1.5,
-        ease: "power2.out",
-        onUpdate: function() {
-          statAEl.textContent = statObjA.val.toFixed(1) + "B";
-        }
-      }, 7.0);
-
-      // 10.0s: Card A border glow pulse
-      tl.to("#sbs-card-a", {
-        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(66, 133, 244, 0.5)",
-        duration: 0.5
-      }, 10.0);
-      tl.to("#sbs-card-a", {
-        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
-        duration: 0.7
-      }, 10.8);
-
-      // 14.0s: Card A soft tilt pivot shift
-      tl.to("#sbs-card-a", { rotateY: 5, rotateX: -2, duration: 1.8, ease: "power1.inOut" }, 14.0);
-
-      // 18.0s: Card A Title Text Glow sweep
-      tl.to("#sbs-ttl-a", { color: "#8AB4F8", scale: 1.03, duration: 0.4 }, 18.0);
-      tl.to("#sbs-ttl-a", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 19.5);
-
-      // 22.0s: Right card B enters (Workspace AI)
-      tl.fromTo("#sbs-card-b", {
-        x: 120,
         rotateY: -20,
         rotateX: 4,
         scale: 0.88,
@@ -199,9 +872,121 @@
         duration: 0.95,
         ease: "back.out(1.4)",
         immediateRender: false
-      }, 22.0);
+      }, 2.0);
 
-      // 25.0s: Card B Stat Count-up (val: 0 -> 4.0B)
+      // 3.5s - 6.0s: Search Box query typing animation
+      const searchBoxEl = document.getElementById("sbs-search-text");
+      const fullQueryStr = "Compare flights to London for June...";
+      const queryObj = { letterCount: 0 };
+      tl.to(queryObj, {
+        letterCount: fullQueryStr.length,
+        duration: 2.2,
+        ease: "none",
+        onUpdate: function() {
+          searchBoxEl.textContent = fullQueryStr.substring(0, Math.floor(queryObj.letterCount));
+        }
+      }, 3.5);
+
+      // 6.2s: Glow search box border & bounce reveal attachments
+      tl.to("#sbs-search-box-a", {
+        borderColor: "rgba(66, 133, 244, 0.6)",
+        boxShadow: "0 0 15px rgba(66, 133, 244, 0.3)",
+        duration: 0.4
+      }, 6.2);
+      tl.to(["#sbs-attach-img", "#sbs-attach-tab"], {
+        opacity: 1,
+        scale: 1,
+        duration: 0.4,
+        stagger: 0.15,
+        ease: "back.out(1.5)"
+      }, 6.3);
+
+      // 8.19s: Announcing Gemini 3.5 Flash (First badge bounces in)
+      tl.to("#sbs-badge-flash", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 8.19);
+      
+      // 11.43s: Announcing intelligent Search box (Second badge bounces in)
+      tl.to("#sbs-badge-aimode", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 11.43);
+      tl.to("#sbs-search-box-a", {
+        borderColor: "#4285F4",
+        boxShadow: "0 0 25px rgba(66, 133, 244, 0.65)",
+        duration: 0.5
+      }, 11.43);
+
+      // 12.90s: Announcing Search Agents badge
+      tl.to("#sbs-badge-search", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 12.90);
+
+      // 13.84s: Announcing Information Agents badge
+      tl.to("#sbs-badge-info", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 13.84);
+
+      // 15.13s: Announcing Booking Agent badge
+      tl.to("#sbs-badge-booking", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 15.13);
+
+      // 16.02s: Announcing Coding badge
+      tl.to("#sbs-badge-coding", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 16.02);
+
+      // 17.58s: Announcing Generative UI badge
+      tl.to("#sbs-badge-genui", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.4)" }, 17.58);
+
+      // 18.8s: Recede badge opacity slightly to keep search mockup clean
+      tl.to("#sbs-badge-container-a", { opacity: 0.2, scale: 0.95, duration: 0.5 }, 18.8);
+
+      // 21.16s: Card A Stat Count-up (Val: 0.0 -> 1.0B monthly active users)
+      const statAEl = document.getElementById("sbs-stat-a");
+      const statObjA = { val: 0 };
+      tl.to(statObjA, {
+        val: 1.0,
+        duration: 1.6,
+        ease: "power2.out",
+        onUpdate: function() {
+          statAEl.textContent = statObjA.val.toFixed(1) + "B";
+        }
+      }, 21.16);
+
+      // 21.16s: Active Card A border glow pulse
+      tl.to("#sbs-card-a", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(66, 133, 244, 0.5)",
+        duration: 0.5
+      }, 21.16);
+      tl.to("#sbs-card-a", {
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
+        duration: 0.8
+      }, 22.76);
+
+      // 24.79s: Queries Doubling Chart reveal
+      tl.to("#sbs-comp-graph", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "power2.out" }, 24.79);
+      // Animate the path drawing for queries doubling
+      tl.to("#chart-line", { strokeDashoffset: 0, duration: 1.8, ease: "power1.inOut" }, 25.0);
+      tl.to("#chart-bg-path", { opacity: 1, duration: 1.0 }, 25.8);
+
+      // 28.0s: Settle graph out of view to make canvas ready for Chat bubbles
+      tl.to("#sbs-comp-graph", { opacity: 0, scale: 0.9, y: -15, duration: 0.4 }, 28.0);
+
+      // 28.45s - 33.00s: Conversational chat exchange floating bubbles
+      tl.to("#sbs-chat-u1", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.2)" }, 28.45);
+      tl.to("#sbs-chat-a1", { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.2)" }, 29.80);
+
+      // 34.0s: Fade chat bubble container out of view
+      tl.to("#sbs-chat-area-a", { opacity: 0, duration: 0.4 }, 34.0);
+
+      // 34.80s: Right card B enters (Workspace AI)
+      tl.fromTo("#sbs-card-b", {
+        x: 120,
+        rotateY: 20,
+        rotateX: 4,
+        scale: 0.88,
+        opacity: 0
+      }, {
+        x: 0,
+        rotateY: -5,
+        rotateX: 2,
+        scale: 1,
+        opacity: 1,
+        duration: 0.95,
+        ease: "back.out(1.4)",
+        immediateRender: false
+      }, 34.80);
+
+      // 37.50s: Card B Stat Count-up (val: 0 -> 4.0B)
       const statBEl = document.getElementById("sbs-stat-b");
       const statObjB = { val: 0 };
       tl.to(statObjB, {
@@ -211,49 +996,93 @@
         onUpdate: function() {
           statBEl.textContent = statObjB.val.toFixed(1) + "B";
         }
-      }, 25.0);
+      }, 37.50);
 
-      // 28.0s: Card B border glow pulse
+      // 37.50s: Gmail Live card reveal and audio mic pulse
+      tl.to("#sbs-ws-gmail", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.2)" }, 38.0);
+      tl.to("#gmail-result-card", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.3)" }, 40.5);
+
+      // 41.0s: Card B border glow pulse
       tl.to("#sbs-card-b", {
         boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(251, 188, 5, 0.5)",
         duration: 0.5
-      }, 28.0);
+      }, 41.0);
       tl.to("#sbs-card-b", {
         boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
         duration: 0.7
-      }, 28.8);
+      }, 41.8);
 
-      // 32.0s: Card B soft tilt pivot shift
-      tl.to("#sbs-card-b", { rotateY: -5, rotateX: -2, duration: 1.8, ease: "power1.inOut" }, 32.0);
+      // 42.0s: Clear badge overlay completely on Card A for Generative UI assembly
+      tl.to("#sbs-badge-container-a", { opacity: 0, duration: 0.3 }, 42.0);
 
-      // 36.0s: Card B Title Text Glow sweep
-      tl.to("#sbs-ttl-b", { color: "#FBBC05", scale: 1.03, duration: 0.4 }, 36.0);
-      tl.to("#sbs-ttl-b", { color: "var(--text)", scale: 1.0, duration: 0.5 }, 37.5);
+      // 44.78s: Self-assembling Flight Table ("custom layouts")
+      tl.to("#sbs-comp-table", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.2)" }, 44.78);
+      tl.from(".flight-table tbody tr", { opacity: 0, x: -12, duration: 0.4, stagger: 0.15 }, 45.47);
 
-      // 40.0s: Dual card 3D tilt shift (parallax breathing)
-      tl.to("#sbs-card-a", { rotateY: -3, rotateX: 3, duration: 2.0, ease: "power1.inOut" }, 40.0);
-      tl.to("#sbs-card-b", { rotateY: 3, rotateX: 3, duration: 2.0, ease: "power1.inOut" }, 40.2);
+      // 47.45s: Graphs component reveal
+      tl.to("#sbs-comp-graph", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.2)" }, 47.45);
 
-      // 45.0s: Staggered glow wave on both card borders
-      tl.to(["#sbs-card-a", "#sbs-card-b"], {
-        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 30px rgba(255, 255, 255, 0.15)",
-        duration: 0.6,
-        stagger: 0.2
-      }, 45.0);
-      tl.to(["#sbs-card-a", "#sbs-card-b"], {
-        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)",
-        duration: 0.6,
-        stagger: 0.2
-      }, 46.0);
+      // 49.06s: Booking App component reveal ("mini apps on the fly")
+      tl.to("#sbs-comp-app", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.2)" }, 49.06);
 
-      // 50.0s: Settle back to normal
-      tl.to(["#sbs-card-a", "#sbs-card-b"], {
+      // 54.53s: Autocomplete booking action ("take action")
+      tl.to("#sbs-booking-btn", { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 }, 54.53);
+      tl.to("#sbs-booking-btn", {
+        backgroundColor: "#27C93F",
+        color: "#000",
+        duration: 0.3,
+        onStart: function() {
+          document.getElementById("sbs-booking-btn").textContent = "✓ Reserved via UCP";
+        }
+      }, 54.73);
+      tl.to("#sbs-comp-app", {
+        boxShadow: "0 0 25px rgba(39, 201, 63, 0.45)",
+        borderColor: "rgba(39, 201, 63, 0.5)",
+        duration: 0.4
+      }, 54.73);
+      tl.to("#sbs-comp-app", {
+        boxShadow: "none",
+        borderColor: "rgba(255,255,255,0.05)",
+        duration: 0.5
+      }, 55.33);
+
+      // 56.0s: Docs Live widget slide-in
+      tl.to("#sbs-ws-docs", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.2)" }, 56.0);
+      // Typing lines width animation inside Docs live
+      tl.to("#sbs-doc-body-a", { width: "100%", duration: 1.2, ease: "power1.inOut" }, 56.6);
+      tl.to("#sbs-doc-body-b", { width: "100%", duration: 1.5, ease: "power1.inOut" }, 57.8);
+
+      // 58.5s: Pics Live segmentation widget slide-in
+      tl.to("#sbs-ws-pics", { opacity: 1, scale: 1, translateY: 0, duration: 0.6, ease: "back.out(1.2)" }, 58.5);
+      tl.to("#pics-laser-tracer", { opacity: 1, scale: 1.0, duration: 0.8, ease: "power2.out" }, 59.3);
+      tl.to("#pics-segment-highlight", { opacity: 1, duration: 0.4 }, 59.8);
+      tl.to("#pics-segment-label", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 60.1);
+
+      // 61.18s: Workspace transition focus sweep
+      tl.to("#sbs-card-a", {
+        opacity: 0.3,
+        scale: 0.96,
+        filter: "blur(1.5px) grayscale(0.2)",
+        duration: 0.8,
+        ease: "power2.inOut"
+      }, 61.18);
+      tl.to("#sbs-card-b", {
+        opacity: 1,
+        scale: 1.04,
+        filter: "none",
+        rotateY: -3,
+        zIndex: 10,
+        boxShadow: "0 15px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 45px rgba(251, 188, 5, 0.5)",
+        duration: 0.8,
+        ease: "power2.inOut"
+      }, 61.18);
+
+      // 63.0s: Soft settle
+      tl.to("#sbs-card-b", {
         rotateY: 0,
         rotateX: 0,
-        scale: 1.0,
-        duration: 1.5,
-        ease: "power2.out"
-      }, 49.5);
+        duration: 0.8
+      }, 63.0);
  
       window.__timelines["scene-side-by-side"] = tl;
     </script>
