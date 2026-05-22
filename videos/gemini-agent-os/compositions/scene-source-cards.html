@@ -126,6 +126,7 @@
         transform-style: preserve-3d;
       }
       .source-card {
+        position: relative;
         width: 520px;
         height: 540px;
         border-radius: 24px;
@@ -180,7 +181,10 @@
       /* High-Retention Stats & Pills Overlays */
       .card-stats-overlay, .card-pills-overlay {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 62%;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -291,26 +295,26 @@
                  src="assets/screenshots/source-2.png"
                  alt="Daily Brief"
                  data-layout-allow-overflow="true" />
-            <div class="card-stats-overlay" id="src-stats-1">
-              <div class="stat-badge" id="badge-users">
-                <span class="stat-num">900M+</span>
-                <span class="stat-lbl">Active Users</span>
-              </div>
-              <div class="stat-badge" id="badge-countries">
-                <span class="stat-num">230+</span>
-                <span class="stat-lbl">Countries</span>
-              </div>
-              <div class="stat-badge" id="badge-languages">
-                <span class="stat-num">70+</span>
-                <span class="stat-lbl">Languages</span>
-              </div>
+          </div>
+          <div class="card-stats-overlay" id="src-stats-1">
+            <div class="stat-badge" id="badge-users">
+              <span class="stat-num">900M+</span>
+              <span class="stat-lbl">Active Users</span>
             </div>
-            <div class="card-pills-overlay" id="src-pills-1">
-              <div class="update-pill" id="pill-flash">Gemini 3.5 Flash</div>
-              <div class="update-pill" id="pill-ui">Neural Expressive UI</div>
-              <div class="update-pill" id="pill-omni">Gemini Omni</div>
-              <div class="update-pill" id="pill-macos">macOS Updates</div>
+            <div class="stat-badge" id="badge-countries">
+              <span class="stat-num">230+</span>
+              <span class="stat-lbl">Countries</span>
             </div>
+            <div class="stat-badge" id="badge-languages">
+              <span class="stat-num">70+</span>
+              <span class="stat-lbl">Languages</span>
+            </div>
+          </div>
+          <div class="card-pills-overlay" id="src-pills-1">
+            <div class="update-pill" id="pill-flash">Gemini 3.5 Flash</div>
+            <div class="update-pill" id="pill-ui">Neural Expressive UI</div>
+            <div class="update-pill" id="pill-omni">Gemini Omni</div>
+            <div class="update-pill" id="pill-macos">macOS Updates</div>
           </div>
           <div class="meta">
             <div class="ovl">DAILY BRIEF</div>
@@ -325,11 +329,11 @@
                  src="assets/screenshots/source-1.png"
                  alt="Persistent Runtime"
                  data-layout-allow-overflow="true" />
-            <div class="card-pills-overlay" id="src-stats-2">
-              <div class="update-pill" id="pill-cloud">Cloud-Based</div>
-              <div class="update-pill" id="pill-harness">Antigravity Harness</div>
-              <div class="update-pill" id="pill-background">Background 24/7</div>
-            </div>
+          </div>
+          <div class="card-pills-overlay" id="src-stats-2">
+            <div class="update-pill" id="pill-cloud">Cloud-Based</div>
+            <div class="update-pill" id="pill-harness">Antigravity Harness</div>
+            <div class="update-pill" id="pill-background">Background 24/7</div>
           </div>
           <div class="meta">
             <div class="ovl">PERSISTENT RUNTIME</div>
@@ -344,16 +348,16 @@
                  src="assets/screenshots/source-3.png"
                  alt="Safe Autonomy"
                  data-layout-allow-overflow="true" />
-            <div class="card-pills-overlay" id="src-stats-3">
-              <div class="update-pill" id="pill-ask">Ask First</div>
-              <div class="update-pill" id="pill-highstakes">High-Stakes Actions</div>
-              <div class="update-pill" id="pill-money">Spending Money</div>
-              <div class="update-pill" id="pill-emails">Sending Emails</div>
-            </div>
-            <div class="card-pills-overlay" id="src-pills-3">
-              <div class="update-pill" id="pill-rollout">Global Rollout</div>
-              <div class="update-pill" id="pill-beta">U.S. Beta</div>
-            </div>
+          </div>
+          <div class="card-pills-overlay" id="src-stats-3">
+            <div class="update-pill" id="pill-ask">Ask First</div>
+            <div class="update-pill" id="pill-highstakes">High-Stakes Actions</div>
+            <div class="update-pill" id="pill-money">Spending Money</div>
+            <div class="update-pill" id="pill-emails">Sending Emails</div>
+          </div>
+          <div class="card-pills-overlay" id="src-pills-3">
+            <div class="update-pill" id="pill-rollout">Global Rollout</div>
+            <div class="update-pill" id="pill-beta">U.S. Beta</div>
           </div>
           <div class="meta">
             <div class="ovl">SAFE AUTONOMY</div>
